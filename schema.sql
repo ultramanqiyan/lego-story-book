@@ -1,4 +1,12 @@
-CREATE TABLE IF NOT EXISTS users (
+DROP TABLE IF EXISTS usage_logs;
+DROP TABLE IF EXISTS parent_controls;
+DROP TABLE IF EXISTS shares;
+DROP TABLE IF EXISTS chapters;
+DROP TABLE IF EXISTS books;
+DROP TABLE IF EXISTS characters;
+DROP TABLE IF EXISTS users;
+
+CREATE TABLE users (
     id TEXT PRIMARY KEY,
     username TEXT UNIQUE NOT NULL,
     email TEXT UNIQUE,
@@ -9,7 +17,7 @@ CREATE TABLE IF NOT EXISTS users (
     updated_at TEXT DEFAULT CURRENT_TIMESTAMP
 );
 
-CREATE TABLE IF NOT EXISTS characters (
+CREATE TABLE characters (
     id TEXT PRIMARY KEY,
     name TEXT NOT NULL,
     image TEXT NOT NULL,
@@ -21,7 +29,7 @@ CREATE TABLE IF NOT EXISTS characters (
     updated_at TEXT DEFAULT CURRENT_TIMESTAMP
 );
 
-CREATE TABLE IF NOT EXISTS books (
+CREATE TABLE books (
     id TEXT PRIMARY KEY,
     title TEXT NOT NULL,
     user_id TEXT NOT NULL,
@@ -30,7 +38,7 @@ CREATE TABLE IF NOT EXISTS books (
     updated_at TEXT DEFAULT CURRENT_TIMESTAMP
 );
 
-CREATE TABLE IF NOT EXISTS chapters (
+CREATE TABLE chapters (
     id TEXT PRIMARY KEY,
     book_id TEXT NOT NULL,
     chapter_number INTEGER NOT NULL,
@@ -42,7 +50,7 @@ CREATE TABLE IF NOT EXISTS chapters (
     updated_at TEXT DEFAULT CURRENT_TIMESTAMP
 );
 
-CREATE TABLE IF NOT EXISTS shares (
+CREATE TABLE shares (
     id TEXT PRIMARY KEY,
     book_id TEXT NOT NULL,
     share_code TEXT UNIQUE NOT NULL,
@@ -52,7 +60,7 @@ CREATE TABLE IF NOT EXISTS shares (
     expires_at TEXT
 );
 
-CREATE TABLE IF NOT EXISTS parent_controls (
+CREATE TABLE parent_controls (
     id TEXT PRIMARY KEY,
     parent_id TEXT NOT NULL,
     child_id TEXT NOT NULL,
@@ -65,7 +73,7 @@ CREATE TABLE IF NOT EXISTS parent_controls (
     updated_at TEXT DEFAULT CURRENT_TIMESTAMP
 );
 
-CREATE TABLE IF NOT EXISTS usage_logs (
+CREATE TABLE usage_logs (
     id TEXT PRIMARY KEY,
     user_id TEXT NOT NULL,
     action TEXT NOT NULL,
@@ -74,13 +82,13 @@ CREATE TABLE IF NOT EXISTS usage_logs (
     created_at TEXT DEFAULT CURRENT_TIMESTAMP
 );
 
-CREATE INDEX IF NOT EXISTS idx_users_username ON users(username);
-CREATE INDEX IF NOT EXISTS idx_users_email ON users(email);
-CREATE INDEX IF NOT EXISTS idx_users_parent_id ON users(parent_id);
-CREATE INDEX IF NOT EXISTS idx_characters_creator_id ON characters(creator_id);
-CREATE INDEX IF NOT EXISTS idx_books_user_id ON books(user_id);
-CREATE INDEX IF NOT EXISTS idx_chapters_book_id ON chapters(book_id);
-CREATE INDEX IF NOT EXISTS idx_shares_book_id ON shares(book_id);
-CREATE INDEX IF NOT EXISTS idx_shares_share_code ON shares(share_code);
-CREATE INDEX IF NOT EXISTS idx_parent_controls_child_id ON parent_controls(child_id);
-CREATE INDEX IF NOT EXISTS idx_usage_logs_user_id ON usage_logs(user_id);
+CREATE INDEX idx_users_username ON users(username);
+CREATE INDEX idx_users_email ON users(email);
+CREATE INDEX idx_users_parent_id ON users(parent_id);
+CREATE INDEX idx_characters_creator_id ON characters(creator_id);
+CREATE INDEX idx_books_user_id ON books(user_id);
+CREATE INDEX idx_chapters_book_id ON chapters(book_id);
+CREATE INDEX idx_shares_book_id ON shares(book_id);
+CREATE INDEX idx_shares_share_code ON shares(share_code);
+CREATE INDEX idx_parent_controls_child_id ON parent_controls(child_id);
+CREATE INDEX idx_usage_logs_user_id ON usage_logs(user_id);
