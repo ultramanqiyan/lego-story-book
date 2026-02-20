@@ -1,33 +1,61 @@
-@tailwind base;
-@tailwind components;
-@tailwind utilities;
+@import "tailwindcss";
 
 body {
     font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
 }
 
 .lego-button {
-    @apply px-6 py-3 rounded-xl font-bold text-white shadow-lg transform transition-all duration-200;
+    padding: 0.75rem 1.5rem;
+    border-radius: 0.75rem;
+    font-weight: bold;
+    color: white;
+    box-shadow: 0 10px 15px -3px rgb(0 0 0 / 0.1), 0 4px 6px -4px rgb(0 0 0 / 0.1);
+    transform: scale(1);
+    transition: all 0.2s;
 }
 
 .lego-button:hover {
-    @apply scale-105 shadow-xl;
+    transform: scale(1.05);
+    box-shadow: 0 20px 25px -5px rgb(0 0 0 / 0.1), 0 8px 10px -6px rgb(0 0 0 / 0.1);
 }
 
 .lego-button:active {
-    @apply scale-95;
+    transform: scale(0.95);
 }
 
 .lego-card {
-    @apply bg-white rounded-2xl shadow-lg p-6 border-4 border-gray-200;
+    background-color: white;
+    border-radius: 1rem;
+    box-shadow: 0 10px 15px -3px rgb(0 0 0 / 0.1), 0 4px 6px -4px rgb(0 0 0 / 0.1);
+    padding: 1.5rem;
+    border: 4px solid #e5e7eb;
 }
 
 .lego-input {
-    @apply w-full px-4 py-2 border-2 border-gray-300 rounded-xl focus:border-blue-500 focus:outline-none transition;
+    width: 100%;
+    padding: 0.5rem 1rem;
+    border: 2px solid #d1d5db;
+    border-radius: 0.75rem;
+    transition: border-color 0.2s;
+}
+
+.lego-input:focus {
+    border-color: #3b82f6;
+    outline: none;
 }
 
 .lego-select {
-    @apply w-full px-4 py-2 border-2 border-gray-300 rounded-xl focus:border-blue-500 focus:outline-none transition bg-white;
+    width: 100%;
+    padding: 0.5rem 1rem;
+    border: 2px solid #d1d5db;
+    border-radius: 0.75rem;
+    background-color: white;
+    transition: border-color 0.2s;
+}
+
+.lego-select:focus {
+    border-color: #3b82f6;
+    outline: none;
 }
 
 .highlight-red {

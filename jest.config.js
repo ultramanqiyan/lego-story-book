@@ -2,7 +2,8 @@ module.exports = {
     testEnvironment: 'jsdom',
     setupFilesAfterEnv: ['<rootDir>/tests/setup.js'],
     moduleNameMapper: {
-        '^@/(.*)$': '<rootDir>/src/$1'
+        '^@/(.*)$': '<rootDir>/src/$1',
+        '^.+\\.(css|less|scss|sass)$': '<rootDir>/tests/__mocks__/styleMock.js'
     },
     testPathIgnorePatterns: ['<rootDir>/node_modules/', '<rootDir>/.next/'],
     collectCoverageFrom: [
@@ -20,9 +21,6 @@ module.exports = {
         }
     },
     transform: {
-        '^.+\\.jsx?$': 'babel-jest'
-    },
-    transformIgnorePatterns: [
-        'node_modules/(?!(@testing-library)/)'
-    ]
+        '^.+\\.(js|jsx)$': ['next/swc-jest', {}]
+    }
 }
