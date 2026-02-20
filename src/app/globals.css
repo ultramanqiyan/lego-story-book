@@ -1,0 +1,48 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+body {
+    font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
+}
+
+.lego-button {
+    @apply px-6 py-3 rounded-xl font-bold text-white shadow-lg transform transition-all duration-200;
+}
+
+.lego-button:hover {
+    @apply scale-105 shadow-xl;
+}
+
+.lego-button:active {
+    @apply scale-95;
+}
+
+.lego-card {
+    @apply bg-white rounded-2xl shadow-lg p-6 border-4 border-gray-200;
+}
+
+.lego-input {
+    @apply w-full px-4 py-2 border-2 border-gray-300 rounded-xl focus:border-blue-500 focus:outline-none transition;
+}
+
+.lego-select {
+    @apply w-full px-4 py-2 border-2 border-gray-300 rounded-xl focus:border-blue-500 focus:outline-none transition bg-white;
+}
+
+.highlight-red {
+    color: red;
+    font-weight: bold;
+}
+
+.highlight-purple {
+    color: purple;
+}
+
+.highlight-green {
+    color: green;
+}
+
+.highlight-yellow {
+    color: #DAA520;
+}
