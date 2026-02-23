@@ -5,30 +5,37 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>我的书架 - 乐高故事书</title>
   <link rel="stylesheet" href="css/styles.css">
+  <link rel="stylesheet" href="css/animations.css">
 </head>
 <body>
   <div class="lego-brick-bg"></div>
-  
-  <div class="container">
+  <div class="particles-container">
+    <div class="particle"></div><div class="particle"></div><div class="particle"></div>
+    <div class="particle"></div><div class="particle"></div><div class="particle"></div>
+    <div class="particle"></div><div class="particle"></div><div class="particle"></div>
+    <div class="particle"></div>
+  </div>
+
+  <div class="container page-wrapper">
     <header class="header">
-      <h1>📚 我的书架</h1>
+      <h1 class="neon-text rainbow-text">📚 我的书架</h1>
       <nav class="nav">
-        <a href="index.html">🏠 首页</a>
-        <a href="story-create.html">✨ 创建故事</a>
-        <a href="characters.html">🎭 人仔角色</a>
-        <a href="parent.html">👨‍👩‍👧 家长控制</a>
+        <a href="index.html" class="nav-glow">🏠 首页</a>
+        <a href="story-create.html" class="nav-glow">✨ 创建故事</a>
+        <a href="characters.html" class="nav-glow">🎭 人仔角色</a>
+        <a href="parent.html" class="nav-glow">👨‍👩‍👧 家长控制</a>
       </nav>
     </header>
 
     <main>
-      <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 30px; flex-wrap: wrap; gap: 15px;">
-        <h2 style="color: var(--lego-blue);">📖 我的故事</h2>
-        <a href="story-create.html" class="btn btn-primary">➕ 创建新故事</a>
+      <div class="scroll-fade-in" style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 30px; flex-wrap: wrap; gap: 15px;">
+        <h2 style="color: var(--lego-blue);" class="pulse-scale">📖 我的故事</h2>
+        <a href="story-create.html" class="btn btn-primary btn-glow btn-ripple magnetic-btn">➕ 创建新故事</a>
       </div>
 
-      <div class="grid" id="bookList">
+      <div class="card-stack-container" id="bookList">
         <div class="loading">
-          <div class="spinner"></div>
+          <div class="spinner-new"></div>
           <p style="margin-top: 15px; color: #666;">加载中...</p>
         </div>
       </div>
@@ -40,6 +47,7 @@
   </div>
 
   <script src="js/utils.js"></script>
+  <script src="js/animations.js"></script>
   <script>
     var userId = requireAuth();
     if (userId) {
@@ -53,27 +61,49 @@
         var books = data.books;
         
         if (books.length === 0) {
-          container.innerHTML = 
+          container.innerHTML =
             '<div class="card" style="grid-column: 1/-1; text-align: center; padding: 50px;">' +
               '<div style="font-size: 4rem; margin-bottom: 20px;">📚</div>' +
               '<h3>还没有故事</h3>' +
               '<p style="margin: 15px 0; color: #666;">创建你的第一个冒险故事吧！</p>' +
-              '<a href="story-create.html" class="btn btn-primary">✨ 创建故事</a>' +
+              '<a href="story-create.html" class="btn btn-primary btn-glow btn-ripple magnetic-btn">✨ 创建故事</a>' +
             '</div>';
           return;
         }
-        
+
+        // 使用卡牌堆叠布局
+        container.className = 'card-stack-container';
         var colors = ['lego-blue', 'lego-purple', 'lego-green', 'lego-orange', 'lego-red'];
+
         container.innerHTML = books.map(function(book, index) {
           var color = colors[index % colors.length];
-          return '<div class="book-card" onclick="viewBook(\'' + book.book_id + '\')" style="animation-delay: ' + (index * 0.1) + 's">' +
-            '<div class="book-cover" style="background: linear-gradient(135deg, var(--' + color + '), var(--lego-purple));">📖</div>' +
-            '<div class="book-info">' +
-              '<h3>' + book.title + '</h3>' +
-              '<p>📚 ' + book.chapter_count + '章</p>' +
+          // 计算层叠位置：每张卡片偏移一定角度和距离
+          var offsetX = (index - books.length / 2) * 30;
+          var rotation = (index - books.length / 2) * 5;
+          var zIndex = books.length - index;
+
+          return '<div class="card-stack-item" ' +
+            'data-index="' + index + '" ' +
+            'onclick="viewBook(\'' + book.book_id + '\')" ' +
+            'style="' +
+              '--offset-x: ' + offsetX + 'px; ' +
+              '--rotation: ' + rotation + 'deg; ' +
+              '--z-index: ' + zIndex + '; ' +
+              '--delay: ' + (index * 0.1) + 's;' +
+            '">' +
+            '<div class="card-stack-inner" style="background: linear-gradient(135deg, var(--' + color + '), var(--lego-purple));">' +
+              '<div class="card-stack-content">' +
+                '<div class="card-stack-icon">📖</div>' +
+                '<h3 class="card-stack-title">' + book.title + '</h3>' +
+                '<p class="card-stack-chapters">📚 ' + book.chapter_count + '章</p>' +
+              '</div>' +
+              '<div class="card-stack-shine"></div>' +
             '</div>' +
           '</div>';
         }).join('');
+
+        // 初始化卡牌堆叠交互
+        initCardStackInteraction();
       } catch (error) {
         container.innerHTML = '<p style="text-align:center;color:#999;grid-column:1/-1;">加载失败，请刷新页面</p>';
       }
@@ -81,6 +111,68 @@
 
     function viewBook(id) {
       window.location.href = 'book.html?id=' + id;
+    }
+
+    // 卡牌堆叠交互初始化
+    function initCardStackInteraction() {
+      var container = document.getElementById('bookList');
+      var cards = container.querySelectorAll('.card-stack-item');
+
+      cards.forEach(function(card, index) {
+        // 鼠标进入时展开
+        card.addEventListener('mouseenter', function() {
+          spreadCards(index);
+        });
+
+        // 鼠标离开时恢复
+        card.addEventListener('mouseleave', function() {
+          collapseCards();
+        });
+      });
+
+      // 容器鼠标离开时恢复
+      container.addEventListener('mouseleave', function() {
+        collapseCards();
+      });
+    }
+
+    // 展开卡牌
+    function spreadCards(hoverIndex) {
+      var cards = document.querySelectorAll('.card-stack-item');
+      var totalCards = cards.length;
+
+      cards.forEach(function(card, index) {
+        var baseOffset = parseFloat(card.style.getPropertyValue('--offset-x')) || 0;
+        var baseRotation = parseFloat(card.style.getPropertyValue('--rotation')) || 0;
+
+        // 根据与悬停卡片的距离调整位置
+        var distance = index - hoverIndex;
+        var spreadMultiplier = 1.5;
+
+        if (distance !== 0) {
+          var newOffset = baseOffset + (distance * 20 * spreadMultiplier);
+          var newRotation = baseRotation + (distance * 3);
+          card.style.transform = 'translateX(' + newOffset + 'px) rotate(' + newRotation + 'deg)';
+        } else {
+          // 悬停的卡片放大并上浮
+          card.style.transform = 'translateX(' + baseOffset + 'px) rotate(0deg) translateY(-40px) scale(1.15)';
+          card.style.zIndex = '100';
+        }
+      });
+    }
+
+    // 恢复卡牌堆叠
+    function collapseCards() {
+      var cards = document.querySelectorAll('.card-stack-item');
+
+      cards.forEach(function(card) {
+        var offsetX = card.style.getPropertyValue('--offset-x');
+        var rotation = card.style.getPropertyValue('--rotation');
+        var zIndex = card.style.getPropertyValue('--z-index');
+
+        card.style.transform = 'translateX(' + offsetX + ') rotate(' + rotation + ')';
+        card.style.zIndex = zIndex;
+      });
     }
   </script>
 </body>

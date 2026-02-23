@@ -1,3 +1,9 @@
+import { createErrorResponse, createSuccessResponse, handleCORS } from './utils.js';
+
+export async function onRequestOptions(context) {
+  return handleCORS();
+}
+
 export async function onRequestPost(context) {
   try {
     const { image, prompt } = await context.request.json();
@@ -11,7 +17,7 @@ export async function onRequestPost(context) {
 async function generateImage(context, image, prompt) {
   const seedreamApiKey = getApiKey(context);
   const payload = buildPayload(image, prompt);
-  
+
   const response = await fetch('https://ark.cn-beijing.volces.com/api/v3/images/generations', {
     method: 'POST',
     headers: {
@@ -47,33 +53,11 @@ function buildPayload(image, prompt) {
 
 async function handleApiError(response) {
   const errorData = await response.json();
-  return new Response(JSON.stringify({
-    success: false,
-    error: errorData.error?.message || 'API调用失败'
-  }), {
-    status: response.status,
-    headers: { 'Content-Type': 'application/json' }
-  });
+  return createErrorResponse(errorData.error?.message || 'API调用失败', response.status);
 }
 
 async function handleSuccess(response) {
   const data = await response.json();
   const imageUrl = data.data[0].url;
-
-  return new Response(JSON.stringify({
-    success: true,
-    imageUrl: imageUrl
-  }), {
-    headers: { 'Content-Type': 'application/json' }
-  });
-}
-
-function createErrorResponse(message, status) {
-  return new Response(JSON.stringify({
-    success: false,
-    error: message
-  }), {
-    status: status,
-    headers: { 'Content-Type': 'application/json' }
-  });
+  return createSuccessResponse({ imageUrl: imageUrl });
 }

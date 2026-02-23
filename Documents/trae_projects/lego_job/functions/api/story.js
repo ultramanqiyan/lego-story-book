@@ -1,4 +1,8 @@
-import { generateId, createErrorResponse, createSuccessResponse } from './utils.js';
+import { generateId, createErrorResponse, createSuccessResponse, handleCORS } from './utils.js';
+
+export async function onRequestOptions(context) {
+  return handleCORS();
+}
 
 const DOUBAO_API_URL = 'https://ark.cn-beijing.volces.com/api/v3/chat/completions';
 const DOUBAO_MODEL = 'doubao-1-5-pro-32k-250115';

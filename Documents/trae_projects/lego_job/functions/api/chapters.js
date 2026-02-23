@@ -1,4 +1,8 @@
-import { generateId, createErrorResponse, createSuccessResponse } from './utils.js';
+import { generateId, createErrorResponse, createSuccessResponse, handleCORS } from './utils.js';
+
+export async function onRequestOptions(context) {
+  return handleCORS();
+}
 
 function getChapter(DB, chapterId) {
   return DB.prepare('SELECT * FROM chapters WHERE chapter_id = ?')

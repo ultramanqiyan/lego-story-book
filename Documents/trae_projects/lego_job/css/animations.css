@@ -1,0 +1,994 @@
+/* ============================================
+   乐高故事书 - 增强动画效果 CSS
+   ============================================ */
+
+/* ============================================
+   1. 页面加载动画
+   ============================================ */
+
+/* 页面整体淡入效果 */
+.page-wrapper {
+  animation: pageFadeIn 0.8s ease-out;
+}
+
+@keyframes pageFadeIn {
+  from {
+    opacity: 0;
+    transform: translateY(20px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+/* 内容区域依次淡入 */
+.content-fade-in {
+  animation: contentFadeIn 0.6s ease-out backwards;
+}
+
+.content-fade-in:nth-child(1) { animation-delay: 0.1s; }
+.content-fade-in:nth-child(2) { animation-delay: 0.2s; }
+.content-fade-in:nth-child(3) { animation-delay: 0.3s; }
+.content-fade-in:nth-child(4) { animation-delay: 0.4s; }
+.content-fade-in:nth-child(5) { animation-delay: 0.5s; }
+
+@keyframes contentFadeIn {
+  from {
+    opacity: 0;
+    transform: translateY(30px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+/* ============================================
+   2. 增强按钮动画
+   ============================================ */
+
+/* 按钮脉冲发光效果 */
+.btn-glow {
+  position: relative;
+  overflow: visible;
+}
+
+.btn-glow::after {
+  content: '';
+  position: absolute;
+  top: -4px;
+  left: -4px;
+  right: -4px;
+  bottom: -4px;
+  background: inherit;
+  border-radius: inherit;
+  opacity: 0;
+  z-index: -1;
+  animation: btnPulse 2s ease-in-out infinite;
+}
+
+@keyframes btnPulse {
+  0%, 100% {
+    opacity: 0;
+    transform: scale(1);
+  }
+  50% {
+    opacity: 0.4;
+    transform: scale(1.1);
+  }
+}
+
+/* 按钮磁性悬停效果 */
+.btn-magnetic {
+  transition: transform 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+}
+
+.btn-magnetic:hover {
+  transform: scale(1.05) translateY(-3px);
+}
+
+/* 按钮波纹效果 */
+.btn-ripple {
+  position: relative;
+  overflow: hidden;
+}
+
+.btn-ripple::before {
+  content: '';
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  width: 0;
+  height: 0;
+  background: rgba(255, 255, 255, 0.5);
+  border-radius: 50%;
+  transform: translate(-50%, -50%);
+  transition: width 0.6s ease, height 0.6s ease;
+}
+
+.btn-ripple:active::before {
+  width: 300px;
+  height: 300px;
+}
+
+/* 按钮抖动动画（用于错误提示） */
+.btn-shake {
+  animation: btnShake 0.5s ease-in-out;
+}
+
+@keyframes btnShake {
+  0%, 100% { transform: translateX(0); }
+  20% { transform: translateX(-10px) rotate(-5deg); }
+  40% { transform: translateX(10px) rotate(5deg); }
+  60% { transform: translateX(-10px) rotate(-3deg); }
+  80% { transform: translateX(10px) rotate(3deg); }
+}
+
+/* ============================================
+   3. 3D卡片翻转效果
+   ============================================ */
+
+/* 3D翻转卡片容器 */
+.flip-card {
+  perspective: 1000px;
+  cursor: pointer;
+  min-height: 320px;
+}
+
+.flip-card-inner {
+  position: relative;
+  width: 100%;
+  height: 100%;
+  min-height: 320px;
+  transition: transform 0.8s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+  transform-style: preserve-3d;
+}
+
+.flip-card:hover .flip-card-inner {
+  transform: rotateY(180deg);
+}
+
+.flip-card-front,
+.flip-card-back {
+  position: absolute;
+  width: 100%;
+  height: 100%;
+  min-height: 320px;
+  backface-visibility: hidden;
+  border-radius: 20px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: flex-start;
+  padding: 25px 20px;
+}
+
+.flip-card-front {
+  background: linear-gradient(180deg, white 0%, #F8F8F8 100%);
+  box-shadow: 0 8px 0 rgba(0, 0, 0, 0.1), 0 10px 30px rgba(0, 0, 0, 0.1);
+}
+
+.flip-card-back {
+  background: linear-gradient(135deg, var(--lego-blue), var(--lego-purple));
+  color: white;
+  transform: rotateY(180deg);
+  box-shadow: 0 8px 0 rgba(0, 0, 0, 0.2), 0 10px 30px rgba(0, 0, 0, 0.2);
+}
+
+/* 人仔卡片特殊样式 */
+.character-card.flip-card {
+  background: transparent;
+  box-shadow: none;
+  padding: 0;
+}
+
+.character-card.flip-card::before {
+  display: none;
+}
+
+.character-card.flip-card:hover {
+  transform: none;
+}
+
+.character-card .flip-card-front,
+.character-card .flip-card-back {
+  border-radius: 30px;
+}
+
+.character-card .flip-card-front::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  height: 6px;
+  background: linear-gradient(90deg, var(--lego-red), var(--lego-yellow), var(--lego-blue));
+  border-radius: 30px 30px 0 0;
+}
+
+/* ============================================
+   4. 悬浮和弹跳动画
+   ============================================ */
+
+/* 悬浮动画 */
+.float-animation {
+  animation: float 3s ease-in-out infinite;
+}
+
+@keyframes float {
+  0%, 100% {
+    transform: translateY(0);
+  }
+  50% {
+    transform: translateY(-15px);
+  }
+}
+
+/* 弹跳动画 */
+.bounce-animation {
+  animation: bounce 2s ease-in-out infinite;
+}
+
+@keyframes bounce {
+  0%, 100% {
+    transform: translateY(0) scale(1);
+  }
+  25% {
+    transform: translateY(-20px) scale(1.05);
+  }
+  50% {
+    transform: translateY(0) scale(1);
+  }
+  75% {
+    transform: translateY(-10px) scale(1.02);
+  }
+}
+
+/* 摇摆动画 */
+.wiggle-animation {
+  animation: wiggle 2s ease-in-out infinite;
+}
+
+@keyframes wiggle {
+  0%, 100% { transform: rotate(-3deg); }
+  50% { transform: rotate(3deg); }
+}
+
+/* 脉冲缩放动画 */
+.pulse-scale {
+  animation: pulseScale 2s ease-in-out infinite;
+}
+
+@keyframes pulseScale {
+  0%, 100% {
+    transform: scale(1);
+  }
+  50% {
+    transform: scale(1.1);
+  }
+}
+
+/* ============================================
+   5. 粒子效果
+   ============================================ */
+
+/* 粒子容器 */
+.particles-container {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  pointer-events: none;
+  z-index: 0;
+  overflow: hidden;
+}
+
+/* 单个粒子 */
+.particle {
+  position: absolute;
+  width: 10px;
+  height: 10px;
+  background: var(--lego-yellow);
+  border-radius: 50%;
+  opacity: 0.6;
+  animation: particleFloat 15s infinite linear;
+}
+
+.particle:nth-child(1) { left: 10%; animation-delay: 0s; background: var(--lego-red); }
+.particle:nth-child(2) { left: 20%; animation-delay: 2s; background: var(--lego-yellow); }
+.particle:nth-child(3) { left: 30%; animation-delay: 4s; background: var(--lego-blue); }
+.particle:nth-child(4) { left: 40%; animation-delay: 6s; background: var(--lego-green); }
+.particle:nth-child(5) { left: 50%; animation-delay: 8s; background: var(--lego-orange); }
+.particle:nth-child(6) { left: 60%; animation-delay: 10s; background: var(--lego-purple); }
+.particle:nth-child(7) { left: 70%; animation-delay: 12s; background: var(--lego-pink); }
+.particle:nth-child(8) { left: 80%; animation-delay: 14s; background: var(--lego-cyan); }
+.particle:nth-child(9) { left: 90%; animation-delay: 1s; background: var(--lego-red); }
+.particle:nth-child(10) { left: 5%; animation-delay: 3s; background: var(--lego-yellow); }
+
+@keyframes particleFloat {
+  0% {
+    transform: translateY(100vh) rotate(0deg);
+    opacity: 0;
+  }
+  10% {
+    opacity: 0.6;
+  }
+  90% {
+    opacity: 0.6;
+  }
+  100% {
+    transform: translateY(-100vh) rotate(720deg);
+    opacity: 0;
+  }
+}
+
+/* ============================================
+   6. 霓虹发光效果
+   ============================================ */
+
+/* 霓虹发光文字 */
+.neon-text {
+  color: #fff;
+  text-shadow:
+    0 0 5px #fff,
+    0 0 10px #fff,
+    0 0 20px var(--lego-yellow),
+    0 0 40px var(--lego-yellow),
+    0 0 80px var(--lego-yellow);
+  animation: neonFlicker 1.5s ease-in-out infinite alternate;
+}
+
+@keyframes neonFlicker {
+  0%, 100% {
+    text-shadow:
+      0 0 5px #fff,
+      0 0 10px #fff,
+      0 0 20px var(--lego-yellow),
+      0 0 40px var(--lego-yellow),
+      0 0 80px var(--lego-yellow);
+  }
+  50% {
+    text-shadow:
+      0 0 2px #fff,
+      0 0 5px #fff,
+      0 0 10px var(--lego-yellow),
+      0 0 20px var(--lego-yellow),
+      0 0 40px var(--lego-yellow);
+  }
+}
+
+/* 霓虹边框 */
+.neon-border {
+  border: 3px solid var(--lego-yellow);
+  box-shadow:
+    0 0 5px var(--lego-yellow),
+    0 0 10px var(--lego-yellow),
+    inset 0 0 5px var(--lego-yellow);
+  animation: neonBorderPulse 2s ease-in-out infinite;
+}
+
+@keyframes neonBorderPulse {
+  0%, 100% {
+    box-shadow:
+      0 0 5px var(--lego-yellow),
+      0 0 10px var(--lego-yellow),
+      inset 0 0 5px var(--lego-yellow);
+  }
+  50% {
+    box-shadow:
+      0 0 10px var(--lego-yellow),
+      0 0 20px var(--lego-yellow),
+      0 0 30px var(--lego-yellow),
+      inset 0 0 10px var(--lego-yellow);
+  }
+}
+
+/* ============================================
+   7. 彩虹渐变动画
+   ============================================ */
+
+/* 彩虹文字 */
+.rainbow-text {
+  background: linear-gradient(
+    90deg,
+    var(--lego-red),
+    var(--lego-orange),
+    var(--lego-yellow),
+    var(--lego-green),
+    var(--lego-blue),
+    var(--lego-purple),
+    var(--lego-pink),
+    var(--lego-red)
+  );
+  background-size: 200% auto;
+  -webkit-background-clip: text;
+  background-clip: text;
+  -webkit-text-fill-color: transparent;
+  animation: rainbowMove 3s linear infinite;
+}
+
+@keyframes rainbowMove {
+  0% { background-position: 0% center; }
+  100% { background-position: 200% center; }
+}
+
+/* 彩虹边框 */
+.rainbow-border {
+  border: 4px solid transparent;
+  background: linear-gradient(white, white) padding-box,
+              linear-gradient(
+                90deg,
+                var(--lego-red),
+                var(--lego-orange),
+                var(--lego-yellow),
+                var(--lego-green),
+                var(--lego-blue),
+                var(--lego-purple)
+              ) border-box;
+  animation: rainbowRotate 3s linear infinite;
+}
+
+@keyframes rainbowRotate {
+  0% { filter: hue-rotate(0deg); }
+  100% { filter: hue-rotate(360deg); }
+}
+
+/* ============================================
+   8. 震动和弹跳效果
+   ============================================ */
+
+/* 震动效果 */
+.shake-animation {
+  animation: shake 0.5s ease-in-out;
+}
+
+@keyframes shake {
+  0%, 100% { transform: translateX(0); }
+  10% { transform: translateX(-5px) rotate(-1deg); }
+  20% { transform: translateX(5px) rotate(1deg); }
+  30% { transform: translateX(-5px) rotate(-1deg); }
+  40% { transform: translateX(5px) rotate(1deg); }
+  50% { transform: translateX(-3px) rotate(-0.5deg); }
+  60% { transform: translateX(3px) rotate(0.5deg); }
+  70% { transform: translateX(-2px) rotate(-0.3deg); }
+  80% { transform: translateX(2px) rotate(0.3deg); }
+  90% { transform: translateX(-1px) rotate(-0.1deg); }
+}
+
+/* 果冻效果 */
+.jelly-animation {
+  animation: jelly 0.5s ease;
+}
+
+@keyframes jelly {
+  0%, 100% { transform: scale(1, 1); }
+  25% { transform: scale(0.9, 1.1); }
+  50% { transform: scale(1.1, 0.9); }
+  75% { transform: scale(0.95, 1.05); }
+}
+
+/* ============================================
+   9. 加载动画
+   ============================================ */
+
+/* 乐高积木加载动画 */
+.lego-loader {
+  display: flex;
+  gap: 10px;
+  justify-content: center;
+  align-items: center;
+}
+
+.lego-block {
+  width: 30px;
+  height: 30px;
+  border-radius: 5px;
+  animation: legoStack 1s ease-in-out infinite;
+}
+
+.lego-block:nth-child(1) {
+  background: var(--lego-red);
+  animation-delay: 0s;
+}
+
+.lego-block:nth-child(2) {
+  background: var(--lego-yellow);
+  animation-delay: 0.1s;
+}
+
+.lego-block:nth-child(3) {
+  background: var(--lego-blue);
+  animation-delay: 0.2s;
+}
+
+.lego-block:nth-child(4) {
+  background: var(--lego-green);
+  animation-delay: 0.3s;
+}
+
+@keyframes legoStack {
+  0%, 100% {
+    transform: translateY(0);
+  }
+  50% {
+    transform: translateY(-20px);
+  }
+}
+
+/* 旋转加载器 */
+.spinner-new {
+  width: 50px;
+  height: 50px;
+  border: 5px solid #f3f3f3;
+  border-top: 5px solid var(--lego-red);
+  border-right: 5px solid var(--lego-yellow);
+  border-bottom: 5px solid var(--lego-blue);
+  border-left: 5px solid var(--lego-green);
+  border-radius: 50%;
+  animation: spinnerRotate 1s linear infinite;
+}
+
+@keyframes spinnerRotate {
+  0% { transform: rotate(0deg); }
+  100% { transform: rotate(360deg); }
+}
+
+/* ============================================
+   10. 悬停效果增强
+   ============================================ */
+
+/* 图片悬停缩放 */
+.img-hover-zoom {
+  overflow: hidden;
+  border-radius: 15px;
+}
+
+.img-hover-zoom img {
+  transition: transform 0.5s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+}
+
+.img-hover-zoom:hover img {
+  transform: scale(1.1);
+}
+
+/* 文字悬停下划线动画 */
+.text-hover-underline {
+  position: relative;
+  display: inline-block;
+}
+
+.text-hover-underline::after {
+  content: '';
+  position: absolute;
+  bottom: -2px;
+  left: 0;
+  width: 0;
+  height: 3px;
+  background: linear-gradient(90deg, var(--lego-red), var(--lego-yellow));
+  transition: width 0.3s ease;
+  border-radius: 2px;
+}
+
+.text-hover-underline:hover::after {
+  width: 100%;
+}
+
+/* 卡片悬停阴影增强 */
+.card-hover-shadow {
+  transition: all 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+}
+
+.card-hover-shadow:hover {
+  transform: translateY(-10px);
+  box-shadow:
+    0 20px 40px rgba(0, 0, 0, 0.15),
+    0 0 0 5px rgba(255, 213, 0, 0.3),
+    0 0 30px rgba(255, 213, 0, 0.2);
+}
+
+/* ============================================
+   11. 滚动触发动画
+   ============================================ */
+
+/* 滚动淡入 */
+.scroll-fade-in {
+  opacity: 0;
+  transform: translateY(30px);
+  transition: all 0.6s ease-out;
+}
+
+.scroll-fade-in.visible {
+  opacity: 1;
+  transform: translateY(0);
+}
+
+/* 滚动从左滑入 */
+.scroll-slide-left {
+  opacity: 0;
+  transform: translateX(-50px);
+  transition: all 0.6s ease-out;
+}
+
+.scroll-slide-left.visible {
+  opacity: 1;
+  transform: translateX(0);
+}
+
+/* 滚动从右滑入 */
+.scroll-slide-right {
+  opacity: 0;
+  transform: translateX(50px);
+  transition: all 0.6s ease-out;
+}
+
+.scroll-slide-right.visible {
+  opacity: 1;
+  transform: translateX(0);
+}
+
+/* 滚动缩放 */
+.scroll-scale {
+  opacity: 0;
+  transform: scale(0.8);
+  transition: all 0.6s ease-out;
+}
+
+.scroll-scale.visible {
+  opacity: 1;
+  transform: scale(1);
+}
+
+/* ============================================
+   12. 成功/失败动画
+   ============================================ */
+
+/* 成功动画 */
+.success-animation {
+  animation: successPop 0.6s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+}
+
+@keyframes successPop {
+  0% {
+    transform: scale(0);
+    opacity: 0;
+  }
+  50% {
+    transform: scale(1.2);
+  }
+  100% {
+    transform: scale(1);
+    opacity: 1;
+  }
+}
+
+/* 失败动画 */
+.error-animation {
+  animation: errorShake 0.5s ease-in-out;
+}
+
+@keyframes errorShake {
+  0%, 100% { transform: translateX(0); }
+  20% { transform: translateX(-10px); }
+  40% { transform: translateX(10px); }
+  60% { transform: translateX(-10px); }
+  80% { transform: translateX(10px); }
+}
+
+/* ============================================
+   13. 输入框动画
+   ============================================ */
+
+/* 输入框聚焦发光 */
+.input-glow:focus {
+  outline: none;
+  border-color: var(--lego-yellow);
+  box-shadow:
+    0 0 0 4px rgba(255, 213, 0, 0.3),
+    0 0 20px rgba(255, 213, 0, 0.4);
+  transform: scale(1.02);
+}
+
+/* 输入框抖动（验证错误） */
+.input-shake {
+  animation: inputShake 0.5s ease-in-out;
+  border-color: var(--lego-red) !important;
+}
+
+@keyframes inputShake {
+  0%, 100% { transform: translateX(0); }
+  25% { transform: translateX(-5px); }
+  75% { transform: translateX(5px); }
+}
+
+/* ============================================
+   14. 进度条动画
+   ============================================ */
+
+/* 条纹进度条 */
+.progress-striped {
+  background-image: linear-gradient(
+    45deg,
+    rgba(255, 255, 255, 0.15) 25%,
+    transparent 25%,
+    transparent 50%,
+    rgba(255, 255, 255, 0.15) 50%,
+    rgba(255, 255, 255, 0.15) 75%,
+    transparent 75%,
+    transparent
+  );
+  background-size: 1rem 1rem;
+  animation: progressStriped 1s linear infinite;
+}
+
+@keyframes progressStriped {
+  0% { background-position: 1rem 0; }
+  100% { background-position: 0 0; }
+}
+
+/* ============================================
+   15. 移动端优化
+   ============================================ */
+
+@media (max-width: 768px) {
+  /* 简化移动端动画 */
+  .particle {
+    display: none;
+  }
+  
+  .float-animation {
+    animation-duration: 4s;
+  }
+  
+  .bounce-animation {
+    animation-duration: 3s;
+  }
+  
+  /* 禁用3D翻转效果（性能考虑） */
+  .flip-card:hover .flip-card-inner {
+    transform: none;
+  }
+  
+  /* 简化悬停效果 */
+  .card-hover-shadow:hover {
+    transform: translateY(-5px);
+  }
+}
+
+/* ============================================
+   16. 打印样式
+   ============================================ */
+
+@media print {
+  .particles-container,
+  .float-animation,
+  .bounce-animation,
+  .wiggle-animation {
+    display: none !important;
+  }
+}
+
+/* ============================================
+   17. 滚动触发动画
+   ============================================ */
+
+/* 初始状态 */
+.scroll-fade-in,
+.scroll-slide-left,
+.scroll-slide-right,
+.scroll-scale {
+  opacity: 0;
+  transition: opacity 0.6s ease, transform 0.6s ease;
+}
+
+.scroll-fade-in {
+  transform: translateY(30px);
+}
+
+.scroll-slide-left {
+  transform: translateX(-50px);
+}
+
+.scroll-slide-right {
+  transform: translateX(50px);
+}
+
+.scroll-scale {
+  transform: scale(0.8);
+}
+
+/* 激活状态 - 通过JS添加 */
+.scroll-fade-in.animate,
+.scroll-slide-left.animate,
+.scroll-slide-right.animate,
+.scroll-scale.animate {
+  opacity: 1;
+  transform: translateY(0) translateX(0) scale(1);
+}
+
+/* ============================================
+   18. 卡牌堆叠效果（三国杀风格）
+   ============================================ */
+
+.card-stack-container {
+  position: relative;
+  min-height: 400px;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  padding: 50px 20px;
+  perspective: 1000px;
+}
+
+.card-stack-item {
+  position: absolute;
+  width: 200px;
+  height: 280px;
+  cursor: pointer;
+  transform: translateX(var(--offset-x, 0)) rotate(var(--rotation, 0deg));
+  z-index: var(--z-index, 1);
+  transition: all 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+  animation: cardStackEnter 0.6s ease-out var(--delay, 0s) backwards;
+}
+
+@keyframes cardStackEnter {
+  from {
+    opacity: 0;
+    transform: translateX(var(--offset-x, 0)) rotate(var(--rotation, 0deg)) translateY(100px) scale(0.8);
+  }
+  to {
+    opacity: 1;
+    transform: translateX(var(--offset-x, 0)) rotate(var(--rotation, 0deg)) translateY(0) scale(1);
+  }
+}
+
+.card-stack-inner {
+  width: 100%;
+  height: 100%;
+  border-radius: 20px;
+  box-shadow:
+    0 10px 30px rgba(0, 0, 0, 0.3),
+    0 5px 0 rgba(0, 0, 0, 0.2),
+    inset 0 2px 0 rgba(255, 255, 255, 0.3);
+  position: relative;
+  overflow: hidden;
+  transition: all 0.3s ease;
+  border: 4px solid rgba(255, 255, 255, 0.3);
+}
+
+/* 卡牌光泽效果 */
+.card-stack-shine {
+  position: absolute;
+  top: -50%;
+  left: -50%;
+  width: 200%;
+  height: 200%;
+  background: linear-gradient(
+    45deg,
+    transparent 30%,
+    rgba(255, 255, 255, 0.1) 50%,
+    transparent 70%
+  );
+  transform: rotate(30deg);
+  transition: all 0.5s ease;
+  pointer-events: none;
+}
+
+.card-stack-content {
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding: 20px;
+  color: white;
+  text-align: center;
+}
+
+.card-stack-icon {
+  font-size: 4rem;
+  margin-bottom: 15px;
+  text-shadow: 0 4px 10px rgba(0, 0, 0, 0.3);
+}
+
+.card-stack-title {
+  font-size: 1.2rem;
+  font-weight: bold;
+  margin-bottom: 10px;
+  text-shadow: 0 2px 5px rgba(0, 0, 0, 0.3);
+  word-break: break-word;
+  max-width: 100%;
+}
+
+.card-stack-chapters {
+  font-size: 0.9rem;
+  opacity: 0.9;
+  background: rgba(255, 255, 255, 0.2);
+  padding: 5px 12px;
+  border-radius: 15px;
+}
+
+/* 悬停效果 */
+.card-stack-item:hover {
+  z-index: 100 !important;
+  transform: translateX(var(--offset-x, 0)) rotate(0deg) translateY(-30px) scale(1.1) !important;
+}
+
+.card-stack-item:hover .card-stack-inner {
+  box-shadow:
+    0 25px 50px rgba(0, 0, 0, 0.4),
+    0 10px 0 rgba(0, 0, 0, 0.2),
+    inset 0 2px 0 rgba(255, 255, 255, 0.4);
+}
+
+.card-stack-item:hover .card-stack-shine {
+  transform: rotate(30deg) translateX(50%);
+}
+
+/* 激活/选中状态 */
+.card-stack-item.active {
+  z-index: 100 !important;
+  transform: translateX(0) rotate(0deg) translateY(-50px) scale(1.15) !important;
+}
+
+.card-stack-item.active .card-stack-inner {
+  box-shadow:
+    0 30px 60px rgba(0, 0, 0, 0.5),
+    0 15px 0 rgba(0, 0, 0, 0.2),
+    0 0 30px rgba(255, 213, 0, 0.5);
+  border-color: var(--lego-yellow);
+}
+
+/* 卡牌装饰边框 */
+.card-stack-inner::before {
+  content: '';
+  position: absolute;
+  top: 10px;
+  left: 10px;
+  right: 10px;
+  bottom: 10px;
+  border: 2px dashed rgba(255, 255, 255, 0.3);
+  border-radius: 12px;
+  pointer-events: none;
+}
+
+/* 卡牌角落装饰 */
+.card-stack-inner::after {
+  content: '✦';
+  position: absolute;
+  top: 15px;
+  right: 15px;
+  font-size: 1.2rem;
+  color: rgba(255, 255, 255, 0.5);
+  pointer-events: none;
+}
+
+/* 响应式调整 */
+@media (max-width: 768px) {
+  .card-stack-container {
+    min-height: 350px;
+    padding: 30px 10px;
+  }
+
+  .card-stack-item {
+    width: 150px;
+    height: 210px;
+  }
+
+  .card-stack-icon {
+    font-size: 3rem;
+  }
+
+  .card-stack-title {
+    font-size: 1rem;
+  }
+
+  .card-stack-chapters {
+    font-size: 0.8rem;
+  }
+}

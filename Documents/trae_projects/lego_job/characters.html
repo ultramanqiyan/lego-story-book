@@ -5,29 +5,36 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>人仔角色 - 乐高故事书</title>
   <link rel="stylesheet" href="css/styles.css">
+  <link rel="stylesheet" href="css/animations.css">
 </head>
 <body>
   <div class="lego-brick-bg"></div>
-  
-  <div class="container">
+  <div class="particles-container">
+    <div class="particle"></div><div class="particle"></div><div class="particle"></div>
+    <div class="particle"></div><div class="particle"></div><div class="particle"></div>
+    <div class="particle"></div><div class="particle"></div><div class="particle"></div>
+    <div class="particle"></div>
+  </div>
+
+  <div class="container page-wrapper">
     <header class="header">
-      <h1>🎭 人仔角色</h1>
+      <h1 class="neon-text rainbow-text">🎭 人仔角色</h1>
       <nav class="nav">
-        <a href="index.html">🏠 首页</a>
-        <a href="bookshelf.html">📚 我的书架</a>
-        <a href="story-create.html">✨ 创建故事</a>
+        <a href="index.html" class="nav-glow">🏠 首页</a>
+        <a href="bookshelf.html" class="nav-glow">📚 我的书架</a>
+        <a href="story-create.html" class="nav-glow">✨ 创建故事</a>
       </nav>
     </header>
 
     <main>
-      <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 30px; flex-wrap: wrap; gap: 15px;">
-        <h2 style="color: var(--lego-blue);">🧱 预设人仔</h2>
-        <button class="btn btn-secondary" id="createBtn">➕ 创建人仔</button>
+      <div class="scroll-fade-in" style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 30px; flex-wrap: wrap; gap: 15px;">
+        <h2 style="color: var(--lego-blue);" class="pulse-scale">🧱 预设人仔</h2>
+        <button class="btn btn-secondary btn-glow btn-ripple magnetic-btn" id="createBtn">➕ 创建人仔</button>
       </div>
 
       <div class="grid" id="characterList">
         <div class="loading">
-          <div class="spinner"></div>
+          <div class="spinner-new"></div>
           <p style="margin-top: 15px; color: #666;">加载中...</p>
         </div>
       </div>
@@ -39,34 +46,35 @@
   </div>
 
   <div class="modal" id="createModal">
-    <div class="modal-content">
+    <div class="modal-content card-3d neon-border">
       <div class="modal-header">
-        <h3>🎭 创建新人仔</h3>
-        <button class="modal-close">&times;</button>
+        <h3 class="bounce-animation">🎭 创建新人仔</h3>
+        <button class="modal-close btn-shake">&times;</button>
       </div>
       <form id="createForm">
         <div class="form-group">
-          <label for="name">👤 名称</label>
-          <input type="text" id="name" name="name" required maxlength="20" placeholder="给角色起个名字">
+          <label for="name" class="float-animation">👤 名称</label>
+          <input type="text" id="name" name="name" class="input-glow" required maxlength="20" placeholder="给角色起个名字">
         </div>
         <div class="form-group">
-          <label for="description">📝 描述</label>
-          <textarea id="description" name="description" placeholder="描述一下这个角色"></textarea>
+          <label for="description" class="float-animation" style="animation-delay: 0.1s;">📝 描述</label>
+          <textarea id="description" name="description" class="input-glow" placeholder="描述一下这个角色"></textarea>
         </div>
         <div class="form-group">
-          <label for="personality">💫 性格</label>
-          <input type="text" id="personality" name="personality" placeholder="例如：勇敢、善良">
+          <label for="personality" class="float-animation" style="animation-delay: 0.2s;">💫 性格</label>
+          <input type="text" id="personality" name="personality" class="input-glow" placeholder="例如：勇敢、善良">
         </div>
         <div class="form-group">
-          <label for="speakingStyle">🗣️ 说话风格</label>
-          <input type="text" id="speakingStyle" name="speakingStyle" placeholder="例如：亲切友好">
+          <label for="speakingStyle" class="float-animation" style="animation-delay: 0.3s;">🗣️ 说话风格</label>
+          <input type="text" id="speakingStyle" name="speakingStyle" class="input-glow" placeholder="例如：亲切友好">
         </div>
-        <button type="submit" class="btn btn-primary" style="width: 100%;">✨ 创建</button>
+        <button type="submit" class="btn btn-primary btn-glow btn-ripple magnetic-btn" style="width: 100%;">✨ 创建</button>
       </form>
     </div>
   </div>
 
   <script src="js/utils.js"></script>
+  <script src="js/animations.js"></script>
   <script>
     var userId = getUserId();
     loadCharacters();
@@ -75,20 +83,52 @@
       var container = document.getElementById('characterList');
       try {
         var data = await fetchAPI('/characters');
-        var characters = data.characters;
-        
+        var characters = data.characters || [];
+
+        // 如果没有角色，显示空状态
+        if (characters.length === 0) {
+          container.innerHTML =
+            '<div class="card" style="grid-column: 1/-1; text-align: center; padding: 50px;">' +
+              '<div style="font-size: 4rem; margin-bottom: 20px;">🎭</div>' +
+              '<h3>还没有人仔角色</h3>' +
+              '<p style="margin: 15px 0; color: #666;">创建你的第一个角色开始冒险吧！</p>' +
+              '<button class="btn btn-primary btn-glow btn-ripple magnetic-btn" onclick="document.getElementById(\'createBtn\').click()">➕ 创建人仔</button>' +
+            '</div>';
+          return;
+        }
+
         var emojis = ['🦸', '🧙', '🧝', '🦹', '👸', '🤴', '🧛', '🧟', '🤖', '👻', '🧚', '🧜'];
         container.innerHTML = characters.map(function(char, index) {
           var emoji = emojis[index % emojis.length];
-          return '<div class="character-card" style="animation-delay: ' + (index * 0.05) + 's">' +
-            '<div class="character-avatar">' + emoji + '</div>' +
-            '<h3>' + char.name + '</h3>' +
-            '<p>' + (char.description || '神秘角色') + '</p>' +
-            '<p style="font-size:0.8rem;color:var(--lego-orange);margin-top:8px;">' + (char.creator_id === 'system' ? '⭐ 预设' : '🎨 自定义') + '</p>' +
+          var animations = ['float-animation', 'bounce-animation', 'wiggle-animation'];
+          var animClass = animations[index % animations.length];
+          var typeLabel = char.creator_id === 'system' ? '⭐ 系统预设' : '🎨 用户创建';
+          var typeColor = char.creator_id === 'system' ? 'var(--lego-green)' : 'var(--lego-orange)';
+
+          return '<div class="character-card card-3d flip-card ' + animClass + '" style="animation: cardPopIn 0.5s ease-out ' + (index * 0.05) + 's backwards;">' +
+            '<div class="flip-card-inner">' +
+              '<div class="flip-card-front" style="justify-content: center;">' +
+                '<div class="character-avatar" style="width: 90px; height: 90px; font-size: 2.8rem; margin-bottom: 12px;">' + emoji + '</div>' +
+                '<h3 style="font-size: 1.3rem; margin-bottom: 8px; color: var(--lego-blue); text-align: center;">' + char.name + '</h3>' +
+                '<p style="font-size: 0.95rem; color: #666; margin-bottom: 12px; line-height: 1.4; padding: 0 10px; text-align: center; display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden;">' + (char.description || '神秘角色') + '</p>' +
+                '<span style="display: inline-block; padding: 5px 12px; border-radius: 15px; font-size: 0.8rem; background: ' + typeColor + '; color: white; font-weight: bold;">' + typeLabel + '</span>' +
+              '</div>' +
+              '<div class="flip-card-back" style="justify-content: center;">' +
+                '<div style="font-size: 3rem; margin-bottom: 10px;">' + emoji + '</div>' +
+                '<h3 style="font-size: 1.2rem; margin-bottom: 10px; text-align: center;">' + char.name + '</h3>' +
+                '<p style="font-size: 0.9rem; opacity: 0.9; margin-bottom: 8px; padding: 0 10px; text-align: center;">' + (char.personality || '性格神秘') + '</p>' +
+                '<p style="font-size: 0.8rem; opacity: 0.8; font-style: italic; padding: 0 10px; text-align: center; display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden;">"' + (char.speaking_style || '说话风格独特') + '"</p>' +
+                '<span style="margin-top: 12px; padding: 6px 14px; background: rgba(255,255,255,0.25); border-radius: 20px; font-size: 0.85rem; border: 1px solid rgba(255,255,255,0.3);">🎭 点击使用</span>' +
+              '</div>' +
+            '</div>' +
           '</div>';
         }).join('');
       } catch (error) {
-        container.innerHTML = '<p style="text-align:center;color:#999;grid-column:1/-1;">加载失败</p>';
+        container.innerHTML = '<div class="card" style="grid-column: 1/-1; text-align: center; padding: 40px;">' +
+          '<div style="font-size: 3rem; margin-bottom: 15px;">😢</div>' +
+          '<h3>加载失败</h3>' +
+          '<p style="color: #999; margin-top: 10px;">请刷新页面重试</p>' +
+        '</div>';
       }
     }
 

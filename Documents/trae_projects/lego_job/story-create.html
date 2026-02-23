@@ -5,21 +5,28 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>创建故事 - 乐高故事书</title>
   <link rel="stylesheet" href="css/styles.css">
+  <link rel="stylesheet" href="css/animations.css">
 </head>
 <body>
   <div class="lego-brick-bg"></div>
-  
-  <div class="container">
+  <div class="particles-container">
+    <div class="particle"></div><div class="particle"></div><div class="particle"></div>
+    <div class="particle"></div><div class="particle"></div><div class="particle"></div>
+    <div class="particle"></div><div class="particle"></div><div class="particle"></div>
+    <div class="particle"></div>
+  </div>
+
+  <div class="container page-wrapper">
     <header class="header">
-      <h1>✨ 创建新故事</h1>
+      <h1 class="neon-text rainbow-text">✨ 创建新故事</h1>
       <nav class="nav">
-        <a href="bookshelf.html">📚 我的书架</a>
-        <a href="characters.html">🎭 人仔角色</a>
+        <a href="bookshelf.html" class="nav-glow">📚 我的书架</a>
+        <a href="characters.html" class="nav-glow">🎭 人仔角色</a>
       </nav>
     </header>
 
     <main>
-      <div class="card" id="step0Card">
+      <div class="card card-3d neon-border scroll-fade-in" id="step0Card">
         <h2>第一步：选择书籍</h2>
         <p style="margin-bottom: 20px; color: #666;">选择一个已有书籍继续创作，或创建新书籍</p>
         
@@ -27,40 +34,40 @@
           <div class="loading"><div class="spinner"></div></div>
         </div>
         
-        <div style="text-align: center; padding: 20px; background: #FFF8E7; border-radius: 20px; border: 3px dashed var(--lego-yellow);">
-          <p style="margin-bottom: 15px; color: #666;">或者创建新书籍</p>
+        <div class="neon-border scroll-fade-in" style="text-align: center; padding: 20px; background: #FFF8E7; border-radius: 20px; border: 3px dashed var(--lego-yellow);">
+          <p class="float-animation" style="margin-bottom: 15px; color: #666;">或者创建新书籍</p>
           <div class="form-group" style="margin-bottom: 15px;">
-            <input type="text" id="newBookTitle" placeholder="输入新书籍名称" maxlength="50" style="text-align: center;">
+            <input type="text" id="newBookTitle" class="input-glow" placeholder="输入新书籍名称" maxlength="50" style="text-align: center;">
           </div>
-          <button class="btn btn-primary" onclick="createNewBook()">📖 创建新书籍</button>
+          <button class="btn btn-primary btn-glow btn-ripple magnetic-btn" onclick="createNewBook()">📖 创建新书籍</button>
         </div>
       </div>
 
-      <div class="card" id="step1Card" style="display: none;">
-        <h2>第二步：选择故事类型</h2>
-        <p style="margin-bottom: 20px; color: #666;">选择一个你喜欢的冒险类型！</p>
+      <div class="card card-3d scroll-slide-left" id="step1Card" style="display: none;">
+        <h2 class="bounce-animation">第二步：选择故事类型</h2>
+        <p class="float-animation" style="margin-bottom: 20px; color: #666;">选择一个你喜欢的冒险类型！</p>
         <div class="grid" id="plotList"></div>
       </div>
 
-      <div class="card" id="step2Card" style="display: none;">
-        <h2>第三步：选择角色</h2>
-        <p style="margin-bottom: 15px; color: #666;">选择故事中的角色，必须选择一个主角！</p>
-        
-        <div style="background: #FFF8E7; border-radius: 15px; padding: 15px; margin-bottom: 20px; border: 3px dashed var(--lego-yellow);">
-          <h3 style="color: var(--lego-blue); margin-bottom: 10px;">📋 已选角色 (<span id="selectedCount">0</span>)</h3>
+      <div class="card card-3d scroll-slide-right" id="step2Card" style="display: none;">
+        <h2 class="bounce-animation">第三步：选择角色</h2>
+        <p class="float-animation" style="margin-bottom: 15px; color: #666;">选择故事中的角色，必须选择一个主角！</p>
+
+        <div class="neon-border scroll-fade-in" style="background: #FFF8E7; border-radius: 15px; padding: 15px; margin-bottom: 20px; border: 3px dashed var(--lego-yellow);">
+          <h3 style="color: var(--lego-blue); margin-bottom: 10px;" class="pulse-scale">📋 已选角色 (<span id="selectedCount">0</span>)</h3>
           <div id="selectedCharacters" style="min-height: 50px;">
             <p style="color: #999; text-align: center;">点击下方人仔添加角色</p>
           </div>
         </div>
-        
-        <h3 style="color: var(--lego-blue); margin-bottom: 15px;">🎭 可选人仔</h3>
+
+        <h3 style="color: var(--lego-blue); margin-bottom: 15px;" class="pulse-scale">🎭 可选人仔</h3>
         <div class="grid" id="characterList"></div>
       </div>
 
-      <div class="card" id="step3Card" style="display: none;">
-        <h2>第四步：确认创建</h2>
+      <div class="card card-3d neon-border scroll-scale" id="step3Card" style="display: none;">
+        <h2 class="bounce-animation">第四步：确认创建</h2>
         <form id="storyForm">
-          <button type="submit" class="btn btn-primary" style="width: 100%; font-size: 1.2rem;">
+          <button type="submit" class="btn btn-primary btn-glow btn-ripple magnetic-btn" style="width: 100%; font-size: 1.2rem;">
             🚀 开始创作
           </button>
         </form>
@@ -242,6 +249,7 @@
   </style>
 
   <script src="js/utils.js"></script>
+  <script src="js/animations.js"></script>
   <script>
     var userId = getUserId();
     var selectedBookId = null;
@@ -378,10 +386,19 @@
     function loadPlots() {
       var container = document.getElementById('plotList');
       container.innerHTML = plots.map(function(plot, index) {
-        return '<div class="plot-card" onclick="selectPlot(\'' + plot.id + '\')" style="animation-delay: ' + (index * 0.1) + 's">' +
-          '<div class="plot-icon">' + plot.icon + '</div>' +
-          '<h3>' + plot.name + '</h3>' +
-          '<p>' + plot.desc + '</p>' +
+        return '<div class="plot-card card-3d flip-card" onclick="selectPlot(\'' + plot.id + '\')" style="animation-delay: ' + (index * 0.1) + 's">' +
+          '<div class="flip-card-inner">' +
+            '<div class="flip-card-front">' +
+              '<div class="plot-icon ' + plot.anim + '">' + plot.icon + '</div>' +
+              '<h3>' + plot.name + '</h3>' +
+              '<p>' + plot.desc + '</p>' +
+            '</div>' +
+            '<div class="flip-card-back">' +
+              '<div style="font-size: 3rem; margin-bottom: 10px;">' + plot.icon + '</div>' +
+              '<h3>' + plot.name + '</h3>' +
+              '<p>点击选择</p>' +
+            '</div>' +
+          '</div>' +
         '</div>';
       }).join('');
     }

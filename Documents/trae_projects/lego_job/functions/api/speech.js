@@ -1,8 +1,14 @@
+import { createErrorResponse, createSuccessResponse, handleCORS } from './utils.js';
+
+export async function onRequestOptions(context) {
+  return handleCORS();
+}
+
 export async function onRequestPost(context) {
   try {
     const formData = await context.request.formData();
     const audioFile = formData.get('audio');
-    
+
     if (!audioFile) {
       return createErrorResponse('没有收到音频文件', 400);
     }
@@ -45,32 +51,10 @@ function buildAudioFormData(audioFile) {
 
 async function handleApiError(response) {
   const errorData = await response.json();
-  return new Response(JSON.stringify({
-    success: false,
-    error: errorData.error?.message || '语音识别失败'
-  }), {
-    status: response.status,
-    headers: { 'Content-Type': 'application/json' }
-  });
+  return createErrorResponse(errorData.error?.message || '语音识别失败', response.status);
 }
 
 async function handleSuccess(response) {
   const data = await response.json();
-  
-  return new Response(JSON.stringify({
-    success: true,
-    text: data.text || ''
-  }), {
-    headers: { 'Content-Type': 'application/json' }
-  });
-}
-
-function createErrorResponse(message, status) {
-  return new Response(JSON.stringify({
-    success: false,
-    error: message
-  }), {
-    status: status,
-    headers: { 'Content-Type': 'application/json' }
-  });
+  return createSuccessResponse({ text: data.text || '' });
 }

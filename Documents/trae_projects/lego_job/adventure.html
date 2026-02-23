@@ -5,34 +5,41 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>冒险模式 - 乐高故事书</title>
   <link rel="stylesheet" href="css/styles.css">
+  <link rel="stylesheet" href="css/animations.css">
 </head>
 <body>
   <div class="lego-brick-bg"></div>
-  
-  <div class="container">
+  <div class="particles-container">
+    <div class="particle"></div><div class="particle"></div><div class="particle"></div>
+    <div class="particle"></div><div class="particle"></div><div class="particle"></div>
+    <div class="particle"></div><div class="particle"></div><div class="particle"></div>
+    <div class="particle"></div>
+  </div>
+
+  <div class="container page-wrapper">
     <header class="header">
-      <h1>🗺️ 冒险模式</h1>
+      <h1 class="neon-text rainbow-text">🗺️ 冒险模式</h1>
       <nav class="nav">
-        <a href="index.html">🏠 首页</a>
-        <a href="bookshelf.html">📚 我的书架</a>
+        <a href="index.html" class="nav-glow">🏠 首页</a>
+        <a href="bookshelf.html" class="nav-glow">📚 我的书架</a>
       </nav>
     </header>
 
     <main>
-      <div class="time-display">
-        <p style="font-size: 1.1rem; color: #666;">⏰ 今日阅读时间</p>
-        <div class="time" id="timeDisplay">0分钟</div>
-        <div class="progress-bar">
+      <div class="time-display neon-border scroll-fade-in">
+        <p class="float-animation" style="font-size: 1.1rem; color: #666;">⏰ 今日阅读时间</p>
+        <div class="time pulse-scale" id="timeDisplay">0分钟</div>
+        <div class="progress-bar progress-striped">
           <div class="progress-fill" style="width: 0%"></div>
         </div>
         <p style="font-size: 0.9rem; color: #999;">每日限额：120分钟</p>
       </div>
 
-      <div class="card" id="storyCard">
-        <h2 id="chapterTitle">选择一个故事开始冒险</h2>
+      <div class="card card-3d neon-border scroll-fade-in" id="storyCard">
+        <h2 id="chapterTitle" class="bounce-animation">选择一个故事开始冒险</h2>
         <div id="storyContent" style="font-size: 1.1rem; line-height: 1.8;">
           <div id="bookSelectArea">
-            <p style="text-align: center; color: #666; padding: 20px 0;">
+            <p class="float-animation" style="text-align: center; color: #666; padding: 20px 0;">
               🗺️ 选择一个故事开始你的冒险！
             </p>
             <div id="bookList" class="grid" style="grid-template-columns: repeat(auto-fill, minmax(200px, 1fr)); gap: 15px;"></div>
@@ -40,7 +47,7 @@
         </div>
       </div>
 
-      <div class="puzzle-container" id="puzzleContainer" style="display: none;">
+      <div class="puzzle-container neon-border" id="puzzleContainer" style="display: none;">
         <div class="puzzle-header">
           <div class="puzzle-question" id="puzzleQuestion"></div>
           <div class="attempts-display" id="attemptsDisplay">
@@ -64,6 +71,7 @@
   </div>
 
   <script src="js/utils.js"></script>
+  <script src="js/animations.js"></script>
   <script>
     var userId = getUserId();
     var currentChapter = null;

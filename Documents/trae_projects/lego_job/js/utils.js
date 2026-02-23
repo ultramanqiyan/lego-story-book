@@ -7,7 +7,7 @@ async function fetchAPI(endpoint, options) {
       'Content-Type': 'application/json'
     }
   };
-  
+
   const mergedOptions = {
     ...defaultOptions,
     ...options,
@@ -16,22 +16,38 @@ async function fetchAPI(endpoint, options) {
       ...options.headers
     }
   };
-  
+
   if (mergedOptions.body && typeof mergedOptions.body === 'object') {
     mergedOptions.body = JSON.stringify(mergedOptions.body);
   }
-  
+
   try {
-    const response = await fetch(`${API_BASE}${endpoint}`, mergedOptions);
-    const data = await response.json();
-    
-    if (!response.ok) {
-      throw new Error(data.error || '请求失败');
+    const url = `${API_BASE}${endpoint}`;
+    console.log('API Request:', url, mergedOptions.method || 'GET');
+
+    const response = await fetch(url, mergedOptions);
+    console.log('API Response status:', response.status);
+
+    let data;
+    const contentType = response.headers.get('content-type');
+    if (contentType && contentType.includes('application/json')) {
+      data = await response.json();
+    } else {
+      const text = await response.text();
+      console.error('Non-JSON response:', text);
+      throw new Error('服务器返回格式错误');
     }
-    
+
+    if (!response.ok) {
+      throw new Error(data.error || data.message || '请求失败');
+    }
+
     return data;
   } catch (error) {
     console.error('API Error:', error);
+    if (error.message === 'Failed to fetch') {
+      throw new Error('网络连接失败，请检查网络');
+    }
     throw error;
   }
 }

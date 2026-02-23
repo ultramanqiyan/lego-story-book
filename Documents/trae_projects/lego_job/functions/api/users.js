@@ -1,4 +1,9 @@
-import { generateId, createErrorResponse, createSuccessResponse } from './utils.js';
+import { generateId, createErrorResponse, createSuccessResponse, handleCORS } from './utils.js';
+
+// 处理 CORS 预检请求
+export async function onRequestOptions(context) {
+  return handleCORS();
+}
 
 function getUser(DB, userId) {
   return DB.prepare('SELECT * FROM users WHERE user_id = ?').bind(userId).first();
@@ -24,28 +29,36 @@ export async function onRequestGet(context) {
 export async function onRequestPost(context) {
   try {
     const { DB } = context.env;
-    const { username, email, parentId } = await context.request.json();
-    
+    const body = await context.request.json();
+    const { username, email, parentId } = body;
+
+    console.log('Creating user:', { username, email, parentId });
+
     if (!username || username.trim() === '') {
       return createErrorResponse('用户名不能为空', 400);
     }
-    
+
     if (username.length > 20) {
       return createErrorResponse('用户名不能超过20个字符', 400);
     }
-    
+
     const userId = generateId();
     const now = new Date().toISOString();
-    
-    await DB.prepare(
-      `INSERT INTO users 
+
+    console.log('Generated userId:', userId);
+
+    const result = await DB.prepare(
+      `INSERT INTO users
         (user_id, username, email, parent_id, daily_time_limit, time_used_today, created_at, updated_at)
        VALUES (?, ?, ?, ?, 120, 0, ?, ?)`
     ).bind(userId, username.trim(), email || null, parentId || null, now, now).run();
-    
+
+    console.log('Insert result:', result);
+
     return createSuccessResponse({ userId, message: '用户创建成功' });
   } catch (error) {
-    return createErrorResponse('创建用户失败', 500);
+    console.error('Create user error:', error);
+    return createErrorResponse('创建用户失败: ' + error.message, 500);
   }
 }
 

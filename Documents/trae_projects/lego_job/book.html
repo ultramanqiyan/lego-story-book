@@ -5,41 +5,48 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>故事详情 - 乐高故事书</title>
   <link rel="stylesheet" href="css/styles.css">
+  <link rel="stylesheet" href="css/animations.css">
 </head>
 <body>
   <div class="lego-brick-bg"></div>
-  
-  <div class="container">
+  <div class="particles-container">
+    <div class="particle"></div><div class="particle"></div><div class="particle"></div>
+    <div class="particle"></div><div class="particle"></div><div class="particle"></div>
+    <div class="particle"></div><div class="particle"></div><div class="particle"></div>
+    <div class="particle"></div>
+  </div>
+
+  <div class="container page-wrapper">
     <header class="header">
-      <h1 id="bookTitle">📖 故事详情</h1>
+      <h1 id="bookTitle" class="neon-text rainbow-text">📖 故事详情</h1>
       <nav class="nav">
-        <a href="bookshelf.html">📚 我的书架</a>
-        <a href="share.html" id="shareBtn">📤 分享故事</a>
+        <a href="bookshelf.html" class="nav-glow">📚 我的书架</a>
+        <a href="share.html" id="shareBtn" class="nav-glow">📤 分享故事</a>
       </nav>
     </header>
 
     <main>
-      <div class="card">
+      <div class="card card-3d neon-border scroll-fade-in">
         <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px;">
-          <h2>🎭 故事角色</h2>
-          <button class="btn btn-primary" id="addCharacterBtn">➕ 添加角色</button>
+          <h2 class="pulse-scale">🎭 故事角色</h2>
+          <button class="btn btn-primary btn-glow btn-ripple magnetic-btn" id="addCharacterBtn">➕ 添加角色</button>
         </div>
         <div class="grid" id="characterList"></div>
       </div>
 
-      <div class="card" id="addCharacterCard" style="display: none;">
-        <h2>➕ 添加新角色</h2>
+      <div class="card card-3d neon-border scroll-slide-left" id="addCharacterCard" style="display: none;">
+        <h2 class="bounce-animation">➕ 添加新角色</h2>
         <div class="form-group">
-          <label>选择人仔</label>
-          <select id="characterSelect" class="form-control"></select>
+          <label class="float-animation">选择人仔</label>
+          <select id="characterSelect" class="form-control input-glow"></select>
         </div>
         <div class="form-group">
-          <label>自定义名称</label>
-          <input type="text" id="customName" class="form-control" placeholder="为角色取个名字" maxlength="20">
+          <label class="float-animation" style="animation-delay: 0.1s;">自定义名称</label>
+          <input type="text" id="customName" class="form-control input-glow" placeholder="为角色取个名字" maxlength="20">
         </div>
         <div class="form-group">
-          <label>角色类型</label>
-          <select id="roleTypeSelect" class="form-control">
+          <label class="float-animation" style="animation-delay: 0.2s;">角色类型</label>
+          <select id="roleTypeSelect" class="form-control input-glow">
             <option value="protagonist">⭐ 主角</option>
             <option value="supporting">🎭 配角</option>
             <option value="antagonist">👿 反派</option>
@@ -47,23 +54,23 @@
           </select>
         </div>
         <div style="display: flex; gap: 10px;">
-          <button class="btn btn-primary" id="saveCharacterBtn">✅ 保存</button>
-          <button class="btn btn-secondary" id="cancelAddBtn">❌ 取消</button>
+          <button class="btn btn-primary btn-glow btn-ripple" id="saveCharacterBtn">✅ 保存</button>
+          <button class="btn btn-secondary btn-shake" id="cancelAddBtn">❌ 取消</button>
         </div>
       </div>
 
-      <div class="card">
-        <h2>📚 章节列表</h2>
+      <div class="card card-3d scroll-slide-right">
+        <h2 class="pulse-scale">📚 章节列表</h2>
         <ul class="chapter-list" id="chapterList"></ul>
-        <button class="btn btn-secondary" id="addChapterBtn" style="margin-top: 20px;">➕ 添加章节</button>
+        <button class="btn btn-secondary btn-glow btn-ripple magnetic-btn" id="addChapterBtn" style="margin-top: 20px;">➕ 添加章节</button>
       </div>
 
-      <div class="card" id="chapterContentCard" style="display: none;">
-        <h2>📖 章节内容</h2>
+      <div class="card card-3d neon-border scroll-scale" id="chapterContentCard" style="display: none;">
+        <h2 class="bounce-animation">📖 章节内容</h2>
         <div id="chapterContentDisplay" style="font-size: 1.1rem; line-height: 1.8; padding: 15px;"></div>
       </div>
 
-      <div class="card" id="promptCard" style="display: none;">
+      <div class="card card-3d scroll-fade-in" id="promptCard" style="display: none;">
         <div style="display: flex; justify-content: space-between; align-items: center; cursor: pointer;" id="promptHeader">
           <h2>📝 生成提示词</h2>
           <span id="promptToggle">▼ 点击展开</span>
@@ -197,6 +204,7 @@
   </style>
 
   <script src="js/utils.js"></script>
+  <script src="js/animations.js"></script>
   <script>
     var userId = requireAuth();
     var bookId = getQueryParam('id');
