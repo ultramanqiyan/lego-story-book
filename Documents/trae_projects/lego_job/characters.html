@@ -6,6 +6,55 @@
   <title>人仔角色 - 乐高故事书</title>
   <link rel="stylesheet" href="css/styles.css">
   <link rel="stylesheet" href="css/animations.css">
+  <style>
+    .section-divider {
+      margin: 40px 0 20px 0;
+      padding: 15px 20px;
+      background: linear-gradient(135deg, rgba(0,100,200,0.1), rgba(255,200,0,0.1));
+      border-radius: 15px;
+      border-left: 5px solid var(--lego-blue);
+    }
+    .section-divider h2 {
+      margin: 0;
+      display: flex;
+      align-items: center;
+      gap: 10px;
+    }
+    .section-divider.user-section {
+      border-left-color: var(--lego-orange);
+      background: linear-gradient(135deg, rgba(255,150,0,0.1), rgba(255,100,0,0.05));
+    }
+    .character-actions {
+      display: flex;
+      gap: 8px;
+      margin-top: 12px;
+      justify-content: center;
+    }
+    .btn-small {
+      padding: 6px 12px;
+      font-size: 0.8rem;
+      border-radius: 15px;
+    }
+    .btn-edit {
+      background: var(--lego-blue);
+      color: white;
+    }
+    .btn-delete {
+      background: #e74c3c;
+      color: white;
+    }
+    .btn-edit:hover { background: #2980b9; }
+    .btn-delete:hover { background: #c0392b; }
+    .flip-card-back {
+      padding: 15px;
+    }
+    .empty-section {
+      text-align: center;
+      padding: 30px;
+      color: #999;
+      font-style: italic;
+    }
+  </style>
 </head>
 <body>
   <div class="lego-brick-bg"></div>
@@ -28,15 +77,26 @@
 
     <main>
       <div class="scroll-fade-in" style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 30px; flex-wrap: wrap; gap: 15px;">
-        <h2 style="color: var(--lego-blue);" class="pulse-scale">🧱 预设人仔</h2>
+        <h2 style="color: var(--lego-blue);" class="pulse-scale">🧱 角色管理</h2>
         <button class="btn btn-secondary btn-glow btn-ripple magnetic-btn" id="createBtn">➕ 创建人仔</button>
       </div>
 
-      <div class="grid" id="characterList">
-        <div class="loading">
-          <div class="spinner-new"></div>
-          <p style="margin-top: 15px; color: #666;">加载中...</p>
-        </div>
+      <!-- 预设人仔区域 -->
+      <div class="section-divider">
+        <h2 style="color: var(--lego-green);">⭐ 预设人仔</h2>
+        <p style="margin: 5px 0 0 0; color: #666; font-size: 0.9rem;">系统提供的经典角色，可在故事中直接使用</p>
+      </div>
+      <div class="grid" id="presetList">
+        <div class="loading"><div class="spinner-new"></div></div>
+      </div>
+
+      <!-- 用户创建人仔区域 -->
+      <div class="section-divider user-section">
+        <h2 style="color: var(--lego-orange);">🎨 我的人仔</h2>
+        <p style="margin: 5px 0 0 0; color: #666; font-size: 0.9rem;">你创建的专属角色，可以修改或删除</p>
+      </div>
+      <div class="grid" id="userList">
+        <div class="loading"><div class="spinner-new"></div></div>
       </div>
     </main>
 
@@ -45,6 +105,7 @@
     </footer>
   </div>
 
+  <!-- 创建人仔弹窗 -->
   <div class="modal" id="createModal">
     <div class="modal-content card-3d neon-border">
       <div class="modal-header">
@@ -73,95 +134,208 @@
     </div>
   </div>
 
+  <!-- 编辑人仔弹窗 -->
+  <div class="modal" id="editModal">
+    <div class="modal-content card-3d neon-border">
+      <div class="modal-header">
+        <h3 class="bounce-animation">✏️ 编辑人仔</h3>
+        <button class="modal-close btn-shake" onclick="document.getElementById('editModal').classList.remove('active')">&times;</button>
+      </div>
+      <form id="editForm">
+        <input type="hidden" id="editCharacterId">
+        <div class="form-group">
+          <label for="editName" class="float-animation">👤 名称</label>
+          <input type="text" id="editName" name="name" class="input-glow" required maxlength="20">
+        </div>
+        <div class="form-group">
+          <label for="editDescription" class="float-animation" style="animation-delay: 0.1s;">📝 描述</label>
+          <textarea id="editDescription" name="description" class="input-glow"></textarea>
+        </div>
+        <div class="form-group">
+          <label for="editPersonality" class="float-animation" style="animation-delay: 0.2s;">💫 性格</label>
+          <input type="text" id="editPersonality" name="personality" class="input-glow">
+        </div>
+        <div class="form-group">
+          <label for="editSpeakingStyle" class="float-animation" style="animation-delay: 0.3s;">🗣️ 说话风格</label>
+          <input type="text" id="editSpeakingStyle" name="speakingStyle" class="input-glow">
+        </div>
+        <button type="submit" class="btn btn-primary btn-glow btn-ripple magnetic-btn" style="width: 100%;">💾 保存修改</button>
+      </form>
+    </div>
+  </div>
+
+  <!-- 确认删除弹窗 -->
+  <div class="modal" id="deleteModal">
+    <div class="modal-content card-3d neon-border" style="max-width: 400px;">
+      <div class="modal-header">
+        <h3 class="bounce-animation" style="color: #e74c3c;">🗑️ 确认删除</h3>
+        <button class="modal-close btn-shake" onclick="document.getElementById('deleteModal').classList.remove('active')">&times;</button>
+      </div>
+      <div style="padding: 20px; text-align: center;">
+        <p id="deleteMessage" style="margin-bottom: 20px; font-size: 1.1rem;">确定要删除这个人仔吗？</p>
+        <div style="display: flex; gap: 15px; justify-content: center;">
+          <button class="btn btn-secondary" onclick="document.getElementById('deleteModal').classList.remove('active')">取消</button>
+          <button class="btn btn-delete" id="confirmDeleteBtn">确认删除</button>
+        </div>
+      </div>
+    </div>
+  </div>
+
   <script src="js/utils.js"></script>
   <script src="js/animations.js"></script>
   <script>
     var userId = getUserId();
+    var allCharacters = [];
+    var deleteTargetId = null;
+
     loadCharacters();
 
     async function loadCharacters() {
-      var container = document.getElementById('characterList');
+      var presetContainer = document.getElementById('presetList');
+      var userContainer = document.getElementById('userList');
+      
       try {
         var data = await fetchAPI('/characters');
-        var characters = data.characters || [];
+        allCharacters = data.characters || [];
 
-        // 如果没有角色，显示空状态
-        if (characters.length === 0) {
-          container.innerHTML =
-            '<div class="card" style="grid-column: 1/-1; text-align: center; padding: 50px;">' +
-              '<div style="font-size: 4rem; margin-bottom: 20px;">🎭</div>' +
-              '<h3>还没有人仔角色</h3>' +
-              '<p style="margin: 15px 0; color: #666;">创建你的第一个角色开始冒险吧！</p>' +
-              '<button class="btn btn-primary btn-glow btn-ripple magnetic-btn" onclick="document.getElementById(\'createBtn\').click()">➕ 创建人仔</button>' +
-            '</div>';
-          return;
-        }
+        var presetChars = allCharacters.filter(function(c) { return c.creator_id === 'system'; });
+        var userChars = allCharacters.filter(function(c) { return c.creator_id !== 'system'; });
 
-        var emojis = ['🦸', '🧙', '🧝', '🦹', '👸', '🤴', '🧛', '🧟', '🤖', '👻', '🧚', '🧜'];
-        container.innerHTML = characters.map(function(char, index) {
-          var emoji = emojis[index % emojis.length];
-          var animations = ['float-animation', 'bounce-animation', 'wiggle-animation'];
-          var animClass = animations[index % animations.length];
-          var typeLabel = char.creator_id === 'system' ? '⭐ 系统预设' : '🎨 用户创建';
-          var typeColor = char.creator_id === 'system' ? 'var(--lego-green)' : 'var(--lego-orange)';
+        renderCharacterList(presetContainer, presetChars, true);
+        renderCharacterList(userContainer, userChars, false);
 
-          return '<div class="character-card card-3d flip-card ' + animClass + '" style="animation: cardPopIn 0.5s ease-out ' + (index * 0.05) + 's backwards;">' +
-            '<div class="flip-card-inner">' +
-              '<div class="flip-card-front" style="justify-content: center;">' +
-                '<div class="character-avatar" style="width: 90px; height: 90px; font-size: 2.8rem; margin-bottom: 12px;">' + emoji + '</div>' +
-                '<h3 style="font-size: 1.3rem; margin-bottom: 8px; color: var(--lego-blue); text-align: center;">' + char.name + '</h3>' +
-                '<p style="font-size: 0.95rem; color: #666; margin-bottom: 12px; line-height: 1.4; padding: 0 10px; text-align: center; display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden;">' + (char.description || '神秘角色') + '</p>' +
-                '<span style="display: inline-block; padding: 5px 12px; border-radius: 15px; font-size: 0.8rem; background: ' + typeColor + '; color: white; font-weight: bold;">' + typeLabel + '</span>' +
-              '</div>' +
-              '<div class="flip-card-back" style="justify-content: center;">' +
-                '<div style="font-size: 3rem; margin-bottom: 10px;">' + emoji + '</div>' +
-                '<h3 style="font-size: 1.2rem; margin-bottom: 10px; text-align: center;">' + char.name + '</h3>' +
-                '<p style="font-size: 0.9rem; opacity: 0.9; margin-bottom: 8px; padding: 0 10px; text-align: center;">' + (char.personality || '性格神秘') + '</p>' +
-                '<p style="font-size: 0.8rem; opacity: 0.8; font-style: italic; padding: 0 10px; text-align: center; display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden;">"' + (char.speaking_style || '说话风格独特') + '"</p>' +
-                '<span style="margin-top: 12px; padding: 6px 14px; background: rgba(255,255,255,0.25); border-radius: 20px; font-size: 0.85rem; border: 1px solid rgba(255,255,255,0.3);">🎭 点击使用</span>' +
-              '</div>' +
-            '</div>' +
-          '</div>';
-        }).join('');
       } catch (error) {
-        container.innerHTML = '<div class="card" style="grid-column: 1/-1; text-align: center; padding: 40px;">' +
-          '<div style="font-size: 3rem; margin-bottom: 15px;">😢</div>' +
-          '<h3>加载失败</h3>' +
-          '<p style="color: #999; margin-top: 10px;">请刷新页面重试</p>' +
-        '</div>';
+        presetContainer.innerHTML = '<div class="empty-section">加载失败，请刷新重试</div>';
+        userContainer.innerHTML = '';
       }
     }
 
+    function renderCharacterList(container, characters, isPreset) {
+      if (characters.length === 0) {
+        if (isPreset) {
+          container.innerHTML = '<div class="empty-section">暂无预设人仔</div>';
+        } else {
+          container.innerHTML = '<div class="card" style="grid-column: 1/-1; text-align: center; padding: 30px;">' +
+            '<div style="font-size: 3rem; margin-bottom: 15px;">🎨</div>' +
+            '<h3>还没有创建人仔</h3>' +
+            '<p style="margin: 10px 0; color: #666;">点击上方"创建人仔"按钮开始吧！</p>' +
+          '</div>';
+        }
+        return;
+      }
+
+      var emojis = ['🦸', '🧙', '🧝', '🦹', '👸', '🤴', '🧛', '🧟', '🤖', '👻', '🧚', '🧜'];
+      
+      container.innerHTML = characters.map(function(char, index) {
+        var emoji = emojis[index % emojis.length];
+        var animations = ['float-animation', 'bounce-animation', 'wiggle-animation'];
+        var animClass = animations[index % animations.length];
+
+        var actionButtons = '';
+        if (!isPreset) {
+          actionButtons = '<div class="character-actions">' +
+            '<button class="btn btn-small btn-edit btn-ripple" onclick="openEditModal(\'' + char.character_id + '\')">✏️ 编辑</button>' +
+            '<button class="btn btn-small btn-delete btn-ripple" onclick="confirmDelete(\'' + char.character_id + '\', \'' + char.name + '\')">🗑️ 删除</button>' +
+          '</div>';
+        }
+
+        return '<div class="character-card card-3d flip-card ' + animClass + '" style="animation: cardPopIn 0.5s ease-out ' + (index * 0.05) + 's backwards;">' +
+          '<div class="flip-card-inner">' +
+            '<div class="flip-card-front" style="justify-content: center;">' +
+              '<div class="character-avatar" style="width: 90px; height: 90px; font-size: 2.8rem; margin-bottom: 12px;">' + emoji + '</div>' +
+              '<h3 style="font-size: 1.3rem; margin-bottom: 8px; color: var(--lego-blue); text-align: center;">' + char.name + '</h3>' +
+              '<p style="font-size: 0.95rem; color: #666; margin-bottom: 12px; line-height: 1.4; padding: 0 10px; text-align: center; display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden;">' + (char.description || '神秘角色') + '</p>' +
+              actionButtons +
+            '</div>' +
+            '<div class="flip-card-back" style="justify-content: center;">' +
+              '<div style="font-size: 3rem; margin-bottom: 10px;">' + emoji + '</div>' +
+              '<h3 style="font-size: 1.2rem; margin-bottom: 10px; text-align: center;">' + char.name + '</h3>' +
+              '<p style="font-size: 0.9rem; opacity: 0.9; margin-bottom: 8px; padding: 0 10px; text-align: center;"><strong>性格：</strong>' + (char.personality || '神秘') + '</p>' +
+              '<p style="font-size: 0.8rem; opacity: 0.8; font-style: italic; padding: 0 10px; text-align: center;">"' + (char.speaking_style || '独特风格') + '"</p>' +
+              (isPreset ? '<span style="margin-top: 12px; padding: 6px 14px; background: var(--lego-green); border-radius: 20px; font-size: 0.85rem; color: white;">⭐ 系统预设</span>' : '') +
+            '</div>' +
+          '</div>' +
+        '</div>';
+      }).join('');
+    }
+
+    function openEditModal(characterId) {
+      var char = allCharacters.find(function(c) { return c.character_id === characterId; });
+      if (!char) return;
+
+      document.getElementById('editCharacterId').value = char.character_id;
+      document.getElementById('editName').value = char.name || '';
+      document.getElementById('editDescription').value = char.description || '';
+      document.getElementById('editPersonality').value = char.personality || '';
+      document.getElementById('editSpeakingStyle').value = char.speaking_style || '';
+      
+      document.getElementById('editModal').classList.add('active');
+    }
+
+    async function confirmDelete(characterId, name) {
+      deleteTargetId = characterId;
+      
+      try {
+        var data = await fetchAPI('/characters?id=' + characterId, { method: 'DELETE' });
+        
+        if (data.needsConfirm) {
+          document.getElementById('deleteMessage').textContent = 
+            '该人仔已在 ' + data.usageCount + ' 个故事中使用，删除后角色将显示为默认形象。确定要删除"' + name + '"吗？';
+          document.getElementById('confirmDeleteBtn').onclick = function() { executeDelete(true); };
+        } else {
+          document.getElementById('deleteMessage').textContent = '确定要删除"' + name + '"吗？此操作不可撤销。';
+          document.getElementById('confirmDeleteBtn').onclick = function() { executeDelete(false); };
+        }
+        
+        document.getElementById('deleteModal').classList.add('active');
+      } catch (error) {
+        showToast('删除失败：' + error.message, 'error');
+      }
+    }
+
+    async function executeDelete(force) {
+      if (!deleteTargetId) return;
+      
+      try {
+        var url = '/characters?id=' + deleteTargetId;
+        if (force) url += '&force=true';
+        
+        await fetchAPI(url, { method: 'DELETE' });
+        
+        showToast('人仔已删除！🗑️', 'success');
+        document.getElementById('deleteModal').classList.remove('active');
+        deleteTargetId = null;
+        loadCharacters();
+      } catch (error) {
+        showToast('删除失败：' + error.message, 'error');
+      }
+    }
+
+    // 创建人仔
     document.getElementById('createBtn').addEventListener('click', function() {
+      document.getElementById('createForm').reset();
       document.getElementById('createModal').classList.add('active');
     });
 
-    document.querySelector('.modal-close').addEventListener('click', function() {
+    document.querySelector('#createModal .modal-close').addEventListener('click', function() {
       document.getElementById('createModal').classList.remove('active');
     });
 
     document.getElementById('createModal').addEventListener('click', function(e) {
-      if (e.target === this) {
-        this.classList.remove('active');
-      }
+      if (e.target === this) this.classList.remove('active');
     });
 
     document.getElementById('createForm').addEventListener('submit', async function(e) {
       e.preventDefault();
       
-      var name = document.getElementById('name').value.trim();
-      var description = document.getElementById('description').value.trim();
-      var personality = document.getElementById('personality').value.trim();
-      var speakingStyle = document.getElementById('speakingStyle').value.trim();
-      
       try {
         await fetchAPI('/characters', {
           method: 'POST',
           body: {
-            name: name,
-            description: description,
-            personality: personality,
-            speakingStyle: speakingStyle,
+            name: document.getElementById('name').value.trim(),
+            description: document.getElementById('description').value.trim(),
+            personality: document.getElementById('personality').value.trim(),
+            speakingStyle: document.getElementById('speakingStyle').value.trim(),
             creatorId: userId || 'user'
           }
         });
@@ -172,6 +346,41 @@
       } catch (error) {
         showToast('创建失败：' + error.message, 'error');
       }
+    });
+
+    // 编辑人仔
+    document.getElementById('editModal').addEventListener('click', function(e) {
+      if (e.target === this) this.classList.remove('active');
+    });
+
+    document.getElementById('editForm').addEventListener('submit', async function(e) {
+      e.preventDefault();
+      
+      var characterId = document.getElementById('editCharacterId').value;
+      
+      try {
+        await fetchAPI('/characters', {
+          method: 'PUT',
+          body: {
+            characterId: characterId,
+            name: document.getElementById('editName').value.trim(),
+            description: document.getElementById('editDescription').value.trim(),
+            personality: document.getElementById('editPersonality').value.trim(),
+            speakingStyle: document.getElementById('editSpeakingStyle').value.trim()
+          }
+        });
+        
+        showToast('人仔更新成功！✨', 'success');
+        document.getElementById('editModal').classList.remove('active');
+        loadCharacters();
+      } catch (error) {
+        showToast('更新失败：' + error.message, 'error');
+      }
+    });
+
+    // 删除弹窗关闭
+    document.getElementById('deleteModal').addEventListener('click', function(e) {
+      if (e.target === this) this.classList.remove('active');
     });
   </script>
 </body>
