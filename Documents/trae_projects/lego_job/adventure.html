@@ -1,0 +1,389 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>冒险模式 - 乐高故事书</title>
+  <link rel="stylesheet" href="css/styles.css">
+</head>
+<body>
+  <div class="lego-brick-bg"></div>
+  
+  <div class="container">
+    <header class="header">
+      <h1>🗺️ 冒险模式</h1>
+      <nav class="nav">
+        <a href="index.html">🏠 首页</a>
+        <a href="bookshelf.html">📚 我的书架</a>
+      </nav>
+    </header>
+
+    <main>
+      <div class="time-display">
+        <p style="font-size: 1.1rem; color: #666;">⏰ 今日阅读时间</p>
+        <div class="time" id="timeDisplay">0分钟</div>
+        <div class="progress-bar">
+          <div class="progress-fill" style="width: 0%"></div>
+        </div>
+        <p style="font-size: 0.9rem; color: #999;">每日限额：120分钟</p>
+      </div>
+
+      <div class="card" id="storyCard">
+        <h2 id="chapterTitle">选择一个故事开始冒险</h2>
+        <div id="storyContent" style="font-size: 1.1rem; line-height: 1.8;">
+          <div id="bookSelectArea">
+            <p style="text-align: center; color: #666; padding: 20px 0;">
+              🗺️ 选择一个故事开始你的冒险！
+            </p>
+            <div id="bookList" class="grid" style="grid-template-columns: repeat(auto-fill, minmax(200px, 1fr)); gap: 15px;"></div>
+          </div>
+        </div>
+      </div>
+
+      <div class="puzzle-container" id="puzzleContainer" style="display: none;">
+        <div class="puzzle-header">
+          <div class="puzzle-question" id="puzzleQuestion"></div>
+          <div class="attempts-display" id="attemptsDisplay">
+            <span class="attempt-dot active"></span>
+            <span class="attempt-dot active"></span>
+            <span class="attempt-dot active"></span>
+          </div>
+        </div>
+        <div class="puzzle-options" id="puzzleOptions"></div>
+        <div class="hint-box" id="hintBox" style="display: none;">
+          <div class="hint-icon">💡</div>
+          <div class="hint-text" id="hintText"></div>
+        </div>
+        <div class="puzzle-result" id="puzzleResult" style="display: none;"></div>
+      </div>
+    </main>
+
+    <footer class="footer">
+      <p>乐高故事书 &copy; 2024 - 让想象力飞翔</p>
+    </footer>
+  </div>
+
+  <script src="js/utils.js"></script>
+  <script>
+    var userId = getUserId();
+    var currentChapter = null;
+    var currentPuzzle = null;
+    var currentAttempts = 0;
+    var maxAttempts = 3;
+    var puzzleSolved = false;
+
+    if (userId) {
+      loadTimeUsage();
+    }
+
+    async function loadTimeUsage() {
+      try {
+        var data = await fetchAPI('/users?userId=' + userId);
+        var used = data.user.time_used_today || 0;
+        var limit = data.user.daily_time_limit || 120;
+        
+        document.getElementById('timeDisplay').textContent = formatTime(used);
+        updateProgress(used, limit);
+      } catch (error) {
+        console.error('Failed to load time:', error);
+      }
+    }
+
+    async function loadChapter(chapterId) {
+      if (!userId) {
+        showToast('请先登录', 'error');
+        return;
+      }
+      
+      try {
+        var data = await fetchAPI('/chapters?id=' + chapterId);
+        currentChapter = data.chapter;
+        
+        document.getElementById('chapterTitle').textContent = 
+          '📖 第' + currentChapter.chapter_number + '章：' + currentChapter.title;
+        
+        var content = currentChapter.content;
+        if (currentChapter.book_id) {
+          var bookData = await fetchAPI('/books?bookId=' + currentChapter.book_id);
+          var characters = bookData.characters || [];
+          content = highlightKeywords(content, characters);
+        }
+        
+        document.getElementById('storyContent').innerHTML = 
+          '<p style="line-height: 2; text-align: justify;">' + content + '</p>';
+        
+        if (currentChapter.has_puzzle && data.puzzle) {
+          currentPuzzle = data.puzzle;
+          showPuzzle(currentPuzzle);
+        }
+      } catch (error) {
+        showToast('加载失败：' + error.message, 'error');
+      }
+    }
+
+    function highlightKeywords(content, characters) {
+      var keywords = [];
+      characters.forEach(function(char) {
+        if (char.custom_name) {
+          keywords.push({
+            text: char.custom_name,
+            role: char.role_type
+          });
+        }
+      });
+      
+      var actionWords = ['飞向', '跳跃', '奔跑', '战斗', '探索', '发现', '拯救', '追逐', '攀爬', '游泳', '飞翔', '旋转', '冲刺', '躲闪', '攻击', '防御', '寻找', '收集', '建造', '修复'];
+      actionWords.forEach(function(word) {
+        keywords.push({ text: word, type: 'action' });
+      });
+      
+      var emotionWords = ['开心', '快乐', '勇敢', '害怕', '兴奋', '紧张', '感动', '惊讶', '愤怒', '悲伤', '期待', '满足', '自豪', '担心', '安心', '激动', '欣慰', '坚定', '犹豫'];
+      emotionWords.forEach(function(word) {
+        keywords.push({ text: word, type: 'emotion' });
+      });
+      
+      var locationWords = ['城堡', '森林', '太空', '海底', '沙漠', '雪山', '火山', '洞穴', '城市', '村庄', '花园', '岛屿', '山脉', '河流', '星空', '云层', '迷宫', '宝藏', '遗迹', '基地'];
+      locationWords.forEach(function(word) {
+        keywords.push({ text: word, type: 'location' });
+      });
+      
+      keywords.sort(function(a, b) { return b.text.length - a.text.length; });
+      
+      keywords.forEach(function(kw) {
+        var regex = new RegExp('(' + escapeRegex(kw.text) + ')', 'g');
+        var highlightClass;
+        if (kw.role) {
+          highlightClass = 'keyword-highlight keyword-' + kw.role;
+        } else if (kw.type === 'action') {
+          highlightClass = 'keyword-highlight keyword-action';
+        } else if (kw.type === 'emotion') {
+          highlightClass = 'keyword-highlight keyword-emotion';
+        } else if (kw.type === 'location') {
+          highlightClass = 'keyword-highlight keyword-location';
+        }
+        if (highlightClass) {
+          content = content.replace(regex, '<span class="' + highlightClass + '">$1</span>');
+        }
+      });
+      
+      return content;
+    }
+
+    function escapeRegex(string) {
+      return string.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+    }
+
+    function showPuzzle(puzzle) {
+      var container = document.getElementById('puzzleContainer');
+      var options = JSON.parse(puzzle.options);
+      currentAttempts = 0;
+      puzzleSolved = false;
+      
+      document.getElementById('puzzleQuestion').textContent = puzzle.question;
+      document.getElementById('puzzleOptions').innerHTML = options.map(function(opt, i) {
+        return '<div class="puzzle-option" onclick="selectOption(' + i + ', \'' + opt.charAt(0) + '\')">' +
+          '<span style="margin-right: 10px; font-weight: bold;">' + String.fromCharCode(65 + i) + '.</span>' +
+          opt +
+        '</div>';
+      }).join('');
+      
+      updateAttemptsDisplay();
+      document.getElementById('hintBox').style.display = 'none';
+      document.getElementById('puzzleResult').style.display = 'none';
+      container.style.display = 'block';
+    }
+
+    function updateAttemptsDisplay() {
+      var dots = document.querySelectorAll('.attempt-dot');
+      dots.forEach(function(dot, index) {
+        if (index < (maxAttempts - currentAttempts)) {
+          dot.classList.add('active');
+        } else {
+          dot.classList.remove('active');
+        }
+      });
+    }
+
+    function playSound(type) {
+      var audioContext;
+      try {
+        audioContext = new (window.AudioContext || window.webkitAudioContext)();
+      } catch (e) {
+        return;
+      }
+      
+      var oscillator = audioContext.createOscillator();
+      var gainNode = audioContext.createGain();
+      
+      oscillator.connect(gainNode);
+      gainNode.connect(audioContext.destination);
+      
+      if (type === 'correct') {
+        oscillator.frequency.setValueAtTime(523.25, audioContext.currentTime);
+        oscillator.frequency.setValueAtTime(659.25, audioContext.currentTime + 0.1);
+        oscillator.frequency.setValueAtTime(783.99, audioContext.currentTime + 0.2);
+        gainNode.gain.setValueAtTime(0.3, audioContext.currentTime);
+        gainNode.gain.exponentialRampToValueAtTime(0.01, audioContext.currentTime + 0.5);
+        oscillator.start(audioContext.currentTime);
+        oscillator.stop(audioContext.currentTime + 0.5);
+      } else {
+        oscillator.frequency.setValueAtTime(200, audioContext.currentTime);
+        oscillator.frequency.setValueAtTime(150, audioContext.currentTime + 0.1);
+        gainNode.gain.setValueAtTime(0.3, audioContext.currentTime);
+        gainNode.gain.exponentialRampToValueAtTime(0.01, audioContext.currentTime + 0.3);
+        oscillator.start(audioContext.currentTime);
+        oscillator.stop(audioContext.currentTime + 0.3);
+      }
+    }
+
+    async function selectOption(index, answer) {
+      if (!currentPuzzle || !userId || puzzleSolved) return;
+      
+      if (currentAttempts >= maxAttempts) {
+        showToast('⚠️ 已用完所有机会！', 'error');
+        return;
+      }
+      
+      var options = document.querySelectorAll('.puzzle-option');
+      options.forEach(function(opt) {
+        opt.classList.remove('selected');
+      });
+      options[index].classList.add('selected');
+      
+      try {
+        var data = await fetchAPI('/puzzle', {
+          method: 'POST',
+          body: {
+            puzzleId: currentPuzzle.puzzle_id,
+            userId: userId,
+            userAnswer: answer
+          }
+        });
+        
+        currentAttempts = data.attempts;
+        updateAttemptsDisplay();
+        
+        if (data.isCorrect) {
+          puzzleSolved = true;
+          options[index].classList.add('correct');
+          playSound('correct');
+          showPuzzleResult(true);
+          showToast('🎉 回答正确！', 'success');
+        } else {
+          options[index].classList.add('wrong');
+          playSound('wrong');
+          
+          if (currentAttempts >= maxAttempts) {
+            showGentlePunishment();
+          } else {
+            showToast('❌ 答案错误，还有 ' + (maxAttempts - currentAttempts) + ' 次机会！', 'error');
+          }
+          
+          if (data.hint && currentAttempts >= 2 && currentAttempts < maxAttempts) {
+            showHint(data.hint);
+          }
+        }
+      } catch (error) {
+        showToast('提交失败：' + error.message, 'error');
+      }
+    }
+
+    function showHint(hint) {
+      var hintBox = document.getElementById('hintBox');
+      document.getElementById('hintText').textContent = hint;
+      hintBox.style.display = 'flex';
+      hintBox.style.animation = 'hintSlideIn 0.5s ease';
+    }
+
+    function showGentlePunishment() {
+      var punishments = [
+        '🚪 门没有打开，再想想办法吧...',
+        '🌟 虽然没答对，但冒险还在继续！',
+        '💪 别灰心，下次一定能行！',
+        '🎭 故事还在继续，让我们看看接下来会发生什么...'
+      ];
+      var punishment = punishments[Math.floor(Math.random() * punishments.length)];
+      
+      var resultBox = document.getElementById('puzzleResult');
+      resultBox.innerHTML = '<div class="result-punishment">' + punishment + '</div>';
+      resultBox.style.display = 'block';
+      
+      showToast('💡 ' + punishment, 'info');
+      
+      var options = document.querySelectorAll('.puzzle-option');
+      options.forEach(function(opt) {
+        opt.style.pointerEvents = 'none';
+      });
+    }
+
+    function showPuzzleResult(isCorrect, correctAnswer) {
+      var resultBox = document.getElementById('puzzleResult');
+      if (isCorrect) {
+        resultBox.innerHTML = '<div class="result-correct">🎉 恭喜你答对了！继续阅读下一章吧！</div>';
+      } else {
+        resultBox.innerHTML = '<div class="result-wrong">😢 正确答案是：<strong>' + correctAnswer + '</strong></div>';
+      }
+      resultBox.style.display = 'block';
+      
+      var options = document.querySelectorAll('.puzzle-option');
+      options.forEach(function(opt) {
+        opt.style.pointerEvents = 'none';
+      });
+    }
+
+    async function loadBookList() {
+      if (!userId) {
+        document.getElementById('bookList').innerHTML = 
+          '<p style="text-align: center; color: #999; grid-column: 1/-1;">请先<a href="login.html">登录</a></p>';
+        return;
+      }
+      
+      try {
+        var data = await fetchAPI('/books?userId=' + userId);
+        var books = data.books || [];
+        
+        if (books.length === 0) {
+          document.getElementById('bookList').innerHTML = 
+            '<p style="text-align: center; color: #999; grid-column: 1/-1;">还没有故事，<a href="story-create.html">创建新故事</a></p>';
+          return;
+        }
+        
+        document.getElementById('bookList').innerHTML = books.map(function(book) {
+          return '<div class="book-select-card" onclick="selectBook(\'' + book.book_id + '\')" style="cursor: pointer; padding: 20px; background: linear-gradient(135deg, #fff, #f0f0f0); border-radius: 15px; border: 3px solid var(--lego-yellow); transition: all 0.3s;">' +
+            '<h3 style="margin: 0 0 10px 0; color: #333;">📖 ' + book.title + '</h3>' +
+            '<p style="margin: 0; color: #666; font-size: 0.9rem;">📚 ' + book.chapter_count + '章</p>' +
+          '</div>';
+        }).join('');
+      } catch (error) {
+        document.getElementById('bookList').innerHTML = 
+          '<p style="text-align: center; color: #999; grid-column: 1/-1;">加载失败，请刷新重试</p>';
+      }
+    }
+
+    async function selectBook(bookId) {
+      try {
+        var data = await fetchAPI('/books?bookId=' + bookId);
+        var chapters = data.chapters || [];
+        
+        if (chapters.length === 0) {
+          showToast('这本书还没有章节，请先添加章节', 'info');
+          window.location.href = 'book.html?id=' + bookId;
+          return;
+        }
+        
+        var firstChapter = chapters[0];
+        window.location.href = 'adventure.html?chapterId=' + firstChapter.chapter_id;
+      } catch (error) {
+        showToast('加载失败：' + error.message, 'error');
+      }
+    }
+
+    var chapterId = getQueryParam('chapterId') || getQueryParam('chapter');
+    if (chapterId && userId) {
+      loadChapter(chapterId);
+    } else {
+      loadBookList();
+    }
+  </script>
+</body>
+</html>

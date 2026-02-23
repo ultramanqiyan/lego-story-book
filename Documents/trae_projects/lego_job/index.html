@@ -1,0 +1,133 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>乐高故事书 - 创建属于你的冒险故事</title>
+  <link rel="stylesheet" href="css/styles.css">
+</head>
+<body>
+  <div class="lego-brick-bg"></div>
+  
+  <div class="container">
+    <header class="header">
+      <h1>乐高故事书</h1>
+      <p>🚀 创建属于你的冒险故事！</p>
+      <nav class="nav">
+        <a href="bookshelf.html">📚 我的书架</a>
+        <a href="characters.html">🎭 人仔角色</a>
+        <a href="adventure.html">🗺️ 冒险模式</a>
+        <a href="parent.html">👨‍👩‍👧 家长控制</a>
+      </nav>
+    </header>
+
+    <main>
+      <section class="card">
+        <h2>欢迎来到乐高故事世界</h2>
+        <p style="font-size: 1.1rem; margin-bottom: 20px;">在这里，你可以：</p>
+        <ul style="margin: 0 0 25px 25px; line-height: 2.2; font-size: 1.1rem;">
+          <li>🎭 选择你喜欢的乐高人仔作为故事角色</li>
+          <li>📖 创建属于你自己的冒险故事</li>
+          <li>🧩 解答有趣的谜题推进剧情</li>
+          <li>📤 与朋友分享你的故事</li>
+        </ul>
+        <a href="login.html" class="btn btn-primary" style="font-size: 1.3rem; padding: 20px 50px;">
+          🎮 开始冒险
+        </a>
+      </section>
+
+      <section class="card">
+        <h2>热门人仔</h2>
+        <div class="grid" id="popularCharacters">
+          <div class="loading">
+            <div class="spinner"></div>
+            <p style="margin-top: 15px; color: #666;">加载中...</p>
+          </div>
+        </div>
+      </section>
+
+      <section class="card">
+        <h2>最近故事</h2>
+        <div class="grid" id="recentBooks">
+          <div class="loading">
+            <div class="spinner"></div>
+            <p style="margin-top: 15px; color: #666;">加载中...</p>
+          </div>
+        </div>
+      </section>
+    </main>
+
+    <footer class="footer">
+      <p>乐高故事书 &copy; 2024 - 让想象力飞翔</p>
+    </footer>
+  </div>
+
+  <script src="js/utils.js"></script>
+  <script>
+    document.addEventListener('DOMContentLoaded', async function() {
+      await loadPopularCharacters();
+      await loadRecentBooks();
+    });
+
+    async function loadPopularCharacters() {
+      var container = document.getElementById('popularCharacters');
+      try {
+        var data = await fetchAPI('/characters');
+        var characters = data.characters.slice(0, 4);
+        
+        container.innerHTML = characters.map(function(char, index) {
+          return '<div class="character-card" onclick="viewCharacter(\'' + char.character_id + '\')" style="animation-delay: ' + (index * 0.1) + 's">' +
+            '<div class="character-avatar">🧱</div>' +
+            '<h3>' + char.name + '</h3>' +
+            '<p>' + (char.description || '神秘角色') + '</p>' +
+          '</div>';
+        }).join('');
+      } catch (error) {
+        container.innerHTML = '<p style="text-align:center;color:#999;grid-column:1/-1;">加载失败，请刷新页面</p>';
+      }
+    }
+
+    async function loadRecentBooks() {
+      var container = document.getElementById('recentBooks');
+      var userId = getUserId();
+      
+      if (!userId) {
+        container.innerHTML = '<p style="text-align:center;color:#999;grid-column:1/-1;"><a href="login.html" class="btn btn-secondary">登录</a> 后查看你的故事</p>';
+        return;
+      }
+      
+      try {
+        var data = await fetchAPI('/books?userId=' + userId);
+        var books = data.books.slice(0, 4);
+        
+        if (books.length === 0) {
+          container.innerHTML = '<p style="text-align:center;color:#999;grid-column:1/-1;">还没有故事，<a href="story-create.html" class="btn btn-accent">创建第一个</a></p>';
+          return;
+        }
+        
+        container.innerHTML = books.map(function(book, index) {
+          var colors = ['lego-blue', 'lego-purple', 'lego-green', 'lego-orange'];
+          var color = colors[index % colors.length];
+          return '<div class="book-card" onclick="viewBook(\'' + book.book_id + '\')" style="animation-delay: ' + (index * 0.1) + 's">' +
+            '<div class="book-cover" style="background: linear-gradient(135deg, var(--' + color + '), var(--lego-purple));">📖</div>' +
+            '<div class="book-info">' +
+              '<h3>' + book.title + '</h3>' +
+              '<p>📚 ' + book.chapter_count + '章</p>' +
+            '</div>' +
+          '</div>';
+        }).join('');
+      } catch (error) {
+        container.innerHTML = '<p style="text-align:center;color:#999;grid-column:1/-1;">加载失败，请刷新页面</p>';
+      }
+    }
+
+    function viewCharacter(id) {
+      window.location.href = 'characters.html?id=' + id;
+    }
+
+    function viewBook(id) {
+      window.location.href = 'book.html?id=' + id;
+    }
+  </script>
+</body>
+</html>

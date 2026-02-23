@@ -1,0 +1,24 @@
+# Checklist
+
+- [x] buildStoryPrompt 函数添加前情提要参数
+- [x] buildStoryPrompt 函数添加本章角色参数
+- [x] buildStoryPrompt 函数添加本章情节参数
+- [x] buildStoryPrompt 函数添加解谜要求参数
+- [x] 谜题自动生成逻辑实现（50%概率）
+- [x] 谜题数据生成（question、options、answer、hint、type）
+- [x] API返回格式包含puzzle字段
+- [x] adventure.html 添加谜题展示区域
+- [x] adventure.html 实现4个选项按钮（A/B/C/D）
+- [x] adventure.html 实现答案验证逻辑
+- [x] adventure.html 实现提示机制（答错2次后显示）
+- [x] AI模型版本修正为doubao-1-5-pro-32k-250115
+- [x] book.html 添加提示词展示区域
+- [x] book.html 实现折叠/展开功能
+- [x] book.html 显示完整提示词内容
+- [x] 单元测试添加谜题生成测试
+- [x] 单元测试添加谜题展示测试
+- [x] 单元测试添加提示词展示测试
+- [x] 本地测试谜题生成功能
+- [x] 本地测试谜题展示和交互
+- [x] 代码覆盖率 >= 90%
+- [x] 端到端测试全部通过

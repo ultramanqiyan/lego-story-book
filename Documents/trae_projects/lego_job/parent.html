@@ -1,0 +1,121 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>家长控制 - 乐高故事书</title>
+  <link rel="stylesheet" href="css/styles.css">
+</head>
+<body>
+  <div class="lego-brick-bg"></div>
+  
+  <div class="container">
+    <header class="header">
+      <h1>👨‍👩‍👧 家长控制</h1>
+      <nav class="nav">
+        <a href="index.html">🏠 首页</a>
+        <a href="bookshelf.html">📚 我的书架</a>
+      </nav>
+    </header>
+
+    <main>
+      <div class="card">
+        <h2>⏰ 使用时间设置</h2>
+        <div class="time-display">
+          <p style="font-size: 1.1rem; color: #666;">今日已使用</p>
+          <div class="time" id="usedTime">0分钟</div>
+        </div>
+        
+        <form id="timeForm">
+          <div class="form-group">
+            <label for="dailyLimit">⏱️ 每日时间限额（分钟）</label>
+            <input type="number" id="dailyLimit" name="dailyLimit" min="30" max="480" value="120">
+          </div>
+          <button type="submit" class="btn btn-primary" style="width: 100%;">💾 保存设置</button>
+        </form>
+      </div>
+
+      <div class="card">
+        <h2>📊 阅读记录</h2>
+        <div id="readingHistory" style="text-align: center; padding: 30px; color: #999;">
+          <div style="font-size: 3rem; margin-bottom: 15px;">📖</div>
+          <p>暂无阅读记录</p>
+        </div>
+      </div>
+
+      <div class="card">
+        <h2>⚙️ 账号管理</h2>
+        <p style="margin-bottom: 20px; font-size: 1.1rem;">当前用户：<strong id="currentUser" style="color: var(--lego-blue);">-</strong></p>
+        <button class="btn btn-accent" id="logoutBtn" style="width: 100%;">🚪 退出登录</button>
+      </div>
+    </main>
+
+    <footer class="footer">
+      <p>乐高故事书 &copy; 2024 - 让想象力飞翔</p>
+    </footer>
+  </div>
+
+  <script src="js/utils.js"></script>
+  <script>
+    var userId = getUserId();
+
+    if (userId) {
+      loadUserInfo();
+    }
+
+    async function loadUserInfo() {
+      try {
+        var data = await fetchAPI('/users?userId=' + userId);
+        document.getElementById('usedTime').textContent = formatTime(data.user.time_used_today || 0);
+        document.getElementById('dailyLimit').value = data.user.daily_time_limit || 120;
+        document.getElementById('currentUser').textContent = data.user.username;
+      } catch (error) {
+        showToast('加载失败：' + error.message, 'error');
+      }
+    }
+
+    document.getElementById('timeForm').addEventListener('submit', async function(e) {
+      e.preventDefault();
+      
+      if (!userId) {
+        showToast('请先登录', 'error');
+        return;
+      }
+      
+      var limit = parseInt(document.getElementById('dailyLimit').value);
+      
+      if (limit < 30 || limit > 480) {
+        showToast('时间限额应在30-480分钟之间', 'error');
+        return;
+      }
+      
+      try {
+        await fetchAPI('/users', {
+          method: 'PUT',
+          body: {
+            userId: userId,
+            dailyTimeLimit: limit
+          }
+        });
+        showToast('设置已保存！✅', 'success');
+      } catch (error) {
+        showToast('保存失败：' + error.message, 'error');
+      }
+    });
+
+    document.getElementById('logoutBtn').addEventListener('click', function() {
+      if (!userId) {
+        showToast('您还未登录', 'error');
+        return;
+      }
+      if (confirm('确定要退出登录吗？')) {
+        clearUserId();
+        showToast('已退出登录', 'info');
+        setTimeout(function() {
+          window.location.href = 'login.html';
+        }, 1000);
+      }
+    });
+  </script>
+</body>
+</html>

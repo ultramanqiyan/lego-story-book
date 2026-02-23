@@ -1,0 +1,153 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>分享故事 - 乐高故事书</title>
+  <link rel="stylesheet" href="css/styles.css">
+  <script src="https://cdn.jsdelivr.net/npm/qrcode@1.5.3/build/qrcode.min.js"></script>
+</head>
+<body>
+  <div class="lego-brick-bg"></div>
+  
+  <div class="container">
+    <header class="header">
+      <h1>📤 分享故事</h1>
+      <nav class="nav">
+        <a href="bookshelf.html">📚 我的书架</a>
+        <a href="index.html">🏠 首页</a>
+      </nav>
+    </header>
+
+    <main>
+      <div class="card" id="shareCard">
+        <h2>🔗 创建分享链接</h2>
+        <form id="shareForm">
+          <div class="form-group">
+            <label style="display: flex; align-items: center; gap: 10px; cursor: pointer;">
+              <input type="checkbox" id="isPublic" checked style="width: 20px; height: 20px;">
+              <span>🌍 公开分享</span>
+            </label>
+          </div>
+          <div class="form-group">
+            <label for="password">🔒 访问密码（可选）</label>
+            <input type="text" id="password" name="password" placeholder="留空则无需密码" maxlength="20">
+          </div>
+          <button type="submit" class="btn btn-primary" style="width: 100%;">✨ 生成分享链接</button>
+        </form>
+      </div>
+
+      <div class="card" id="resultCard" style="display: none;">
+        <h2>🎉 分享链接已生成</h2>
+        <div style="text-align: center; margin: 20px 0;">
+          <canvas id="qrcode" style="border: 5px solid var(--lego-yellow); border-radius: 15px;"></canvas>
+        </div>
+        <div class="form-group">
+          <label>📎 分享链接</label>
+          <input type="text" id="shareLink" readonly onclick="this.select()">
+        </div>
+        <div class="form-group">
+          <label>🔢 分享码</label>
+          <input type="text" id="shareCode" readonly onclick="this.select()" style="text-align: center; font-size: 1.5rem;">
+        </div>
+        <div style="display: flex; gap: 10px;">
+          <button class="btn btn-secondary" onclick="copyLink()" style="flex: 1;">📋 复制链接</button>
+          <button class="btn btn-primary" onclick="downloadQRCode()" style="flex: 1;">📱 下载二维码</button>
+        </div>
+      </div>
+
+      <div class="card">
+        <h2>🔍 访问分享</h2>
+        <form id="accessForm">
+          <div class="form-group">
+            <label for="accessCode">🔢 输入分享码</label>
+            <input type="text" id="accessCode" name="accessCode" placeholder="输入8位分享码" maxlength="8" style="text-align: center; font-size: 1.3rem;">
+          </div>
+          <button type="submit" class="btn btn-secondary" style="width: 100%;">🚀 访问故事</button>
+        </form>
+      </div>
+    </main>
+
+    <footer class="footer">
+      <p>乐高故事书 &copy; 2024 - 让想象力飞翔</p>
+    </footer>
+  </div>
+
+  <script src="js/utils.js"></script>
+  <script>
+    var userId = requireAuth();
+    var bookId = getQueryParam('bookId');
+
+    if (!bookId) {
+      window.location.href = 'bookshelf.html';
+    }
+
+    document.getElementById('shareForm').addEventListener('submit', async function(e) {
+      e.preventDefault();
+      var isPublic = document.getElementById('isPublic').checked;
+      var password = document.getElementById('password').value.trim();
+      
+      try {
+        var data = await fetchAPI('/share', {
+          method: 'POST',
+          body: { bookId: bookId, userId: userId, isPublic: isPublic, password: password || null }
+        });
+        
+        var shareLink = window.location.origin + '/book.html?share=' + data.shareCode;
+        document.getElementById('shareLink').value = shareLink;
+        document.getElementById('shareCode').value = data.shareCode;
+        
+        generateQRCode(shareLink);
+        
+        document.getElementById('resultCard').style.display = 'block';
+        showToast('分享链接已生成！🎉', 'success');
+      } catch (error) {
+        showToast('创建失败：' + error.message, 'error');
+      }
+    });
+
+    function generateQRCode(text) {
+      var canvas = document.getElementById('qrcode');
+      QRCode.toCanvas(canvas, text, {
+        width: 200,
+        margin: 2,
+        color: {
+          dark: '#333333',
+          light: '#ffffff'
+        }
+      }, function(error) {
+        if (error) console.error(error);
+      });
+    }
+
+    function downloadQRCode() {
+      var canvas = document.getElementById('qrcode');
+      var link = document.createElement('a');
+      link.download = '乐高故事书分享二维码.png';
+      link.href = canvas.toDataURL('image/png');
+      link.click();
+      showToast('二维码已下载！📱', 'success');
+    }
+
+    document.getElementById('accessForm').addEventListener('submit', async function(e) {
+      e.preventDefault();
+      var code = document.getElementById('accessCode').value.trim();
+      if (!code) { showToast('请输入分享码', 'error'); return; }
+      
+      try {
+        var data = await fetchAPI('/share?code=' + code);
+        window.location.href = 'book.html?id=' + data.share.book_id;
+      } catch (error) {
+        showToast('分享码无效或已过期', 'error');
+      }
+    });
+
+    function copyLink() {
+      var link = document.getElementById('shareLink');
+      link.select();
+      document.execCommand('copy');
+      showToast('链接已复制！📋', 'success');
+    }
+  </script>
+</body>
+</html>

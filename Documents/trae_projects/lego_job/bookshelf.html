@@ -1,0 +1,87 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>我的书架 - 乐高故事书</title>
+  <link rel="stylesheet" href="css/styles.css">
+</head>
+<body>
+  <div class="lego-brick-bg"></div>
+  
+  <div class="container">
+    <header class="header">
+      <h1>📚 我的书架</h1>
+      <nav class="nav">
+        <a href="index.html">🏠 首页</a>
+        <a href="story-create.html">✨ 创建故事</a>
+        <a href="characters.html">🎭 人仔角色</a>
+        <a href="parent.html">👨‍👩‍👧 家长控制</a>
+      </nav>
+    </header>
+
+    <main>
+      <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 30px; flex-wrap: wrap; gap: 15px;">
+        <h2 style="color: var(--lego-blue);">📖 我的故事</h2>
+        <a href="story-create.html" class="btn btn-primary">➕ 创建新故事</a>
+      </div>
+
+      <div class="grid" id="bookList">
+        <div class="loading">
+          <div class="spinner"></div>
+          <p style="margin-top: 15px; color: #666;">加载中...</p>
+        </div>
+      </div>
+    </main>
+
+    <footer class="footer">
+      <p>乐高故事书 &copy; 2024 - 让想象力飞翔</p>
+    </footer>
+  </div>
+
+  <script src="js/utils.js"></script>
+  <script>
+    var userId = requireAuth();
+    if (userId) {
+      loadBooks();
+    }
+
+    async function loadBooks() {
+      var container = document.getElementById('bookList');
+      try {
+        var data = await fetchAPI('/books?userId=' + userId);
+        var books = data.books;
+        
+        if (books.length === 0) {
+          container.innerHTML = 
+            '<div class="card" style="grid-column: 1/-1; text-align: center; padding: 50px;">' +
+              '<div style="font-size: 4rem; margin-bottom: 20px;">📚</div>' +
+              '<h3>还没有故事</h3>' +
+              '<p style="margin: 15px 0; color: #666;">创建你的第一个冒险故事吧！</p>' +
+              '<a href="story-create.html" class="btn btn-primary">✨ 创建故事</a>' +
+            '</div>';
+          return;
+        }
+        
+        var colors = ['lego-blue', 'lego-purple', 'lego-green', 'lego-orange', 'lego-red'];
+        container.innerHTML = books.map(function(book, index) {
+          var color = colors[index % colors.length];
+          return '<div class="book-card" onclick="viewBook(\'' + book.book_id + '\')" style="animation-delay: ' + (index * 0.1) + 's">' +
+            '<div class="book-cover" style="background: linear-gradient(135deg, var(--' + color + '), var(--lego-purple));">📖</div>' +
+            '<div class="book-info">' +
+              '<h3>' + book.title + '</h3>' +
+              '<p>📚 ' + book.chapter_count + '章</p>' +
+            '</div>' +
+          '</div>';
+        }).join('');
+      } catch (error) {
+        container.innerHTML = '<p style="text-align:center;color:#999;grid-column:1/-1;">加载失败，请刷新页面</p>';
+      }
+    }
+
+    function viewBook(id) {
+      window.location.href = 'book.html?id=' + id;
+    }
+  </script>
+</body>
+</html>

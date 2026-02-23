@@ -1,0 +1,17 @@
+name = "lego-story-book"
+compatibility_date = "2024-01-01"
+pages_build_output_dir = "."
+
+[[d1_databases]]
+binding = "DB"
+database_name = "lego-story-db"
+database_id = "384f38befa8bb63e7629d36cb248d8a4"
+
+[vars]
+ENVIRONMENT = "development"
+
+[env.production]
+name = "lego-story-book"
+
+[env.production.vars]
+ENVIRONMENT = "production"

@@ -1,0 +1,138 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>人仔角色 - 乐高故事书</title>
+  <link rel="stylesheet" href="css/styles.css">
+</head>
+<body>
+  <div class="lego-brick-bg"></div>
+  
+  <div class="container">
+    <header class="header">
+      <h1>🎭 人仔角色</h1>
+      <nav class="nav">
+        <a href="index.html">🏠 首页</a>
+        <a href="bookshelf.html">📚 我的书架</a>
+        <a href="story-create.html">✨ 创建故事</a>
+      </nav>
+    </header>
+
+    <main>
+      <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 30px; flex-wrap: wrap; gap: 15px;">
+        <h2 style="color: var(--lego-blue);">🧱 预设人仔</h2>
+        <button class="btn btn-secondary" id="createBtn">➕ 创建人仔</button>
+      </div>
+
+      <div class="grid" id="characterList">
+        <div class="loading">
+          <div class="spinner"></div>
+          <p style="margin-top: 15px; color: #666;">加载中...</p>
+        </div>
+      </div>
+    </main>
+
+    <footer class="footer">
+      <p>乐高故事书 &copy; 2024 - 让想象力飞翔</p>
+    </footer>
+  </div>
+
+  <div class="modal" id="createModal">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h3>🎭 创建新人仔</h3>
+        <button class="modal-close">&times;</button>
+      </div>
+      <form id="createForm">
+        <div class="form-group">
+          <label for="name">👤 名称</label>
+          <input type="text" id="name" name="name" required maxlength="20" placeholder="给角色起个名字">
+        </div>
+        <div class="form-group">
+          <label for="description">📝 描述</label>
+          <textarea id="description" name="description" placeholder="描述一下这个角色"></textarea>
+        </div>
+        <div class="form-group">
+          <label for="personality">💫 性格</label>
+          <input type="text" id="personality" name="personality" placeholder="例如：勇敢、善良">
+        </div>
+        <div class="form-group">
+          <label for="speakingStyle">🗣️ 说话风格</label>
+          <input type="text" id="speakingStyle" name="speakingStyle" placeholder="例如：亲切友好">
+        </div>
+        <button type="submit" class="btn btn-primary" style="width: 100%;">✨ 创建</button>
+      </form>
+    </div>
+  </div>
+
+  <script src="js/utils.js"></script>
+  <script>
+    var userId = getUserId();
+    loadCharacters();
+
+    async function loadCharacters() {
+      var container = document.getElementById('characterList');
+      try {
+        var data = await fetchAPI('/characters');
+        var characters = data.characters;
+        
+        var emojis = ['🦸', '🧙', '🧝', '🦹', '👸', '🤴', '🧛', '🧟', '🤖', '👻', '🧚', '🧜'];
+        container.innerHTML = characters.map(function(char, index) {
+          var emoji = emojis[index % emojis.length];
+          return '<div class="character-card" style="animation-delay: ' + (index * 0.05) + 's">' +
+            '<div class="character-avatar">' + emoji + '</div>' +
+            '<h3>' + char.name + '</h3>' +
+            '<p>' + (char.description || '神秘角色') + '</p>' +
+            '<p style="font-size:0.8rem;color:var(--lego-orange);margin-top:8px;">' + (char.creator_id === 'system' ? '⭐ 预设' : '🎨 自定义') + '</p>' +
+          '</div>';
+        }).join('');
+      } catch (error) {
+        container.innerHTML = '<p style="text-align:center;color:#999;grid-column:1/-1;">加载失败</p>';
+      }
+    }
+
+    document.getElementById('createBtn').addEventListener('click', function() {
+      document.getElementById('createModal').classList.add('active');
+    });
+
+    document.querySelector('.modal-close').addEventListener('click', function() {
+      document.getElementById('createModal').classList.remove('active');
+    });
+
+    document.getElementById('createModal').addEventListener('click', function(e) {
+      if (e.target === this) {
+        this.classList.remove('active');
+      }
+    });
+
+    document.getElementById('createForm').addEventListener('submit', async function(e) {
+      e.preventDefault();
+      
+      var name = document.getElementById('name').value.trim();
+      var description = document.getElementById('description').value.trim();
+      var personality = document.getElementById('personality').value.trim();
+      var speakingStyle = document.getElementById('speakingStyle').value.trim();
+      
+      try {
+        await fetchAPI('/characters', {
+          method: 'POST',
+          body: {
+            name: name,
+            description: description,
+            personality: personality,
+            speakingStyle: speakingStyle,
+            creatorId: userId || 'user'
+          }
+        });
+        
+        showToast('人仔创建成功！🎉', 'success');
+        document.getElementById('createModal').classList.remove('active');
+        loadCharacters();
+      } catch (error) {
+        showToast('创建失败：' + error.message, 'error');
+      }
+    });
+  </script>
+</body>
+</html>

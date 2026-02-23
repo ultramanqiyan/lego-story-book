@@ -1,0 +1,88 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>登录 - 乐高故事书</title>
+  <link rel="stylesheet" href="css/styles.css">
+</head>
+<body>
+  <div class="lego-brick-bg"></div>
+  
+  <div class="container">
+    <header class="header">
+      <h1>乐高故事书</h1>
+      <p>🎮 登录开始你的冒险！</p>
+    </header>
+
+    <main>
+      <div class="card" style="max-width: 450px; margin: 50px auto; text-align: center;">
+        <h2 style="justify-content: center;">🎮 登录 / 注册</h2>
+        
+        <div style="margin: 30px 0; font-size: 4rem; animation: avatarFloat 3s ease-in-out infinite;">
+          🧱
+        </div>
+        
+        <form id="loginForm">
+          <div class="form-group">
+            <label for="username">👤 你的名字</label>
+            <input type="text" id="username" name="username" placeholder="输入你的冒险者名字" required maxlength="20">
+          </div>
+          
+          <div class="form-group">
+            <label for="email">📧 邮箱（可选）</label>
+            <input type="email" id="email" name="email" placeholder="输入邮箱地址">
+          </div>
+          
+          <button type="submit" class="btn btn-primary" style="width: 100%; font-size: 1.2rem; padding: 18px;">
+            🚀 开始冒险
+          </button>
+        </form>
+        
+        <p style="margin-top: 25px; color: #999; font-size: 0.95rem;">
+          💡 首次登录将自动创建账号
+        </p>
+      </div>
+    </main>
+  </div>
+
+  <script src="js/utils.js"></script>
+  <script>
+    document.getElementById('loginForm').addEventListener('submit', async function(e) {
+      e.preventDefault();
+      
+      var username = document.getElementById('username').value.trim();
+      var email = document.getElementById('email').value.trim();
+      
+      if (!username) {
+        showToast('请输入你的名字', 'error');
+        return;
+      }
+      
+      try {
+        var data = await fetchAPI('/users', {
+          method: 'POST',
+          body: {
+            username: username,
+            email: email || null
+          }
+        });
+        
+        setUserId(data.userId);
+        showToast('欢迎，' + username + '！🎉', 'success');
+        
+        setTimeout(function() {
+          window.location.href = 'bookshelf.html';
+        }, 1000);
+      } catch (error) {
+        showToast('登录失败：' + error.message, 'error');
+      }
+    });
+
+    var existingUserId = getUserId();
+    if (existingUserId) {
+      window.location.href = 'bookshelf.html';
+    }
+  </script>
+</body>
+</html>

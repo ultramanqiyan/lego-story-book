@@ -1,0 +1,38 @@
+{
+  "name": "lego-story-book",
+  "version": "1.0.0",
+  "description": "乐高故事书籍功能 - 让儿童创建、管理和阅读自己的乐高主题故事书籍",
+  "type": "module",
+  "scripts": {
+    "dev": "npx wrangler pages dev . --compatibility-flag nodejs_compat",
+    "deploy": "npx wrangler pages deploy .",
+    "test": "vitest run",
+    "test:watch": "vitest",
+    "test:coverage": "vitest run --coverage",
+    "lint": "eslint . --ext .js",
+    "lint:fix": "eslint . --ext .js --fix",
+    "db:migrate": "npx wrangler d1 migrations apply lego-story-db --local",
+    "db:migrate:remote": "npx wrangler d1 migrations apply lego-story-db"
+  },
+  "keywords": [
+    "lego",
+    "story",
+    "children",
+    "cloudflare-pages"
+  ],
+  "author": "",
+  "license": "MIT",
+  "devDependencies": {
+    "@cloudflare/workers-types": "^4.20240117.0",
+    "@playwright/test": "^1.58.2",
+    "@vitest/coverage-v8": "^4.0.18",
+    "eslint": "^8.56.0",
+    "monocart-coverage-reports": "^2.12.9",
+    "playwright": "^1.58.2",
+    "vitest": "^4.0.18",
+    "wrangler": "^3.24.0"
+  },
+  "engines": {
+    "node": ">=18.0.0"
+  }
+}
