@@ -239,23 +239,15 @@
           '</div>';
         }
 
-        return '<div class="character-card card-3d flip-card ' + animClass + '" style="animation: cardPopIn 0.5s ease-out ' + (index * 0.05) + 's backwards;">' +
-          '<div class="flip-card-inner">' +
-            '<div class="flip-card-front" style="justify-content: center;">' +
+        return '<div class="character-card card-3d ' + animClass + '" style="animation: cardPopIn 0.5s ease-out ' + (index * 0.05) + 's backwards; cursor: default;">' +
               '<div class="character-avatar" style="width: 90px; height: 90px; font-size: 2.8rem; margin-bottom: 12px;">' + emoji + '</div>' +
               '<h3 style="font-size: 1.3rem; margin-bottom: 8px; color: var(--lego-blue); text-align: center;">' + char.name + '</h3>' +
-              '<p style="font-size: 0.95rem; color: #666; margin-bottom: 12px; line-height: 1.4; padding: 0 10px; text-align: center; display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden;">' + (char.description || '神秘角色') + '</p>' +
+              '<p style="font-size: 0.95rem; color: #666; margin-bottom: 8px; line-height: 1.4; padding: 0 10px; text-align: center; display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden;">' + (char.description || '神秘角色') + '</p>' +
+              '<p style="font-size: 0.85rem; color: #888; margin-bottom: 8px;"><strong>性格：</strong>' + (char.personality || '神秘') + '</p>' +
+              '<p style="font-size: 0.8rem; color: #999; font-style: italic; margin-bottom: 10px;">"' + (char.speaking_style || '独特风格') + '"</p>' +
+              (isPreset ? '<span style="display: inline-block; padding: 5px 12px; border-radius: 15px; font-size: 0.8rem; background: var(--lego-green); color: white; font-weight: bold;">⭐ 系统预设</span>' : '') +
               actionButtons +
-            '</div>' +
-            '<div class="flip-card-back" style="justify-content: center;">' +
-              '<div style="font-size: 3rem; margin-bottom: 10px;">' + emoji + '</div>' +
-              '<h3 style="font-size: 1.2rem; margin-bottom: 10px; text-align: center;">' + char.name + '</h3>' +
-              '<p style="font-size: 0.9rem; opacity: 0.9; margin-bottom: 8px; padding: 0 10px; text-align: center;"><strong>性格：</strong>' + (char.personality || '神秘') + '</p>' +
-              '<p style="font-size: 0.8rem; opacity: 0.8; font-style: italic; padding: 0 10px; text-align: center;">"' + (char.speaking_style || '独特风格') + '"</p>' +
-              (isPreset ? '<span style="margin-top: 12px; padding: 6px 14px; background: var(--lego-green); border-radius: 20px; font-size: 0.85rem; color: white;">⭐ 系统预设</span>' : '') +
-            '</div>' +
-          '</div>' +
-        '</div>';
+            '</div>';
       }).join('');
     }
 
