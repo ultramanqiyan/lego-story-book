@@ -54,10 +54,29 @@ export async function onRequestGet(context) {
     }
     
     if (bookId) {
+      const userId = url.searchParams.get('userId');
       const { results } = await DB.prepare(
         `SELECT chapter_id, chapter_number, title, has_puzzle, created_at 
          FROM chapters WHERE book_id = ? ORDER BY chapter_number ASC`
       ).bind(bookId).all();
+      
+      if (userId) {
+        for (const chapter of results) {
+          if (chapter.has_puzzle) {
+            const puzzle = await DB.prepare(
+              'SELECT puzzle_id FROM puzzles WHERE chapter_id = ?'
+            ).bind(chapter.chapter_id).first();
+            
+            if (puzzle) {
+              const record = await DB.prepare(
+                'SELECT is_correct FROM puzzle_records WHERE user_id = ? AND puzzle_id = ?'
+              ).bind(userId, puzzle.puzzle_id).first();
+              chapter.puzzle_result = record ? record.is_correct : null;
+            }
+          }
+        }
+      }
+      
       return createSuccessResponse({ chapters: results });
     }
     

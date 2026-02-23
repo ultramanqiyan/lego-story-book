@@ -5,13 +5,18 @@ pages_build_output_dir = "."
 [[d1_databases]]
 binding = "DB"
 database_name = "lego-story-db"
-database_id = "384f38befa8bb63e7629d36cb248d8a4"
+database_id = "649c105f-87c8-4f75-82df-c9222ae0afcb"
 
 [vars]
 ENVIRONMENT = "development"
 
 [env.production]
 name = "lego-story-book"
+
+[[env.production.d1_databases]]
+binding = "DB"
+database_name = "lego-story-db"
+database_id = "649c105f-87c8-4f75-82df-c9222ae0afcb"
 
 [env.production.vars]
 ENVIRONMENT = "production"

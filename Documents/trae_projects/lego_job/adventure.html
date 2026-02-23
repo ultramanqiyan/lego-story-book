@@ -96,7 +96,7 @@
       }
       
       try {
-        var data = await fetchAPI('/chapters?id=' + chapterId);
+        var data = await fetchAPI('/chapters?id=' + chapterId + '&userId=' + userId);
         currentChapter = data.chapter;
         
         document.getElementById('chapterTitle').textContent = 
@@ -114,7 +114,12 @@
         
         if (currentChapter.has_puzzle && data.puzzle) {
           currentPuzzle = data.puzzle;
-          showPuzzle(currentPuzzle);
+          if (data.puzzleRecord && data.puzzleRecord.is_correct === 1) {
+            puzzleSolved = true;
+            showPuzzleResult(true);
+          } else {
+            showPuzzle(currentPuzzle);
+          }
         }
       } catch (error) {
         showToast('加载失败：' + error.message, 'error');
@@ -319,16 +324,39 @@
     function showPuzzleResult(isCorrect, correctAnswer) {
       var resultBox = document.getElementById('puzzleResult');
       if (isCorrect) {
-        resultBox.innerHTML = '<div class="result-correct">🎉 恭喜你答对了！继续阅读下一章吧！</div>';
+        resultBox.innerHTML = '<div class="result-correct">🎉 恭喜你答对了！</div>';
       } else {
         resultBox.innerHTML = '<div class="result-wrong">😢 正确答案是：<strong>' + correctAnswer + '</strong></div>';
       }
+      
+      var continueBtn = document.createElement('button');
+      continueBtn.className = 'btn btn-primary';
+      continueBtn.textContent = '➕ 添加章节';
+      continueBtn.style.marginTop = '15px';
+      continueBtn.onclick = function() {
+        window.location.href = 'book.html?id=' + currentChapter.book_id;
+      };
+      resultBox.appendChild(continueBtn);
+      
       resultBox.style.display = 'block';
       
       var options = document.querySelectorAll('.puzzle-option');
       options.forEach(function(opt) {
         opt.style.pointerEvents = 'none';
       });
+    }
+
+    function showContinueButton() {
+      var resultBox = document.getElementById('puzzleResult');
+      var continueBtn = document.createElement('button');
+      continueBtn.className = 'btn btn-primary';
+      continueBtn.textContent = '➕ 添加章节';
+      continueBtn.style.marginTop = '15px';
+      continueBtn.onclick = function() {
+        window.location.href = 'book.html?id=' + currentChapter.book_id;
+      };
+      
+      resultBox.appendChild(continueBtn);
     }
 
     async function loadBookList() {

@@ -33,6 +33,27 @@ export async function onRequestGet(context) {
          WHERE bc.book_id = ?`
       ).bind(bookId).all();
       
+      let puzzleRecords = {};
+      const url = new URL(context.request.url);
+      const userIdParam = url.searchParams.get('userId');
+      
+      if (userIdParam) {
+        for (const chapter of chapters.results) {
+          if (chapter.has_puzzle) {
+            const puzzle = await DB.prepare(
+              'SELECT puzzle_id FROM puzzles WHERE chapter_id = ?'
+            ).bind(chapter.chapter_id).first();
+            
+            if (puzzle) {
+              const record = await DB.prepare(
+                'SELECT is_correct FROM puzzle_records WHERE user_id = ? AND puzzle_id = ?'
+              ).bind(userIdParam, puzzle.puzzle_id).first();
+              chapter.puzzle_result = record ? record.is_correct : null;
+            }
+          }
+        }
+      }
+      
       return createSuccessResponse({ 
         book, 
         chapters: chapters.results, 
@@ -60,6 +81,17 @@ export async function onRequestPost(context) {
     if (!userId) return createErrorResponse('用户ID不能为空', 400);
     if (!title || title.trim() === '') return createErrorResponse('书籍名称不能为空', 400);
     if (title.length > 50) return createErrorResponse('书籍名称不能超过50个字符', 400);
+    
+    const existingUser = await DB.prepare('SELECT user_id FROM users WHERE user_id = ?')
+      .bind(userId).first();
+    
+    if (!existingUser) {
+      const now = new Date().toISOString();
+      await DB.prepare(
+        `INSERT INTO users (user_id, username, created_at, updated_at)
+         VALUES (?, ?, ?, ?)`
+      ).bind(userId, 'User_' + userId.substring(0, 8), now, now).run();
+    }
     
     const bookCount = await getBookCount(DB, userId);
     if (bookCount.count >= 20) return createErrorResponse('每用户最多创建20本书籍', 400);

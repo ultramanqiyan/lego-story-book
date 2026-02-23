@@ -222,7 +222,7 @@
 
     async function loadBook() {
       try {
-        var data = await fetchAPI('/books?bookId=' + bookId);
+        var data = await fetchAPI('/books?bookId=' + bookId + '&userId=' + userId);
         document.getElementById('bookTitle').textContent = '📖 ' + data.book.title;
         bookCharacters = data.characters || [];
         
@@ -233,10 +233,20 @@
           chapterContainer.innerHTML = '<li class="chapter-item" style="justify-content: center; color: #999;">还没有章节，点击下方按钮添加</li>';
         } else {
           chapterContainer.innerHTML = data.chapters.map(function(ch) {
+            var puzzleIcon = '';
+            if (ch.has_puzzle) {
+              if (ch.puzzle_result === 1) {
+                puzzleIcon = '<span style="font-size: 1.5rem;" title="解谜成功">✅</span>';
+              } else if (ch.puzzle_result === 0) {
+                puzzleIcon = '<span style="font-size: 1.5rem;" title="解谜失败">❌</span>';
+              } else {
+                puzzleIcon = '<span style="font-size: 1.5rem;">🧩</span>';
+              }
+            }
             return '<li class="chapter-item" onclick="readChapter(\'' + ch.chapter_id + '\')">' +
               '<span class="chapter-number">第' + ch.chapter_number + '章</span>' +
               '<span class="chapter-title">' + ch.title + '</span>' +
-              (ch.has_puzzle ? '<span style="font-size: 1.5rem;">🧩</span>' : '') +
+              puzzleIcon +
             '</li>';
           }).join('');
         }
