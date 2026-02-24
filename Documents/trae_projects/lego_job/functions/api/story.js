@@ -1,4 +1,5 @@
 import { generateId, createErrorResponse, createSuccessResponse, handleCORS } from './utils.js';
+import { buildPlotPrompt } from './plot-options.js';
 
 export async function onRequestOptions(context) {
   return handleCORS();
@@ -61,7 +62,7 @@ function buildCharacterInfo(characters) {
 }
 
 function buildStoryPrompt(params) {
-  const { characters, plot, previousSummary, chapterCharacters, generatePuzzle, puzzleType, previousPuzzle } = params;
+  const { characters, plot, previousSummary, chapterCharacters, generatePuzzle, puzzleType, previousPuzzle, plotSelection } = params;
   
   const characterInfo = buildCharacterInfo(characters);
   const chapterCharacterList = (chapterCharacters || characters).map(c => c.custom_name).join('、');
@@ -83,6 +84,10 @@ function buildStoryPrompt(params) {
     } else {
       prompt += '主角答错了谜题，遇到了一些小困难，但仍然继续前进。\n\n';
     }
+  }
+  
+  if (plotSelection) {
+    prompt += buildPlotPrompt(plotSelection);
   }
   
   prompt += '【本章角色】\n' + chapterCharacterList + '\n\n';
@@ -198,7 +203,8 @@ async function generateStory(env, data) {
     previousPuzzle: data.previousPuzzle,
     chapterCharacters: data.chapterCharacters,
     generatePuzzle,
-    puzzleType
+    puzzleType,
+    plotSelection: data.plotSelection
   });
   
   const messages = buildMessages(prompt);

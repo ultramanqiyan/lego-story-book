@@ -1,4 +1,5 @@
 import { generateId, createErrorResponse, createSuccessResponse, handleCORS } from './utils.js';
+import { getPlotOption } from './plot-options.js';
 
 export async function onRequestOptions(context) {
   return handleCORS();
@@ -58,14 +59,20 @@ export async function onRequestGet(context) {
               const record = await DB.prepare(
                 'SELECT is_correct FROM puzzle_records WHERE user_id = ? AND puzzle_id = ?'
               ).bind(userIdParam, puzzle.puzzle_id).first();
-              chapter.isCompleted = record ? record.is_correct === 1 : false;
+              if (record) {
+                chapter.puzzle_result = record.is_correct;
+                chapter.isCompleted = record.is_correct === 1;
+              }
             }
           }
         }
       }
       
       return createSuccessResponse({ 
-        book, 
+        book: {
+          ...book,
+          plotSelection: book.plot_selection ? JSON.parse(book.plot_selection) : null
+        }, 
         chapters: chapters.results, 
         characters: characters.results 
       });

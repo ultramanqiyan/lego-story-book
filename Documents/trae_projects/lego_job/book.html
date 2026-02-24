@@ -109,6 +109,37 @@
     </div>
   </div>
 
+  <div id="plotModal" class="modal" style="display: none;">
+    <div class="modal-content" style="max-width: 600px; max-height: 80vh; overflow-y: auto;">
+      <h3 style="margin-bottom: 15px;">🎭 选择故事情节</h3>
+      <div id="plotModalBody">
+        <div style="margin-bottom: 20px;">
+          <h4 style="color: var(--lego-blue); margin-bottom: 10px;">☀️ 天气</h4>
+          <div id="weatherOptions" style="display: grid; grid-template-columns: repeat(4, 1fr); gap: 8px;"></div>
+        </div>
+        <div style="margin-bottom: 20px;">
+          <h4 style="color: var(--lego-blue); margin-bottom: 10px;">🗺️ 冒险类型</h4>
+          <div id="adventureTypeOptions" style="display: grid; grid-template-columns: repeat(4, 1fr); gap: 8px;"></div>
+        </div>
+        <div style="margin-bottom: 20px;">
+          <h4 style="color: var(--lego-blue); margin-bottom: 10px;">🌲 地形</h4>
+          <div id="terrainOptions" style="display: grid; grid-template-columns: repeat(4, 1fr); gap: 8px;"></div>
+        </div>
+        <div style="margin-bottom: 20px;">
+          <h4 style="color: var(--lego-blue); margin-bottom: 10px;">🪄 装备与道具</h4>
+          <div id="equipmentOptions" style="display: grid; grid-template-columns: repeat(4, 1fr); gap: 8px;"></div>
+        </div>
+      </div>
+      <div style="display: flex; gap: 10px; justify-content: space-between;">
+        <button class="btn btn-secondary" id="randomPlotBtn">🎲 随机选择</button>
+        <div style="display: flex; gap: 10px;">
+          <button class="btn btn-secondary" id="cancelPlotBtn">❌ 取消</button>
+          <button class="btn btn-primary" id="confirmPlotBtn">✨ 确认生成</button>
+        </div>
+      </div>
+    </div>
+  </div>
+
   <style>
     .form-control {
       width: 100%;
@@ -209,6 +240,14 @@
     var userId = requireAuth();
     var bookId = getQueryParam('id');
     var bookCharacters = [];
+    var plotOptions = null;
+    var selectedPlot = {
+      weather: null,
+      adventureType: null,
+      terrain: null,
+      equipment: null
+    };
+    var pendingChapterChars = null;
     var allCharacters = [];
     var editingCharacterId = null;
 
@@ -475,11 +514,138 @@
         }
         
         document.getElementById('chapterCharacterModal').remove();
-        await generateNewChapter(selectedChars);
+        pendingChapterChars = selectedChars;
+        showPlotModal();
       });
     }
 
-    async function generateNewChapter(selectedChars) {
+    async function showPlotModal() {
+      if (!plotOptions) {
+        try {
+          var data = await fetchAPI('/plot-options');
+          plotOptions = data.plotOptions;
+        } catch (error) {
+          console.error('加载情节选项失败:', error);
+          plotOptions = getDefaultPlotOptions();
+        }
+      }
+      
+      renderPlotOptions();
+      document.getElementById('plotModal').style.display = 'flex';
+    }
+
+    function getDefaultPlotOptions() {
+      return {
+        weather: [
+          { id: 'sunny', name: '晴天', icon: '☀️' },
+          { id: 'rainy', name: '下雨', icon: '🌧️' },
+          { id: 'thunder', name: '打雷', icon: '⛈️' },
+          { id: 'snow', name: '下雪', icon: '❄️' },
+          { id: 'fog', name: '大雾', icon: '🌫️' },
+          { id: 'wind', name: '狂风', icon: '💨' },
+          { id: 'rainbow', name: '彩虹', icon: '🌈' },
+          { id: 'starry', name: '星夜', icon: '🌟' }
+        ],
+        adventureType: [
+          { id: 'friendship', name: '友谊考验', icon: '🤝' },
+          { id: 'adventure', name: '冒险之旅', icon: '🗺️' },
+          { id: 'wisdom', name: '智慧挑战', icon: '🧠' },
+          { id: 'courage', name: '勇气试炼', icon: '💪' },
+          { id: 'treasure', name: '寻宝探险', icon: '💎' },
+          { id: 'rescue', name: '救援任务', icon: '🦸' },
+          { id: 'mystery', name: '神秘探索', icon: '🔮' },
+          { id: 'competition', name: '竞技比赛', icon: '🏆' }
+        ],
+        terrain: [
+          { id: 'forest', name: '森林', icon: '🌲' },
+          { id: 'castle', name: '城堡', icon: '🏰' },
+          { id: 'ocean', name: '海洋', icon: '🌊' },
+          { id: 'desert', name: '沙漠', icon: '🏜️' },
+          { id: 'mountain', name: '山峰', icon: '⛰️' },
+          { id: 'glacier', name: '冰川', icon: '🧊' },
+          { id: 'volcano', name: '火山', icon: '🌋' },
+          { id: 'city', name: '城市', icon: '🏙️' }
+        ],
+        equipment: [
+          { id: 'wand', name: '魔法杖', icon: '🪄' },
+          { id: 'shield', name: '盾牌', icon: '🛡️' },
+          { id: 'map', name: '地图', icon: '🗺️' },
+          { id: 'telescope', name: '望远镜', icon: '🔭' },
+          { id: 'sword', name: '宝剑', icon: '⚔️' },
+          { id: 'potion', name: '药水', icon: '🧪' },
+          { id: 'flyer', name: '飞行器', icon: '🚀' },
+          { id: 'cloak', name: '隐身斗篷', icon: '🧥' }
+        ]
+      };
+    }
+
+    function renderPlotOptions() {
+      renderPlotCategory('weatherOptions', plotOptions.weather, 'weather');
+      renderPlotCategory('adventureTypeOptions', plotOptions.adventureType, 'adventureType');
+      renderPlotCategory('terrainOptions', plotOptions.terrain, 'terrain');
+      renderPlotCategory('equipmentOptions', plotOptions.equipment, 'equipment');
+    }
+
+    function renderPlotCategory(containerId, options, category) {
+      var container = document.getElementById(containerId);
+      var html = '';
+      
+      for (var i = 0; i < options.length; i++) {
+        var option = options[i];
+        var selected = selectedPlot[category] === option.id ? 'background: var(--lego-yellow); border: 2px solid var(--lego-orange);' : 'background: #f3f4f6; border: 2px solid transparent;';
+        html += '<button onclick="selectPlotOption(\'' + category + '\', \'' + option.id + '\')" style="' + selected + ' border-radius: 8px; padding: 8px; cursor: pointer; display: flex; flex-direction: column; align-items: center; gap: 4px; transition: all 0.2s;">' +
+          '<span style="font-size: 24px;">' + option.icon + '</span>' +
+          '<span style="font-size: 0.75rem; font-weight: bold;">' + option.name + '</span>' +
+          '</button>';
+      }
+      
+      container.innerHTML = html;
+    }
+
+    function selectPlotOption(category, id) {
+      selectedPlot[category] = id;
+      renderPlotOptions();
+    }
+
+    function initPlotModalEvents() {
+      var randomPlotBtn = document.getElementById('randomPlotBtn');
+      var cancelPlotBtn = document.getElementById('cancelPlotBtn');
+      var confirmPlotBtn = document.getElementById('confirmPlotBtn');
+      
+      if (randomPlotBtn) {
+        randomPlotBtn.addEventListener('click', function() {
+          if (!plotOptions) return;
+          selectedPlot.weather = plotOptions.weather[Math.floor(Math.random() * plotOptions.weather.length)].id;
+          selectedPlot.adventureType = plotOptions.adventureType[Math.floor(Math.random() * plotOptions.adventureType.length)].id;
+          selectedPlot.terrain = plotOptions.terrain[Math.floor(Math.random() * plotOptions.terrain.length)].id;
+          selectedPlot.equipment = plotOptions.equipment[Math.floor(Math.random() * plotOptions.equipment.length)].id;
+          renderPlotOptions();
+        });
+      }
+
+      if (cancelPlotBtn) {
+        cancelPlotBtn.addEventListener('click', function() {
+          document.getElementById('plotModal').style.display = 'none';
+          pendingChapterChars = null;
+        });
+      }
+
+      if (confirmPlotBtn) {
+        confirmPlotBtn.addEventListener('click', async function() {
+          if (!selectedPlot.weather || !selectedPlot.adventureType || !selectedPlot.terrain || !selectedPlot.equipment) {
+            showToast('请选择所有情节选项，或点击随机选择', 'error');
+            return;
+          }
+          
+          document.getElementById('plotModal').style.display = 'none';
+          await generateNewChapter(pendingChapterChars, selectedPlot);
+        });
+      }
+    }
+
+    initPlotModalEvents();
+
+    async function generateNewChapter(selectedChars, plotSelection) {
       var btn = document.getElementById('addChapterBtn');
       btn.disabled = true;
       btn.textContent = '🔄 生成中...';
@@ -527,16 +693,22 @@
           }
         }
         
+        var requestBody = {
+          characters: charactersData,
+          plot: '冒险之旅',
+          chapter: (currentChapterCount + 1),
+          chapterCharacters: charactersData,
+          previousSummary: previousSummary,
+          previousPuzzle: previousPuzzle
+        };
+        
+        if (plotSelection) {
+          requestBody.plotSelection = plotSelection;
+        }
+        
         var storyData = await fetchAPI('/story', {
           method: 'POST',
-          body: {
-            characters: charactersData,
-            plot: '冒险之旅',
-            chapter: (currentChapterCount + 1),
-            chapterCharacters: charactersData,
-            previousSummary: previousSummary,
-            previousPuzzle: previousPuzzle
-          }
+          body: requestBody
         });
         
         var chapterData = {

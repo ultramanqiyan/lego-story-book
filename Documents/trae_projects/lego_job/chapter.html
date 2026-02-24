@@ -105,6 +105,37 @@
     <div class="lego-footer-bar"></div>
   </div>
 
+  <div id="plotModal" class="plot-modal" style="display: none;">
+    <div class="plot-modal-content">
+      <div class="plot-modal-header">
+        <h3>🎭 选择故事情节</h3>
+        <button class="plot-modal-close" onclick="closePlotModal()">×</button>
+      </div>
+      <div class="plot-modal-body">
+        <div class="plot-section">
+          <h4>☀️ 天气</h4>
+          <div class="plot-options" id="weatherOptions"></div>
+        </div>
+        <div class="plot-section">
+          <h4>🗺️ 冒险类型</h4>
+          <div class="plot-options" id="adventureTypeOptions"></div>
+        </div>
+        <div class="plot-section">
+          <h4>🌲 地形</h4>
+          <div class="plot-options" id="terrainOptions"></div>
+        </div>
+        <div class="plot-section">
+          <h4>🪄 装备与道具</h4>
+          <div class="plot-options" id="equipmentOptions"></div>
+        </div>
+      </div>
+      <div class="plot-modal-footer">
+        <button class="lego-btn lego-btn-blue" onclick="randomPlotSelection()">🎲 随机选择</button>
+        <button class="lego-btn lego-btn-red" onclick="confirmPlotSelection()">✨ 确认生成</button>
+      </div>
+    </div>
+  </div>
+
   <script src="js/utils.js"></script>
   <script src="js/loading-manager.js"></script>
   <script>
@@ -118,6 +149,13 @@
     var attempts = 0;
     var puzzleSolved = false;
     var promptExpanded = false;
+    var plotOptions = null;
+    var selectedPlot = {
+      weather: null,
+      adventureType: null,
+      terrain: null,
+      equipment: null
+    };
 
     document.addEventListener('DOMContentLoaded', function() {
       initLoadingManager();
@@ -197,8 +235,23 @@
       document.getElementById('promptCharacters').innerHTML = charactersHtml;
 
       var backgroundHtml = '';
-      if (book.plotType || book.theme || book.setting) {
+      if (book.plotSelection || book.plotType || book.theme || book.setting) {
         backgroundHtml = '<div style="padding: 8px; background: white; border-radius: 8px;">';
+        if (book.plotSelection) {
+          backgroundHtml += '<p style="margin-bottom: 8px;"><strong>🎭 情节设定</strong></p>';
+          if (book.plotSelection.weather) {
+            backgroundHtml += '<p style="font-size: 0.875rem;">☀️ 天气: ' + getPlotNameDisplay('weather', book.plotSelection.weather) + '</p>';
+          }
+          if (book.plotSelection.adventureType) {
+            backgroundHtml += '<p style="font-size: 0.875rem;">🗺️ 冒险: ' + getPlotNameDisplay('adventureType', book.plotSelection.adventureType) + '</p>';
+          }
+          if (book.plotSelection.terrain) {
+            backgroundHtml += '<p style="font-size: 0.875rem;">🌲 地形: ' + getPlotNameDisplay('terrain', book.plotSelection.terrain) + '</p>';
+          }
+          if (book.plotSelection.equipment) {
+            backgroundHtml += '<p style="font-size: 0.875rem;">🪄 装备: ' + getPlotNameDisplay('equipment', book.plotSelection.equipment) + '</p>';
+          }
+        }
         if (book.plotType) backgroundHtml += '<p><strong>情节类型:</strong> ' + book.plotType + '</p>';
         if (book.theme) backgroundHtml += '<p><strong>主题:</strong> ' + book.theme + '</p>';
         if (book.setting) backgroundHtml += '<p><strong>场景:</strong> ' + book.setting + '</p>';
@@ -238,6 +291,29 @@
         return text.substring(0, 200) + '...';
       }
       return text;
+    }
+
+    function getPlotNameDisplay(category, id) {
+      var plotNames = {
+        weather: {
+          sunny: '晴天', rainy: '下雨', thunder: '打雷', snow: '下雪',
+          fog: '大雾', wind: '狂风', rainbow: '彩虹', starry: '星夜'
+        },
+        adventureType: {
+          friendship: '友谊考验', adventure: '冒险之旅', wisdom: '智慧挑战', courage: '勇气试炼',
+          treasure: '寻宝探险', rescue: '救援任务', mystery: '神秘探索', competition: '竞技比赛'
+        },
+        terrain: {
+          forest: '森林', castle: '城堡', ocean: '海洋', desert: '沙漠',
+          mountain: '山峰', glacier: '冰川', volcano: '火山', city: '城市'
+        },
+        equipment: {
+          wand: '魔法杖', shield: '盾牌', map: '地图', telescope: '望远镜',
+          sword: '宝剑', potion: '药水', flyer: '飞行器', cloak: '隐身斗篷'
+        }
+      };
+      
+      return (plotNames[category] && plotNames[category][id]) || id;
     }
 
     function renderChapter() {
@@ -397,12 +473,100 @@
         return;
       }
 
+      showPlotModal();
+    }
+
+    function showPlotModal() {
+      if (!plotOptions) {
+        loadPlotOptions();
+        return;
+      }
+      
+      document.getElementById('plotModal').style.display = 'flex';
+      renderPlotOptions();
+    }
+
+    async function loadPlotOptions() {
+      try {
+        var data = await fetchAPI('/plot-options');
+        plotOptions = data.plotOptions;
+        showPlotModal();
+      } catch (error) {
+        console.error('加载情节选项失败:', error);
+        generateChapterWithRandomPlot();
+      }
+    }
+
+    function renderPlotOptions() {
+      renderPlotCategory('weatherOptions', plotOptions.weather, 'weather');
+      renderPlotCategory('adventureTypeOptions', plotOptions.adventureType, 'adventureType');
+      renderPlotCategory('terrainOptions', plotOptions.terrain, 'terrain');
+      renderPlotCategory('equipmentOptions', plotOptions.equipment, 'equipment');
+    }
+
+    function renderPlotCategory(containerId, options, category) {
+      var container = document.getElementById(containerId);
+      var html = '';
+      
+      for (var i = 0; i < options.length; i++) {
+        var option = options[i];
+        var selected = selectedPlot[category] === option.id ? 'selected' : '';
+        html += '<button class="plot-option-btn ' + selected + '" onclick="selectPlotOption(\'' + category + '\', \'' + option.id + '\')">' +
+          '<span class="plot-option-icon">' + option.icon + '</span>' +
+          '<span class="plot-option-name">' + option.name + '</span>' +
+          '</button>';
+      }
+      
+      container.innerHTML = html;
+    }
+
+    function selectPlotOption(category, id) {
+      selectedPlot[category] = id;
+      renderPlotOptions();
+    }
+
+    function randomPlotSelection() {
+      if (!plotOptions) return;
+      
+      selectedPlot.weather = plotOptions.weather[Math.floor(Math.random() * plotOptions.weather.length)].id;
+      selectedPlot.adventureType = plotOptions.adventureType[Math.floor(Math.random() * plotOptions.adventureType.length)].id;
+      selectedPlot.terrain = plotOptions.terrain[Math.floor(Math.random() * plotOptions.terrain.length)].id;
+      selectedPlot.equipment = plotOptions.equipment[Math.floor(Math.random() * plotOptions.equipment.length)].id;
+      
+      renderPlotOptions();
+    }
+
+    function closePlotModal() {
+      document.getElementById('plotModal').style.display = 'none';
+    }
+
+    async function confirmPlotSelection() {
+      if (!selectedPlot.weather || !selectedPlot.adventureType || !selectedPlot.terrain || !selectedPlot.equipment) {
+        showToast('请选择所有情节选项，或点击随机选择', 'error');
+        return;
+      }
+      
+      closePlotModal();
+      await generateChapterWithPlot(selectedPlot);
+    }
+
+    async function generateChapterWithRandomPlot() {
+      closePlotModal();
+      await generateChapterWithPlot(null);
+    }
+
+    async function generateChapterWithPlot(plotSelection) {
       showLoading({ message: 'AI正在创作新章节...', subtext: '发挥想象力，编织精彩故事' });
 
       try {
+        var body = { userId: userId };
+        if (plotSelection) {
+          body.plotSelection = plotSelection;
+        }
+        
         await fetchAPI('/chapters-generate/books/' + bookId, {
           method: 'POST',
-          body: JSON.stringify({ userId: userId })
+          body: JSON.stringify(body)
         });
 
         hideLoading();
@@ -462,6 +626,123 @@
 
     .prompt-block:last-child {
       margin-bottom: 0;
+    }
+
+    .plot-modal {
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      background: rgba(0, 0, 0, 0.5);
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      z-index: 1000;
+    }
+
+    .plot-modal-content {
+      background: white;
+      border-radius: 16px;
+      width: 90%;
+      max-width: 600px;
+      max-height: 80vh;
+      overflow: hidden;
+      display: flex;
+      flex-direction: column;
+      box-shadow: 0 10px 40px rgba(0, 0, 0, 0.3);
+    }
+
+    .plot-modal-header {
+      background: var(--lego-red);
+      color: white;
+      padding: 16px 20px;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+    }
+
+    .plot-modal-header h3 {
+      margin: 0;
+      font-size: 1.25rem;
+    }
+
+    .plot-modal-close {
+      background: none;
+      border: none;
+      color: white;
+      font-size: 24px;
+      cursor: pointer;
+      padding: 0;
+      line-height: 1;
+    }
+
+    .plot-modal-body {
+      padding: 20px;
+      overflow-y: auto;
+      flex: 1;
+    }
+
+    .plot-section {
+      margin-bottom: 20px;
+    }
+
+    .plot-section h4 {
+      margin: 0 0 12px;
+      font-size: 1rem;
+      color: var(--lego-blue);
+    }
+
+    .plot-options {
+      display: grid;
+      grid-template-columns: repeat(4, 1fr);
+      gap: 8px;
+    }
+
+    .plot-option-btn {
+      background: #f3f4f6;
+      border: 2px solid transparent;
+      border-radius: 8px;
+      padding: 8px;
+      cursor: pointer;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 4px;
+      transition: all 0.2s;
+    }
+
+    .plot-option-btn:hover {
+      background: #e5e7eb;
+    }
+
+    .plot-option-btn.selected {
+      background: var(--lego-yellow);
+      border-color: var(--lego-orange);
+    }
+
+    .plot-option-icon {
+      font-size: 24px;
+    }
+
+    .plot-option-name {
+      font-size: 0.75rem;
+      font-weight: bold;
+      text-align: center;
+    }
+
+    .plot-modal-footer {
+      padding: 16px 20px;
+      border-top: 1px solid #e5e7eb;
+      display: flex;
+      justify-content: space-between;
+      gap: 12px;
+    }
+
+    @media (max-width: 480px) {
+      .plot-options {
+        grid-template-columns: repeat(2, 1fr);
+      }
     }
   </style>
 </body>

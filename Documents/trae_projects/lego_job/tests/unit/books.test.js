@@ -93,7 +93,9 @@ describe('books.js API 测试', () => {
       const data = JSON.parse(await result.text());
       
       expect(data.success).toBe(true);
-      expect(data.book).toEqual(mockBook);
+      expect(data.book.book_id).toBe('book_1');
+      expect(data.book.title).toBe('测试书籍');
+      expect(data.book.plotSelection).toBe(null);
     });
 
     it('应该返回404当书籍不存在', async () => {

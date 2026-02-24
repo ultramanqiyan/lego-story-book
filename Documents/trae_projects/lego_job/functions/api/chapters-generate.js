@@ -1,4 +1,5 @@
 import { generateId, createErrorResponse, createSuccessResponse, handleCORS } from './utils.js';
+import { getRandomPlotSelection, buildPlotPrompt } from './plot-options.js';
 
 export async function onRequestOptions(context) {
   return handleCORS();
@@ -56,7 +57,7 @@ function buildCharacterInfo(characters) {
   }).join(',\n');
 }
 
-function buildStoryPrompt(characters, previousSummary, previousPuzzle) {
+function buildStoryPrompt(characters, previousSummary, previousPuzzle, plotSelection) {
   var characterInfo = buildCharacterInfo(characters);
   var puzzleType = getRandomPuzzleType();
   
@@ -73,6 +74,10 @@ function buildStoryPrompt(characters, previousSummary, previousPuzzle) {
     prompt += '谜题问题：' + previousPuzzle.question + '\n';
     prompt += '正确答案：' + previousPuzzle.answer + '\n';
     prompt += '用户答对了，故事可以继续发展。\n\n';
+  }
+  
+  if (plotSelection) {
+    prompt += buildPlotPrompt(plotSelection);
   }
   
   prompt += '【故事要求】\n';
@@ -125,6 +130,14 @@ export async function onRequestPost(context) {
       return createErrorResponse('书籍ID不能为空', 400);
     }
     
+    var body = await context.request.json();
+    var userId = body.userId;
+    var plotSelection = body.plotSelection || null;
+    
+    if (!plotSelection) {
+      plotSelection = getRandomPlotSelection();
+    }
+    
     var book = await DB.prepare('SELECT * FROM books WHERE book_id = ?').bind(bookId).first();
     if (!book) {
       return createErrorResponse('书籍不存在', 404);
@@ -172,7 +185,7 @@ export async function onRequestPost(context) {
       }
     }
     
-    var prompt = buildStoryPrompt(characters.results, previousSummary, previousPuzzle);
+    var prompt = buildStoryPrompt(characters.results, previousSummary, previousPuzzle, plotSelection);
     
     var response = await fetch(DOUBAO_API_URL, {
       method: 'POST',
