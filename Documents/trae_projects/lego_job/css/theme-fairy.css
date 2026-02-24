@@ -1,0 +1,448 @@
+/* ============================================
+   风格2: 梦幻童话风格 (Dreamy Fairy Tale Style)
+   特点：柔和渐变、星光闪烁、漂浮动画
+   ============================================ */
+
+:root {
+  --fairy-pink: #ffb7c5;
+  --fairy-purple: #d4a5ff;
+  --fairy-blue: #a8d8ff;
+  --fairy-mint: #b8e6d3;
+  --fairy-cream: #fff8e7;
+  --fairy-gold: #ffd700;
+  --fairy-rose: #ff69b4;
+  --fairy-lavender: #e6e6fa;
+  --fairy-dark: #4a4a6a;
+  --fairy-light: #fff9fb;
+}
+
+/* 基础样式 - 柔和渐变背景 */
+.theme-fairy body {
+  background: linear-gradient(135deg, 
+    var(--fairy-lavender) 0%, 
+    var(--fairy-pink) 25%, 
+    var(--fairy-cream) 50%, 
+    var(--fairy-mint) 75%, 
+    var(--fairy-blue) 100%);
+  background-attachment: fixed;
+  font-family: 'Georgia', 'Times New Roman', serif;
+  color: var(--fairy-dark);
+}
+
+/* 星光背景 */
+.theme-fairy .fairy-stars {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  pointer-events: none;
+  z-index: -1;
+  overflow: hidden;
+}
+
+.theme-fairy .star {
+  position: absolute;
+  width: 4px;
+  height: 4px;
+  background: white;
+  border-radius: 50%;
+  box-shadow: 0 0 10px 2px rgba(255, 255, 255, 0.8);
+  animation: twinkle 3s ease-in-out infinite;
+}
+
+@keyframes twinkle {
+  0%, 100% { 
+    opacity: 0.3; 
+    transform: scale(1);
+    box-shadow: 0 0 5px 1px rgba(255, 255, 255, 0.5);
+  }
+  50% { 
+    opacity: 1; 
+    transform: scale(1.5);
+    box-shadow: 0 0 15px 3px rgba(255, 215, 0, 0.8);
+  }
+}
+
+/* 漂浮的云朵 */
+.theme-fairy .cloud {
+  position: fixed;
+  background: rgba(255, 255, 255, 0.6);
+  border-radius: 100px;
+  pointer-events: none;
+  z-index: -1;
+}
+
+.theme-fairy .cloud::before,
+.theme-fairy .cloud::after {
+  content: '';
+  position: absolute;
+  background: rgba(255, 255, 255, 0.6);
+  border-radius: 100px;
+}
+
+.theme-fairy .cloud1 {
+  width: 100px;
+  height: 40px;
+  top: 20%;
+  left: -100px;
+  animation: floatCloud 25s linear infinite;
+}
+
+.theme-fairy .cloud1::before {
+  width: 50px;
+  height: 50px;
+  top: -25px;
+  left: 10px;
+}
+
+.theme-fairy .cloud1::after {
+  width: 60px;
+  height: 40px;
+  top: -15px;
+  right: 10px;
+}
+
+@keyframes floatCloud {
+  0% { transform: translateX(0); }
+  100% { transform: translateX(calc(100vw + 100px)); }
+}
+
+/* 柔和头部 */
+.theme-fairy .header {
+  background: linear-gradient(135deg, 
+    rgba(255, 183, 197, 0.9) 0%, 
+    rgba(212, 165, 255, 0.9) 100%);
+  border-radius: 30px;
+  box-shadow: 
+    0 10px 40px rgba(255, 183, 197, 0.4),
+    inset 0 1px 0 rgba(255, 255, 255, 0.5);
+  backdrop-filter: blur(10px);
+  border: 2px solid rgba(255, 255, 255, 0.5);
+}
+
+.theme-fairy .header h1 {
+  font-family: 'Brush Script MT', cursive;
+  font-size: 2.5rem;
+  text-shadow: 2px 2px 4px rgba(0,0,0,0.1);
+  background: linear-gradient(90deg, var(--fairy-rose), var(--fairy-purple), var(--fairy-gold));
+  -webkit-background-clip: text;
+  background-clip: text;
+  -webkit-text-fill-color: transparent;
+  animation: shimmer 3s linear infinite;
+  background-size: 200% auto;
+}
+
+@keyframes shimmer {
+  0% { background-position: 0% center; }
+  100% { background-position: 200% center; }
+}
+
+/* 魔法按钮 */
+.theme-fairy .btn {
+  border-radius: 50px;
+  border: none;
+  background: linear-gradient(135deg, var(--fairy-pink), var(--fairy-purple));
+  color: white;
+  font-weight: 600;
+  letter-spacing: 1px;
+  box-shadow: 
+    0 5px 20px rgba(255, 183, 197, 0.4),
+    0 0 0 3px rgba(255, 255, 255, 0.3);
+  transition: all 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+  position: relative;
+  overflow: hidden;
+}
+
+.theme-fairy .btn::before {
+  content: '✨';
+  position: absolute;
+  left: 15px;
+  top: 50%;
+  transform: translateY(-50%);
+  font-size: 1.2rem;
+  opacity: 0;
+  transition: all 0.3s;
+}
+
+.theme-fairy .btn:hover {
+  transform: translateY(-3px) scale(1.05);
+  box-shadow: 
+    0 10px 30px rgba(255, 183, 197, 0.6),
+    0 0 0 5px rgba(255, 255, 255, 0.4);
+  padding-left: 40px;
+}
+
+.theme-fairy .btn:hover::before {
+  opacity: 1;
+  left: 15px;
+}
+
+.theme-fairy .btn-primary {
+  background: linear-gradient(135deg, var(--fairy-rose), var(--fairy-pink));
+}
+
+.theme-fairy .btn-secondary {
+  background: linear-gradient(135deg, var(--fairy-purple), var(--fairy-blue));
+}
+
+.theme-fairy .btn-accent {
+  background: linear-gradient(135deg, var(--fairy-gold), var(--fairy-orange));
+  color: var(--fairy-dark);
+}
+
+/* 魔法卡片 */
+.theme-fairy .card {
+  background: rgba(255, 255, 255, 0.85);
+  border-radius: 25px;
+  box-shadow: 
+    0 10px 40px rgba(212, 165, 255, 0.2),
+    0 0 0 1px rgba(255, 255, 255, 0.5);
+  backdrop-filter: blur(10px);
+  border: 2px solid rgba(255, 255, 255, 0.6);
+  position: relative;
+  overflow: hidden;
+}
+
+.theme-fairy .card::before {
+  content: '';
+  position: absolute;
+  top: -50%;
+  left: -50%;
+  width: 200%;
+  height: 200%;
+  background: radial-gradient(circle, rgba(255,215,0,0.1) 0%, transparent 70%);
+  animation: rotate 20s linear infinite;
+}
+
+@keyframes rotate {
+  0% { transform: rotate(0deg); }
+  100% { transform: rotate(360deg); }
+}
+
+/* 导航链接 */
+.theme-fairy .nav a {
+  background: rgba(255, 255, 255, 0.3);
+  border-radius: 25px;
+  border: 2px solid rgba(255, 255, 255, 0.4);
+  backdrop-filter: blur(5px);
+  transition: all 0.3s;
+  position: relative;
+}
+
+.theme-fairy .nav a::after {
+  content: '';
+  position: absolute;
+  bottom: -2px;
+  left: 50%;
+  width: 0;
+  height: 2px;
+  background: linear-gradient(90deg, var(--fairy-rose), var(--fairy-gold));
+  transition: all 0.3s;
+  transform: translateX(-50%);
+}
+
+.theme-fairy .nav a:hover {
+  background: rgba(255, 255, 255, 0.5);
+  transform: translateY(-2px);
+}
+
+.theme-fairy .nav a:hover::after {
+  width: 80%;
+}
+
+/* 人仔卡片 - 魔法风格 */
+.theme-fairy .character-card {
+  background: linear-gradient(135deg, rgba(255,255,255,0.9), rgba(255,248,231,0.9));
+  border-radius: 25px;
+  box-shadow: 
+    0 10px 30px rgba(212, 165, 255, 0.2),
+    0 0 0 2px rgba(255, 215, 0, 0.3);
+  border: none;
+  position: relative;
+  overflow: hidden;
+}
+
+.theme-fairy .character-card::after {
+  content: '🌟';
+  position: absolute;
+  top: 10px;
+  right: 10px;
+  font-size: 1.5rem;
+  animation: sparkle 2s ease-in-out infinite;
+}
+
+@keyframes sparkle {
+  0%, 100% { transform: scale(1) rotate(0deg); opacity: 0.7; }
+  50% { transform: scale(1.3) rotate(180deg); opacity: 1; }
+}
+
+.theme-fairy .character-card:hover {
+  transform: translateY(-10px) scale(1.03);
+  box-shadow: 
+    0 20px 50px rgba(212, 165, 255, 0.3),
+    0 0 20px rgba(255, 215, 0, 0.4);
+}
+
+/* 书籍卡片 */
+.theme-fairy .book-card {
+  border-radius: 20px;
+  box-shadow: 0 10px 30px rgba(0,0,0,0.1);
+  overflow: hidden;
+  position: relative;
+}
+
+.theme-fairy .book-card::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  height: 5px;
+  background: linear-gradient(90deg, var(--fairy-rose), var(--fairy-purple), var(--fairy-gold));
+}
+
+.theme-fairy .book-cover {
+  background: linear-gradient(135deg, var(--fairy-purple), var(--fairy-pink)) !important;
+  position: relative;
+  overflow: hidden;
+}
+
+.theme-fairy .book-cover::after {
+  content: '';
+  position: absolute;
+  top: -50%;
+  left: -50%;
+  width: 200%;
+  height: 200%;
+  background: radial-gradient(circle, rgba(255,255,255,0.3) 0%, transparent 60%);
+  animation: shimmer 4s linear infinite;
+}
+
+/* 漂浮动画 */
+@keyframes fairyFloat {
+  0%, 100% { 
+    transform: translateY(0) rotate(-2deg); 
+  }
+  25% { 
+    transform: translateY(-15px) rotate(2deg); 
+  }
+  50% { 
+    transform: translateY(-5px) rotate(-1deg); 
+  }
+  75% { 
+    transform: translateY(-20px) rotate(1deg); 
+  }
+}
+
+.theme-fairy .float-animation {
+  animation: fairyFloat 4s ease-in-out infinite;
+}
+
+/* 花瓣飘落动画 */
+@keyframes petalFall {
+  0% {
+    transform: translateY(-10vh) rotate(0deg) translateX(0);
+    opacity: 1;
+  }
+  100% {
+    transform: translateY(110vh) rotate(720deg) translateX(50px);
+    opacity: 0;
+  }
+}
+
+.theme-fairy .petal {
+  position: fixed;
+  width: 15px;
+  height: 15px;
+  background: linear-gradient(135deg, var(--fairy-pink), var(--fairy-rose));
+  border-radius: 50% 0 50% 50%;
+  pointer-events: none;
+  z-index: -1;
+  animation: petalFall 10s linear infinite;
+}
+
+/* 魔法输入框 */
+.theme-fairy input,
+.theme-fairy textarea,
+.theme-fairy select {
+  background: rgba(255, 255, 255, 0.8);
+  border: 2px solid rgba(212, 165, 255, 0.3);
+  border-radius: 15px;
+  box-shadow: inset 0 2px 5px rgba(0,0,0,0.05);
+  transition: all 0.3s;
+}
+
+.theme-fairy input:focus,
+.theme-fairy textarea:focus,
+.theme-fairy select:focus {
+  border-color: var(--fairy-purple);
+  box-shadow: 
+    inset 0 2px 5px rgba(0,0,0,0.05),
+    0 0 20px rgba(212, 165, 255, 0.4);
+  transform: scale(1.02);
+  background: rgba(255, 255, 255, 0.95);
+}
+
+/* 模态框 */
+.theme-fairy .modal-content {
+  background: rgba(255, 255, 255, 0.95);
+  border-radius: 30px;
+  box-shadow: 
+    0 20px 60px rgba(212, 165, 255, 0.3),
+    0 0 0 3px rgba(255, 215, 0, 0.3);
+  border: 2px solid rgba(255, 255, 255, 0.8);
+}
+
+/* 进度条 */
+.theme-fairy .progress-bar {
+  height: 15px;
+  border-radius: 10px;
+  background: rgba(212, 165, 255, 0.2);
+  border: 1px solid rgba(212, 165, 255, 0.3);
+}
+
+.theme-fairy .progress-fill {
+  background: linear-gradient(90deg, var(--fairy-pink), var(--fairy-purple), var(--fairy-gold));
+  border-radius: 10px;
+  box-shadow: 0 0 10px rgba(255, 183, 197, 0.5);
+  animation: fairyGlow 2s ease-in-out infinite;
+}
+
+@keyframes fairyGlow {
+  0%, 100% { box-shadow: 0 0 10px rgba(255, 183, 197, 0.5); }
+  50% { box-shadow: 0 0 20px rgba(255, 183, 197, 0.8), 0 0 30px rgba(255, 215, 0, 0.4); }
+}
+
+/* 加载动画 */
+.theme-fairy .spinner {
+  border: 4px solid rgba(212, 165, 255, 0.2);
+  border-top: 4px solid var(--fairy-purple);
+  border-right: 4px solid var(--fairy-pink);
+  border-bottom: 4px solid var(--fairy-gold);
+  animation: spin 1.5s linear infinite;
+}
+
+/* 标题装饰 */
+.theme-fairy h2 {
+  position: relative;
+  display: inline-block;
+}
+
+.theme-fairy h2::before,
+.theme-fairy h2::after {
+  content: '✨';
+  position: absolute;
+  top: 50%;
+  transform: translateY(-50%);
+  font-size: 1.2rem;
+  animation: sparkle 1.5s ease-in-out infinite;
+}
+
+.theme-fairy h2::before {
+  left: -30px;
+}
+
+.theme-fairy h2::after {
+  right: -30px;
+}

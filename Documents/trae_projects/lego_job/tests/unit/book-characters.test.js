@@ -59,7 +59,7 @@ describe('book-characters.js API 测试', () => {
       
       mockContext = createMockContext(mockDB, createMockRequest({}, { bookId: 'book_1' }));
       
-      const { onRequestGet } = await import('../functions/api/book-characters.js');
+      const { onRequestGet } = await import('../../functions/api/book-characters.js');
       const result = await onRequestGet(mockContext);
       const data = JSON.parse(await result.text());
       
@@ -70,7 +70,7 @@ describe('book-characters.js API 测试', () => {
     it('应该拒绝没有bookId的请求', async () => {
       mockContext = createMockContext(mockDB, createMockRequest({}, {}));
       
-      const { onRequestGet } = await import('../functions/api/book-characters.js');
+      const { onRequestGet } = await import('../../functions/api/book-characters.js');
       const result = await onRequestGet(mockContext);
       
       expect(result.status).toBe(400);
@@ -92,7 +92,7 @@ describe('book-characters.js API 测试', () => {
         roleType: 'supporting'
       }));
       
-      const { onRequestPost } = await import('../functions/api/book-characters.js');
+      const { onRequestPost } = await import('../../functions/api/book-characters.js');
       const result = await onRequestPost(mockContext);
       const data = JSON.parse(await result.text());
       
@@ -105,7 +105,7 @@ describe('book-characters.js API 测试', () => {
         bookId: 'book_1'
       }));
       
-      const { onRequestPost } = await import('../functions/api/book-characters.js');
+      const { onRequestPost } = await import('../../functions/api/book-characters.js');
       const result = await onRequestPost(mockContext);
       
       expect(result.status).toBe(400);
@@ -123,7 +123,7 @@ describe('book-characters.js API 测试', () => {
         roleType: 'supporting'
       }));
       
-      const { onRequestPost } = await import('../functions/api/book-characters.js');
+      const { onRequestPost } = await import('../../functions/api/book-characters.js');
       const result = await onRequestPost(mockContext);
       
       expect(result.status).toBe(400);
@@ -142,7 +142,7 @@ describe('book-characters.js API 测试', () => {
         roleType: 'supporting'
       }));
       
-      const { onRequestPost } = await import('../functions/api/book-characters.js');
+      const { onRequestPost } = await import('../../functions/api/book-characters.js');
       const result = await onRequestPost(mockContext);
       
       expect(result.status).toBe(400);
@@ -158,7 +158,7 @@ describe('book-characters.js API 测试', () => {
         roleType: 'protagonist'
       }));
       
-      const { onRequestPost } = await import('../functions/api/book-characters.js');
+      const { onRequestPost } = await import('../../functions/api/book-characters.js');
       const result = await onRequestPost(mockContext);
       
       expect(result.status).toBe(404);
@@ -176,7 +176,7 @@ describe('book-characters.js API 测试', () => {
         roleType: 'protagonist'
       }));
       
-      const { onRequestPost } = await import('../functions/api/book-characters.js');
+      const { onRequestPost } = await import('../../functions/api/book-characters.js');
       const result = await onRequestPost(mockContext);
       
       expect(result.status).toBe(404);
@@ -197,7 +197,7 @@ describe('book-characters.js API 测试', () => {
         roleType: 'protagonist'
       }));
       
-      const { onRequestPost } = await import('../functions/api/book-characters.js');
+      const { onRequestPost } = await import('../../functions/api/book-characters.js');
       const result = await onRequestPost(mockContext);
       const data = JSON.parse(await result.text());
       
@@ -218,7 +218,7 @@ describe('book-characters.js API 测试', () => {
         roleType: 'supporting'
       }));
       
-      const { onRequestPut } = await import('../functions/api/book-characters.js');
+      const { onRequestPut } = await import('../../functions/api/book-characters.js');
       const result = await onRequestPut(mockContext);
       const data = JSON.parse(await result.text());
       
@@ -238,7 +238,7 @@ describe('book-characters.js API 测试', () => {
         roleType: 'supporting'
       }));
       
-      const { onRequestPut } = await import('../functions/api/book-characters.js');
+      const { onRequestPut } = await import('../../functions/api/book-characters.js');
       const result = await onRequestPut(mockContext);
       const data = JSON.parse(await result.text());
       
@@ -258,7 +258,7 @@ describe('book-characters.js API 测试', () => {
         roleType: 'protagonist'
       }));
       
-      const { onRequestPut } = await import('../functions/api/book-characters.js');
+      const { onRequestPut } = await import('../../functions/api/book-characters.js');
       const result = await onRequestPut(mockContext);
       const data = JSON.parse(await result.text());
       
@@ -276,7 +276,7 @@ describe('book-characters.js API 测试', () => {
         roleType: 'supporting'
       }));
       
-      const { onRequestPut } = await import('../functions/api/book-characters.js');
+      const { onRequestPut } = await import('../../functions/api/book-characters.js');
       const result = await onRequestPut(mockContext);
       
       expect(result.status).toBe(400);
@@ -290,7 +290,7 @@ describe('book-characters.js API 测试', () => {
         customName: '新名'
       }));
       
-      const { onRequestPut } = await import('../functions/api/book-characters.js');
+      const { onRequestPut } = await import('../../functions/api/book-characters.js');
       const result = await onRequestPut(mockContext);
       
       expect(result.status).toBe(404);
@@ -301,7 +301,7 @@ describe('book-characters.js API 测试', () => {
         customName: '新名'
       }));
       
-      const { onRequestPut } = await import('../functions/api/book-characters.js');
+      const { onRequestPut } = await import('../../functions/api/book-characters.js');
       const result = await onRequestPut(mockContext);
       
       expect(result.status).toBe(400);
@@ -315,7 +315,7 @@ describe('book-characters.js API 测试', () => {
       
       mockContext = createMockContext(mockDB, createMockRequest({}, { id: 'bc_1' }));
       
-      const { onRequestDelete } = await import('../functions/api/book-characters.js');
+      const { onRequestDelete } = await import('../../functions/api/book-characters.js');
       const result = await onRequestDelete(mockContext);
       const data = JSON.parse(await result.text());
       
@@ -325,7 +325,7 @@ describe('book-characters.js API 测试', () => {
     it('应该拒绝没有id的删除请求', async () => {
       mockContext = createMockContext(mockDB, createMockRequest({}, {}));
       
-      const { onRequestDelete } = await import('../functions/api/book-characters.js');
+      const { onRequestDelete } = await import('../../functions/api/book-characters.js');
       const result = await onRequestDelete(mockContext);
       
       expect(result.status).toBe(400);
@@ -336,7 +336,7 @@ describe('book-characters.js API 测试', () => {
       
       mockContext = createMockContext(mockDB, createMockRequest({}, { id: 'nonexistent' }));
       
-      const { onRequestDelete } = await import('../functions/api/book-characters.js');
+      const { onRequestDelete } = await import('../../functions/api/book-characters.js');
       const result = await onRequestDelete(mockContext);
       
       expect(result.status).toBe(404);

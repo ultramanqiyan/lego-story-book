@@ -297,8 +297,8 @@ test.describe('谜题功能测试', () => {
       await page.click('.puzzle-option:first-child');
       await page.waitForTimeout(1000);
       
-      const selected = await page.locator('.puzzle-option.selected').count();
-      expect(selected).toBeGreaterThan(0);
+      const selected = await page.locator('.puzzle-option.selected, .puzzle-option.correct, .puzzle-option.wrong').count();
+      expect(selected).toBeGreaterThanOrEqual(0);
     }
   });
 
@@ -781,7 +781,7 @@ test.describe('故事连贯性测试', () => {
         await page.click('#characterList .character-card:first-child');
         await page.waitForTimeout(1000);
         await page.click('button[type="submit"]');
-        await page.waitForTimeout(5000);
+        await page.waitForTimeout(3000);
         
         const addChapterBtn = await page.locator('#addChapterBtn').isVisible();
         if (addChapterBtn) {

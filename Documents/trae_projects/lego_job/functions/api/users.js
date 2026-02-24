@@ -42,6 +42,19 @@ export async function onRequestPost(context) {
       return createErrorResponse('用户名不能超过20个字符', 400);
     }
 
+    const existingUser = await DB.prepare(
+      'SELECT user_id FROM users WHERE username = ?'
+    ).bind(username.trim()).first();
+    
+    if (existingUser) {
+      console.log('User already exists:', existingUser.user_id);
+      return createSuccessResponse({ 
+        userId: existingUser.user_id, 
+        message: '登录成功',
+        isNewUser: false
+      });
+    }
+
     const userId = generateId();
     const now = new Date().toISOString();
 
@@ -55,7 +68,11 @@ export async function onRequestPost(context) {
 
     console.log('Insert result:', result);
 
-    return createSuccessResponse({ userId, message: '用户创建成功' });
+    return createSuccessResponse({ 
+      userId, 
+      message: '用户创建成功',
+      isNewUser: true
+    });
   } catch (error) {
     console.error('Create user error:', error);
     return createErrorResponse('创建用户失败: ' + error.message, 500);

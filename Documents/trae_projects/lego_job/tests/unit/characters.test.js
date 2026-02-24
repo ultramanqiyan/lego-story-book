@@ -59,7 +59,7 @@ describe('characters.js API 测试', () => {
       
       mockContext = createMockContext(mockDB, createMockRequest({}));
       
-      const { onRequestGet } = await import('../functions/api/characters.js');
+      const { onRequestGet } = await import('../../functions/api/characters.js');
       const result = await onRequestGet(mockContext);
       const data = JSON.parse(await result.text());
       
@@ -74,7 +74,7 @@ describe('characters.js API 测试', () => {
       
       mockContext = createMockContext(mockDB, createMockRequest({}));
       
-      const { onRequestGet } = await import('../functions/api/characters.js');
+      const { onRequestGet } = await import('../../functions/api/characters.js');
       const result = await onRequestGet(mockContext);
       
       expect(result.status).toBe(500);
@@ -94,7 +94,7 @@ describe('characters.js API 测试', () => {
       
       mockContext = createMockContext(mockDB, createMockRequest(requestData));
       
-      const { onRequestPost } = await import('../functions/api/characters.js');
+      const { onRequestPost } = await import('../../functions/api/characters.js');
       const result = await onRequestPost(mockContext);
       const data = JSON.parse(await result.text());
       
@@ -105,7 +105,7 @@ describe('characters.js API 测试', () => {
     it('应该拒绝空名称', async () => {
       mockContext = createMockContext(mockDB, createMockRequest({ name: '' }));
       
-      const { onRequestPost } = await import('../functions/api/characters.js');
+      const { onRequestPost } = await import('../../functions/api/characters.js');
       const result = await onRequestPost(mockContext);
       
       expect(result.status).toBe(400);
@@ -116,7 +116,7 @@ describe('characters.js API 测试', () => {
         name: '这是一个超过二十个字符的名称测试用例名称啊' 
       }));
       
-      const { onRequestPost } = await import('../functions/api/characters.js');
+      const { onRequestPost } = await import('../../functions/api/characters.js');
       const result = await onRequestPost(mockContext);
       
       expect(result.status).toBe(400);
@@ -137,7 +137,7 @@ describe('characters.js API 测试', () => {
         name: '新名称'
       }));
       
-      const { onRequestPut } = await import('../functions/api/characters.js');
+      const { onRequestPut } = await import('../../functions/api/characters.js');
       const result = await onRequestPut(mockContext);
       const data = JSON.parse(await result.text());
       
@@ -156,7 +156,7 @@ describe('characters.js API 测试', () => {
         name: '新名称'
       }));
       
-      const { onRequestPut } = await import('../functions/api/characters.js');
+      const { onRequestPut } = await import('../../functions/api/characters.js');
       const result = await onRequestPut(mockContext);
       
       expect(result.status).toBe(403);
@@ -170,7 +170,7 @@ describe('characters.js API 测试', () => {
         name: '新名称'
       }));
       
-      const { onRequestPut } = await import('../functions/api/characters.js');
+      const { onRequestPut } = await import('../../functions/api/characters.js');
       const result = await onRequestPut(mockContext);
       
       expect(result.status).toBe(404);
@@ -186,7 +186,7 @@ describe('characters.js API 测试', () => {
       
       mockContext = createMockContext(mockDB, createMockRequest({}, { id: 'char_1' }));
       
-      const { onRequestDelete } = await import('../functions/api/characters.js');
+      const { onRequestDelete } = await import('../../functions/api/characters.js');
       const result = await onRequestDelete(mockContext);
       const data = JSON.parse(await result.text());
       
@@ -200,7 +200,7 @@ describe('characters.js API 测试', () => {
       
       mockContext = createMockContext(mockDB, createMockRequest({}, { id: 'char_1' }));
       
-      const { onRequestDelete } = await import('../functions/api/characters.js');
+      const { onRequestDelete } = await import('../../functions/api/characters.js');
       const result = await onRequestDelete(mockContext);
       
       expect(result.status).toBe(200);
@@ -217,7 +217,7 @@ describe('characters.js API 测试', () => {
       
       mockContext = createMockContext(mockDB, createMockRequest({}, { id: 'char_1' }));
       
-      const { onRequestDelete } = await import('../functions/api/characters.js');
+      const { onRequestDelete } = await import('../../functions/api/characters.js');
       const result = await onRequestDelete(mockContext);
       
       expect(result.status).toBe(403);

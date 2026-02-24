@@ -37,22 +37,28 @@ export async function onRequestGet(context) {
          WHERE bc.book_id = ?`
       ).bind(bookId).all();
       
-      let puzzleRecords = {};
-      const url = new URL(context.request.url);
       const userIdParam = url.searchParams.get('userId');
       
-      if (userIdParam) {
-        for (const chapter of chapters.results) {
-          if (chapter.has_puzzle) {
-            const puzzle = await DB.prepare(
-              'SELECT puzzle_id FROM puzzles WHERE chapter_id = ?'
-            ).bind(chapter.chapter_id).first();
+      for (const chapter of chapters.results) {
+        if (chapter.has_puzzle) {
+          const puzzle = await DB.prepare(
+            'SELECT puzzle_id, question, options, hint, puzzle_type FROM puzzles WHERE chapter_id = ?'
+          ).bind(chapter.chapter_id).first();
+          
+          if (puzzle) {
+            chapter.puzzle = {
+              id: puzzle.puzzle_id,
+              question: puzzle.question,
+              options: JSON.parse(puzzle.options),
+              hint: puzzle.hint,
+              type: puzzle.puzzle_type
+            };
             
-            if (puzzle) {
+            if (userIdParam) {
               const record = await DB.prepare(
                 'SELECT is_correct FROM puzzle_records WHERE user_id = ? AND puzzle_id = ?'
               ).bind(userIdParam, puzzle.puzzle_id).first();
-              chapter.puzzle_result = record ? record.is_correct : null;
+              chapter.isCompleted = record ? record.is_correct === 1 : false;
             }
           }
         }

@@ -1,0 +1,486 @@
+/* ============================================
+   风格3: 科幻未来风格 (Sci-Fi Future Style)
+   特点：霓虹光效、网格背景、科技感动画
+   ============================================ */
+
+:root {
+  --sci-cyan: #00f5ff;
+  --sci-blue: #0080ff;
+  --sci-purple: #bf00ff;
+  --sci-pink: #ff00ff;
+  --sci-green: #00ff88;
+  --sci-yellow: #ffff00;
+  --sci-dark: #0a0a1a;
+  --sci-darker: #050510;
+  --sci-panel: #12122a;
+  --sci-border: #1e1e4a;
+}
+
+/* 基础样式 - 深色科技背景 */
+.theme-scifi body {
+  background: var(--sci-dark);
+  font-family: 'Courier New', 'Monaco', monospace;
+  color: var(--sci-cyan);
+  position: relative;
+}
+
+/* 网格背景 */
+.theme-scifi .sci-grid {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  pointer-events: none;
+  z-index: -1;
+  background-image: 
+    linear-gradient(rgba(0, 245, 255, 0.03) 1px, transparent 1px),
+    linear-gradient(90deg, rgba(0, 245, 255, 0.03) 1px, transparent 1px);
+  background-size: 50px 50px;
+  animation: gridMove 20s linear infinite;
+}
+
+@keyframes gridMove {
+  0% { transform: perspective(500px) rotateX(60deg) translateY(0); }
+  100% { transform: perspective(500px) rotateX(60deg) translateY(50px); }
+}
+
+/* 扫描线效果 */
+.theme-scifi .scanlines {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  pointer-events: none;
+  z-index: 9999;
+  background: repeating-linear-gradient(
+    0deg,
+    rgba(0, 0, 0, 0.1),
+    rgba(0, 0, 0, 0.1) 1px,
+    transparent 1px,
+    transparent 2px
+  );
+  opacity: 0.3;
+}
+
+/* 头部 - 全息投影风格 */
+.theme-scifi .header {
+  background: linear-gradient(180deg, 
+    rgba(0, 128, 255, 0.2) 0%, 
+    rgba(0, 128, 255, 0.05) 100%);
+  border: 1px solid var(--sci-cyan);
+  border-radius: 0;
+  box-shadow: 
+    0 0 20px rgba(0, 245, 255, 0.3),
+    inset 0 0 30px rgba(0, 245, 255, 0.1);
+  position: relative;
+  clip-path: polygon(
+    0 0,
+    calc(100% - 30px) 0,
+    100% 30px,
+    100% 100%,
+    30px 100%,
+    0 calc(100% - 30px)
+  );
+}
+
+.theme-scifi .header::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  height: 2px;
+  background: linear-gradient(90deg, 
+    transparent, 
+    var(--sci-cyan), 
+    var(--sci-blue),
+    var(--sci-cyan),
+    transparent
+  );
+  animation: scanLine 3s linear infinite;
+}
+
+@keyframes scanLine {
+  0% { transform: translateX(-100%); }
+  100% { transform: translateX(100%); }
+}
+
+.theme-scifi .header h1 {
+  font-family: 'Orbitron', 'Courier New', monospace;
+  text-transform: uppercase;
+  letter-spacing: 5px;
+  text-shadow: 
+    0 0 10px var(--sci-cyan),
+    0 0 20px var(--sci-cyan),
+    0 0 40px var(--sci-blue);
+  animation: textFlicker 3s infinite;
+}
+
+@keyframes textFlicker {
+  0%, 100% { opacity: 1; }
+  5% { opacity: 0.8; }
+  10% { opacity: 1; }
+  15% { opacity: 0.9; }
+  20% { opacity: 1; }
+}
+
+/* 科技按钮 */
+.theme-scifi .btn {
+  background: transparent;
+  border: 2px solid var(--sci-cyan);
+  border-radius: 0;
+  color: var(--sci-cyan);
+  font-family: 'Courier New', monospace;
+  text-transform: uppercase;
+  letter-spacing: 2px;
+  position: relative;
+  overflow: hidden;
+  transition: all 0.3s;
+  clip-path: polygon(
+    10px 0,
+    100% 0,
+    100% calc(100% - 10px),
+    calc(100% - 10px) 100%,
+    0 100%,
+    0 10px
+  );
+}
+
+.theme-scifi .btn::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: -100%;
+  width: 100%;
+  height: 100%;
+  background: linear-gradient(90deg, 
+    transparent, 
+    rgba(0, 245, 255, 0.3), 
+    transparent
+  );
+  transition: left 0.5s;
+}
+
+.theme-scifi .btn:hover {
+  background: rgba(0, 245, 255, 0.1);
+  box-shadow: 
+    0 0 20px rgba(0, 245, 255, 0.5),
+    inset 0 0 20px rgba(0, 245, 255, 0.1);
+  text-shadow: 0 0 10px var(--sci-cyan);
+}
+
+.theme-scifi .btn:hover::before {
+  left: 100%;
+}
+
+.theme-scifi .btn-primary {
+  border-color: var(--sci-cyan);
+  color: var(--sci-cyan);
+}
+
+.theme-scifi .btn-secondary {
+  border-color: var(--sci-purple);
+  color: var(--sci-purple);
+}
+
+.theme-scifi .btn-accent {
+  border-color: var(--sci-green);
+  color: var(--sci-green);
+}
+
+/* 科技卡片 - 终端风格 */
+.theme-scifi .card {
+  background: var(--sci-panel);
+  border: 1px solid var(--sci-border);
+  border-radius: 0;
+  box-shadow: 
+    0 0 20px rgba(0, 128, 255, 0.1),
+    inset 0 0 30px rgba(0, 0, 0, 0.5);
+  position: relative;
+}
+
+.theme-scifi .card::before {
+  content: '';
+  position: absolute;
+  top: -1px;
+  left: -1px;
+  right: -1px;
+  height: 1px;
+  background: linear-gradient(90deg, 
+    transparent, 
+    var(--sci-cyan), 
+    transparent
+  );
+}
+
+.theme-scifi .card h2 {
+  color: var(--sci-cyan);
+  font-family: 'Orbitron', monospace;
+  text-transform: uppercase;
+  letter-spacing: 3px;
+  border-bottom: 1px solid var(--sci-border);
+  padding-bottom: 10px;
+  position: relative;
+}
+
+.theme-scifi .card h2::after {
+  content: '';
+  position: absolute;
+  bottom: -1px;
+  left: 0;
+  width: 50px;
+  height: 1px;
+  background: var(--sci-cyan);
+  box-shadow: 0 0 10px var(--sci-cyan);
+}
+
+/* 导航链接 */
+.theme-scifi .nav a {
+  background: transparent;
+  border: 1px solid var(--sci-border);
+  border-radius: 0;
+  color: var(--sci-cyan);
+  font-family: 'Courier New', monospace;
+  text-transform: uppercase;
+  letter-spacing: 1px;
+  position: relative;
+  transition: all 0.3s;
+}
+
+.theme-scifi .nav a::before {
+  content: '>';
+  position: absolute;
+  left: 10px;
+  opacity: 0;
+  transition: all 0.3s;
+}
+
+.theme-scifi .nav a:hover {
+  background: rgba(0, 245, 255, 0.1);
+  border-color: var(--sci-cyan);
+  padding-left: 25px;
+  box-shadow: 0 0 15px rgba(0, 245, 255, 0.3);
+}
+
+.theme-scifi .nav a:hover::before {
+  opacity: 1;
+  left: 10px;
+}
+
+/* 人仔卡片 - 数据面板风格 */
+.theme-scifi .character-card {
+  background: var(--sci-panel);
+  border: 1px solid var(--sci-border);
+  border-radius: 0;
+  position: relative;
+  overflow: hidden;
+}
+
+.theme-scifi .character-card::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 2px;
+  background: linear-gradient(90deg, var(--sci-cyan), var(--sci-purple));
+  animation: dataStream 2s linear infinite;
+}
+
+@keyframes dataStream {
+  0% { transform: translateX(-100%); }
+  100% { transform: translateX(100%); }
+}
+
+.theme-scifi .character-card:hover {
+  border-color: var(--sci-cyan);
+  box-shadow: 
+    0 0 30px rgba(0, 245, 255, 0.3),
+    inset 0 0 30px rgba(0, 245, 255, 0.05);
+  transform: translateY(-5px);
+}
+
+/* 书籍卡片 */
+.theme-scifi .book-card {
+  background: var(--sci-panel);
+  border: 1px solid var(--sci-border);
+  border-radius: 0;
+  position: relative;
+  overflow: hidden;
+}
+
+.theme-scifi .book-cover {
+  background: linear-gradient(135deg, 
+    rgba(0, 128, 255, 0.3), 
+    rgba(191, 0, 255, 0.3)
+  ) !important;
+  position: relative;
+}
+
+.theme-scifi .book-cover::after {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: repeating-linear-gradient(
+    0deg,
+    transparent,
+    transparent 2px,
+    rgba(0, 245, 255, 0.03) 2px,
+    rgba(0, 245, 255, 0.03) 4px
+  );
+  animation: dataScroll 5s linear infinite;
+}
+
+@keyframes dataScroll {
+  0% { transform: translateY(0); }
+  100% { transform: translateY(4px); }
+}
+
+/* 科技动画 */
+@keyframes sciPulse {
+  0%, 100% { 
+    box-shadow: 0 0 5px var(--sci-cyan), 0 0 10px var(--sci-cyan);
+  }
+  50% { 
+    box-shadow: 0 0 20px var(--sci-cyan), 0 0 40px var(--sci-cyan), 0 0 60px var(--sci-blue);
+  }
+}
+
+.theme-scifi .pulse-animation {
+  animation: sciPulse 2s ease-in-out infinite;
+}
+
+/* 故障效果 */
+@keyframes glitch {
+  0%, 100% { transform: translate(0); }
+  20% { transform: translate(-2px, 2px); }
+  40% { transform: translate(-2px, -2px); }
+  60% { transform: translate(2px, 2px); }
+  80% { transform: translate(2px, -2px); }
+}
+
+.theme-scifi .glitch-animation {
+  animation: glitch 0.3s ease-in-out;
+}
+
+/* 打字机效果 */
+@keyframes typing {
+  from { width: 0; }
+  to { width: 100%; }
+}
+
+.theme-scifi .typing-effect {
+  overflow: hidden;
+  white-space: nowrap;
+  animation: typing 2s steps(40, end);
+}
+
+/* 数字雨效果 */
+@keyframes digitalRain {
+  0% {
+    transform: translateY(-100%);
+    opacity: 1;
+  }
+  100% {
+    transform: translateY(100vh);
+    opacity: 0;
+  }
+}
+
+.theme-scifi .digital-rain {
+  position: fixed;
+  color: var(--sci-green);
+  font-family: 'Courier New', monospace;
+  font-size: 14px;
+  pointer-events: none;
+  z-index: -1;
+  animation: digitalRain 3s linear infinite;
+  text-shadow: 0 0 5px var(--sci-green);
+}
+
+/* 输入框 */
+.theme-scifi input,
+.theme-scifi textarea,
+.theme-scifi select {
+  background: var(--sci-darker);
+  border: 1px solid var(--sci-border);
+  border-radius: 0;
+  color: var(--sci-cyan);
+  font-family: 'Courier New', monospace;
+  transition: all 0.3s;
+}
+
+.theme-scifi input:focus,
+.theme-scifi textarea:focus,
+.theme-scifi select:focus {
+  border-color: var(--sci-cyan);
+  box-shadow: 
+    0 0 15px rgba(0, 245, 255, 0.3),
+    inset 0 0 10px rgba(0, 245, 255, 0.1);
+  outline: none;
+}
+
+.theme-scifi input::placeholder {
+  color: rgba(0, 245, 255, 0.4);
+}
+
+/* 模态框 */
+.theme-scifi .modal-content {
+  background: var(--sci-panel);
+  border: 1px solid var(--sci-cyan);
+  border-radius: 0;
+  box-shadow: 
+    0 0 40px rgba(0, 245, 255, 0.3),
+    inset 0 0 30px rgba(0, 0, 0, 0.5);
+}
+
+/* 进度条 */
+.theme-scifi .progress-bar {
+  height: 10px;
+  background: var(--sci-darker);
+  border: 1px solid var(--sci-border);
+  border-radius: 0;
+}
+
+.theme-scifi .progress-fill {
+  background: linear-gradient(90deg, var(--sci-cyan), var(--sci-blue), var(--sci-purple));
+  box-shadow: 0 0 10px var(--sci-cyan);
+  animation: progressGlow 1.5s ease-in-out infinite;
+}
+
+@keyframes progressGlow {
+  0%, 100% { box-shadow: 0 0 5px var(--sci-cyan); }
+  50% { box-shadow: 0 0 20px var(--sci-cyan), 0 0 30px var(--sci-blue); }
+}
+
+/* 加载动画 */
+.theme-scifi .spinner {
+  border: 3px solid var(--sci-border);
+  border-top: 3px solid var(--sci-cyan);
+  border-radius: 50%;
+  animation: spin 1s linear infinite;
+  box-shadow: 0 0 10px var(--sci-cyan);
+}
+
+/* 二进制背景 */
+.theme-scifi .binary-bg {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  pointer-events: none;
+  z-index: -2;
+  opacity: 0.03;
+  font-family: 'Courier New', monospace;
+  font-size: 12px;
+  color: var(--sci-cyan);
+  overflow: hidden;
+  white-space: pre-wrap;
+  word-break: break-all;
+}

@@ -58,7 +58,7 @@ describe('users.js API 测试', () => {
       
       mockContext = createMockContext(mockDB, createMockRequest({}, { userId: 'user_1' }));
       
-      const { onRequestGet } = await import('../functions/api/users.js');
+      const { onRequestGet } = await import('../../functions/api/users.js');
       const result = await onRequestGet(mockContext);
       const data = JSON.parse(await result.text());
       
@@ -69,7 +69,7 @@ describe('users.js API 测试', () => {
     it('应该拒绝没有userId的请求', async () => {
       mockContext = createMockContext(mockDB, createMockRequest({}, {}));
       
-      const { onRequestGet } = await import('../functions/api/users.js');
+      const { onRequestGet } = await import('../../functions/api/users.js');
       const result = await onRequestGet(mockContext);
       
       expect(result.status).toBe(400);
@@ -80,7 +80,7 @@ describe('users.js API 测试', () => {
       
       mockContext = createMockContext(mockDB, createMockRequest({}, { userId: 'nonexistent' }));
       
-      const { onRequestGet } = await import('../functions/api/users.js');
+      const { onRequestGet } = await import('../../functions/api/users.js');
       const result = await onRequestGet(mockContext);
       
       expect(result.status).toBe(404);
@@ -96,7 +96,7 @@ describe('users.js API 测试', () => {
         email: 'new@example.com'
       }));
       
-      const { onRequestPost } = await import('../functions/api/users.js');
+      const { onRequestPost } = await import('../../functions/api/users.js');
       const result = await onRequestPost(mockContext);
       const data = JSON.parse(await result.text());
       
@@ -109,7 +109,7 @@ describe('users.js API 测试', () => {
         username: ''
       }));
       
-      const { onRequestPost } = await import('../functions/api/users.js');
+      const { onRequestPost } = await import('../../functions/api/users.js');
       const result = await onRequestPost(mockContext);
       
       expect(result.status).toBe(400);
@@ -120,7 +120,7 @@ describe('users.js API 测试', () => {
         username: '这是一个超过二十个字符的用户名测试名称啊哈哈哈哈'
       }));
       
-      const { onRequestPost } = await import('../functions/api/users.js');
+      const { onRequestPost } = await import('../../functions/api/users.js');
       const result = await onRequestPost(mockContext);
       
       expect(result.status).toBe(400);
@@ -140,7 +140,7 @@ describe('users.js API 测试', () => {
         username: '新用户名'
       }));
       
-      const { onRequestPut } = await import('../functions/api/users.js');
+      const { onRequestPut } = await import('../../functions/api/users.js');
       const result = await onRequestPut(mockContext);
       const data = JSON.parse(await result.text());
       
@@ -150,7 +150,7 @@ describe('users.js API 测试', () => {
     it('应该拒绝没有userId的请求', async () => {
       mockContext = createMockContext(mockDB, createMockRequest({}));
       
-      const { onRequestPut } = await import('../functions/api/users.js');
+      const { onRequestPut } = await import('../../functions/api/users.js');
       const result = await onRequestPut(mockContext);
       
       expect(result.status).toBe(400);
@@ -163,7 +163,7 @@ describe('users.js API 测试', () => {
         userId: 'nonexistent'
       }));
       
-      const { onRequestPut } = await import('../functions/api/users.js');
+      const { onRequestPut } = await import('../../functions/api/users.js');
       const result = await onRequestPut(mockContext);
       
       expect(result.status).toBe(404);
@@ -180,7 +180,7 @@ describe('users.js API 测试', () => {
         username: '这是一个超过二十个字符的用户名测试名称啊哈哈哈哈'
       }));
       
-      const { onRequestPut } = await import('../functions/api/users.js');
+      const { onRequestPut } = await import('../../functions/api/users.js');
       const result = await onRequestPut(mockContext);
       
       expect(result.status).toBe(400);
@@ -196,7 +196,7 @@ describe('users.js API 测试', () => {
         userId: 'user_1'
       }));
       
-      const { onRequestPut } = await import('../functions/api/users.js');
+      const { onRequestPut } = await import('../../functions/api/users.js');
       const result = await onRequestPut(mockContext);
       const data = JSON.parse(await result.text());
       
@@ -215,7 +215,7 @@ describe('users.js API 测试', () => {
         email: 'new@example.com'
       }));
       
-      const { onRequestPut } = await import('../functions/api/users.js');
+      const { onRequestPut } = await import('../../functions/api/users.js');
       const result = await onRequestPut(mockContext);
       const data = JSON.parse(await result.text());
       
@@ -234,7 +234,7 @@ describe('users.js API 测试', () => {
         avatar: 'avatar_1'
       }));
       
-      const { onRequestPut } = await import('../functions/api/users.js');
+      const { onRequestPut } = await import('../../functions/api/users.js');
       const result = await onRequestPut(mockContext);
       const data = JSON.parse(await result.text());
       
@@ -253,7 +253,7 @@ describe('users.js API 测试', () => {
         dailyTimeLimit: 60
       }));
       
-      const { onRequestPut } = await import('../functions/api/users.js');
+      const { onRequestPut } = await import('../../functions/api/users.js');
       const result = await onRequestPut(mockContext);
       const data = JSON.parse(await result.text());
       
@@ -269,7 +269,7 @@ describe('users.js API 测试', () => {
         parentId: 'parent_1'
       }));
       
-      const { onRequestPost } = await import('../functions/api/users.js');
+      const { onRequestPost } = await import('../../functions/api/users.js');
       const result = await onRequestPost(mockContext);
       const data = JSON.parse(await result.text());
       

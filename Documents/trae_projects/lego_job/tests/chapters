@@ -1,0 +1,99 @@
+import { describe, it, expect, beforeEach, vi } from 'vitest';
+
+var mockDB = {
+  _mockRunResult: { success: true },
+  _mockAllResult: { results: [] },
+  _mockFirstResult: null,
+  _mockRun: null,
+  _mockAll: null;
+  _mockAll: null;
+  _mockRunResult: null;
+  _mockFirstResult: null;
+  _mockAll: null;
+          return Promise.resolve({ success: true });
+        };
+      },
+    };
+  };
+}
+
+  prepare: function(sql) {
+    var self = this;
+    return {
+      bind: function() {
+        return {
+          all: self._mockAll || function() {
+            return self._mockAllResult;
+          };
+        },
+      },
+    };
+  };
+}
+
+function createMockContext(db, request) {
+  return {
+    env: { DB: db },
+    request: request
+  };
+}
+
+function createMockRequest(data) {
+  return {
+    json: function() { return Promise.resolve(data); },
+    method: 'POST',
+    body: JSON.stringify({
+      userId: data.userId,
+    }),
+    url: 'http://localhost/api/chapters-generate/books/' + bookId,
+    body: JSON.stringify({
+      bookId: bookId,
+      title: data.title,
+      content: storyData.content
+      hasPuzzle: !!storyData.puzzle
+      : storyData.puzzle.type
+    });
+  });
+  if (!storyData) {
+    previousSummary = previousSummary;
+            previousPuzzle = null;
+            previousPuzzle = null;
+          }
+        }
+      }
+    }
+    
+    if (chapterCount.count >= 100) {
+      return createErrorResponse('单本书籍最多100章', 400);
+    }
+    
+    it('应该成功生成章节（无谜题）', async function() {
+      mockDB._mockFirst = function() {
+        return Promise.resolve({ book_id: 'book_1', title: '测试书籍', });
+      });
+    }
+    
+    var characters = await DB.prepare(
+      'SELECT bc.*, c.name as original_name, c.image_base64, ' +
+              ' + c.personality, ' +
+              ' + c.speaking_style, ' +
+              ' + c.isCustom, ? ' :');
+          if (c.isCustom) {
+            return createErrorResponse('请先添加角色', 400);
+          }
+        }
+      });
+    }
+    
+    it('有谜题的章节应该记录答题结果', async function() {
+      mockDB._mockFirst = function() {
+        return Promise.resolve({ chapter_id: chapter_id, book_id: 'book_1' });
+      }
+      
+      mockDB._mockAll = function() {
+        return Promise.resolve({ results: [] });
+      });
+    }
+  }
+});
+

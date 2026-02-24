@@ -1,0 +1,468 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>章节阅读 - 乐高故事书</title>
+  <link rel="stylesheet" href="css/lego-theme.css">
+  <link rel="stylesheet" href="css/loading.css">
+</head>
+<body>
+  <div class="page-container">
+    <header class="page-header">
+      <div class="page-header-left">
+        <a href="#" id="backBtn" class="lego-btn lego-btn-blue">
+          <span>←</span>
+        </a>
+        <div>
+          <h1 class="lego-title" id="bookTitle" style="font-size: 1.25rem;">加载中...</h1>
+          <p class="page-header-subtitle" id="chapterInfo">第 1 章</p>
+        </div>
+      </div>
+
+      <div style="display: flex; align-items: center; gap: 8px;">
+        <button id="prevChapterBtn" class="nav-btn" disabled>
+          <span>←</span>
+        </button>
+        <span id="chapterNav" class="font-bold">1 / 1</span>
+        <button id="nextChapterBtn" class="nav-btn" disabled>
+          <span>→</span>
+        </button>
+      </div>
+    </header>
+
+    <div class="max-w-3xl mx-auto">
+      <div id="promptSection" class="lego-card mb-4" style="background: #f0f9ff; border-color: var(--lego-blue);">
+        <button id="promptToggle" class="prompt-toggle" onclick="togglePrompt()">
+          <div style="display: flex; align-items: center; gap: 8px;">
+            <span style="font-size: 20px;">📝</span>
+            <span style="font-weight: bold;">故事创作提示</span>
+          </div>
+          <span id="promptArrow" class="prompt-arrow">▼</span>
+        </button>
+        <div id="promptContent" class="prompt-content" style="display: none;">
+          <div class="prompt-block">
+            <h4 style="margin: 0 0 8px; color: var(--lego-red);">🎭 角色信息</h4>
+            <div id="promptCharacters" style="font-size: 0.875rem; color: #4b5563;"></div>
+          </div>
+          <div class="prompt-block">
+            <h4 style="margin: 0 0 8px; color: var(--lego-blue);">📖 故事背景</h4>
+            <div id="promptBackground" style="font-size: 0.875rem; color: #4b5563;"></div>
+          </div>
+          <div class="prompt-block">
+            <h4 style="margin: 0 0 8px; color: var(--lego-green);">📚 前情提要</h4>
+            <div id="promptSummary" style="font-size: 0.875rem; color: #4b5563;"></div>
+          </div>
+        </div>
+      </div>
+
+      <div class="lego-card mb-6">
+        <h2 id="chapterTitle" class="text-2xl font-black mb-4 text-center" style="font-size: 1.5rem;">
+          加载中...
+        </h2>
+        
+        <div id="storyContent" class="story-content" style="font-size: 1.125rem; line-height: 1.8;">
+          <p style="text-align: center; color: #6b7280;">正在加载故事内容...</p>
+        </div>
+      </div>
+
+      <div id="puzzleArea" class="lego-card mb-6" style="display: none; background: var(--lego-yellow); border-color: var(--lego-orange);">
+        <div style="display: flex; align-items: center; gap: 8px; margin-bottom: 16px;">
+          <span style="font-size: 24px;">❓</span>
+          <h3 style="font-size: 1.25rem; font-weight: 900; margin: 0;">互动谜题</h3>
+        </div>
+
+        <p id="puzzleQuestion" style="font-size: 1.125rem; font-weight: bold; margin-bottom: 24px;"></p>
+
+        <div id="hintArea" style="display: none; margin-bottom: 16px; padding: 12px; background: white; border-radius: 12px; border: 2px solid var(--lego-blue);">
+          <div style="display: flex; align-items: flex-start; gap: 8px;">
+            <span style="font-size: 20px;">💡</span>
+            <p id="hintText" style="font-size: 0.875rem; margin: 0;"></p>
+          </div>
+        </div>
+
+        <div id="puzzleOptions" style="display: grid; grid-template-columns: repeat(2, 1fr); gap: 12px;"></div>
+
+        <p id="attemptsInfo" style="text-align: center; margin-top: 16px; font-size: 0.875rem;">
+          尝试次数: <span id="attemptsCount">0</span> / 3
+        </p>
+      </div>
+
+      <div id="puzzleComplete" class="lego-card mb-6" style="display: none; background: var(--lego-green); color: white; text-align: center;">
+        <span style="font-size: 64px; display: block; margin-bottom: 16px;">✅</span>
+        <h3 style="font-size: 1.5rem; font-weight: 900; margin: 0 0 8px;">太棒了！</h3>
+        <p style="margin: 0 0 16px;">你成功解开了谜题，可以继续冒险了！</p>
+      </div>
+
+      <div id="continueArea" style="text-align: center; margin-top: 32px; display: none;">
+        <button id="continueBtn" class="lego-btn lego-btn-red" style="font-size: 1.125rem; padding: 16px 32px;">
+          <span>✨</span>
+          继续生成故事
+        </button>
+      </div>
+    </div>
+
+    <div class="lego-footer-bar"></div>
+  </div>
+
+  <script src="js/utils.js"></script>
+  <script src="js/loading-manager.js"></script>
+  <script>
+    var userId = requireAuth();
+    var bookId = getQueryParam('bookId');
+    var chapterId = getQueryParam('chapterId');
+    var book = null;
+    var currentChapter = null;
+    var currentChapterIndex = 0;
+    var selectedAnswer = null;
+    var attempts = 0;
+    var puzzleSolved = false;
+    var promptExpanded = false;
+
+    document.addEventListener('DOMContentLoaded', function() {
+      initLoadingManager();
+
+      if (!bookId) {
+        window.location.href = 'index.html';
+        return;
+      }
+
+      loadBook();
+
+      document.getElementById('backBtn').href = 'book.html?id=' + bookId;
+      
+      document.getElementById('prevChapterBtn').addEventListener('click', function() {
+        if (currentChapterIndex > 0) {
+          navigateChapter(currentChapterIndex - 1);
+        }
+      });
+
+      document.getElementById('nextChapterBtn').addEventListener('click', function() {
+        if (currentChapterIndex < book.chapters.length - 1) {
+          navigateChapter(currentChapterIndex + 1);
+        }
+      });
+
+      document.getElementById('continueBtn').addEventListener('click', handleContinue);
+    });
+
+    function togglePrompt() {
+      promptExpanded = !promptExpanded;
+      var content = document.getElementById('promptContent');
+      var arrow = document.getElementById('promptArrow');
+      
+      if (promptExpanded) {
+        content.style.display = 'block';
+        arrow.textContent = '▲';
+      } else {
+        content.style.display = 'none';
+        arrow.textContent = '▼';
+      }
+    }
+
+    async function loadBook() {
+      try {
+        var data = await fetchAPI('/books/' + bookId + '?userId=' + userId);
+        book = data.book;
+        
+        if (chapterId) {
+          currentChapterIndex = book.chapters.findIndex(function(c) { return c.id === chapterId; });
+          if (currentChapterIndex === -1) currentChapterIndex = 0;
+        } else {
+          currentChapterIndex = book.chapters.length - 1;
+        }
+        
+        renderChapter();
+        renderPromptInfo();
+      } catch (error) {
+        showToast('加载书籍失败', 'error');
+        console.error(error);
+      }
+    }
+
+    function renderPromptInfo() {
+      var charactersHtml = '';
+      if (book.characters && book.characters.length > 0) {
+        charactersHtml = book.characters.map(function(char) {
+          var roleLabel = getRoleLabel(char.role);
+          return '<div style="margin-bottom: 8px; padding: 8px; background: white; border-radius: 8px;">' +
+            '<strong>' + char.customName + '</strong> (' + roleLabel + ')' +
+            (char.personality ? '<br><span style="color: #6b7280;">性格: ' + char.personality + '</span>' : '') +
+            (char.speechStyle ? '<br><span style="color: #6b7280;">说话风格: ' + char.speechStyle + '</span>' : '') +
+          '</div>';
+        }).join('');
+      } else {
+        charactersHtml = '<p style="color: #9ca3af;">暂无角色信息</p>';
+      }
+      document.getElementById('promptCharacters').innerHTML = charactersHtml;
+
+      var backgroundHtml = '';
+      if (book.plotType || book.theme || book.setting) {
+        backgroundHtml = '<div style="padding: 8px; background: white; border-radius: 8px;">';
+        if (book.plotType) backgroundHtml += '<p><strong>情节类型:</strong> ' + book.plotType + '</p>';
+        if (book.theme) backgroundHtml += '<p><strong>主题:</strong> ' + book.theme + '</p>';
+        if (book.setting) backgroundHtml += '<p><strong>场景:</strong> ' + book.setting + '</p>';
+        backgroundHtml += '</div>';
+      } else {
+        backgroundHtml = '<p style="color: #9ca3af;">暂无背景信息</p>';
+      }
+      document.getElementById('promptBackground').innerHTML = backgroundHtml;
+
+      var summaryHtml = '';
+      if (currentChapterIndex > 0) {
+        var prevChapter = book.chapters[currentChapterIndex - 1];
+        summaryHtml = '<div style="padding: 8px; background: white; border-radius: 8px;">' +
+          '<p><strong>上一章:</strong> ' + prevChapter.title + '</p>' +
+          '<p style="margin-top: 8px;">' + getShortSummary(prevChapter.content) + '</p>' +
+        '</div>';
+      } else {
+        summaryHtml = '<p style="color: #9ca3af;">这是第一章，故事刚刚开始...</p>';
+      }
+      document.getElementById('promptSummary').innerHTML = summaryHtml;
+    }
+
+    function getRoleLabel(role) {
+      var labels = {
+        'protagonist': '主人公',
+        'supporting': '配角',
+        'villain': '反派',
+        'npc': '路人'
+      };
+      return labels[role] || role;
+    }
+
+    function getShortSummary(content) {
+      if (!content) return '暂无内容';
+      var text = content.replace(/<[^>]*>/g, '');
+      if (text.length > 200) {
+        return text.substring(0, 200) + '...';
+      }
+      return text;
+    }
+
+    function renderChapter() {
+      if (!book || book.chapters.length === 0) {
+        window.location.href = 'book.html?id=' + bookId;
+        return;
+      }
+
+      currentChapter = book.chapters[currentChapterIndex];
+      
+      document.getElementById('bookTitle').textContent = book.title;
+      document.getElementById('chapterInfo').textContent = '第 ' + currentChapter.number + ' 章';
+      document.getElementById('chapterNav').textContent = (currentChapterIndex + 1) + ' / ' + book.chapters.length;
+      document.getElementById('chapterTitle').textContent = currentChapter.title;
+
+      document.getElementById('prevChapterBtn').disabled = currentChapterIndex === 0;
+      document.getElementById('nextChapterBtn').disabled = currentChapterIndex === book.chapters.length - 1;
+
+      var content = highlightContent(currentChapter.content);
+      document.getElementById('storyContent').innerHTML = content;
+
+      var puzzleArea = document.getElementById('puzzleArea');
+      var puzzleComplete = document.getElementById('puzzleComplete');
+      var continueArea = document.getElementById('continueArea');
+
+      if (currentChapter.puzzle && !currentChapter.isCompleted) {
+        puzzleArea.style.display = 'block';
+        puzzleComplete.style.display = 'none';
+        continueArea.style.display = 'none';
+        renderPuzzle();
+      } else if (currentChapter.isCompleted) {
+        puzzleArea.style.display = 'none';
+        puzzleComplete.style.display = 'block';
+        continueArea.style.display = 'block';
+      } else {
+        puzzleArea.style.display = 'none';
+        puzzleComplete.style.display = 'none';
+        continueArea.style.display = 'block';
+      }
+
+      puzzleSolved = false;
+      selectedAnswer = null;
+      attempts = 0;
+    }
+
+    function highlightContent(content) {
+      if (!content) return '';
+      
+      var highlighted = content
+        .replace(/(\S+?)说/g, '<span class="character-name">$1</span>说')
+        .replace(/(\S+?)走/g, '<span class="action">$1</span>走')
+        .replace(/(\S+?)跑/g, '<span class="action">$1</span>跑')
+        .replace(/开心/g, '<span class="emotion">开心</span>')
+        .replace(/害怕/g, '<span class="emotion">害怕</span>')
+        .replace(/森林/g, '<span class="location">森林</span>')
+        .replace(/城堡/g, '<span class="location">城堡</span>')
+        .replace(/\n/g, '</p><p>');
+
+      return '<p>' + highlighted + '</p>';
+    }
+
+    function renderPuzzle() {
+      var puzzle = currentChapter.puzzle;
+      if (!puzzle) return;
+
+      document.getElementById('puzzleQuestion').textContent = puzzle.question;
+      document.getElementById('hintText').textContent = puzzle.hint || '仔细想想故事的情节...';
+      document.getElementById('attemptsCount').textContent = attempts;
+
+      var optionsHtml = puzzle.options.map(function(option, index) {
+        var letter = String.fromCharCode(65 + index);
+        return '<button class="puzzle-option" onclick="selectAnswer(' + index + ')" data-index="' + index + '">' +
+          '<span style="display: inline-flex; align-items: center; justify-content: center; width: 32px; height: 32px; border-radius: 50%; background: black; color: white; font-weight: bold; margin-right: 12px;">' + letter + '</span>' +
+          option +
+        '</button>';
+      }).join('');
+
+      document.getElementById('puzzleOptions').innerHTML = optionsHtml;
+    }
+
+    function selectAnswer(index) {
+      if (selectedAnswer !== null || puzzleSolved) return;
+
+      selectedAnswer = index;
+      var puzzle = currentChapter.puzzle;
+      var buttons = document.querySelectorAll('.puzzle-option');
+      
+      var userAnswer = String.fromCharCode(65 + index);
+      
+      verifyAnswer(puzzle.id, userAnswer, index, buttons);
+    }
+
+    async function verifyAnswer(puzzleId, userAnswer, index, buttons) {
+      try {
+        var result = await fetchAPI('/puzzle', {
+          method: 'POST',
+          body: JSON.stringify({
+            puzzleId: puzzleId,
+            userId: userId,
+            userAnswer: userAnswer
+          })
+        });
+        
+        attempts = result.attempts;
+        document.getElementById('attemptsCount').textContent = attempts;
+        
+        var isCorrect = result.isCorrect;
+        buttons[index].classList.add(isCorrect ? 'correct' : 'wrong');
+
+        setTimeout(function() {
+          if (isCorrect) {
+            puzzleSolved = true;
+            showToast('答对了！真棒！', 'success');
+            completeChapter();
+            
+            document.getElementById('puzzleArea').style.display = 'none';
+            document.getElementById('puzzleComplete').style.display = 'block';
+            document.getElementById('continueArea').style.display = 'block';
+          } else {
+            showToast('再想想看！', 'error');
+            
+            if (result.hint) {
+              document.getElementById('hintText').textContent = result.hint;
+              document.getElementById('hintArea').style.display = 'block';
+            } else if (attempts >= 2) {
+              document.getElementById('hintArea').style.display = 'block';
+            }
+            
+            setTimeout(function() {
+              buttons[index].classList.remove('wrong');
+              selectedAnswer = null;
+            }, 1000);
+          }
+        }, 500);
+      } catch (error) {
+        showToast('验证答案失败', 'error');
+        selectedAnswer = null;
+      }
+    }
+
+    async function completeChapter() {
+      try {
+        await fetchAPI('/chapters-complete/books/' + bookId + '/chapters/' + currentChapter.id, {
+          method: 'POST',
+          body: JSON.stringify({ userId: userId })
+        });
+        
+        currentChapter.isCompleted = true;
+      } catch (error) {
+        console.error('标记章节完成失败:', error);
+      }
+    }
+
+    async function handleContinue() {
+      if (book.chapters.length >= 100) {
+        showToast('本书籍已达章节上限，请创建新书籍', 'error');
+        return;
+      }
+
+      showLoading({ message: 'AI正在创作新章节...', subtext: '发挥想象力，编织精彩故事' });
+
+      try {
+        await fetchAPI('/chapters-generate/books/' + bookId, {
+          method: 'POST',
+          body: JSON.stringify({ userId: userId })
+        });
+
+        hideLoading();
+        showToast('新章节生成成功！', 'success');
+        loadBook();
+      } catch (error) {
+        hideLoading();
+        showToast('生成失败：' + error.message, 'error');
+      }
+    }
+
+    function navigateChapter(index) {
+      currentChapterIndex = index;
+      renderChapter();
+      renderPromptInfo();
+    }
+  </script>
+
+  <style>
+    .max-w-3xl { max-width: 48rem; margin-left: auto; margin-right: auto; }
+    .mx-auto { margin-left: auto; margin-right: auto; }
+
+    .story-content p {
+      margin-bottom: 16px;
+    }
+
+    .character-name { color: var(--lego-red); font-weight: bold; }
+    .action { color: var(--lego-purple); font-weight: bold; }
+    .emotion { color: var(--lego-green); font-weight: bold; }
+    .location { color: var(--lego-orange); font-weight: bold; }
+
+    .prompt-toggle {
+      width: 100%;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      padding: 0;
+      background: transparent;
+      border: none;
+      cursor: pointer;
+      font-size: 1rem;
+    }
+
+    .prompt-arrow {
+      transition: transform 0.2s ease;
+    }
+
+    .prompt-content {
+      margin-top: 16px;
+      padding-top: 16px;
+      border-top: 2px dashed var(--lego-blue);
+    }
+
+    .prompt-block {
+      margin-bottom: 16px;
+    }
+
+    .prompt-block:last-child {
+      margin-bottom: 0;
+    }
+  </style>
+</body>
+</html>

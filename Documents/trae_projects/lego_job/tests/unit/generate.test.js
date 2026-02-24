@@ -37,7 +37,7 @@ describe('generate.js API 测试', () => {
         })
       });
 
-      const { onRequestPost } = await import('../functions/api/generate.js');
+      const { onRequestPost } = await import('../../functions/api/generate.js');
       const result = await onRequestPost({ ...mockContext, request: mockRequest });
 
       expect(result.status).toBe(200);
@@ -62,7 +62,7 @@ describe('generate.js API 测试', () => {
         })
       });
 
-      const { onRequestPost } = await import('../functions/api/generate.js');
+      const { onRequestPost } = await import('../../functions/api/generate.js');
       const result = await onRequestPost({ ...mockContext, request: mockRequest });
 
       expect(result.status).toBe(400);
@@ -75,7 +75,7 @@ describe('generate.js API 测试', () => {
         json: vi.fn().mockRejectedValue(new Error('Parse error'))
       };
 
-      const { onRequestPost } = await import('../functions/api/generate.js');
+      const { onRequestPost } = await import('../../functions/api/generate.js');
       const result = await onRequestPost({ ...mockContext, request: mockRequest });
 
       expect(result.status).toBe(500);
@@ -97,7 +97,7 @@ describe('generate.js API 测试', () => {
         json: vi.fn().mockResolvedValue({ image: 'test', prompt: 'test' })
       };
 
-      const { onRequestPost } = await import('../functions/api/generate.js');
+      const { onRequestPost } = await import('../../functions/api/generate.js');
       await onRequestPost({ ...context, request: mockRequest });
 
       expect(mockFetch).toHaveBeenCalledWith(
@@ -122,7 +122,7 @@ describe('generate.js API 测试', () => {
         json: vi.fn().mockResolvedValue({ image: 'test', prompt: 'test' })
       };
 
-      const { onRequestPost } = await import('../functions/api/generate.js');
+      const { onRequestPost } = await import('../../functions/api/generate.js');
       await onRequestPost({ ...context, request: mockRequest });
 
       expect(mockFetch).toHaveBeenCalledWith(
@@ -150,7 +150,7 @@ describe('generate.js API 测试', () => {
         json: vi.fn().mockResolvedValue({ image, prompt })
       };
 
-      const { onRequestPost } = await import('../functions/api/generate.js');
+      const { onRequestPost } = await import('../../functions/api/generate.js');
       await onRequestPost({ ...mockContext, request: mockRequest });
 
       const callArgs = mockFetch.mock.calls[0];
@@ -178,7 +178,7 @@ describe('generate.js API 测试', () => {
         json: vi.fn().mockResolvedValue({})
       });
 
-      const { onRequestPost } = await import('../functions/api/generate.js');
+      const { onRequestPost } = await import('../../functions/api/generate.js');
       const result = await onRequestPost({ ...mockContext, request: mockRequest });
 
       expect(result.status).toBe(500);
@@ -203,7 +203,7 @@ describe('generate.js API 测试', () => {
         })
       });
 
-      const { onRequestPost } = await import('../functions/api/generate.js');
+      const { onRequestPost } = await import('../../functions/api/generate.js');
       const result = await onRequestPost({ ...mockContext, request: mockRequest });
 
       expect(result.status).toBe(400);

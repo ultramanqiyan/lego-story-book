@@ -1,0 +1,193 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>分享管理 - 乐高故事书</title>
+  <link rel="stylesheet" href="css/lego-theme.css">
+  <link rel="stylesheet" href="css/loading.css">
+</head>
+<body>
+  <div class="page-container">
+    <header class="page-header">
+      <div class="page-header-left">
+        <a href="index.html" class="lego-btn lego-btn-blue">
+          <span>←</span>
+        </a>
+        <div>
+          <h1 class="lego-title" style="font-size: 1.5rem;">分享管理</h1>
+          <p class="page-header-subtitle">管理你的故事分享</p>
+        </div>
+      </div>
+    </header>
+
+    <div class="max-w-4xl mx-auto">
+      <div id="shareList">
+        <div class="empty-state" style="padding: 64px; background: rgba(255, 213, 0, 0.2); border-radius: 16px; border: 2px dashed var(--lego-black); text-align: center;">
+          <span style="font-size: 64px; display: block; margin-bottom: 16px;">📤</span>
+          <p style="font-weight: bold; font-size: 1.125rem; margin: 0 0 8px;">还没有分享</p>
+          <p style="color: #6b7280; margin: 0;">在书籍详情页点击分享按钮创建分享链接</p>
+        </div>
+      </div>
+    </div>
+
+    <div class="lego-footer-bar"></div>
+  </div>
+
+  <div id="confirmDialog" class="lego-dialog-overlay" style="display: none;">
+    <div class="lego-dialog" style="max-width: 400px;">
+      <div class="lego-dialog-header">
+        <h2 class="lego-dialog-title">确认删除</h2>
+      </div>
+      <div>
+        <p style="text-align: center; margin-bottom: 24px;">确定要删除这个分享链接吗？删除后链接将失效。</p>
+        <div style="display: flex; gap: 12px;">
+          <button onclick="closeConfirmDialog()" class="lego-btn lego-btn-gray flex-1">取消</button>
+          <button id="confirmDeleteBtn" class="lego-btn lego-btn-red flex-1">删除</button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <script src="js/utils.js"></script>
+  <script src="js/loading-manager.js"></script>
+  <script>
+    var userId = requireAuth();
+    var allShares = [];
+    var allBooks = [];
+    var pendingShareId = null;
+
+    document.addEventListener('DOMContentLoaded', function() {
+      initLoadingManager();
+      loadShares();
+    });
+
+    async function loadShares() {
+      try {
+        var booksData = await fetchAPI('/books?userId=' + userId);
+        allBooks = booksData.books || [];
+
+        var sharePromises = allBooks.map(function(book) {
+          return fetchAPI('/share?bookId=' + book.book_id + '&userId=' + userId)
+            .then(function(data) { return data.shares || []; })
+            .catch(function() { return []; });
+        });
+
+        var shareResults = await Promise.all(sharePromises);
+        allShares = [];
+
+        for (var i = 0; i < shareResults.length; i++) {
+          var bookShares = shareResults[i];
+          for (var j = 0; j < bookShares.length; j++) {
+            var share = bookShares[j];
+            var book = allBooks.find(function(b) { return b.book_id === share.book_id; });
+            share.bookTitle = book ? book.title : '未知书籍';
+            allShares.push(share);
+          }
+        }
+
+        allShares.sort(function(a, b) {
+          return new Date(b.created_at) - new Date(a.created_at);
+        });
+
+        renderShareList();
+      } catch (error) {
+        showToast('加载分享列表失败', 'error');
+        console.error(error);
+      }
+    }
+
+    function renderShareList() {
+      var container = document.getElementById('shareList');
+
+      if (allShares.length === 0) {
+        container.innerHTML = '' +
+          '<div class="empty-state" style="padding: 64px; background: rgba(255, 213, 0, 0.2); border-radius: 16px; border: 2px dashed var(--lego-black); text-align: center;">' +
+            '<span style="font-size: 64px; display: block; margin-bottom: 16px;">📤</span>' +
+            '<p style="font-weight: bold; font-size: 1.125rem; margin: 0 0 8px;">还没有分享</p>' +
+            '<p style="color: #6b7280; margin: 0;">在书籍详情页点击分享按钮创建分享链接</p>' +
+          '</div>';
+        return;
+      }
+
+      var html = '<div style="display: flex; flex-direction: column; gap: 16px;">';
+
+      allShares.forEach(function(share) {
+        var shareUrl = window.location.origin + '/share-view.html?code=' + share.share_code;
+        var createdDate = new Date(share.created_at).toLocaleDateString('zh-CN');
+        var hasPassword = share.password ? '有密码保护' : '公开分享';
+
+        html += '' +
+          '<div class="lego-card" style="padding: 20px;">' +
+            '<div style="display: flex; align-items: flex-start; gap: 16px;">' +
+              '<div style="width: 50px; height: 50px; background: linear-gradient(135deg, var(--lego-green), var(--lego-blue)); border-radius: 12px; display: flex; align-items: center; justify-content: center; font-size: 1.5rem;">📤</div>' +
+              '<div style="flex: 1;">' +
+                '<h3 style="font-weight: bold; margin: 0 0 4px;">' + share.bookTitle + '</h3>' +
+                '<p style="font-size: 0.875rem; color: #6b7280; margin: 0 0 8px;">分享码: ' + share.share_code + '</p>' +
+                '<div style="display: flex; gap: 8px; flex-wrap: wrap;">' +
+                  '<span class="lego-badge lego-badge-blue">' + hasPassword + '</span>' +
+                  '<span class="lego-badge lego-badge-gray">' + createdDate + '</span>' +
+                '</div>' +
+              '</div>' +
+            '</div>' +
+            '<div style="margin-top: 16px; padding: 12px; background: #f3f4f6; border-radius: 8px;">' +
+              '<div style="display: flex; align-items: center; gap: 8px;">' +
+                '<input type="text" value="' + shareUrl + '" readonly class="lego-input" style="flex: 1; font-size: 0.875rem;">' +
+                '<button onclick="copyShareUrl(\'' + shareUrl + '\')" class="lego-btn lego-btn-blue" style="padding: 8px 16px;">复制</button>' +
+              '</div>' +
+            '</div>' +
+            '<div style="margin-top: 12px; display: flex; gap: 8px; justify-content: flex-end;">' +
+              '<button onclick="confirmDeleteShare(\'' + share.share_id + '\')" class="lego-btn lego-btn-red" style="padding: 8px 16px;">删除分享</button>' +
+            '</div>' +
+          '</div>';
+      });
+
+      html += '</div>';
+      container.innerHTML = html;
+    }
+
+    function copyShareUrl(url) {
+      navigator.clipboard.writeText(url).then(function() {
+        showToast('链接已复制', 'success');
+      }).catch(function() {
+        showToast('复制失败，请手动复制', 'error');
+      });
+    }
+
+    function confirmDeleteShare(shareId) {
+      pendingShareId = shareId;
+      document.getElementById('confirmDialog').style.display = 'flex';
+    }
+
+    function closeConfirmDialog() {
+      document.getElementById('confirmDialog').style.display = 'none';
+      pendingShareId = null;
+    }
+
+    document.getElementById('confirmDeleteBtn').addEventListener('click', async function() {
+      if (!pendingShareId) return;
+
+      showLoading({ message: '正在删除...' });
+
+      try {
+        await fetchAPI('/share?id=' + pendingShareId, {
+          method: 'DELETE'
+        });
+
+        hideLoading();
+        closeConfirmDialog();
+        showToast('分享已删除', 'success');
+        loadShares();
+      } catch (error) {
+        hideLoading();
+        showToast('删除失败：' + error.message, 'error');
+      }
+    });
+  </script>
+
+  <style>
+    .max-w-4xl { max-width: 56rem; margin-left: auto; margin-right: auto; }
+    .mx-auto { margin-left: auto; margin-right: auto; }
+  </style>
+</body>
+</html>

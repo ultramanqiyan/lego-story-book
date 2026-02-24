@@ -37,7 +37,7 @@ describe('story.js API 测试', () => {
         chapter: 1
       }));
       
-      const { onRequestPost } = await import('../functions/api/story.js');
+      const { onRequestPost } = await import('../../functions/api/story.js');
       const result = await onRequestPost(mockContext);
       const data = JSON.parse(await result.text());
       
@@ -51,7 +51,7 @@ describe('story.js API 测试', () => {
         plot: '冒险之旅'
       }));
       
-      const { onRequestPost } = await import('../functions/api/story.js');
+      const { onRequestPost } = await import('../../functions/api/story.js');
       const result = await onRequestPost(mockContext);
       
       expect(result.status).toBe(400);
@@ -62,7 +62,7 @@ describe('story.js API 测试', () => {
         characters: [{ custom_name: '小蝙蝠' }]
       }));
       
-      const { onRequestPost } = await import('../functions/api/story.js');
+      const { onRequestPost } = await import('../../functions/api/story.js');
       const result = await onRequestPost(mockContext);
       
       expect(result.status).toBe(400);
@@ -82,7 +82,7 @@ describe('story.js API 测试', () => {
         plot: '冒险之旅'
       }));
       
-      const { onRequestPost } = await import('../functions/api/story.js');
+      const { onRequestPost } = await import('../../functions/api/story.js');
       const result = await onRequestPost(mockContext);
       
       expect(result.status).toBe(500);
@@ -96,7 +96,7 @@ describe('story.js API 测试', () => {
         plot: '冒险之旅'
       }));
       
-      const { onRequestPost } = await import('../functions/api/story.js');
+      const { onRequestPost } = await import('../../functions/api/story.js');
       const result = await onRequestPost(mockContext);
       
       expect(result.status).toBe(500);
@@ -115,7 +115,7 @@ describe('story.js API 测试', () => {
         plot: '冒险之旅'
       }), { DOUBAO_API_KEY: 'custom-api-key' });
       
-      const { onRequestPost } = await import('../functions/api/story.js');
+      const { onRequestPost } = await import('../../functions/api/story.js');
       await onRequestPost(mockContext);
       
       expect(mockFetch).toHaveBeenCalledWith(
@@ -134,7 +134,7 @@ describe('story.js API 测试', () => {
         plot: '冒险之旅'
       }));
       
-      const { onRequestPost } = await import('../functions/api/story.js');
+      const { onRequestPost } = await import('../../functions/api/story.js');
       const result = await onRequestPost(mockContext);
       
       expect(result.status).toBe(400);
@@ -153,7 +153,7 @@ describe('story.js API 测试', () => {
         plot: '冒险之旅'
       }));
       
-      const { onRequestPost } = await import('../functions/api/story.js');
+      const { onRequestPost } = await import('../../functions/api/story.js');
       const result = await onRequestPost(mockContext);
       const data = JSON.parse(await result.text());
       
@@ -177,7 +177,7 @@ describe('story.js API 测试', () => {
         chapter: 1
       }));
       
-      const { onRequestPost } = await import('../functions/api/story.js');
+      const { onRequestPost } = await import('../../functions/api/story.js');
       const result = await onRequestPost(mockContext);
       const data = JSON.parse(await result.text());
       
@@ -202,7 +202,7 @@ describe('story.js API 测试', () => {
         chapter: 1
       }));
       
-      const { onRequestPost } = await import('../functions/api/story.js');
+      const { onRequestPost } = await import('../../functions/api/story.js');
       const result = await onRequestPost(mockContext);
       const data = JSON.parse(await result.text());
       
@@ -227,7 +227,7 @@ describe('story.js API 测试', () => {
         chapter: 1
       }));
       
-      const { onRequestPost } = await import('../functions/api/story.js');
+      const { onRequestPost } = await import('../../functions/api/story.js');
       const result = await onRequestPost(mockContext);
       const data = JSON.parse(await result.text());
       
@@ -265,7 +265,7 @@ describe('story.js API 测试', () => {
         forcePuzzle: true
       }));
       
-      const { onRequestPost } = await import('../functions/api/story.js');
+      const { onRequestPost } = await import('../../functions/api/story.js');
       const result = await onRequestPost(mockContext);
       const data = JSON.parse(await result.text());
       
@@ -290,7 +290,7 @@ describe('story.js API 测试', () => {
         previousSummary: '上一章小蝙蝠进入了森林'
       }));
       
-      const { onRequestPost } = await import('../functions/api/story.js');
+      const { onRequestPost } = await import('../../functions/api/story.js');
       const result = await onRequestPost(mockContext);
       const data = JSON.parse(await result.text());
       
@@ -320,7 +320,7 @@ describe('story.js API 测试', () => {
         }
       }));
       
-      const { onRequestPost } = await import('../functions/api/story.js');
+      const { onRequestPost } = await import('../../functions/api/story.js');
       const result = await onRequestPost(mockContext);
       const data = JSON.parse(await result.text());
       
@@ -352,7 +352,7 @@ describe('story.js API 测试', () => {
         }
       }));
       
-      const { onRequestPost } = await import('../functions/api/story.js');
+      const { onRequestPost } = await import('../../functions/api/story.js');
       const result = await onRequestPost(mockContext);
       const data = JSON.parse(await result.text());
       
@@ -389,7 +389,7 @@ describe('story.js API 测试', () => {
         chapter: 1
       }));
       
-      const { onRequestPost } = await import('../functions/api/story.js');
+      const { onRequestPost } = await import('../../functions/api/story.js');
       const result = await onRequestPost(mockContext);
       const data = JSON.parse(await result.text());
       
@@ -412,7 +412,7 @@ describe('story.js API 测试', () => {
         plot: '冒险之旅'
       }));
       
-      const { onRequestPost } = await import('../functions/api/story.js');
+      const { onRequestPost } = await import('../../functions/api/story.js');
       await onRequestPost(mockContext);
       
       expect(mockFetch).toHaveBeenCalledWith(

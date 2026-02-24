@@ -1,0 +1,586 @@
+/* ============================================
+   风格4: 自然森林风格 (Nature Forest Style)
+   特点：有机形态、木纹质感、生长动画
+   ============================================ */
+
+:root {
+  --nature-green: #2d5016;
+  --nature-light-green: #4a7c2e;
+  --nature-bright: #7cb342;
+  --nature-leaf: #8bc34a;
+  --nature-moss: #558b2f;
+  --nature-brown: #5d4037;
+  --nature-wood: #8d6e63;
+  --nature-cream: #f5f5dc;
+  --nature-sky: #87ceeb;
+  --nature-earth: #795548;
+  --nature-dark: #1b3310;
+}
+
+/* 基础样式 - 自然背景 */
+.theme-nature body {
+  background: linear-gradient(180deg, 
+    #e8f5e9 0%, 
+    #c8e6c9 30%,
+    #a5d6a7 60%,
+    #81c784 100%);
+  background-attachment: fixed;
+  font-family: 'Palatino Linotype', 'Book Antiqua', serif;
+  color: var(--nature-dark);
+}
+
+/* 树叶飘落背景 */
+.theme-nature .leaves-container {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  pointer-events: none;
+  z-index: -1;
+  overflow: hidden;
+}
+
+.theme-nature .leaf {
+  position: absolute;
+  width: 20px;
+  height: 20px;
+  background: linear-gradient(135deg, var(--nature-leaf), var(--nature-bright));
+  border-radius: 0 50% 0 50%;
+  opacity: 0.6;
+  animation: leafFall 8s linear infinite;
+}
+
+.theme-nature .leaf:nth-child(1) { left: 10%; animation-delay: 0s; animation-duration: 7s; }
+.theme-nature .leaf:nth-child(2) { left: 20%; animation-delay: 1s; animation-duration: 9s; }
+.theme-nature .leaf:nth-child(3) { left: 30%; animation-delay: 2s; animation-duration: 8s; }
+.theme-nature .leaf:nth-child(4) { left: 40%; animation-delay: 0.5s; animation-duration: 10s; }
+.theme-nature .leaf:nth-child(5) { left: 50%; animation-delay: 1.5s; animation-duration: 7s; }
+.theme-nature .leaf:nth-child(6) { left: 60%; animation-delay: 2.5s; animation-duration: 9s; }
+.theme-nature .leaf:nth-child(7) { left: 70%; animation-delay: 3s; animation-duration: 8s; }
+.theme-nature .leaf:nth-child(8) { left: 80%; animation-delay: 0.8s; animation-duration: 10s; }
+.theme-nature .leaf:nth-child(9) { left: 90%; animation-delay: 1.8s; animation-duration: 7s; }
+.theme-nature .leaf:nth-child(10) { left: 5%; animation-delay: 2.2s; animation-duration: 9s; }
+
+@keyframes leafFall {
+  0% {
+    transform: translateY(-10vh) rotate(0deg) translateX(0);
+    opacity: 0;
+  }
+  10% {
+    opacity: 0.6;
+  }
+  90% {
+    opacity: 0.6;
+  }
+  100% {
+    transform: translateY(110vh) rotate(720deg) translateX(30px);
+    opacity: 0;
+  }
+}
+
+/* 树木剪影背景 */
+.theme-nature .forest-bg {
+  position: fixed;
+  bottom: 0;
+  left: 0;
+  width: 100%;
+  height: 200px;
+  pointer-events: none;
+  z-index: -2;
+  background: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 1200 200'%3E%3Cpath d='M0,200 L0,150 Q50,100 100,150 T200,150 T300,120 T400,150 T500,130 T600,150 T700,110 T800,150 T900,140 T1000,150 T1100,120 T1200,150 L1200,200 Z' fill='%232d5016' opacity='0.1'/%3E%3C/svg%3E") repeat-x bottom;
+  background-size: 1200px 200px;
+}
+
+/* 头部 - 树皮纹理风格 */
+.theme-nature .header {
+  background: linear-gradient(135deg, 
+    var(--nature-green) 0%, 
+    var(--nature-moss) 100%);
+  border-radius: 20px 20px 50px 50px;
+  box-shadow: 
+    0 10px 30px rgba(45, 80, 22, 0.3),
+    inset 0 -5px 20px rgba(0,0,0,0.2);
+  position: relative;
+  overflow: hidden;
+}
+
+.theme-nature .header::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: 
+    repeating-linear-gradient(
+      90deg,
+      transparent,
+      transparent 20px,
+      rgba(0,0,0,0.05) 20px,
+      rgba(0,0,0,0.05) 22px
+    );
+  pointer-events: none;
+}
+
+.theme-nature .header h1 {
+  font-family: 'Georgia', serif;
+  font-size: 2.2rem;
+  text-shadow: 2px 2px 4px rgba(0,0,0,0.3);
+  color: var(--nature-cream);
+  position: relative;
+}
+
+.theme-nature .header h1::before {
+  content: '🌲';
+  margin-right: 10px;
+  animation: treeSway 3s ease-in-out infinite;
+  display: inline-block;
+}
+
+@keyframes treeSway {
+  0%, 100% { transform: rotate(-5deg); }
+  50% { transform: rotate(5deg); }
+}
+
+/* 自然按钮 - 木头风格 */
+.theme-nature .btn {
+  background: linear-gradient(180deg, 
+    var(--nature-wood) 0%, 
+    var(--nature-brown) 100%);
+  border: 3px solid var(--nature-brown);
+  border-radius: 25px;
+  color: var(--nature-cream);
+  font-weight: 600;
+  box-shadow: 
+    0 6px 0 var(--nature-brown),
+    0 10px 20px rgba(0,0,0,0.2);
+  transition: all 0.2s;
+  position: relative;
+}
+
+.theme-nature .btn::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  height: 50%;
+  background: linear-gradient(180deg, 
+    rgba(255,255,255,0.2) 0%, 
+    transparent 100%);
+  border-radius: 22px 22px 0 0;
+  pointer-events: none;
+}
+
+.theme-nature .btn:hover {
+  transform: translateY(-3px);
+  box-shadow: 
+    0 9px 0 var(--nature-brown),
+    0 15px 30px rgba(0,0,0,0.25);
+}
+
+.theme-nature .btn:active {
+  transform: translateY(3px);
+  box-shadow: 
+    0 3px 0 var(--nature-brown),
+    0 5px 10px rgba(0,0,0,0.2);
+}
+
+.theme-nature .btn-primary {
+  background: linear-gradient(180deg, var(--nature-bright), var(--nature-moss));
+  border-color: var(--nature-green);
+  box-shadow: 0 6px 0 var(--nature-green), 0 10px 20px rgba(0,0,0,0.2);
+}
+
+.theme-nature .btn-primary:hover {
+  box-shadow: 0 9px 0 var(--nature-green), 0 15px 30px rgba(0,0,0,0.25);
+}
+
+.theme-nature .btn-secondary {
+  background: linear-gradient(180deg, #5c6bc0, #3949ab);
+  border-color: #283593;
+  box-shadow: 0 6px 0 #283593, 0 10px 20px rgba(0,0,0,0.2);
+}
+
+.theme-nature .btn-accent {
+  background: linear-gradient(180deg, #ffb74d, #f57c00);
+  border-color: #ef6c00;
+  box-shadow: 0 6px 0 #ef6c00, 0 10px 20px rgba(0,0,0,0.2);
+}
+
+/* 自然卡片 - 叶子形状 */
+.theme-nature .card {
+  background: linear-gradient(135deg, 
+    rgba(255,255,255,0.95) 0%, 
+    rgba(245,245,220,0.95) 100%);
+  border-radius: 20px 50px 20px 50px;
+  box-shadow: 
+    0 10px 30px rgba(45, 80, 22, 0.15),
+    0 0 0 3px rgba(139, 195, 74, 0.3);
+  border: 2px solid var(--nature-leaf);
+  position: relative;
+  overflow: hidden;
+}
+
+.theme-nature .card::before {
+  content: '🍃';
+  position: absolute;
+  top: -10px;
+  right: -10px;
+  font-size: 2rem;
+  opacity: 0.3;
+  transform: rotate(45deg);
+}
+
+.theme-nature .card h2 {
+  color: var(--nature-green);
+  font-family: 'Georgia', serif;
+  border-bottom: 2px dashed var(--nature-leaf);
+  padding-bottom: 10px;
+  position: relative;
+}
+
+.theme-nature .card h2::after {
+  content: '';
+  position: absolute;
+  bottom: -5px;
+  left: 0;
+  width: 50px;
+  height: 8px;
+  background: var(--nature-leaf);
+  border-radius: 4px;
+}
+
+/* 导航链接 - 藤蔓风格 */
+.theme-nature .nav a {
+  background: linear-gradient(135deg, 
+    rgba(139, 195, 74, 0.3), 
+    rgba(85, 139, 47, 0.3));
+  border-radius: 20px;
+  border: 2px solid var(--nature-leaf);
+  color: var(--nature-dark);
+  font-weight: 600;
+  transition: all 0.3s;
+  position: relative;
+}
+
+.theme-nature .nav a::before {
+  content: '🌿';
+  position: absolute;
+  left: 8px;
+  top: 50%;
+  transform: translateY(-50%);
+  opacity: 0;
+  transition: all 0.3s;
+}
+
+.theme-nature .nav a:hover {
+  background: linear-gradient(135deg, 
+    rgba(139, 195, 74, 0.5), 
+    rgba(85, 139, 47, 0.5));
+  transform: translateY(-3px);
+  padding-left: 30px;
+  box-shadow: 0 5px 15px rgba(139, 195, 74, 0.3);
+}
+
+.theme-nature .nav a:hover::before {
+  opacity: 1;
+}
+
+/* 人仔卡片 - 蘑菇/树桩风格 */
+.theme-nature .character-card {
+  background: linear-gradient(180deg, 
+    #fff8e1 0%, 
+    #ffecb3 100%);
+  border-radius: 50% 50% 20px 20px;
+  box-shadow: 
+    0 10px 30px rgba(0,0,0,0.1),
+    inset 0 -10px 20px rgba(0,0,0,0.05);
+  border: 3px solid var(--nature-wood);
+  position: relative;
+}
+
+.theme-nature .character-card::before {
+  content: '';
+  position: absolute;
+  top: 10px;
+  left: 50%;
+  transform: translateX(-50%);
+  width: 80%;
+  height: 3px;
+  background: repeating-linear-gradient(
+    90deg,
+    var(--nature-wood) 0px,
+    var(--nature-wood) 10px,
+    transparent 10px,
+    transparent 15px
+  );
+  border-radius: 2px;
+}
+
+.theme-nature .character-card:hover {
+  transform: translateY(-10px) scale(1.02);
+  box-shadow: 
+    0 20px 40px rgba(0,0,0,0.15),
+    inset 0 -10px 20px rgba(0,0,0,0.05);
+}
+
+/* 书籍卡片 - 书本/树皮风格 */
+.theme-nature .book-card {
+  border-radius: 10px 30px 30px 10px;
+  box-shadow: 
+    0 10px 30px rgba(0,0,0,0.1),
+    inset -5px 0 10px rgba(0,0,0,0.1);
+  overflow: hidden;
+  position: relative;
+}
+
+.theme-nature .book-card::before {
+  content: '';
+  position: absolute;
+  left: 0;
+  top: 0;
+  bottom: 0;
+  width: 15px;
+  background: linear-gradient(90deg, 
+    var(--nature-brown) 0%, 
+    var(--nature-wood) 50%,
+    var(--nature-brown) 100%);
+  box-shadow: 2px 0 5px rgba(0,0,0,0.2);
+}
+
+.theme-nature .book-cover {
+  background: linear-gradient(135deg, 
+    var(--nature-green), 
+    var(--nature-moss)) !important;
+  position: relative;
+}
+
+.theme-nature .book-cover::after {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: 
+    repeating-linear-gradient(
+      0deg,
+      transparent,
+      transparent 10px,
+      rgba(255,255,255,0.05) 10px,
+      rgba(255,255,255,0.05) 11px
+    );
+}
+
+/* 生长动画 */
+@keyframes growUp {
+  0% {
+    transform: scaleY(0);
+    opacity: 0;
+    transform-origin: bottom;
+  }
+  100% {
+    transform: scaleY(1);
+    opacity: 1;
+    transform-origin: bottom;
+  }
+}
+
+.theme-nature .grow-animation {
+  animation: growUp 0.8s ease-out;
+}
+
+/* 摇摆动画 */
+@keyframes natureSway {
+  0%, 100% { transform: rotate(-3deg); }
+  50% { transform: rotate(3deg); }
+}
+
+.theme-nature .sway-animation {
+  animation: natureSway 3s ease-in-out infinite;
+  transform-origin: bottom center;
+}
+
+/* 风吹动画 */
+@keyframes windBlow {
+  0%, 100% { transform: skewX(0deg); }
+  25% { transform: skewX(2deg); }
+  75% { transform: skewX(-2deg); }
+}
+
+.theme-nature .wind-animation {
+  animation: windBlow 4s ease-in-out infinite;
+}
+
+/* 花朵绽放动画 */
+@keyframes bloom {
+  0% {
+    transform: scale(0) rotate(0deg);
+    opacity: 0;
+  }
+  50% {
+    transform: scale(1.2) rotate(180deg);
+    opacity: 1;
+  }
+  100% {
+    transform: scale(1) rotate(360deg);
+    opacity: 1;
+  }
+}
+
+.theme-nature .bloom-animation {
+  animation: bloom 1s ease-out;
+}
+
+/* 输入框 - 木头/石头风格 */
+.theme-nature input,
+.theme-nature textarea,
+.theme-nature select {
+  background: rgba(255, 255, 255, 0.9);
+  border: 3px solid var(--nature-wood);
+  border-radius: 15px;
+  box-shadow: inset 0 3px 5px rgba(0,0,0,0.1);
+  transition: all 0.3s;
+}
+
+.theme-nature input:focus,
+.theme-nature textarea:focus,
+.theme-nature select:focus {
+  border-color: var(--nature-bright);
+  box-shadow: 
+    inset 0 3px 5px rgba(0,0,0,0.1),
+    0 0 15px rgba(139, 195, 74, 0.4);
+  transform: scale(1.02);
+}
+
+/* 模态框 - 树洞风格 */
+.theme-nature .modal-content {
+  background: linear-gradient(135deg, 
+    #fff8e1 0%, 
+    #ffecb3 100%);
+  border-radius: 30px;
+  box-shadow: 
+    0 20px 60px rgba(45, 80, 22, 0.3),
+    0 0 0 5px var(--nature-wood);
+  border: 3px solid var(--nature-leaf);
+}
+
+/* 进度条 - 树干/生长风格 */
+.theme-nature .progress-bar {
+  height: 20px;
+  background: #e0e0e0;
+  border-radius: 10px;
+  border: 2px solid var(--nature-wood);
+  box-shadow: inset 0 3px 5px rgba(0,0,0,0.2);
+}
+
+.theme-nature .progress-fill {
+  background: linear-gradient(90deg, 
+    var(--nature-bright), 
+    var(--nature-leaf), 
+    var(--nature-moss));
+  border-radius: 8px;
+  box-shadow: 
+    inset 0 2px 0 rgba(255,255,255,0.3),
+    0 0 10px rgba(139, 195, 74, 0.5);
+  position: relative;
+}
+
+.theme-nature .progress-fill::after {
+  content: '🌱';
+  position: absolute;
+  right: -10px;
+  top: 50%;
+  transform: translateY(-50%);
+  font-size: 1.2rem;
+}
+
+/* 加载动画 - 种子发芽 */
+@keyframes seedGrow {
+  0% { transform: scale(0) rotate(0deg); }
+  50% { transform: scale(1.2) rotate(180deg); }
+  100% { transform: scale(1) rotate(360deg); }
+}
+
+.theme-nature .spinner {
+  border: none;
+  background: transparent;
+  width: 40px;
+  height: 40px;
+  position: relative;
+}
+
+.theme-nature .spinner::before {
+  content: '🌱';
+  font-size: 2rem;
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  animation: seedGrow 2s ease-in-out infinite;
+}
+
+/* 蝴蝶飞舞 */
+@keyframes butterflyFly {
+  0%, 100% {
+    transform: translate(0, 0) rotate(0deg);
+  }
+  25% {
+    transform: translate(20px, -30px) rotate(10deg);
+  }
+  50% {
+    transform: translate(40px, 0) rotate(0deg);
+  }
+  75% {
+    transform: translate(20px, 30px) rotate(-10deg);
+  }
+}
+
+.theme-nature .butterfly {
+  position: fixed;
+  font-size: 1.5rem;
+  pointer-events: none;
+  z-index: -1;
+  animation: butterflyFly 8s ease-in-out infinite;
+}
+
+/* 阳光照射效果 */
+.theme-nature .sunlight {
+  position: fixed;
+  top: -50%;
+  right: -20%;
+  width: 100%;
+  height: 200%;
+  background: radial-gradient(ellipse at top right, 
+    rgba(255, 255, 200, 0.3) 0%, 
+    transparent 50%);
+  pointer-events: none;
+  z-index: -1;
+  animation: sunPulse 4s ease-in-out infinite;
+}
+
+@keyframes sunPulse {
+  0%, 100% { opacity: 0.5; }
+  50% { opacity: 0.8; }
+}
+
+/* 草地纹理 */
+.theme-nature .grass-texture {
+  position: fixed;
+  bottom: 0;
+  left: 0;
+  width: 100%;
+  height: 100px;
+  background: repeating-linear-gradient(
+    90deg,
+    var(--nature-bright) 0px,
+    var(--nature-leaf) 2px,
+    var(--nature-moss) 4px,
+    var(--nature-bright) 6px
+  );
+  opacity: 0.1;
+  pointer-events: none;
+  z-index: -1;
+}

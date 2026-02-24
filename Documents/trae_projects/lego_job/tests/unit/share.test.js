@@ -59,7 +59,7 @@ describe('share.js API 测试', () => {
       
       mockContext = createMockContext(mockDB, createMockRequest({}, { code: 'ABC12345' }));
       
-      const { onRequestGet } = await import('../functions/api/share.js');
+      const { onRequestGet } = await import('../../functions/api/share.js');
       const result = await onRequestGet(mockContext);
       const data = JSON.parse(await result.text());
       
@@ -72,7 +72,7 @@ describe('share.js API 测试', () => {
       
       mockContext = createMockContext(mockDB, createMockRequest({}, { code: 'nonexistent' }));
       
-      const { onRequestGet } = await import('../functions/api/share.js');
+      const { onRequestGet } = await import('../../functions/api/share.js');
       const result = await onRequestGet(mockContext);
       
       expect(result.status).toBe(404);
@@ -88,7 +88,7 @@ describe('share.js API 测试', () => {
       
       mockContext = createMockContext(mockDB, createMockRequest({}, { bookId: 'book_1', userId: 'user_1' }));
       
-      const { onRequestGet } = await import('../functions/api/share.js');
+      const { onRequestGet } = await import('../../functions/api/share.js');
       const result = await onRequestGet(mockContext);
       const data = JSON.parse(await result.text());
       
@@ -99,7 +99,7 @@ describe('share.js API 测试', () => {
     it('应该拒绝参数不完整的请求', async () => {
       mockContext = createMockContext(mockDB, createMockRequest({}, {}));
       
-      const { onRequestGet } = await import('../functions/api/share.js');
+      const { onRequestGet } = await import('../../functions/api/share.js');
       const result = await onRequestGet(mockContext);
       
       expect(result.status).toBe(400);
@@ -116,7 +116,7 @@ describe('share.js API 测试', () => {
         userId: 'user_1'
       }));
       
-      const { onRequestPost } = await import('../functions/api/share.js');
+      const { onRequestPost } = await import('../../functions/api/share.js');
       const result = await onRequestPost(mockContext);
       const data = JSON.parse(await result.text());
       
@@ -129,7 +129,7 @@ describe('share.js API 测试', () => {
         bookId: 'book_1'
       }));
       
-      const { onRequestPost } = await import('../functions/api/share.js');
+      const { onRequestPost } = await import('../../functions/api/share.js');
       const result = await onRequestPost(mockContext);
       
       expect(result.status).toBe(400);
@@ -143,7 +143,7 @@ describe('share.js API 测试', () => {
         userId: 'user_1'
       }));
       
-      const { onRequestPost } = await import('../functions/api/share.js');
+      const { onRequestPost } = await import('../../functions/api/share.js');
       const result = await onRequestPost(mockContext);
       
       expect(result.status).toBe(404);
@@ -159,7 +159,7 @@ describe('share.js API 测试', () => {
         password: 'secret123'
       }));
       
-      const { onRequestPost } = await import('../functions/api/share.js');
+      const { onRequestPost } = await import('../../functions/api/share.js');
       const result = await onRequestPost(mockContext);
       const data = JSON.parse(await result.text());
       
@@ -174,7 +174,7 @@ describe('share.js API 测试', () => {
       
       mockContext = createMockContext(mockDB, createMockRequest({}, { id: 'share_1' }));
       
-      const { onRequestDelete } = await import('../functions/api/share.js');
+      const { onRequestDelete } = await import('../../functions/api/share.js');
       const result = await onRequestDelete(mockContext);
       const data = JSON.parse(await result.text());
       
@@ -184,7 +184,7 @@ describe('share.js API 测试', () => {
     it('应该拒绝没有分享ID的请求', async () => {
       mockContext = createMockContext(mockDB, createMockRequest({}, {}));
       
-      const { onRequestDelete } = await import('../functions/api/share.js');
+      const { onRequestDelete } = await import('../../functions/api/share.js');
       const result = await onRequestDelete(mockContext);
       
       expect(result.status).toBe(400);
@@ -195,7 +195,7 @@ describe('share.js API 测试', () => {
       
       mockContext = createMockContext(mockDB, createMockRequest({}, { id: 'nonexistent' }));
       
-      const { onRequestDelete } = await import('../functions/api/share.js');
+      const { onRequestDelete } = await import('../../functions/api/share.js');
       const result = await onRequestDelete(mockContext);
       
       expect(result.status).toBe(404);

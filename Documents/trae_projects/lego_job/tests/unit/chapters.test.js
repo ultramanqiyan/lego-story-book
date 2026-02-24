@@ -60,7 +60,7 @@ describe('chapters.js API 测试', () => {
       
       mockContext = createMockContext(mockDB, createMockRequest({}, { id: 'ch_1' }));
       
-      const { onRequestGet } = await import('../functions/api/chapters.js');
+      const { onRequestGet } = await import('../../functions/api/chapters.js');
       const result = await onRequestGet(mockContext);
       const data = JSON.parse(await result.text());
       
@@ -85,7 +85,7 @@ describe('chapters.js API 测试', () => {
       
       mockContext = createMockContext(mockDB, createMockRequest({}, { id: 'ch_1' }));
       
-      const { onRequestGet } = await import('../functions/api/chapters.js');
+      const { onRequestGet } = await import('../../functions/api/chapters.js');
       const result = await onRequestGet(mockContext);
       const data = JSON.parse(await result.text());
       
@@ -98,7 +98,7 @@ describe('chapters.js API 测试', () => {
       
       mockContext = createMockContext(mockDB, createMockRequest({}, { id: 'nonexistent' }));
       
-      const { onRequestGet } = await import('../functions/api/chapters.js');
+      const { onRequestGet } = await import('../../functions/api/chapters.js');
       const result = await onRequestGet(mockContext);
       
       expect(result.status).toBe(404);
@@ -116,7 +116,7 @@ describe('chapters.js API 测试', () => {
       
       mockContext = createMockContext(mockDB, createMockRequest({}, { bookId: 'book_1' }));
       
-      const { onRequestGet } = await import('../functions/api/chapters.js');
+      const { onRequestGet } = await import('../../functions/api/chapters.js');
       const result = await onRequestGet(mockContext);
       const data = JSON.parse(await result.text());
       
@@ -138,7 +138,7 @@ describe('chapters.js API 测试', () => {
         content: '这是章节内容'
       }));
       
-      const { onRequestPost } = await import('../functions/api/chapters.js');
+      const { onRequestPost } = await import('../../functions/api/chapters.js');
       const result = await onRequestPost(mockContext);
       const data = JSON.parse(await result.text());
       
@@ -152,7 +152,7 @@ describe('chapters.js API 测试', () => {
         content: ''
       }));
       
-      const { onRequestPost } = await import('../functions/api/chapters.js');
+      const { onRequestPost } = await import('../../functions/api/chapters.js');
       const result = await onRequestPost(mockContext);
       
       expect(result.status).toBe(400);
@@ -168,7 +168,7 @@ describe('chapters.js API 测试', () => {
         content: '新章节内容'
       }));
       
-      const { onRequestPost } = await import('../functions/api/chapters.js');
+      const { onRequestPost } = await import('../../functions/api/chapters.js');
       const result = await onRequestPost(mockContext);
       
       expect(result.status).toBe(400);
@@ -182,7 +182,7 @@ describe('chapters.js API 测试', () => {
         content: '内容'
       }));
       
-      const { onRequestPost } = await import('../functions/api/chapters.js');
+      const { onRequestPost } = await import('../../functions/api/chapters.js');
       const result = await onRequestPost(mockContext);
       
       expect(result.status).toBe(404);
@@ -206,7 +206,7 @@ describe('chapters.js API 测试', () => {
         }
       }));
       
-      const { onRequestPost } = await import('../functions/api/chapters.js');
+      const { onRequestPost } = await import('../../functions/api/chapters.js');
       const result = await onRequestPost(mockContext);
       const data = JSON.parse(await result.text());
       
@@ -224,7 +224,7 @@ describe('chapters.js API 测试', () => {
       
       mockContext = createMockContext(mockDB, createMockRequest({}, { id: 'ch_1' }));
       
-      const { onRequestDelete } = await import('../functions/api/chapters.js');
+      const { onRequestDelete } = await import('../../functions/api/chapters.js');
       const result = await onRequestDelete(mockContext);
       const data = JSON.parse(await result.text());
       
@@ -236,7 +236,7 @@ describe('chapters.js API 测试', () => {
       
       mockContext = createMockContext(mockDB, createMockRequest({}, { id: 'nonexistent' }));
       
-      const { onRequestDelete } = await import('../functions/api/chapters.js');
+      const { onRequestDelete } = await import('../../functions/api/chapters.js');
       const result = await onRequestDelete(mockContext);
       
       expect(result.status).toBe(404);

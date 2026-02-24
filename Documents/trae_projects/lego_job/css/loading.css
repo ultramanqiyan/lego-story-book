@@ -1,0 +1,480 @@
+/* ============================================
+   乐高故事书 - 精美加载动画组件
+   ============================================ */
+
+/* 全屏加载遮罩 */
+.loading-overlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background: rgba(255, 255, 255, 0.95);
+  backdrop-filter: blur(10px);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  z-index: 99999;
+  transition: opacity 0.3s ease, visibility 0.3s ease;
+}
+
+.loading-overlay.hidden {
+  opacity: 0;
+  visibility: hidden;
+  pointer-events: none;
+}
+
+.loading-overlay.dark {
+  background: rgba(10, 10, 26, 0.95);
+}
+
+/* 加载动画容器 */
+.loading-container {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 30px;
+}
+
+/* ===== 乐高积木加载动画 ===== */
+.lego-loader {
+  display: flex;
+  gap: 10px;
+  align-items: flex-end;
+  height: 80px;
+}
+
+.lego-block {
+  width: 30px;
+  height: 30px;
+  border-radius: 4px;
+  animation: legoStack 1.2s ease-in-out infinite;
+  box-shadow: 0 4px 0 rgba(0,0,0,0.2);
+}
+
+.lego-block:nth-child(1) {
+  background: #e53935;
+  animation-delay: 0s;
+  height: 30px;
+}
+
+.lego-block:nth-child(2) {
+  background: #ffd600;
+  animation-delay: 0.15s;
+  height: 45px;
+}
+
+.lego-block:nth-child(3) {
+  background: #1e88e5;
+  animation-delay: 0.3s;
+  height: 60px;
+}
+
+.lego-block:nth-child(4) {
+  background: #43a047;
+  animation-delay: 0.45s;
+  height: 40px;
+}
+
+.lego-block:nth-child(5) {
+  background: #fb8c00;
+  animation-delay: 0.6s;
+  height: 50px;
+}
+
+@keyframes legoStack {
+  0%, 100% {
+    transform: translateY(0) scaleY(1);
+    box-shadow: 0 4px 0 rgba(0,0,0,0.2);
+  }
+  50% {
+    transform: translateY(-20px) scaleY(0.9);
+    box-shadow: 0 24px 0 rgba(0,0,0,0.1);
+  }
+}
+
+/* ===== 童话魔法加载动画 ===== */
+.fairy-loader {
+  position: relative;
+  width: 100px;
+  height: 100px;
+}
+
+.fairy-wand {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  font-size: 3rem;
+  animation: wandWave 2s ease-in-out infinite;
+}
+
+.fairy-sparkle {
+  position: absolute;
+  width: 10px;
+  height: 10px;
+  background: radial-gradient(circle, #ffd700, transparent);
+  border-radius: 50%;
+  animation: sparkleFly 2s ease-out infinite;
+}
+
+.fairy-sparkle:nth-child(1) { top: 0; left: 50%; animation-delay: 0s; }
+.fairy-sparkle:nth-child(2) { top: 25%; right: 0; animation-delay: 0.2s; }
+.fairy-sparkle:nth-child(3) { bottom: 25%; right: 0; animation-delay: 0.4s; }
+.fairy-sparkle:nth-child(4) { bottom: 0; left: 50%; animation-delay: 0.6s; }
+.fairy-sparkle:nth-child(5) { bottom: 25%; left: 0; animation-delay: 0.8s; }
+.fairy-sparkle:nth-child(6) { top: 25%; left: 0; animation-delay: 1s; }
+
+@keyframes wandWave {
+  0%, 100% { transform: translate(-50%, -50%) rotate(-10deg); }
+  50% { transform: translate(-50%, -50%) rotate(10deg); }
+}
+
+@keyframes sparkleFly {
+  0% {
+    transform: scale(0) translate(0, 0);
+    opacity: 1;
+  }
+  100% {
+    transform: scale(1.5) translate(var(--tx, 30px), var(--ty, -30px));
+    opacity: 0;
+  }
+}
+
+/* ===== 科幻数据加载动画 ===== */
+.scifi-loader {
+  position: relative;
+  width: 120px;
+  height: 120px;
+}
+
+.scifi-ring {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  border: 2px solid transparent;
+  border-top-color: #00f5ff;
+  border-radius: 50%;
+  animation: scifiSpin 2s linear infinite;
+}
+
+.scifi-ring:nth-child(1) {
+  width: 100%;
+  height: 100%;
+  border-top-color: #00f5ff;
+  box-shadow: 0 0 10px rgba(0, 245, 255, 0.5);
+}
+
+.scifi-ring:nth-child(2) {
+  width: 75%;
+  height: 75%;
+  border-top-color: #bf00ff;
+  animation-duration: 1.5s;
+  animation-direction: reverse;
+  box-shadow: 0 0 10px rgba(191, 0, 255, 0.5);
+}
+
+.scifi-ring:nth-child(3) {
+  width: 50%;
+  height: 50%;
+  border-top-color: #00ff88;
+  animation-duration: 1s;
+  box-shadow: 0 0 10px rgba(0, 255, 136, 0.5);
+}
+
+.scifi-core {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  width: 30%;
+  height: 30%;
+  background: radial-gradient(circle, #00f5ff, transparent);
+  border-radius: 50%;
+  animation: scifiPulse 1s ease-in-out infinite;
+}
+
+@keyframes scifiSpin {
+  0% { transform: translate(-50%, -50%) rotate(0deg); }
+  100% { transform: translate(-50%, -50%) rotate(360deg); }
+}
+
+@keyframes scifiPulse {
+  0%, 100% { transform: translate(-50%, -50%) scale(1); opacity: 1; }
+  50% { transform: translate(-50%, -50%) scale(1.2); opacity: 0.7; }
+}
+
+/* ===== 自然生长加载动画 ===== */
+.nature-loader {
+  position: relative;
+  width: 100px;
+  height: 100px;
+  display: flex;
+  align-items: flex-end;
+  justify-content: center;
+}
+
+.nature-seed {
+  position: absolute;
+  bottom: 0;
+  font-size: 2rem;
+  animation: seedGrow 2s ease-in-out infinite;
+}
+
+.nature-leaf {
+  position: absolute;
+  width: 20px;
+  height: 20px;
+  background: linear-gradient(135deg, #7cb342, #8bc34a);
+  border-radius: 0 50% 0 50%;
+  opacity: 0;
+  animation: leafSprout 2s ease-out infinite;
+}
+
+.nature-leaf:nth-child(2) {
+  bottom: 20px;
+  left: 30px;
+  animation-delay: 0.3s;
+  transform: rotate(-30deg);
+}
+
+.nature-leaf:nth-child(3) {
+  bottom: 35px;
+  left: 40px;
+  animation-delay: 0.6s;
+  transform: rotate(0deg);
+}
+
+.nature-leaf:nth-child(4) {
+  bottom: 50px;
+  left: 35px;
+  animation-delay: 0.9s;
+  transform: rotate(30deg);
+}
+
+.nature-leaf:nth-child(5) {
+  bottom: 65px;
+  left: 45px;
+  animation-delay: 1.2s;
+  transform: rotate(-15deg);
+}
+
+@keyframes seedGrow {
+  0%, 100% { transform: scale(1); }
+  50% { transform: scale(1.2); }
+}
+
+@keyframes leafSprout {
+  0% {
+    transform: scale(0) rotate(0deg);
+    opacity: 0;
+  }
+  50% {
+    transform: scale(1.2) rotate(180deg);
+    opacity: 1;
+  }
+  100% {
+    transform: scale(1) rotate(360deg);
+    opacity: 0.8;
+  }
+}
+
+/* ===== 通用加载文字 ===== */
+.loading-text {
+  font-size: 1.2rem;
+  color: #333;
+  text-align: center;
+  font-weight: 500;
+}
+
+.loading-text .dots {
+  display: inline-block;
+  width: 30px;
+  text-align: left;
+}
+
+.loading-text .dots::after {
+  content: '';
+  animation: loadingDots 1.5s steps(4, end) infinite;
+}
+
+@keyframes loadingDots {
+  0% { content: ''; }
+  25% { content: '.'; }
+  50% { content: '..'; }
+  75% { content: '...'; }
+  100% { content: ''; }
+}
+
+.loading-subtext {
+  font-size: 0.9rem;
+  color: #666;
+  text-align: center;
+  margin-top: 10px;
+}
+
+/* 深色模式文字 */
+.loading-overlay.dark .loading-text {
+  color: #00f5ff;
+}
+
+.loading-overlay.dark .loading-subtext {
+  color: #888;
+}
+
+/* ===== 按钮加载状态 ===== */
+.btn-loading {
+  position: relative;
+  pointer-events: none;
+  opacity: 0.8;
+}
+
+.btn-loading::after {
+  content: '';
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  width: 20px;
+  height: 20px;
+  border: 2px solid transparent;
+  border-top-color: currentColor;
+  border-radius: 50%;
+  animation: btnSpin 0.8s linear infinite;
+}
+
+@keyframes btnSpin {
+  0% { transform: translate(-50%, -50%) rotate(0deg); }
+  100% { transform: translate(-50%, -50%) rotate(360deg); }
+}
+
+/* ===== 卡片加载骨架屏 ===== */
+.skeleton {
+  background: linear-gradient(90deg, #f0f0f0 25%, #e0e0e0 50%, #f0f0f0 75%);
+  background-size: 200% 100%;
+  animation: skeletonLoading 1.5s ease-in-out infinite;
+  border-radius: 8px;
+}
+
+@keyframes skeletonLoading {
+  0% { background-position: 200% 0; }
+  100% { background-position: -200% 0; }
+}
+
+.skeleton-card {
+  background: white;
+  border-radius: 20px;
+  padding: 20px;
+  box-shadow: 0 4px 15px rgba(0,0,0,0.1);
+}
+
+.skeleton-avatar {
+  width: 80px;
+  height: 80px;
+  border-radius: 50%;
+  margin: 0 auto 15px;
+}
+
+.skeleton-title {
+  height: 24px;
+  width: 60%;
+  margin: 0 auto 10px;
+}
+
+.skeleton-text {
+  height: 16px;
+  width: 80%;
+  margin: 0 auto 8px;
+}
+
+.skeleton-text.short {
+  width: 40%;
+}
+
+/* ===== 进度条加载 ===== */
+.loading-progress {
+  width: 200px;
+  height: 8px;
+  background: #e0e0e0;
+  border-radius: 4px;
+  overflow: hidden;
+  margin-top: 20px;
+}
+
+.loading-progress-bar {
+  height: 100%;
+  background: linear-gradient(90deg, #667eea, #764ba2);
+  border-radius: 4px;
+  animation: progressLoad 2s ease-in-out infinite;
+}
+
+@keyframes progressLoad {
+  0% { width: 0%; transform: translateX(-100%); }
+  50% { width: 100%; transform: translateX(0); }
+  100% { width: 100%; transform: translateX(100%); }
+}
+
+/* ===== 迷你加载器（用于小区域） ===== */
+.mini-loader {
+  display: inline-block;
+  width: 20px;
+  height: 20px;
+  border: 3px solid #f3f3f3;
+  border-top: 3px solid var(--lego-blue, #667eea);
+  border-radius: 50%;
+  animation: miniSpin 1s linear infinite;
+}
+
+@keyframes miniSpin {
+  0% { transform: rotate(0deg); }
+  100% { transform: rotate(360deg); }
+}
+
+/* ===== 页面切换加载 ===== */
+.page-transition {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background: white;
+  z-index: 99999;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: opacity 0.3s ease;
+}
+
+.page-transition.hidden {
+  opacity: 0;
+  pointer-events: none;
+}
+
+/* 响应式调整 */
+@media (max-width: 768px) {
+  .loading-overlay {
+    padding: 20px;
+  }
+
+  .lego-loader {
+    transform: scale(0.8);
+  }
+
+  .fairy-loader {
+    transform: scale(0.8);
+  }
+
+  .scifi-loader {
+    transform: scale(0.8);
+  }
+
+  .nature-loader {
+    transform: scale(0.8);
+  }
+
+  .loading-text {
+    font-size: 1rem;
+  }
+}

@@ -7,9 +7,13 @@ export async function onRequestOptions(context) {
 export async function onRequestGet(context) {
   try {
     const { DB } = context.env;
-    const { results } = await DB.prepare(
-      'SELECT * FROM characters ORDER BY created_at ASC'
-    ).all();
+    const url = new URL(context.request.url);
+    const userId = url.searchParams.get('userId');
+    
+    let query = 'SELECT * FROM characters WHERE creator_id = ? OR creator_id = ? ORDER BY created_at ASC';
+    let params = ['system', userId || ''];
+    
+    const { results } = await DB.prepare(query).bind(...params).all();
     
     return createSuccessResponse({ characters: results });
   } catch (error) {

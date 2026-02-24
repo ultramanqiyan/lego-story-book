@@ -41,7 +41,7 @@ describe('speech.js API 测试', () => {
         json: vi.fn().mockResolvedValue({ text: '识别的文字内容' })
       });
 
-      const { onRequestPost } = await import('../functions/api/speech.js');
+      const { onRequestPost } = await import('../../functions/api/speech.js');
       const result = await onRequestPost(mockContext);
 
       expect(result.status).toBe(200);
@@ -54,7 +54,7 @@ describe('speech.js API 测试', () => {
       mockRequest.formData.mockResolvedValue(mockFormData);
       mockFormData.get.mockReturnValue(null);
 
-      const { onRequestPost } = await import('../functions/api/speech.js');
+      const { onRequestPost } = await import('../../functions/api/speech.js');
       const result = await onRequestPost(mockContext);
 
       expect(result.status).toBe(400);
@@ -77,7 +77,7 @@ describe('speech.js API 测试', () => {
         })
       });
 
-      const { onRequestPost } = await import('../functions/api/speech.js');
+      const { onRequestPost } = await import('../../functions/api/speech.js');
       const result = await onRequestPost(mockContext);
 
       expect(result.status).toBe(401);
@@ -88,7 +88,7 @@ describe('speech.js API 测试', () => {
     it('应该处理服务器错误', async () => {
       mockRequest.formData.mockRejectedValue(new Error('Form parse error'));
 
-      const { onRequestPost } = await import('../functions/api/speech.js');
+      const { onRequestPost } = await import('../../functions/api/speech.js');
       const result = await onRequestPost(mockContext);
 
       expect(result.status).toBe(500);
@@ -114,7 +114,7 @@ describe('speech.js API 测试', () => {
         json: vi.fn().mockResolvedValue({ text: 'test' })
       });
 
-      const { onRequestPost } = await import('../functions/api/speech.js');
+      const { onRequestPost } = await import('../../functions/api/speech.js');
       await onRequestPost(context);
 
       expect(mockFetch).toHaveBeenCalledWith(
@@ -142,7 +142,7 @@ describe('speech.js API 测试', () => {
         json: vi.fn().mockResolvedValue({ text: 'test' })
       });
 
-      const { onRequestPost } = await import('../functions/api/speech.js');
+      const { onRequestPost } = await import('../../functions/api/speech.js');
       await onRequestPost(context);
 
       expect(mockFetch).toHaveBeenCalledWith(
@@ -168,7 +168,7 @@ describe('speech.js API 测试', () => {
         json: vi.fn().mockResolvedValue({ text: 'test' })
       });
 
-      const { onRequestPost } = await import('../functions/api/speech.js');
+      const { onRequestPost } = await import('../../functions/api/speech.js');
       await onRequestPost(mockContext);
 
       const callArgs = mockFetch.mock.calls[0];
@@ -190,7 +190,7 @@ describe('speech.js API 测试', () => {
         json: vi.fn().mockResolvedValue({ text: '识别成功' })
       });
 
-      const { onRequestPost } = await import('../functions/api/speech.js');
+      const { onRequestPost } = await import('../../functions/api/speech.js');
       const result = await onRequestPost(mockContext);
       const responseData = JSON.parse(await result.text());
 
@@ -209,7 +209,7 @@ describe('speech.js API 测试', () => {
         json: vi.fn().mockResolvedValue({})
       });
 
-      const { onRequestPost } = await import('../functions/api/speech.js');
+      const { onRequestPost } = await import('../../functions/api/speech.js');
       const result = await onRequestPost(mockContext);
       const responseData = JSON.parse(await result.text());
 
@@ -233,7 +233,7 @@ describe('speech.js API 测试', () => {
         })
       });
 
-      const { onRequestPost } = await import('../functions/api/speech.js');
+      const { onRequestPost } = await import('../../functions/api/speech.js');
       const result = await onRequestPost(mockContext);
       const responseData = JSON.parse(await result.text());
 
@@ -253,7 +253,7 @@ describe('speech.js API 测试', () => {
         json: vi.fn().mockResolvedValue({})
       });
 
-      const { onRequestPost } = await import('../functions/api/speech.js');
+      const { onRequestPost } = await import('../../functions/api/speech.js');
       const result = await onRequestPost(mockContext);
       const responseData = JSON.parse(await result.text());
 

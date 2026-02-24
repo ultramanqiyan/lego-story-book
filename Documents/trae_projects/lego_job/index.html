@@ -81,7 +81,9 @@
       var container = document.getElementById('popularCharacters');
       try {
         var data = await fetchAPI('/characters');
-        var characters = data.characters.slice(0, 4);
+        var characters = data.characters.filter(function(c) { 
+          return c.creator_id === 'system'; 
+        }).slice(0, 4);
         
         container.innerHTML = characters.map(function(char, index) {
           return '<div class="character-card card-3d flip-card" onclick="viewCharacter(\'' + char.character_id + '\')" style="animation-delay: ' + (index * 0.1) + 's">' +

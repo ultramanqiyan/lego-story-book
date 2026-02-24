@@ -195,7 +195,7 @@
       var userContainer = document.getElementById('userList');
       
       try {
-        var data = await fetchAPI('/characters');
+        var data = await fetchAPI('/characters?userId=' + userId);
         allCharacters = data.characters || [];
 
         var presetChars = allCharacters.filter(function(c) { return c.creator_id === 'system'; });

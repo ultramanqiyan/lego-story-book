@@ -62,7 +62,7 @@ describe('puzzle.js API 测试', () => {
       
       mockContext = createMockContext(mockDB, createMockRequest({}, { id: 'pz_1' }));
       
-      const { onRequestGet } = await import('../functions/api/puzzle.js');
+      const { onRequestGet } = await import('../../functions/api/puzzle.js');
       const result = await onRequestGet(mockContext);
       const data = JSON.parse(await result.text());
       
@@ -75,7 +75,7 @@ describe('puzzle.js API 测试', () => {
       
       mockContext = createMockContext(mockDB, createMockRequest({}, { id: 'nonexistent' }));
       
-      const { onRequestGet } = await import('../functions/api/puzzle.js');
+      const { onRequestGet } = await import('../../functions/api/puzzle.js');
       const result = await onRequestGet(mockContext);
       
       expect(result.status).toBe(404);
@@ -93,7 +93,7 @@ describe('puzzle.js API 测试', () => {
       
       mockContext = createMockContext(mockDB, createMockRequest({}, { chapterId: 'ch_1' }));
       
-      const { onRequestGet } = await import('../functions/api/puzzle.js');
+      const { onRequestGet } = await import('../../functions/api/puzzle.js');
       const result = await onRequestGet(mockContext);
       const data = JSON.parse(await result.text());
       
@@ -106,7 +106,7 @@ describe('puzzle.js API 测试', () => {
       
       mockContext = createMockContext(mockDB, createMockRequest({}, { chapterId: 'ch_1' }));
       
-      const { onRequestGet } = await import('../functions/api/puzzle.js');
+      const { onRequestGet } = await import('../../functions/api/puzzle.js');
       const result = await onRequestGet(mockContext);
       const data = JSON.parse(await result.text());
       
@@ -132,7 +132,7 @@ describe('puzzle.js API 测试', () => {
         userAnswer: 'A'
       }));
       
-      const { onRequestPost } = await import('../functions/api/puzzle.js');
+      const { onRequestPost } = await import('../../functions/api/puzzle.js');
       const result = await onRequestPost(mockContext);
       const data = JSON.parse(await result.text());
       
@@ -157,7 +157,7 @@ describe('puzzle.js API 测试', () => {
         userAnswer: 'B'
       }));
       
-      const { onRequestPost } = await import('../functions/api/puzzle.js');
+      const { onRequestPost } = await import('../../functions/api/puzzle.js');
       const result = await onRequestPost(mockContext);
       const data = JSON.parse(await result.text());
       
@@ -171,7 +171,7 @@ describe('puzzle.js API 测试', () => {
         puzzleId: 'pz_1'
       }));
       
-      const { onRequestPost } = await import('../functions/api/puzzle.js');
+      const { onRequestPost } = await import('../../functions/api/puzzle.js');
       const result = await onRequestPost(mockContext);
       
       expect(result.status).toBe(400);
@@ -186,7 +186,7 @@ describe('puzzle.js API 测试', () => {
         userAnswer: 'A'
       }));
       
-      const { onRequestPost } = await import('../functions/api/puzzle.js');
+      const { onRequestPost } = await import('../../functions/api/puzzle.js');
       const result = await onRequestPost(mockContext);
       
       expect(result.status).toBe(404);
@@ -211,7 +211,7 @@ describe('puzzle.js API 测试', () => {
         userAnswer: 'A'
       }));
       
-      const { onRequestPost } = await import('../functions/api/puzzle.js');
+      const { onRequestPost } = await import('../../functions/api/puzzle.js');
       const result = await onRequestPost(mockContext);
       const data = JSON.parse(await result.text());
       
@@ -238,7 +238,7 @@ describe('puzzle.js API 测试', () => {
         userAnswer: 'B'
       }));
       
-      const { onRequestPost } = await import('../functions/api/puzzle.js');
+      const { onRequestPost } = await import('../../functions/api/puzzle.js');
       const result = await onRequestPost(mockContext);
       const data = JSON.parse(await result.text());
       

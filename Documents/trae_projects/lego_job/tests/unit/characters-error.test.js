@@ -39,7 +39,7 @@ const createMockContext = (db, request) => ({
   request
 });
 
-describe('books.js API 错误分支测试', () => {
+describe('characters.js API 错误分支测试', () => {
   let mockDB;
   let mockContext;
 
@@ -48,30 +48,15 @@ describe('books.js API 错误分支测试', () => {
     mockDB = createMockDB();
   });
 
-  describe('onRequestGet 错误处理', () => {
-    it('应该处理数据库查询错误', async () => {
-      mockDB._mockAll.mockRejectedValue(new Error('DB Error'));
-      
-      mockContext = createMockContext(mockDB, createMockRequest({}, { userId: 'user_1' }));
-      
-      const { onRequestGet } = await import('../functions/api/books.js');
-      const result = await onRequestGet(mockContext);
-      
-      expect(result.status).toBe(500);
-    });
-  });
-
   describe('onRequestPost 错误处理', () => {
-    it('应该处理数据库创建错误', async () => {
-      mockDB._mockFirst.mockResolvedValue({ count: 0 });
+    it('应该处理数据库错误', async () => {
       mockDB._mockRun.mockRejectedValue(new Error('DB Error'));
       
       mockContext = createMockContext(mockDB, createMockRequest({
-        userId: 'user_1',
-        title: '新书籍'
+        name: '测试人仔'
       }));
       
-      const { onRequestPost } = await import('../functions/api/books.js');
+      const { onRequestPost } = await import('../../functions/api/characters.js');
       const result = await onRequestPost(mockContext);
       
       expect(result.status).toBe(500);
@@ -80,15 +65,18 @@ describe('books.js API 错误分支测试', () => {
 
   describe('onRequestPut 错误处理', () => {
     it('应该处理数据库更新错误', async () => {
-      mockDB._mockFirst.mockResolvedValue({ book_id: 'book_1' });
+      mockDB._mockFirst.mockResolvedValue({
+        character_id: 'char_1',
+        creator_id: 'user'
+      });
       mockDB._mockRun.mockRejectedValue(new Error('DB Error'));
       
       mockContext = createMockContext(mockDB, createMockRequest({
-        bookId: 'book_1',
-        title: '新标题'
+        characterId: 'char_1',
+        name: '新名称'
       }));
       
-      const { onRequestPut } = await import('../functions/api/books.js');
+      const { onRequestPut } = await import('../../functions/api/characters.js');
       const result = await onRequestPut(mockContext);
       
       expect(result.status).toBe(500);
@@ -97,12 +85,14 @@ describe('books.js API 错误分支测试', () => {
 
   describe('onRequestDelete 错误处理', () => {
     it('应该处理数据库删除错误', async () => {
-      mockDB._mockFirst.mockResolvedValue({ book_id: 'book_1' });
+      mockDB._mockFirst
+        .mockResolvedValueOnce({ character_id: 'char_1', creator_id: 'user' })
+        .mockResolvedValueOnce({ count: 0 });
       mockDB._mockRun.mockRejectedValue(new Error('DB Error'));
       
-      mockContext = createMockContext(mockDB, createMockRequest({}, { id: 'book_1' }));
+      mockContext = createMockContext(mockDB, createMockRequest({}, { id: 'char_1' }));
       
-      const { onRequestDelete } = await import('../functions/api/books.js');
+      const { onRequestDelete } = await import('../../functions/api/characters.js');
       const result = await onRequestDelete(mockContext);
       
       expect(result.status).toBe(500);
