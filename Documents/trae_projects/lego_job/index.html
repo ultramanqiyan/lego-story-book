@@ -4,8 +4,12 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>乐高故事书 - 创建属于你的冒险故事</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+SC:wght@400;500;700&family=Noto+Serif+SC:wght@400;600&family=Rajdhani:wght@500;600;700&family=Exo+2:wght@400;500;600&family=Cinzel:wght@400;600;700&family=Lora:wght@400;500&display=swap" rel="stylesheet">
   <link rel="stylesheet" href="css/styles.css">
   <link rel="stylesheet" href="css/animations.css">
+  <link rel="stylesheet" id="theme-stylesheet" href="" disabled>
 </head>
 <body>
   <div class="lego-brick-bg"></div>
@@ -24,6 +28,7 @@
         <a href="bookshelf.html" class="nav-glow">📚 我的书架</a>
         <a href="characters.html" class="nav-glow">🎭 人仔角色</a>
         <a href="adventure.html" class="nav-glow">🗺️ 冒险模式</a>
+        <a href="theme-selector.html" class="nav-glow">🎨 主题风格</a>
         <a href="parent.html" class="nav-glow">👨‍👩‍👧 家长控制</a>
       </nav>
     </header>
@@ -71,6 +76,7 @@
 
   <script src="js/utils.js"></script>
   <script src="js/animations.js"></script>
+  <script src="js/theme-manager.js"></script>
   <script>
     document.addEventListener('DOMContentLoaded', async function() {
       await loadPopularCharacters();

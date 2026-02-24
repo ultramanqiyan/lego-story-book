@@ -1,0 +1,1438 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>方案一 - 活力童趣风格 | 乐高故事书 UI设计</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Baloo+2:wght@400;500;600;700;800&family=Nunito+Sans:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --lego-red: #E3000F;
+            --lego-yellow: #FFD500;
+            --lego-blue: #006CB7;
+            --lego-green: #00A651;
+            --lego-orange: #FF6B35;
+            --lego-purple: #8B5CF6;
+            --lego-cyan: #06B6D4;
+            --lego-pink: #EC4899;
+            --bg-main: #FFFBF0;
+            --bg-card: #FFFFFF;
+            --bg-secondary: #FFF8E7;
+            --text-primary: #1A1A2E;
+            --text-secondary: #6B7280;
+            --border-color: #E0E0E0;
+            --shadow-base: 0 4px 6px rgba(0,0,0,0.1);
+            --shadow-hover: 0 12px 24px rgba(0,0,0,0.15);
+            --radius-card: 24px;
+            --radius-button: 50px;
+            --radius-input: 16px;
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Nunito Sans', sans-serif;
+            background-color: var(--bg-main);
+            color: var(--text-primary);
+            line-height: 1.6;
+            overflow-x: hidden;
+        }
+
+        h1, h2, h3, h4, h5, h6 {
+            font-family: 'Baloo 2', cursive;
+            font-weight: 700;
+            line-height: 1.2;
+        }
+
+        .container {
+            max-width: 1440px;
+            margin: 0 auto;
+            padding: 0 24px;
+        }
+
+        section {
+            padding: 48px 0;
+        }
+
+        .section-title {
+            font-size: 2rem;
+            margin-bottom: 32px;
+            color: var(--text-primary);
+            position: relative;
+            display: inline-block;
+        }
+
+        .section-title::after {
+            content: '';
+            position: absolute;
+            bottom: -8px;
+            left: 0;
+            width: 60px;
+            height: 4px;
+            background: linear-gradient(90deg, var(--lego-red), var(--lego-yellow));
+            border-radius: 2px;
+        }
+
+        @keyframes fadeInUp {
+            from {
+                opacity: 0;
+                transform: translateY(30px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        @keyframes bounce {
+            0%, 20%, 50%, 80%, 100% {
+                transform: translateY(0);
+            }
+            40% {
+                transform: translateY(-20px);
+            }
+            60% {
+                transform: translateY(-10px);
+            }
+        }
+
+        @keyframes float {
+            0%, 100% {
+                transform: translateY(0) rotate(0deg);
+            }
+            50% {
+                transform: translateY(-15px) rotate(5deg);
+            }
+        }
+
+        @keyframes pulse {
+            0%, 100% {
+                transform: scale(1);
+            }
+            50% {
+                transform: scale(1.05);
+            }
+        }
+
+        @keyframes ripple {
+            0% {
+                transform: scale(0);
+                opacity: 1;
+            }
+            100% {
+                transform: scale(4);
+                opacity: 0;
+            }
+        }
+
+        @keyframes shimmer {
+            0% {
+                background-position: -200% 0;
+            }
+            100% {
+                background-position: 200% 0;
+            }
+        }
+
+        .animate-fade-in-up {
+            animation: fadeInUp 0.6s ease-out forwards;
+        }
+
+        .animate-bounce {
+            animation: bounce 1s ease-in-out;
+        }
+
+        .animate-float {
+            animation: float 3s ease-in-out infinite;
+        }
+
+        .color-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(120px, 1fr));
+            gap: 16px;
+            margin-bottom: 32px;
+        }
+
+        .color-swatch {
+            border-radius: 16px;
+            overflow: hidden;
+            box-shadow: var(--shadow-base);
+            transition: transform 0.3s ease, box-shadow 0.3s ease;
+        }
+
+        .color-swatch:hover {
+            transform: translateY(-4px);
+            box-shadow: var(--shadow-hover);
+        }
+
+        .color-swatch .color-preview {
+            height: 80px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1.5rem;
+        }
+
+        .color-swatch .color-info {
+            background: var(--bg-card);
+            padding: 12px;
+            text-align: center;
+        }
+
+        .color-swatch .color-name {
+            font-weight: 600;
+            font-size: 0.875rem;
+            margin-bottom: 4px;
+        }
+
+        .color-swatch .color-hex {
+            font-size: 0.75rem;
+            color: var(--text-secondary);
+            font-family: monospace;
+        }
+
+        .btn {
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            gap: 8px;
+            font-family: 'Baloo 2', cursive;
+            font-weight: 600;
+            font-size: 1rem;
+            border: none;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .btn::after {
+            content: '';
+            position: absolute;
+            width: 100%;
+            height: 100%;
+            top: 0;
+            left: 0;
+            pointer-events: none;
+            background-image: radial-gradient(circle, rgba(255,255,255,0.3) 10%, transparent 10%);
+            background-repeat: no-repeat;
+            background-position: 50%;
+            transform: scale(10);
+            opacity: 0;
+            transition: transform 0.5s, opacity 0.5s;
+        }
+
+        .btn:active::after {
+            transform: scale(0);
+            opacity: 1;
+            transition: 0s;
+        }
+
+        .btn-primary {
+            background: linear-gradient(135deg, var(--lego-red), var(--lego-orange));
+            color: white;
+            border-radius: var(--radius-button);
+            padding: 16px 32px;
+            height: 56px;
+            box-shadow: 0 4px 0 #B3000C, var(--shadow-base);
+        }
+
+        .btn-primary:hover {
+            transform: translateY(-4px);
+            box-shadow: 0 8px 0 #B3000C, var(--shadow-hover);
+        }
+
+        .btn-primary:active {
+            transform: translateY(0);
+            box-shadow: 0 2px 0 #B3000C, var(--shadow-base);
+        }
+
+        .btn-secondary {
+            background: linear-gradient(135deg, var(--lego-blue), var(--lego-cyan));
+            color: white;
+            border-radius: var(--radius-button);
+            padding: 16px 32px;
+            height: 56px;
+            box-shadow: 0 4px 0 #005A9E, var(--shadow-base);
+        }
+
+        .btn-secondary:hover {
+            transform: translateY(-4px);
+            box-shadow: 0 8px 0 #005A9E, var(--shadow-hover);
+        }
+
+        .btn-secondary:active {
+            transform: translateY(0);
+            box-shadow: 0 2px 0 #005A9E, var(--shadow-base);
+        }
+
+        .btn-success {
+            background: linear-gradient(135deg, var(--lego-green), #00C853);
+            color: white;
+            border-radius: var(--radius-button);
+            padding: 16px 32px;
+            height: 56px;
+            box-shadow: 0 4px 0 #008C44, var(--shadow-base);
+        }
+
+        .btn-success:hover {
+            transform: translateY(-4px);
+            box-shadow: 0 8px 0 #008C44, var(--shadow-hover);
+        }
+
+        .btn-text {
+            background: transparent;
+            color: var(--lego-blue);
+            padding: 12px 24px;
+            height: 48px;
+            position: relative;
+        }
+
+        .btn-text::before {
+            content: '';
+            position: absolute;
+            bottom: 8px;
+            left: 24px;
+            right: 24px;
+            height: 2px;
+            background: var(--lego-blue);
+            transform: scaleX(0);
+            transition: transform 0.3s ease;
+        }
+
+        .btn-text:hover::before {
+            transform: scaleX(1);
+        }
+
+        .btn-icon {
+            width: 48px;
+            height: 48px;
+            border-radius: 50%;
+            background: linear-gradient(135deg, var(--lego-yellow), var(--lego-orange));
+            color: white;
+            padding: 0;
+            box-shadow: 0 4px 0 #CC9900, var(--shadow-base);
+        }
+
+        .btn-icon:hover {
+            transform: translateY(-4px) scale(1.05);
+            box-shadow: 0 8px 0 #CC9900, var(--shadow-hover);
+        }
+
+        .btn-icon:active {
+            transform: translateY(0) scale(0.98);
+        }
+
+        .button-group {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 16px;
+            align-items: center;
+            margin-bottom: 24px;
+        }
+
+        .input-group {
+            margin-bottom: 24px;
+        }
+
+        .input-label {
+            display: block;
+            font-weight: 600;
+            margin-bottom: 8px;
+            color: var(--text-primary);
+        }
+
+        .input-field {
+            width: 100%;
+            max-width: 400px;
+            height: 52px;
+            padding: 16px 20px;
+            font-family: 'Nunito Sans', sans-serif;
+            font-size: 1rem;
+            border: 3px solid var(--border-color);
+            border-radius: var(--radius-input);
+            background: var(--bg-card);
+            transition: all 0.3s ease;
+            outline: none;
+        }
+
+        .input-field:focus {
+            border-color: var(--lego-yellow);
+            box-shadow: 0 0 0 4px rgba(255, 213, 0, 0.3);
+            transform: scale(1.02);
+        }
+
+        .input-field.error {
+            border-color: var(--lego-red);
+            animation: shake 0.5s ease;
+        }
+
+        .input-field.success {
+            border-color: var(--lego-green);
+        }
+
+        @keyframes shake {
+            0%, 100% { transform: translateX(0); }
+            20%, 60% { transform: translateX(-5px); }
+            40%, 80% { transform: translateX(5px); }
+        }
+
+        .input-error {
+            color: var(--lego-red);
+            font-size: 0.875rem;
+            margin-top: 8px;
+            display: flex;
+            align-items: center;
+            gap: 4px;
+        }
+
+        .input-success {
+            color: var(--lego-green);
+            font-size: 0.875rem;
+            margin-top: 8px;
+            display: flex;
+            align-items: center;
+            gap: 4px;
+        }
+
+        .card {
+            background: var(--bg-card);
+            border-radius: var(--radius-card);
+            overflow: hidden;
+            box-shadow: var(--shadow-base);
+            transition: all 0.4s ease;
+            position: relative;
+        }
+
+        .card::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            height: 4px;
+            background: linear-gradient(90deg, var(--lego-red), var(--lego-yellow), var(--lego-blue), var(--lego-green));
+        }
+
+        .card:hover {
+            transform: translateY(-8px) rotateX(2deg);
+            box-shadow: var(--shadow-hover);
+        }
+
+        .card-body {
+            padding: 24px;
+        }
+
+        .card-title {
+            font-size: 1.25rem;
+            margin-bottom: 8px;
+        }
+
+        .card-text {
+            color: var(--text-secondary);
+            font-size: 0.95rem;
+        }
+
+        .card-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+            gap: 24px;
+        }
+
+        .character-card {
+            text-align: center;
+            padding: 24px;
+        }
+
+        .character-avatar {
+            width: 120px;
+            height: 120px;
+            border-radius: 50%;
+            margin: 0 auto 16px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 3rem;
+            background: linear-gradient(135deg, var(--bg-secondary), var(--bg-card));
+            box-shadow: var(--shadow-base);
+            transition: transform 0.3s ease;
+        }
+
+        .character-card:hover .character-avatar {
+            transform: scale(1.1) rotate(5deg);
+        }
+
+        .character-name {
+            font-size: 1.25rem;
+            font-weight: 700;
+            margin-bottom: 4px;
+        }
+
+        .character-type {
+            color: var(--text-secondary);
+            font-size: 0.875rem;
+        }
+
+        .book-card {
+            position: relative;
+        }
+
+        .book-cover {
+            height: 160px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 4rem;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .book-card:nth-child(1) .book-cover {
+            background: linear-gradient(135deg, #667eea, #764ba2);
+        }
+
+        .book-card:nth-child(2) .book-cover {
+            background: linear-gradient(135deg, #11998e, #38ef7d);
+        }
+
+        .book-card:nth-child(3) .book-cover {
+            background: linear-gradient(135deg, #ee0979, #ff6a00);
+        }
+
+        .book-card:nth-child(4) .book-cover {
+            background: linear-gradient(135deg, #4facfe, #00f2fe);
+        }
+
+        .book-info {
+            padding: 20px;
+        }
+
+        .book-title {
+            font-size: 1.125rem;
+            font-weight: 700;
+            margin-bottom: 8px;
+        }
+
+        .book-meta {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            color: var(--text-secondary);
+            font-size: 0.875rem;
+        }
+
+        .chapter-badge {
+            background: var(--lego-yellow);
+            color: var(--text-primary);
+            padding: 4px 12px;
+            border-radius: 20px;
+            font-weight: 600;
+            font-size: 0.75rem;
+        }
+
+        .navbar {
+            background: linear-gradient(135deg, var(--lego-red), var(--lego-orange));
+            padding: 0 24px;
+            height: 72px;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            position: sticky;
+            top: 0;
+            z-index: 1000;
+            box-shadow: var(--shadow-base);
+        }
+
+        .navbar-brand {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            color: white;
+            text-decoration: none;
+            font-family: 'Baloo 2', cursive;
+            font-size: 1.5rem;
+            font-weight: 800;
+        }
+
+        .navbar-brand:hover {
+            animation: bounce 0.5s ease;
+        }
+
+        .navbar-menu {
+            display: flex;
+            gap: 8px;
+        }
+
+        .nav-link {
+            color: white;
+            text-decoration: none;
+            padding: 12px 20px;
+            border-radius: 25px;
+            font-weight: 600;
+            transition: all 0.3s ease;
+            position: relative;
+        }
+
+        .nav-link:hover {
+            background: rgba(255,255,255,0.2);
+            transform: translateY(-2px);
+        }
+
+        .nav-link.active {
+            background: rgba(255,255,255,0.3);
+        }
+
+        .hero-section {
+            background: linear-gradient(135deg, var(--bg-secondary) 0%, var(--bg-main) 100%);
+            padding: 80px 24px;
+            text-align: center;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .hero-section::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background-image: 
+                radial-gradient(circle at 20% 80%, rgba(227, 0, 15, 0.1) 0%, transparent 50%),
+                radial-gradient(circle at 80% 20%, rgba(0, 108, 183, 0.1) 0%, transparent 50%),
+                radial-gradient(circle at 40% 40%, rgba(255, 213, 0, 0.1) 0%, transparent 50%);
+            pointer-events: none;
+        }
+
+        .hero-title {
+            font-size: 3rem;
+            color: var(--text-primary);
+            margin-bottom: 16px;
+            position: relative;
+            display: inline-block;
+        }
+
+        .hero-title .emoji {
+            display: inline-block;
+            animation: float 3s ease-in-out infinite;
+        }
+
+        .hero-title .emoji:nth-child(2) {
+            animation-delay: 0.5s;
+        }
+
+        .hero-subtitle {
+            font-size: 1.25rem;
+            color: var(--text-secondary);
+            margin-bottom: 40px;
+            max-width: 600px;
+            margin-left: auto;
+            margin-right: auto;
+        }
+
+        .hero-steps {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            gap: 16px;
+            flex-wrap: wrap;
+            margin-bottom: 40px;
+        }
+
+        .step-item {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            background: var(--bg-card);
+            padding: 12px 20px;
+            border-radius: 30px;
+            box-shadow: var(--shadow-base);
+            font-weight: 600;
+        }
+
+        .step-arrow {
+            font-size: 1.5rem;
+            color: var(--lego-yellow);
+        }
+
+        .section-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 24px;
+        }
+
+        .view-more {
+            color: var(--lego-blue);
+            text-decoration: none;
+            font-weight: 600;
+            display: flex;
+            align-items: center;
+            gap: 4px;
+            transition: gap 0.3s ease;
+        }
+
+        .view-more:hover {
+            gap: 8px;
+        }
+
+        .footer {
+            background: linear-gradient(135deg, var(--lego-blue), var(--lego-purple));
+            color: white;
+            padding: 48px 24px;
+            margin-top: 48px;
+        }
+
+        .footer-content {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 32px;
+            max-width: 1200px;
+            margin: 0 auto;
+        }
+
+        .footer-section h4 {
+            font-size: 1.125rem;
+            margin-bottom: 16px;
+        }
+
+        .footer-links {
+            list-style: none;
+        }
+
+        .footer-links li {
+            margin-bottom: 8px;
+        }
+
+        .footer-links a {
+            color: rgba(255,255,255,0.8);
+            text-decoration: none;
+            transition: color 0.3s ease;
+        }
+
+        .footer-links a:hover {
+            color: white;
+        }
+
+        .footer-bottom {
+            text-align: center;
+            margin-top: 32px;
+            padding-top: 24px;
+            border-top: 1px solid rgba(255,255,255,0.2);
+            font-size: 0.875rem;
+            opacity: 0.8;
+        }
+
+        .particle {
+            position: fixed;
+            border-radius: 50%;
+            pointer-events: none;
+            opacity: 0.3;
+            animation: float 20s ease-in-out infinite;
+        }
+
+        .demo-section {
+            background: var(--bg-card);
+            border-radius: var(--radius-card);
+            padding: 32px;
+            margin-bottom: 32px;
+            box-shadow: var(--shadow-base);
+        }
+
+        .demo-section-title {
+            font-size: 1.5rem;
+            margin-bottom: 24px;
+            padding-bottom: 16px;
+            border-bottom: 2px solid var(--bg-secondary);
+        }
+
+        .font-demo {
+            margin-bottom: 24px;
+        }
+
+        .font-demo-title {
+            font-family: 'Baloo 2', cursive;
+            font-size: 2.5rem;
+            font-weight: 800;
+            margin-bottom: 8px;
+            color: var(--lego-red);
+        }
+
+        .font-demo-subtitle {
+            font-family: 'Baloo 2', cursive;
+            font-size: 1.5rem;
+            font-weight: 600;
+            margin-bottom: 8px;
+            color: var(--lego-blue);
+        }
+
+        .font-demo-body {
+            font-family: 'Nunito Sans', sans-serif;
+            font-size: 1rem;
+            line-height: 1.8;
+            color: var(--text-primary);
+        }
+
+        .skeleton {
+            background: linear-gradient(90deg, #f0f0f0 25%, #e0e0e0 50%, #f0f0f0 75%);
+            background-size: 200% 100%;
+            animation: shimmer 1.5s infinite;
+            border-radius: 8px;
+        }
+
+        .skeleton-text {
+            height: 16px;
+            margin-bottom: 8px;
+        }
+
+        .skeleton-title {
+            height: 24px;
+            width: 60%;
+            margin-bottom: 16px;
+        }
+
+        .skeleton-avatar {
+            width: 80px;
+            height: 80px;
+            border-radius: 50%;
+        }
+
+        .loading-demo {
+            display: flex;
+            gap: 24px;
+            align-items: flex-start;
+            padding: 24px;
+            background: var(--bg-secondary);
+            border-radius: var(--radius-card);
+        }
+
+        .lego-loader {
+            display: flex;
+            gap: 8px;
+            align-items: flex-end;
+        }
+
+        .lego-brick {
+            width: 24px;
+            border-radius: 4px;
+            animation: legoStack 1s ease-in-out infinite;
+        }
+
+        .lego-brick:nth-child(1) {
+            height: 24px;
+            background: var(--lego-red);
+            animation-delay: 0s;
+        }
+
+        .lego-brick:nth-child(2) {
+            height: 32px;
+            background: var(--lego-yellow);
+            animation-delay: 0.1s;
+        }
+
+        .lego-brick:nth-child(3) {
+            height: 40px;
+            background: var(--lego-blue);
+            animation-delay: 0.2s;
+        }
+
+        .lego-brick:nth-child(4) {
+            height: 48px;
+            background: var(--lego-green);
+            animation-delay: 0.3s;
+        }
+
+        @keyframes legoStack {
+            0%, 100% {
+                transform: translateY(0);
+            }
+            50% {
+                transform: translateY(-10px);
+            }
+        }
+
+        .toast-demo {
+            position: relative;
+            padding: 40px;
+            background: var(--bg-secondary);
+            border-radius: var(--radius-card);
+            min-height: 150px;
+        }
+
+        .toast {
+            position: absolute;
+            right: 20px;
+            padding: 16px 24px;
+            border-radius: 12px;
+            color: white;
+            font-weight: 600;
+            box-shadow: var(--shadow-hover);
+            animation: slideIn 0.5s ease;
+        }
+
+        .toast-success {
+            background: linear-gradient(135deg, var(--lego-green), #00C853);
+            top: 20px;
+        }
+
+        .toast-error {
+            background: linear-gradient(135deg, var(--lego-red), #FF4444);
+            top: 80px;
+        }
+
+        @keyframes slideIn {
+            from {
+                transform: translateX(100%);
+                opacity: 0;
+            }
+            to {
+                transform: translateX(0);
+                opacity: 1;
+            }
+        }
+
+        @media (max-width: 768px) {
+            .navbar-menu {
+                display: none;
+            }
+
+            .hero-title {
+                font-size: 2rem;
+            }
+
+            .hero-steps {
+                flex-direction: column;
+            }
+
+            .step-arrow {
+                transform: rotate(90deg);
+            }
+
+            .card-grid {
+                grid-template-columns: 1fr;
+            }
+
+            .button-group {
+                flex-direction: column;
+                align-items: stretch;
+            }
+
+            .btn {
+                width: 100%;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="particle" style="width: 16px; height: 16px; background: var(--lego-red); top: 20%; left: 10%;"></div>
+    <div class="particle" style="width: 12px; height: 12px; background: var(--lego-yellow); top: 40%; left: 80%; animation-delay: 2s;"></div>
+    <div class="particle" style="width: 20px; height: 20px; background: var(--lego-blue); top: 60%; left: 20%; animation-delay: 4s;"></div>
+    <div class="particle" style="width: 14px; height: 14px; background: var(--lego-green); top: 80%; left: 70%; animation-delay: 6s;"></div>
+    <div class="particle" style="width: 18px; height: 18px; background: var(--lego-purple); top: 30%; left: 50%; animation-delay: 8s;"></div>
+
+    <nav class="navbar">
+        <a href="#" class="navbar-brand">
+            <span>🧱</span>
+            <span>乐高故事书</span>
+        </a>
+        <div class="navbar-menu">
+            <a href="#" class="nav-link active">首页</a>
+            <a href="#" class="nav-link">书架</a>
+            <a href="#" class="nav-link">角色</a>
+            <a href="#" class="nav-link">冒险</a>
+            <a href="#" class="nav-link">家长</a>
+        </div>
+    </nav>
+
+    <section class="hero-section">
+        <div class="container">
+            <h1 class="hero-title animate-fade-in-up">
+                <span class="emoji">🧱</span>
+                欢迎来到乐高故事世界
+                <span class="emoji">🧱</span>
+            </h1>
+            <p class="hero-subtitle animate-fade-in-up" style="animation-delay: 0.2s;">
+                创建属于你的冒险故事！让想象力自由飞翔，每个孩子都是故事的创作者
+            </p>
+            <div class="hero-steps animate-fade-in-up" style="animation-delay: 0.4s;">
+                <div class="step-item">
+                    <span>🎭</span>
+                    <span>选择人仔</span>
+                </div>
+                <span class="step-arrow">→</span>
+                <div class="step-item">
+                    <span>📖</span>
+                    <span>创建故事</span>
+                </div>
+                <span class="step-arrow">→</span>
+                <div class="step-item">
+                    <span>🧩</span>
+                    <span>解谜冒险</span>
+                </div>
+            </div>
+            <button class="btn btn-primary animate-fade-in-up" style="animation-delay: 0.6s;">
+                <span>🎮</span>
+                <span>开始冒险</span>
+            </button>
+        </div>
+    </section>
+
+    <section class="container">
+        <div class="demo-section">
+            <h2 class="demo-section-title">🎨 色彩系统</h2>
+            
+            <h3 class="section-title">主色调</h3>
+            <div class="color-grid">
+                <div class="color-swatch">
+                    <div class="color-preview" style="background: var(--lego-red);">🔴</div>
+                    <div class="color-info">
+                        <div class="color-name">乐高红</div>
+                        <div class="color-hex">#E3000F</div>
+                    </div>
+                </div>
+                <div class="color-swatch">
+                    <div class="color-preview" style="background: var(--lego-yellow);">🟡</div>
+                    <div class="color-info">
+                        <div class="color-name">乐高黄</div>
+                        <div class="color-hex">#FFD500</div>
+                    </div>
+                </div>
+                <div class="color-swatch">
+                    <div class="color-preview" style="background: var(--lego-blue);">🔵</div>
+                    <div class="color-info">
+                        <div class="color-name">乐高蓝</div>
+                        <div class="color-hex">#006CB7</div>
+                    </div>
+                </div>
+                <div class="color-swatch">
+                    <div class="color-preview" style="background: var(--lego-green);">🟢</div>
+                    <div class="color-info">
+                        <div class="color-name">乐高绿</div>
+                        <div class="color-hex">#00A651</div>
+                    </div>
+                </div>
+            </div>
+
+            <h3 class="section-title">辅助色</h3>
+            <div class="color-grid">
+                <div class="color-swatch">
+                    <div class="color-preview" style="background: var(--lego-orange);">🟠</div>
+                    <div class="color-info">
+                        <div class="color-name">橙色</div>
+                        <div class="color-hex">#FF6B35</div>
+                    </div>
+                </div>
+                <div class="color-swatch">
+                    <div class="color-preview" style="background: var(--lego-purple);">🟣</div>
+                    <div class="color-info">
+                        <div class="color-name">紫色</div>
+                        <div class="color-hex">#8B5CF6</div>
+                    </div>
+                </div>
+                <div class="color-swatch">
+                    <div class="color-preview" style="background: var(--lego-cyan);">💎</div>
+                    <div class="color-info">
+                        <div class="color-name">青色</div>
+                        <div class="color-hex">#06B6D4</div>
+                    </div>
+                </div>
+                <div class="color-swatch">
+                    <div class="color-preview" style="background: var(--lego-pink);">💗</div>
+                    <div class="color-info">
+                        <div class="color-name">粉色</div>
+                        <div class="color-hex">#EC4899</div>
+                    </div>
+                </div>
+            </div>
+
+            <h3 class="section-title">背景色</h3>
+            <div class="color-grid">
+                <div class="color-swatch">
+                    <div class="color-preview" style="background: var(--bg-main); border: 1px solid #E0E0E0;">📄</div>
+                    <div class="color-info">
+                        <div class="color-name">主背景</div>
+                        <div class="color-hex">#FFFBF0</div>
+                    </div>
+                </div>
+                <div class="color-swatch">
+                    <div class="color-preview" style="background: var(--bg-card); border: 1px solid #E0E0E0;">⬜</div>
+                    <div class="color-info">
+                        <div class="color-name">卡片背景</div>
+                        <div class="color-hex">#FFFFFF</div>
+                    </div>
+                </div>
+                <div class="color-swatch">
+                    <div class="color-preview" style="background: var(--bg-secondary);">📝</div>
+                    <div class="color-info">
+                        <div class="color-name">次级背景</div>
+                        <div class="color-hex">#FFF8E7</div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="demo-section">
+            <h2 class="demo-section-title">🔤 字体系统</h2>
+            <div class="font-demo">
+                <div class="font-demo-title">Baloo 2 - 标题字体</div>
+                <div class="font-demo-subtitle">圆润活泼，适合儿童阅读</div>
+                <div class="font-demo-body">
+                    Nunito Sans 正文字体 - 清晰易读，行高舒适。这款字体专为数字屏幕设计，
+                    在各种尺寸下都能保持良好的可读性，非常适合儿童故事书应用。
+                </div>
+            </div>
+        </div>
+
+        <div class="demo-section">
+            <h2 class="demo-section-title">🔘 按钮组件</h2>
+            <div class="button-group">
+                <button class="btn btn-primary">主要按钮</button>
+                <button class="btn btn-secondary">次要按钮</button>
+                <button class="btn btn-success">成功按钮</button>
+                <button class="btn btn-text">文字按钮</button>
+                <button class="btn btn-icon">❤️</button>
+            </div>
+            <div class="button-group">
+                <button class="btn btn-primary">
+                    <span>🚀</span>
+                    <span>带图标按钮</span>
+                </button>
+                <button class="btn btn-secondary">
+                    <span>📚</span>
+                    <span>浏览故事</span>
+                </button>
+            </div>
+        </div>
+
+        <div class="demo-section">
+            <h2 class="demo-section-title">📝 输入框组件</h2>
+            
+            <div class="input-group">
+                <label class="input-label">默认状态</label>
+                <input type="text" class="input-field" placeholder="请输入内容...">
+            </div>
+
+            <div class="input-group">
+                <label class="input-label">聚焦状态（点击输入框查看效果）</label>
+                <input type="text" class="input-field" placeholder="点击我查看聚焦效果...">
+            </div>
+
+            <div class="input-group">
+                <label class="input-label">错误状态</label>
+                <input type="text" class="input-field error" value="错误的输入">
+                <div class="input-error">⚠️ 请输入有效的内容</div>
+            </div>
+
+            <div class="input-group">
+                <label class="input-label">成功状态</label>
+                <input type="text" class="input-field success" value="正确的输入">
+                <div class="input-success">✓ 输入验证通过</div>
+            </div>
+        </div>
+
+        <div class="demo-section">
+            <h2 class="demo-section-title">🃏 卡片组件</h2>
+            
+            <h3 class="section-title">基础卡片</h3>
+            <div class="card-grid" style="margin-bottom: 32px;">
+                <div class="card">
+                    <div class="card-body">
+                        <h4 class="card-title">基础卡片标题</h4>
+                        <p class="card-text">这是一个基础卡片示例，包含白色背景、顶部彩色条纹和圆角设计。悬停时会有上浮和3D倾斜效果。</p>
+                    </div>
+                </div>
+                <div class="card">
+                    <div class="card-body">
+                        <h4 class="card-title">另一个卡片</h4>
+                        <p class="card-text">卡片设计采用乐高积木的立体感理念，通过阴影和圆角营造出积木块的视觉效果。</p>
+                    </div>
+                </div>
+            </div>
+
+            <h3 class="section-title">角色卡片</h3>
+            <div class="card-grid" style="margin-bottom: 32px;">
+                <div class="card character-card">
+                    <div class="character-avatar">🦸</div>
+                    <div class="character-name">超级英雄</div>
+                    <div class="character-type">正义的守护者</div>
+                </div>
+                <div class="card character-card">
+                    <div class="character-avatar">🧙</div>
+                    <div class="character-name">魔法师</div>
+                    <div class="character-type">神秘的施法者</div>
+                </div>
+                <div class="card character-card">
+                    <div class="character-avatar">🧝</div>
+                    <div class="character-name">精灵</div>
+                    <div class="character-type">森林的守护者</div>
+                </div>
+                <div class="card character-card">
+                    <div class="character-avatar">🦹</div>
+                    <div class="character-name">反派角色</div>
+                    <div class="character-type">故事的挑战者</div>
+                </div>
+            </div>
+
+            <h3 class="section-title">书籍卡片</h3>
+            <div class="card-grid">
+                <div class="card book-card">
+                    <div class="book-cover">📖</div>
+                    <div class="book-info">
+                        <div class="book-title">太空冒险</div>
+                        <div class="book-meta">
+                            <span class="chapter-badge">📚 5章</span>
+                            <span>2小时前更新</span>
+                        </div>
+                    </div>
+                </div>
+                <div class="card book-card">
+                    <div class="book-cover">📖</div>
+                    <div class="book-info">
+                        <div class="book-title">森林奇遇</div>
+                        <div class="book-meta">
+                            <span class="chapter-badge">📚 3章</span>
+                            <span>昨天更新</span>
+                        </div>
+                    </div>
+                </div>
+                <div class="card book-card">
+                    <div class="book-cover">📖</div>
+                    <div class="book-info">
+                        <div class="book-title">海底探险</div>
+                        <div class="book-meta">
+                            <span class="chapter-badge">📚 8章</span>
+                            <span>3天前更新</span>
+                        </div>
+                    </div>
+                </div>
+                <div class="card book-card">
+                    <div class="book-cover">📖</div>
+                    <div class="book-info">
+                        <div class="book-title">城堡传说</div>
+                        <div class="book-meta">
+                            <span class="chapter-badge">📚 2章</span>
+                            <span>1周前更新</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="demo-section">
+            <h2 class="demo-section-title">✨ 动画效果</h2>
+            
+            <h3 class="section-title">加载动画</h3>
+            <div class="loading-demo" style="margin-bottom: 32px;">
+                <div class="lego-loader">
+                    <div class="lego-brick"></div>
+                    <div class="lego-brick"></div>
+                    <div class="lego-brick"></div>
+                    <div class="lego-brick"></div>
+                </div>
+                <div style="flex: 1;">
+                    <div class="skeleton skeleton-title"></div>
+                    <div class="skeleton skeleton-text" style="width: 100%;"></div>
+                    <div class="skeleton skeleton-text" style="width: 80%;"></div>
+                    <div class="skeleton skeleton-text" style="width: 90%;"></div>
+                </div>
+                <div class="skeleton skeleton-avatar"></div>
+            </div>
+
+            <h3 class="section-title">提示消息</h3>
+            <div class="toast-demo">
+                <div class="toast toast-success">✓ 操作成功！</div>
+                <div class="toast toast-error">✗ 操作失败，请重试</div>
+            </div>
+        </div>
+    </section>
+
+    <section class="container">
+        <div class="section-header">
+            <h2 class="section-title">🔥 热门人仔</h2>
+            <a href="#" class="view-more">
+                查看更多
+                <span>→</span>
+            </a>
+        </div>
+        <div class="card-grid">
+            <div class="card character-card">
+                <div class="character-avatar">🦸</div>
+                <div class="character-name">英雄</div>
+                <div class="character-type">勇敢的冒险者</div>
+            </div>
+            <div class="card character-card">
+                <div class="character-avatar">🧙</div>
+                <div class="character-name">法师</div>
+                <div class="character-type">神秘的魔法师</div>
+            </div>
+            <div class="card character-card">
+                <div class="character-avatar">🧝</div>
+                <div class="character-name">精灵</div>
+                <div class="character-type">森林守护者</div>
+            </div>
+            <div class="card character-card">
+                <div class="character-avatar">🦹</div>
+                <div class="character-name">反派</div>
+                <div class="character-type">故事挑战者</div>
+            </div>
+        </div>
+    </section>
+
+    <section class="container">
+        <div class="section-header">
+            <h2 class="section-title">📚 最近故事</h2>
+            <a href="#" class="view-more">
+                查看更多
+                <span>→</span>
+            </a>
+        </div>
+        <div class="card-grid">
+            <div class="card book-card">
+                <div class="book-cover">📖</div>
+                <div class="book-info">
+                    <div class="book-title">太空冒险</div>
+                    <div class="book-meta">
+                        <span class="chapter-badge">📚 5章</span>
+                        <span>2小时前更新</span>
+                    </div>
+                </div>
+            </div>
+            <div class="card book-card">
+                <div class="book-cover">📖</div>
+                <div class="book-info">
+                    <div class="book-title">森林奇遇</div>
+                    <div class="book-meta">
+                        <span class="chapter-badge">📚 3章</span>
+                        <span>昨天更新</span>
+                    </div>
+                </div>
+            </div>
+            <div class="card book-card">
+                <div class="book-cover">📖</div>
+                <div class="book-info">
+                    <div class="book-title">海底探险</div>
+                    <div class="book-meta">
+                        <span class="chapter-badge">📚 8章</span>
+                        <span>3天前更新</span>
+                    </div>
+                </div>
+            </div>
+            <div class="card book-card">
+                <div class="book-cover">📖</div>
+                <div class="book-info">
+                    <div class="book-title">城堡传说</div>
+                    <div class="book-meta">
+                        <span class="chapter-badge">📚 2章</span>
+                        <span>1周前更新</span>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <footer class="footer">
+        <div class="footer-content">
+            <div class="footer-section">
+                <h4>🧱 乐高故事书</h4>
+                <p style="opacity: 0.8; font-size: 0.875rem;">
+                    让每个孩子都能创作属于自己的冒险故事
+                </p>
+            </div>
+            <div class="footer-section">
+                <h4>快速链接</h4>
+                <ul class="footer-links">
+                    <li><a href="#">首页</a></li>
+                    <li><a href="#">书架</a></li>
+                    <li><a href="#">角色</a></li>
+                    <li><a href="#">冒险</a></li>
+                </ul>
+            </div>
+            <div class="footer-section">
+                <h4>帮助中心</h4>
+                <ul class="footer-links">
+                    <li><a href="#">使用指南</a></li>
+                    <li><a href="#">常见问题</a></li>
+                    <li><a href="#">联系我们</a></li>
+                    <li><a href="#">家长控制</a></li>
+                </ul>
+            </div>
+            <div class="footer-section">
+                <h4>关于我们</h4>
+                <ul class="footer-links">
+                    <li><a href="#">关于乐高故事书</a></li>
+                    <li><a href="#">隐私政策</a></li>
+                    <li><a href="#">使用条款</a></li>
+                    <li><a href="#">儿童安全</a></li>
+                </ul>
+            </div>
+        </div>
+        <div class="footer-bottom">
+            © 2024 乐高故事书 - 方案一：活力童趣风格 UI设计示例
+        </div>
+    </footer>
+
+    <script>
+        document.querySelectorAll('.btn').forEach(btn => {
+            btn.addEventListener('click', function(e) {
+                const rect = this.getBoundingClientRect();
+                const x = e.clientX - rect.left;
+                const y = e.clientY - rect.top;
+                
+                const ripple = document.createElement('span');
+                ripple.style.cssText = `
+                    position: absolute;
+                    width: 20px;
+                    height: 20px;
+                    background: rgba(255,255,255,0.5);
+                    border-radius: 50%;
+                    left: ${x}px;
+                    top: ${y}px;
+                    transform: translate(-50%, -50%);
+                    animation: ripple 0.6s ease-out;
+                    pointer-events: none;
+                `;
+                this.appendChild(ripple);
+                
+                setTimeout(() => ripple.remove(), 600);
+            });
+        });
+
+        const observerOptions = {
+            threshold: 0.1,
+            rootMargin: '0px 0px -50px 0px'
+        };
+
+        const observer = new IntersectionObserver((entries) => {
+            entries.forEach(entry => {
+                if (entry.isIntersecting) {
+                    entry.target.style.opacity = '1';
+                    entry.target.style.transform = 'translateY(0)';
+                }
+            });
+        }, observerOptions);
+
+        document.querySelectorAll('.card').forEach((card, index) => {
+            card.style.opacity = '0';
+            card.style.transform = 'translateY(30px)';
+            card.style.transition = `all 0.6s ease ${index * 0.1}s`;
+            observer.observe(card);
+        });
+
+        document.querySelectorAll('.input-field').forEach(input => {
+            input.addEventListener('focus', function() {
+                this.parentElement.classList.add('focused');
+            });
+            
+            input.addEventListener('blur', function() {
+                this.parentElement.classList.remove('focused');
+            });
+        });
+    </script>
+</body>
+</html>

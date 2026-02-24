@@ -4,8 +4,12 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>章节阅读 - 乐高故事书</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+SC:wght@400;500;700&family=Noto+Serif+SC:wght@400;600&family=Rajdhani:wght@500;600;700&family=Exo+2:wght@400;500;600&family=Cinzel:wght@400;600;700&family=Lora:wght@400;500&display=swap" rel="stylesheet">
   <link rel="stylesheet" href="css/lego-theme.css">
   <link rel="stylesheet" href="css/loading.css">
+  <link rel="stylesheet" id="theme-stylesheet" href="" disabled>
 </head>
 <body>
   <div class="page-container">
@@ -138,6 +142,7 @@
 
   <script src="js/utils.js"></script>
   <script src="js/loading-manager.js"></script>
+  <script src="js/theme-manager.js"></script>
   <script>
     var userId = requireAuth();
     var bookId = getQueryParam('bookId');

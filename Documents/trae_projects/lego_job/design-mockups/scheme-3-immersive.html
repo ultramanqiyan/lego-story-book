@@ -1,0 +1,1366 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>方案三 - 沉浸式故事风格</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Cinzel:wght@400;500;600;700&family=Lora:ital,wght@0,400;0,500;0,600;1,400;1,500&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --primary: #6366F1;
+            --primary-light: #818CF8;
+            --secondary: #8B5CF6;
+            --background: #1E1B4B;
+            --background-light: #312E81;
+            --accent: #FCD34D;
+            --accent-light: #FDE68A;
+            --parchment: #F5E6D3;
+            --parchment-dark: #E8D5B7;
+            --ink: #2D1B0E;
+            --gold: #D4AF37;
+            --gold-light: #FFD700;
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Lora', serif;
+            background: var(--background);
+            color: var(--parchment);
+            min-height: 100vh;
+            overflow-x: hidden;
+        }
+
+        h1, h2, h3, h4, h5, h6 {
+            font-family: 'Cinzel', serif;
+        }
+
+        .section-title {
+            text-align: center;
+            font-size: 2rem;
+            color: var(--accent);
+            margin-bottom: 2rem;
+            text-shadow: 0 0 20px rgba(252, 211, 77, 0.3);
+            position: relative;
+        }
+
+        .section-title::before,
+        .section-title::after {
+            content: '✦';
+            margin: 0 1rem;
+            opacity: 0.6;
+        }
+
+        .demo-section {
+            padding: 3rem 2rem;
+            max-width: 1400px;
+            margin: 0 auto;
+            border-bottom: 1px solid rgba(252, 211, 77, 0.2);
+        }
+
+        .color-palette {
+            display: flex;
+            gap: 1rem;
+            flex-wrap: wrap;
+            justify-content: center;
+        }
+
+        .color-swatch {
+            width: 120px;
+            height: 120px;
+            border-radius: 8px;
+            display: flex;
+            flex-direction: column;
+            justify-content: flex-end;
+            padding: 0.5rem;
+            font-size: 0.75rem;
+            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.3);
+            border: 2px solid rgba(255, 255, 255, 0.1);
+        }
+
+        .color-swatch span {
+            background: rgba(0, 0, 0, 0.5);
+            padding: 0.25rem 0.5rem;
+            border-radius: 4px;
+            text-align: center;
+        }
+
+        .book-container {
+            perspective: 2000px;
+            margin: 2rem auto;
+            max-width: 1200px;
+        }
+
+        .book {
+            position: relative;
+            width: 100%;
+            min-height: 600px;
+            transform-style: preserve-3d;
+            animation: bookOpen 1.5s ease-out forwards;
+        }
+
+        @keyframes bookOpen {
+            0% {
+                transform: rotateY(-90deg);
+            }
+            100% {
+                transform: rotateY(0deg);
+            }
+        }
+
+        .book-spine {
+            position: absolute;
+            left: 50%;
+            top: 0;
+            width: 30px;
+            height: 100%;
+            background: linear-gradient(90deg, 
+                var(--background) 0%,
+                var(--background-light) 50%,
+                var(--background) 100%);
+            transform: translateX(-50%);
+            box-shadow: 
+                inset 0 0 20px rgba(0, 0, 0, 0.5),
+                0 0 30px rgba(0, 0, 0, 0.3);
+            z-index: 10;
+        }
+
+        .book-spine::before {
+            content: '';
+            position: absolute;
+            top: 20px;
+            bottom: 20px;
+            left: 5px;
+            right: 5px;
+            background: repeating-linear-gradient(
+                0deg,
+                transparent,
+                transparent 10px,
+                rgba(252, 211, 77, 0.1) 10px,
+                rgba(252, 211, 77, 0.1) 11px
+            );
+        }
+
+        .book-page {
+            position: absolute;
+            width: calc(50% - 15px);
+            height: 100%;
+            background: var(--parchment);
+            background-image: 
+                url("data:image/svg+xml,%3Csvg viewBox='0 0 200 200' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noiseFilter'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noiseFilter)'/%3E%3C/svg%3E");
+            background-blend-mode: overlay;
+            border-radius: 8px;
+            padding: 2rem;
+            color: var(--ink);
+            box-shadow: 
+                0 0 30px rgba(0, 0, 0, 0.3),
+                inset 0 0 50px rgba(139, 92, 246, 0.05);
+        }
+
+        .book-page::before {
+            content: '';
+            position: absolute;
+            top: 10px;
+            bottom: 10px;
+            width: 2px;
+            background: linear-gradient(180deg, 
+                transparent,
+                rgba(139, 92, 246, 0.3) 20%,
+                rgba(139, 92, 246, 0.3) 80%,
+                transparent
+            );
+        }
+
+        .book-page.left {
+            left: 0;
+            border-right: none;
+        }
+
+        .book-page.left::before {
+            right: 15px;
+        }
+
+        .book-page.right {
+            right: 0;
+            border-left: none;
+        }
+
+        .book-page.right::before {
+            left: 15px;
+        }
+
+        .page-decoration {
+            position: absolute;
+            width: 100%;
+            height: 100%;
+            top: 0;
+            left: 0;
+            pointer-events: none;
+            overflow: hidden;
+        }
+
+        .page-corner {
+            position: absolute;
+            width: 60px;
+            height: 60px;
+            opacity: 0.3;
+        }
+
+        .page-corner.top-left {
+            top: 10px;
+            left: 10px;
+            border-top: 2px solid var(--secondary);
+            border-left: 2px solid var(--secondary);
+        }
+
+        .page-corner.top-right {
+            top: 10px;
+            right: 10px;
+            border-top: 2px solid var(--secondary);
+            border-right: 2px solid var(--secondary);
+        }
+
+        .page-corner.bottom-left {
+            bottom: 10px;
+            left: 10px;
+            border-bottom: 2px solid var(--secondary);
+            border-left: 2px solid var(--secondary);
+        }
+
+        .page-corner.bottom-right {
+            bottom: 10px;
+            right: 10px;
+            border-bottom: 2px solid var(--secondary);
+            border-right: 2px solid var(--secondary);
+        }
+
+        .page-title {
+            font-family: 'Cinzel', serif;
+            font-size: 1.5rem;
+            color: var(--primary);
+            text-align: center;
+            margin-bottom: 1.5rem;
+            border-bottom: 2px solid var(--secondary);
+            padding-bottom: 0.5rem;
+        }
+
+        .page-content {
+            font-size: 0.95rem;
+            line-height: 1.8;
+            text-align: justify;
+        }
+
+        .page-content p {
+            margin-bottom: 1rem;
+            text-indent: 2em;
+        }
+
+        .drop-cap {
+            float: left;
+            font-size: 4rem;
+            line-height: 0.8;
+            padding-right: 0.5rem;
+            color: var(--primary);
+            font-family: 'Cinzel', serif;
+        }
+
+        .ink-writing {
+            position: relative;
+            overflow: hidden;
+        }
+
+        .ink-writing::after {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: linear-gradient(90deg, var(--parchment) 0%, transparent 100%);
+            animation: inkReveal 3s ease-out forwards;
+        }
+
+        @keyframes inkReveal {
+            0% {
+                transform: translateX(0);
+            }
+            100% {
+                transform: translateX(100%);
+            }
+        }
+
+        .wax-seal-btn {
+            position: relative;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            width: 80px;
+            height: 80px;
+            background: radial-gradient(circle at 30% 30%, 
+                #C41E3A 0%, 
+                #8B0000 50%, 
+                #4A0000 100%);
+            border-radius: 50%;
+            border: none;
+            cursor: pointer;
+            box-shadow: 
+                0 4px 15px rgba(139, 0, 0, 0.4),
+                inset 0 -5px 15px rgba(0, 0, 0, 0.3),
+                inset 0 5px 10px rgba(255, 100, 100, 0.2);
+            transition: all 0.3s ease;
+            margin: 1rem;
+        }
+
+        .wax-seal-btn::before {
+            content: '';
+            position: absolute;
+            width: 90%;
+            height: 90%;
+            border-radius: 50%;
+            border: 2px solid rgba(255, 255, 255, 0.1);
+        }
+
+        .wax-seal-btn::after {
+            content: attr(data-symbol);
+            font-family: 'Cinzel', serif;
+            font-size: 1.5rem;
+            color: var(--gold);
+            text-shadow: 0 1px 2px rgba(0, 0, 0, 0.5);
+        }
+
+        .wax-seal-btn:hover {
+            transform: scale(1.1) rotate(-5deg);
+            box-shadow: 
+                0 8px 25px rgba(139, 0, 0, 0.5),
+                inset 0 -5px 15px rgba(0, 0, 0, 0.3),
+                inset 0 5px 10px rgba(255, 100, 100, 0.3);
+        }
+
+        .wax-seal-btn:active {
+            transform: scale(0.95);
+        }
+
+        .parchment-btn {
+            position: relative;
+            display: inline-flex;
+            align-items: center;
+            gap: 0.5rem;
+            padding: 0.75rem 1.5rem;
+            background: var(--parchment);
+            color: var(--ink);
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+            font-family: 'Cinzel', serif;
+            font-size: 0.9rem;
+            box-shadow: 
+                0 2px 8px rgba(0, 0, 0, 0.2),
+                inset 0 1px 0 rgba(255, 255, 255, 0.5);
+            transition: all 0.3s ease;
+            margin: 0.5rem;
+            background-image: 
+                url("data:image/svg+xml,%3Csvg viewBox='0 0 200 200' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noiseFilter'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.8' numOctaves='3' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noiseFilter)'/%3E%3C/svg%3E");
+            background-blend-mode: overlay;
+        }
+
+        .parchment-btn::before {
+            content: '';
+            position: absolute;
+            inset: 3px;
+            border: 1px solid rgba(139, 92, 246, 0.3);
+            border-radius: 2px;
+            pointer-events: none;
+        }
+
+        .parchment-btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 
+                0 4px 15px rgba(0, 0, 0, 0.3),
+                inset 0 1px 0 rgba(255, 255, 255, 0.5);
+            background-color: var(--parchment-dark);
+        }
+
+        .parchment-btn:active {
+            transform: translateY(0);
+        }
+
+        .stamp-icon-btn {
+            position: relative;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            width: 50px;
+            height: 50px;
+            background: transparent;
+            border: 2px solid var(--accent);
+            border-radius: 50%;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            margin: 0.5rem;
+        }
+
+        .stamp-icon-btn svg {
+            width: 24px;
+            height: 24px;
+            fill: var(--accent);
+            transition: all 0.3s ease;
+        }
+
+        .stamp-icon-btn:hover {
+            background: var(--accent);
+            transform: rotate(15deg);
+        }
+
+        .stamp-icon-btn:hover svg {
+            fill: var(--background);
+        }
+
+        .scroll-card {
+            position: relative;
+            background: var(--parchment);
+            background-image: 
+                url("data:image/svg+xml,%3Csvg viewBox='0 0 200 200' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noiseFilter'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.7' numOctaves='3' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noiseFilter)'/%3E%3C/svg%3E");
+            background-blend-mode: overlay;
+            border-radius: 8px;
+            padding: 1.5rem;
+            color: var(--ink);
+            max-width: 350px;
+            margin: 1rem;
+            box-shadow: 0 5px 20px rgba(0, 0, 0, 0.3);
+        }
+
+        .scroll-card::before,
+        .scroll-card::after {
+            content: '';
+            position: absolute;
+            left: 0;
+            right: 0;
+            height: 25px;
+            background: linear-gradient(90deg, 
+                var(--parchment-dark) 0%,
+                var(--parchment) 20%,
+                var(--parchment) 80%,
+                var(--parchment-dark) 100%
+            );
+            border-radius: 50%;
+            box-shadow: 0 2px 10px rgba(0, 0, 0, 0.2);
+        }
+
+        .scroll-card::before {
+            top: -12px;
+        }
+
+        .scroll-card::after {
+            bottom: -12px;
+        }
+
+        .scroll-card-content {
+            padding: 0.5rem 0;
+        }
+
+        .scroll-card-title {
+            font-family: 'Cinzel', serif;
+            font-size: 1.1rem;
+            color: var(--primary);
+            margin-bottom: 0.5rem;
+            text-align: center;
+        }
+
+        .scroll-card-text {
+            font-size: 0.9rem;
+            line-height: 1.6;
+        }
+
+        .tarot-card {
+            position: relative;
+            width: 180px;
+            height: 280px;
+            background: linear-gradient(135deg, 
+                var(--background) 0%,
+                var(--background-light) 50%,
+                var(--background) 100%);
+            border: 3px solid var(--gold);
+            border-radius: 10px;
+            overflow: hidden;
+            cursor: pointer;
+            transition: all 0.4s ease;
+            margin: 1rem;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.4);
+        }
+
+        .tarot-card::before {
+            content: '';
+            position: absolute;
+            inset: 8px;
+            border: 1px solid var(--gold);
+            border-radius: 6px;
+            pointer-events: none;
+        }
+
+        .tarot-card-inner {
+            position: absolute;
+            inset: 15px;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: space-between;
+            padding: 1rem;
+        }
+
+        .tarot-card-image {
+            width: 100%;
+            height: 150px;
+            background: linear-gradient(180deg, 
+                rgba(99, 102, 241, 0.2) 0%,
+                rgba(139, 92, 246, 0.3) 100%);
+            border-radius: 4px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 3rem;
+        }
+
+        .tarot-card-name {
+            font-family: 'Cinzel', serif;
+            font-size: 0.9rem;
+            color: var(--accent);
+            text-align: center;
+            text-transform: uppercase;
+            letter-spacing: 2px;
+        }
+
+        .tarot-card-number {
+            font-family: 'Cinzel', serif;
+            font-size: 1.2rem;
+            color: var(--gold);
+        }
+
+        .tarot-card:hover {
+            transform: translateY(-10px) rotateY(5deg);
+            box-shadow: 
+                0 20px 40px rgba(0, 0, 0, 0.5),
+                0 0 30px rgba(252, 211, 77, 0.2);
+        }
+
+        .chapter-card {
+            position: relative;
+            background: var(--parchment);
+            background-image: 
+                url("data:image/svg+xml,%3Csvg viewBox='0 0 200 200' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noiseFilter'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.6' numOctaves='3' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noiseFilter)'/%3E%3C/svg%3E");
+            background-blend-mode: overlay;
+            border-radius: 4px;
+            padding: 1.5rem;
+            color: var(--ink);
+            max-width: 300px;
+            margin: 1rem;
+            box-shadow: 0 5px 20px rgba(0, 0, 0, 0.3);
+            transition: all 0.3s ease;
+        }
+
+        .chapter-card::before {
+            content: '';
+            position: absolute;
+            left: 0;
+            top: 0;
+            bottom: 0;
+            width: 4px;
+            background: linear-gradient(180deg, 
+                var(--primary) 0%,
+                var(--secondary) 50%,
+                var(--primary) 100%);
+        }
+
+        .chapter-card-number {
+            font-family: 'Cinzel', serif;
+            font-size: 2rem;
+            color: var(--primary);
+            opacity: 0.3;
+            position: absolute;
+            top: 10px;
+            right: 15px;
+        }
+
+        .chapter-card-title {
+            font-family: 'Cinzel', serif;
+            font-size: 1.1rem;
+            color: var(--primary);
+            margin-bottom: 0.5rem;
+        }
+
+        .chapter-card-desc {
+            font-size: 0.85rem;
+            line-height: 1.5;
+            opacity: 0.8;
+        }
+
+        .chapter-card:hover {
+            transform: translateX(5px);
+            box-shadow: 0 8px 25px rgba(0, 0, 0, 0.4);
+        }
+
+        .hero-section {
+            min-height: 100vh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .hero-bg {
+            position: absolute;
+            inset: 0;
+            background: 
+                radial-gradient(ellipse at 20% 20%, rgba(99, 102, 241, 0.15) 0%, transparent 50%),
+                radial-gradient(ellipse at 80% 80%, rgba(139, 92, 246, 0.15) 0%, transparent 50%),
+                radial-gradient(ellipse at 50% 50%, rgba(252, 211, 77, 0.05) 0%, transparent 70%);
+        }
+
+        .stars {
+            position: absolute;
+            inset: 0;
+            background-image: 
+                radial-gradient(2px 2px at 20px 30px, var(--accent), transparent),
+                radial-gradient(2px 2px at 40px 70px, rgba(255, 255, 255, 0.5), transparent),
+                radial-gradient(1px 1px at 90px 40px, var(--accent), transparent),
+                radial-gradient(2px 2px at 130px 80px, rgba(255, 255, 255, 0.5), transparent),
+                radial-gradient(1px 1px at 160px 120px, var(--accent), transparent);
+            background-size: 200px 200px;
+            animation: twinkle 4s ease-in-out infinite;
+        }
+
+        @keyframes twinkle {
+            0%, 100% { opacity: 0.5; }
+            50% { opacity: 1; }
+        }
+
+        .hero-book {
+            position: relative;
+            width: 900px;
+            max-width: 95vw;
+            perspective: 2000px;
+        }
+
+        .hero-book-inner {
+            position: relative;
+            transform-style: preserve-3d;
+            animation: heroBookOpen 2s ease-out forwards;
+        }
+
+        @keyframes heroBookOpen {
+            0% {
+                transform: rotateY(-30deg) rotateX(10deg);
+            }
+            100% {
+                transform: rotateY(0deg) rotateX(0deg);
+            }
+        }
+
+        .hero-book-cover {
+            position: absolute;
+            width: 100%;
+            height: 100%;
+            background: linear-gradient(135deg, 
+                var(--background) 0%,
+                var(--background-light) 100%);
+            border: 4px solid var(--gold);
+            border-radius: 8px;
+            box-shadow: 
+                0 20px 60px rgba(0, 0, 0, 0.5),
+                inset 0 0 100px rgba(252, 211, 77, 0.1);
+        }
+
+        .hero-book-page {
+            position: relative;
+            display: grid;
+            grid-template-columns: 1fr 30px 1fr;
+            min-height: 500px;
+            background: var(--parchment);
+            background-image: 
+                url("data:image/svg+xml,%3Csvg viewBox='0 0 200 200' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noiseFilter'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.8' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noiseFilter)'/%3E%3C/svg%3E");
+            background-blend-mode: overlay;
+            border-radius: 8px;
+            overflow: hidden;
+            box-shadow: 0 15px 50px rgba(0, 0, 0, 0.4);
+        }
+
+        .hero-page {
+            padding: 2rem;
+            color: var(--ink);
+        }
+
+        .hero-page.left {
+            border-right: 1px solid rgba(139, 92, 246, 0.2);
+        }
+
+        .hero-spine {
+            background: linear-gradient(90deg, 
+                rgba(0, 0, 0, 0.1) 0%,
+                rgba(0, 0, 0, 0.2) 50%,
+                rgba(0, 0, 0, 0.1) 100%);
+            position: relative;
+        }
+
+        .hero-spine::before {
+            content: '';
+            position: absolute;
+            top: 20px;
+            bottom: 20px;
+            left: 50%;
+            width: 2px;
+            background: var(--secondary);
+            transform: translateX(-50%);
+            opacity: 0.3;
+        }
+
+        .hero-title {
+            font-family: 'Cinzel', serif;
+            font-size: 2.5rem;
+            color: var(--primary);
+            text-align: center;
+            margin-bottom: 1rem;
+            text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.1);
+        }
+
+        .hero-subtitle {
+            font-style: italic;
+            text-align: center;
+            color: var(--secondary);
+            margin-bottom: 2rem;
+            font-size: 1.1rem;
+        }
+
+        .hero-nav {
+            display: flex;
+            justify-content: center;
+            gap: 1rem;
+            margin-top: 2rem;
+        }
+
+        .decorative-border {
+            position: absolute;
+            inset: 10px;
+            border: 1px solid rgba(139, 92, 246, 0.3);
+            border-radius: 4px;
+            pointer-events: none;
+        }
+
+        .decorative-corner {
+            position: absolute;
+            width: 40px;
+            height: 40px;
+            background: var(--gold);
+            clip-path: polygon(0 0, 100% 0, 100% 100%);
+            opacity: 0.6;
+        }
+
+        .decorative-corner.top-left {
+            top: 15px;
+            left: 15px;
+            transform: rotate(0deg);
+        }
+
+        .decorative-corner.top-right {
+            top: 15px;
+            right: 15px;
+            transform: rotate(90deg);
+        }
+
+        .decorative-corner.bottom-left {
+            bottom: 15px;
+            left: 15px;
+            transform: rotate(-90deg);
+        }
+
+        .decorative-corner.bottom-right {
+            bottom: 15px;
+            right: 15px;
+            transform: rotate(180deg);
+        }
+
+        .flourish {
+            text-align: center;
+            font-size: 1.5rem;
+            color: var(--secondary);
+            margin: 1rem 0;
+            opacity: 0.6;
+        }
+
+        .nav-bar {
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            z-index: 100;
+            background: rgba(30, 27, 75, 0.95);
+            backdrop-filter: blur(10px);
+            border-bottom: 1px solid rgba(252, 211, 77, 0.2);
+            padding: 1rem 2rem;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .nav-logo {
+            font-family: 'Cinzel', serif;
+            font-size: 1.5rem;
+            color: var(--accent);
+            text-decoration: none;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+
+        .nav-logo-icon {
+            width: 30px;
+            height: 30px;
+            background: var(--accent);
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: var(--background);
+            font-weight: bold;
+        }
+
+        .nav-links {
+            display: flex;
+            gap: 2rem;
+            list-style: none;
+        }
+
+        .nav-link {
+            font-family: 'Cinzel', serif;
+            color: var(--parchment);
+            text-decoration: none;
+            font-size: 0.9rem;
+            position: relative;
+            transition: color 0.3s ease;
+        }
+
+        .nav-link::after {
+            content: '';
+            position: absolute;
+            bottom: -5px;
+            left: 0;
+            width: 0;
+            height: 2px;
+            background: var(--accent);
+            transition: width 0.3s ease;
+        }
+
+        .nav-link:hover {
+            color: var(--accent);
+        }
+
+        .nav-link:hover::after {
+            width: 100%;
+        }
+
+        .candle {
+            position: absolute;
+            width: 20px;
+            height: 60px;
+            background: linear-gradient(180deg, 
+                #F5DEB3 0%,
+                #DEB887 100%);
+            border-radius: 3px 3px 0 0;
+        }
+
+        .candle::before {
+            content: '';
+            position: absolute;
+            top: -20px;
+            left: 50%;
+            transform: translateX(-50%);
+            width: 8px;
+            height: 20px;
+            background: radial-gradient(ellipse at bottom, 
+                #FF6B35 0%,
+                #FFD93D 30%,
+                transparent 70%);
+            border-radius: 50% 50% 20% 20%;
+            animation: flicker 0.5s ease-in-out infinite alternate;
+        }
+
+        .candle::after {
+            content: '';
+            position: absolute;
+            top: -15px;
+            left: 50%;
+            transform: translateX(-50%);
+            width: 4px;
+            height: 10px;
+            background: #333;
+            border-radius: 1px;
+        }
+
+        @keyframes flicker {
+            0% {
+                opacity: 0.8;
+                transform: translateX(-50%) scale(1);
+            }
+            100% {
+                opacity: 1;
+                transform: translateX(-50%) scale(1.1);
+            }
+        }
+
+        .candle.left {
+            left: 50px;
+            bottom: 100px;
+        }
+
+        .candle.right {
+            right: 50px;
+            bottom: 100px;
+        }
+
+        .page-turn {
+            position: relative;
+            overflow: hidden;
+        }
+
+        .page-turn-content {
+            animation: pageTurn 1s ease-out;
+        }
+
+        @keyframes pageTurn {
+            0% {
+                transform: rotateY(-90deg);
+                opacity: 0;
+            }
+            100% {
+                transform: rotateY(0deg);
+                opacity: 1;
+            }
+        }
+
+        .button-group {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 1rem;
+            justify-content: center;
+            padding: 1rem;
+        }
+
+        .card-grid {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 1rem;
+            justify-content: center;
+            padding: 1rem;
+        }
+
+        .typography-demo {
+            background: var(--parchment);
+            background-image: 
+                url("data:image/svg+xml,%3Csvg viewBox='0 0 200 200' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noiseFilter'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.7' numOctaves='3' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noiseFilter)'/%3E%3C/svg%3E");
+            background-blend-mode: overlay;
+            padding: 2rem;
+            border-radius: 8px;
+            color: var(--ink);
+            max-width: 800px;
+            margin: 0 auto;
+        }
+
+        .typography-demo h1 {
+            font-size: 2.5rem;
+            margin-bottom: 1rem;
+        }
+
+        .typography-demo h2 {
+            font-size: 1.8rem;
+            margin-bottom: 0.8rem;
+            color: var(--primary);
+        }
+
+        .typography-demo h3 {
+            font-size: 1.4rem;
+            margin-bottom: 0.6rem;
+            color: var(--secondary);
+        }
+
+        .typography-demo p {
+            margin-bottom: 1rem;
+            line-height: 1.8;
+        }
+
+        .typography-demo blockquote {
+            border-left: 3px solid var(--secondary);
+            padding-left: 1rem;
+            margin: 1rem 0;
+            font-style: italic;
+            color: var(--primary);
+        }
+
+        .footer {
+            text-align: center;
+            padding: 2rem;
+            color: var(--accent);
+            font-family: 'Cinzel', serif;
+            opacity: 0.6;
+        }
+
+        @media (max-width: 768px) {
+            .hero-book-page {
+                grid-template-columns: 1fr;
+            }
+
+            .hero-spine {
+                display: none;
+            }
+
+            .hero-page.left {
+                border-right: none;
+                border-bottom: 1px solid rgba(139, 92, 246, 0.2);
+            }
+
+            .nav-links {
+                display: none;
+            }
+
+            .book-page {
+                position: relative;
+                width: 100%;
+                margin-bottom: 1rem;
+            }
+
+            .book-spine {
+                display: none;
+            }
+        }
+    </style>
+</head>
+<body>
+    <nav class="nav-bar">
+        <a href="#" class="nav-logo">
+            <span class="nav-logo-icon">✦</span>
+            奇幻传说
+        </a>
+        <ul class="nav-links">
+            <li><a href="#colors" class="nav-link">色彩</a></li>
+            <li><a href="#typography" class="nav-link">字体</a></li>
+            <li><a href="#buttons" class="nav-link">按钮</a></li>
+            <li><a href="#cards" class="nav-link">卡片</a></li>
+            <li><a href="#book" class="nav-link">书页</a></li>
+        </ul>
+    </nav>
+
+    <section class="hero-section">
+        <div class="hero-bg"></div>
+        <div class="stars"></div>
+        
+        <div class="candle left"></div>
+        <div class="candle right"></div>
+
+        <div class="hero-book">
+            <div class="hero-book-inner">
+                <div class="hero-book-page">
+                    <div class="hero-page left">
+                        <div class="decorative-border"></div>
+                        <div class="decorative-corner top-left"></div>
+                        <div class="decorative-corner bottom-left"></div>
+                        
+                        <h1 class="hero-title">奇幻传说</h1>
+                        <p class="hero-subtitle">— 一个沉浸式故事体验 —</p>
+                        
+                        <div class="flourish">❧</div>
+                        
+                        <p style="text-indent: 2em; line-height: 1.8;">
+                            在遥远的魔法王国，古老的书籍记载着无数神秘的传说。
+                            每一页都承载着冒险者的故事，每一章都描绘着奇幻的世界。
+                            翻开这本书，你将踏上一段难忘的旅程...
+                        </p>
+                        
+                        <div class="flourish">✦</div>
+                    </div>
+                    
+                    <div class="hero-spine"></div>
+                    
+                    <div class="hero-page right">
+                        <div class="decorative-border"></div>
+                        <div class="decorative-corner top-right"></div>
+                        <div class="decorative-corner bottom-right"></div>
+                        
+                        <h2 style="font-family: 'Cinzel', serif; color: var(--primary); text-align: center; margin-bottom: 1rem;">目录</h2>
+                        
+                        <div style="display: flex; flex-direction: column; gap: 0.5rem;">
+                            <div style="display: flex; justify-content: space-between; border-bottom: 1px dotted var(--secondary); padding: 0.5rem 0;">
+                                <span>第一章：启程</span>
+                                <span>1</span>
+                            </div>
+                            <div style="display: flex; justify-content: space-between; border-bottom: 1px dotted var(--secondary); padding: 0.5rem 0;">
+                                <span>第二章：相遇</span>
+                                <span>15</span>
+                            </div>
+                            <div style="display: flex; justify-content: space-between; border-bottom: 1px dotted var(--secondary); padding: 0.5rem 0;">
+                                <span>第三章：试炼</span>
+                                <span>32</span>
+                            </div>
+                            <div style="display: flex; justify-content: space-between; border-bottom: 1px dotted var(--secondary); padding: 0.5rem 0;">
+                                <span>第四章：觉醒</span>
+                                <span>48</span>
+                            </div>
+                        </div>
+                        
+                        <div class="hero-nav">
+                            <button class="parchment-btn">开始阅读</button>
+                            <button class="wax-seal-btn" data-symbol="✦"></button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <section id="colors" class="demo-section">
+        <h2 class="section-title">主题色系</h2>
+        <div class="color-palette">
+            <div class="color-swatch" style="background: #6366F1;">
+                <span>主色<br>#6366F1</span>
+            </div>
+            <div class="color-swatch" style="background: #8B5CF6;">
+                <span>辅色<br>#8B5CF6</span>
+            </div>
+            <div class="color-swatch" style="background: #1E1B4B;">
+                <span>背景<br>#1E1B4B</span>
+            </div>
+            <div class="color-swatch" style="background: #FCD34D;">
+                <span>点缀<br>#FCD34D</span>
+            </div>
+            <div class="color-swatch" style="background: #F5E6D3;">
+                <span>羊皮纸<br>#F5E6D3</span>
+            </div>
+            <div class="color-swatch" style="background: #D4AF37;">
+                <span>金色<br>#D4AF37</span>
+            </div>
+        </div>
+    </section>
+
+    <section id="typography" class="demo-section">
+        <h2 class="section-title">字体系统</h2>
+        <div class="typography-demo">
+            <h1>Cinzel 标题字体</h1>
+            <h2>古典优雅的标题风格</h2>
+            <h3>适合章节和重要内容</h3>
+            <p>
+                Lora 是一款优雅的衬线字体，适合用于正文内容。它的设计灵感来自于书法艺术，
+                为阅读体验增添了一份古典的韵味。在羊皮纸般的背景上，这些文字仿佛穿越时空而来。
+            </p>
+            <blockquote>
+                "每一个故事都是一次冒险，每一本书都是一扇通往未知世界的大门。"
+            </blockquote>
+            <p style="font-style: italic; color: var(--secondary);">
+                斜体文字为引用和强调内容增添了层次感。
+            </p>
+        </div>
+    </section>
+
+    <section id="buttons" class="demo-section">
+        <h2 class="section-title">按钮组件</h2>
+        
+        <h3 style="text-align: center; color: var(--accent); margin: 1rem 0;">蜡封效果按钮</h3>
+        <div class="button-group">
+            <button class="wax-seal-btn" data-symbol="✦"></button>
+            <button class="wax-seal-btn" data-symbol="★"></button>
+            <button class="wax-seal-btn" data-symbol="✧"></button>
+            <button class="wax-seal-btn" data-symbol="❖"></button>
+        </div>
+
+        <h3 style="text-align: center; color: var(--accent); margin: 1rem 0;">羊皮纸按钮</h3>
+        <div class="button-group">
+            <button class="parchment-btn">开始冒险</button>
+            <button class="parchment-btn">查看章节</button>
+            <button class="parchment-btn">角色列表</button>
+            <button class="parchment-btn">保存进度</button>
+        </div>
+
+        <h3 style="text-align: center; color: var(--accent); margin: 1rem 0;">印章图标按钮</h3>
+        <div class="button-group">
+            <button class="stamp-icon-btn">
+                <svg viewBox="0 0 24 24"><path d="M12 2L15.09 8.26L22 9.27L17 14.14L18.18 21.02L12 17.77L5.82 21.02L7 14.14L2 9.27L8.91 8.26L12 2Z"/></svg>
+            </button>
+            <button class="stamp-icon-btn">
+                <svg viewBox="0 0 24 24"><path d="M12 21.35L10.55 20.03C5.4 15.36 2 12.27 2 8.5C2 5.41 4.42 3 7.5 3C9.24 3 10.91 3.81 12 5.08C13.09 3.81 14.76 3 16.5 3C19.58 3 22 5.41 22 8.5C22 12.27 18.6 15.36 13.45 20.03L12 21.35Z"/></svg>
+            </button>
+            <button class="stamp-icon-btn">
+                <svg viewBox="0 0 24 24"><path d="M17 3H7C5.9 3 5 3.9 5 5V21L12 18L19 21V5C19 3.9 18.1 3 17 3Z"/></svg>
+            </button>
+            <button class="stamp-icon-btn">
+                <svg viewBox="0 0 24 24"><path d="M9.4 16.6L4.8 12L3.4 13.4L9.4 19.4L21.4 7.4L20 6L9.4 16.6Z"/></svg>
+            </button>
+        </div>
+    </section>
+
+    <section id="cards" class="demo-section">
+        <h2 class="section-title">卡片组件</h2>
+
+        <h3 style="text-align: center; color: var(--accent); margin: 1rem 0;">卷轴形态卡片</h3>
+        <div class="card-grid">
+            <div class="scroll-card">
+                <div class="scroll-card-content">
+                    <h4 class="scroll-card-title">任务卷轴</h4>
+                    <p class="scroll-card-text">
+                        勇敢的冒险者，你的任务是寻找失落的魔法水晶。
+                        它被藏在黑暗森林的深处，由古老的守护者看守。
+                    </p>
+                </div>
+            </div>
+            <div class="scroll-card">
+                <div class="scroll-card-content">
+                    <h4 class="scroll-card-title">技能卷轴</h4>
+                    <p class="scroll-card-text">
+                        火焰魔法：释放炽热的火焰，对敌人造成巨大伤害。
+                        需要消耗50点魔力值。
+                    </p>
+                </div>
+            </div>
+        </div>
+
+        <h3 style="text-align: center; color: var(--accent); margin: 1rem 0;">塔罗牌风格角色卡片</h3>
+        <div class="card-grid">
+            <div class="tarot-card">
+                <div class="tarot-card-inner">
+                    <span class="tarot-card-number">I</span>
+                    <div class="tarot-card-image">🧙</div>
+                    <span class="tarot-card-name">魔法师</span>
+                </div>
+            </div>
+            <div class="tarot-card">
+                <div class="tarot-card-inner">
+                    <span class="tarot-card-number">II</span>
+                    <div class="tarot-card-image">⚔️</div>
+                    <span class="tarot-card-name">战士</span>
+                </div>
+            </div>
+            <div class="tarot-card">
+                <div class="tarot-card-inner">
+                    <span class="tarot-card-number">III</span>
+                    <div class="tarot-card-image">🏹</div>
+                    <span class="tarot-card-name">游侠</span>
+                </div>
+            </div>
+            <div class="tarot-card">
+                <div class="tarot-card-inner">
+                    <span class="tarot-card-number">IV</span>
+                    <div class="tarot-card-image">🔮</div>
+                    <span class="tarot-card-name">先知</span>
+                </div>
+            </div>
+        </div>
+
+        <h3 style="text-align: center; color: var(--accent); margin: 1rem 0;">书页形态章节卡片</h3>
+        <div class="card-grid">
+            <div class="chapter-card">
+                <span class="chapter-card-number">01</span>
+                <h4 class="chapter-card-title">启程之日</h4>
+                <p class="chapter-card-desc">年轻的冒险者踏上了寻找传说宝藏的旅程，命运的齿轮开始转动...</p>
+            </div>
+            <div class="chapter-card">
+                <span class="chapter-card-number">02</span>
+                <h4 class="chapter-card-title">森林迷踪</h4>
+                <p class="chapter-card-desc">穿越神秘的迷雾森林，古老的精灵等待着有缘人的到来...</p>
+            </div>
+            <div class="chapter-card">
+                <span class="chapter-card-number">03</span>
+                <h4 class="chapter-card-title">龙之试炼</h4>
+                <p class="chapter-card-desc">面对古老的守护巨龙，唯有真正的勇者才能通过考验...</p>
+            </div>
+        </div>
+    </section>
+
+    <section id="book" class="demo-section">
+        <h2 class="section-title">书本形态布局</h2>
+        
+        <div class="book-container">
+            <div class="book">
+                <div class="book-spine"></div>
+                
+                <div class="book-page left">
+                    <div class="page-decoration">
+                        <div class="page-corner top-left"></div>
+                        <div class="page-corner bottom-left"></div>
+                    </div>
+                    <h3 class="page-title">第一章：启程</h3>
+                    <div class="page-content ink-writing">
+                        <p>
+                            <span class="drop-cap">在</span>一个风雨交加的夜晚，年轻的冒险者艾拉站在古老的图书馆门前。
+                            传说中，这里藏有一本记载着失落王国秘密的神秘书籍。
+                        </p>
+                        <p>
+                            推开沉重的橡木门，烛光摇曳，照亮了尘封已久的书架。
+                            空气中弥漫着古老羊皮纸和墨水的气息，仿佛时光在这里静止。
+                        </p>
+                    </div>
+                </div>
+                
+                <div class="book-page right">
+                    <div class="page-decoration">
+                        <div class="page-corner top-right"></div>
+                        <div class="page-corner bottom-right"></div>
+                    </div>
+                    <h3 class="page-title">续</h3>
+                    <div class="page-content">
+                        <p>
+                            艾拉的手指轻轻划过一排排书脊，直到停在了一本泛着微光的书上。
+                            书封上镶嵌着一颗奇异的宝石，散发着淡淡的紫色光芒。
+                        </p>
+                        <p>
+                            当她翻开第一页，书中的文字仿佛活了过来，在羊皮纸上流动。
+                            一个声音在她耳边低语："欢迎来到奇幻传说的世界..."
+                        </p>
+                        <div class="flourish" style="margin-top: 1rem;">❦</div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <section class="demo-section">
+        <h2 class="section-title">动画效果演示</h2>
+        
+        <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(250px, 1fr)); gap: 2rem; max-width: 1000px; margin: 0 auto;">
+            <div style="text-align: center;">
+                <h4 style="color: var(--accent); margin-bottom: 1rem;">书本打开动画</h4>
+                <div style="width: 150px; height: 200px; margin: 0 auto; perspective: 500px;">
+                    <div style="width: 100%; height: 100%; background: var(--parchment); border: 2px solid var(--gold); border-radius: 4px; animation: bookOpen 2s ease-out infinite; transform-origin: left center;"></div>
+                </div>
+            </div>
+            
+            <div style="text-align: center;">
+                <h4 style="color: var(--accent); margin-bottom: 1rem;">翻页效果</h4>
+                <div style="width: 150px; height: 200px; margin: 0 auto; perspective: 500px; position: relative;">
+                    <div style="position: absolute; width: 100%; height: 100%; background: var(--parchment); border: 2px solid var(--gold); border-radius: 4px;"></div>
+                    <div style="position: absolute; width: 100%; height: 100%; background: var(--parchment-dark); border: 2px solid var(--gold); border-radius: 4px; animation: pageTurn 3s ease-in-out infinite; transform-origin: left center;"></div>
+                </div>
+            </div>
+            
+            <div style="text-align: center;">
+                <h4 style="color: var(--accent); margin-bottom: 1rem;">蜡烛闪烁</h4>
+                <div style="position: relative; width: 150px; height: 200px; margin: 0 auto; display: flex; align-items: center; justify-content: center;">
+                    <div class="candle" style="position: relative; left: auto; bottom: auto; right: auto;"></div>
+                </div>
+            </div>
+            
+            <div style="text-align: center;">
+                <h4 style="color: var(--accent); margin-bottom: 1rem;">星星闪烁</h4>
+                <div style="width: 150px; height: 200px; margin: 0 auto; background: var(--background); border-radius: 8px; position: relative; overflow: hidden;">
+                    <div style="position: absolute; inset: 0; background-image: radial-gradient(2px 2px at 30px 40px, var(--accent), transparent), radial-gradient(2px 2px at 70px 80px, white, transparent), radial-gradient(1px 1px at 50px 120px, var(--accent), transparent), radial-gradient(2px 2px at 100px 60px, white, transparent); background-size: 120px 150px; animation: twinkle 2s ease-in-out infinite;"></div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <footer class="footer">
+        <p>✦ 奇幻传说 · 沉浸式故事风格设计 ✦</p>
+        <p style="font-size: 0.8rem; margin-top: 0.5rem;">方案三 · Design Mockup</p>
+    </footer>
+</body>
+</html>

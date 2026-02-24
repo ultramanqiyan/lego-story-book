@@ -3,426 +3,432 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>选择你的风格 - 乐高故事书</title>
-  <link rel="stylesheet" href="css/style.css">
+  <title>选择主题风格 - 乐高故事书</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+SC:wght@400;500;700&family=Noto+Serif+SC:wght@400;600&family=Rajdhani:wght@500;600;700&family=Exo+2:wght@400;500;600&family=Cinzel:wght@400;600;700&family=Lora:wght@400;500&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="css/styles.css">
+  <link rel="stylesheet" href="css/animations.css">
+  <link rel="stylesheet" id="theme-stylesheet" href="" disabled>
   <style>
-    * {
-      margin: 0;
-      padding: 0;
-      box-sizing: border-box;
-    }
-
     body {
-      font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-      background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
       min-height: 100vh;
       display: flex;
+      flex-direction: column;
       align-items: center;
       justify-content: center;
-      padding: 20px;
+      padding: 40px 20px;
     }
-
-    .selector-container {
-      max-width: 1200px;
+    
+    .theme-selector-container {
+      max-width: 900px;
       width: 100%;
+    }
+    
+    .page-title {
       text-align: center;
-    }
-
-    .selector-title {
-      font-size: 2.5rem;
-      color: white;
-      margin-bottom: 10px;
-      text-shadow: 2px 2px 4px rgba(0,0,0,0.3);
-    }
-
-    .selector-subtitle {
-      font-size: 1.2rem;
-      color: rgba(255,255,255,0.9);
       margin-bottom: 40px;
     }
-
+    
+    .page-title h1 {
+      font-size: 2.5rem;
+      margin-bottom: 10px;
+      background: linear-gradient(90deg, #E3000F, #FF6B35, #FFD500, #00A651, #006CB7);
+      background-size: 200% auto;
+      -webkit-background-clip: text;
+      background-clip: text;
+      -webkit-text-fill-color: transparent;
+      animation: rainbowMove 3s linear infinite;
+    }
+    
+    .page-title p {
+      color: #666;
+      font-size: 1.1rem;
+    }
+    
+    @keyframes rainbowMove {
+      0% { background-position: 0% center; }
+      100% { background-position: 200% center; }
+    }
+    
     .themes-grid {
       display: grid;
       grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
-      gap: 30px;
+      gap: 25px;
       margin-bottom: 40px;
     }
-
+    
     .theme-card {
       background: white;
-      border-radius: 20px;
-      padding: 30px;
-      cursor: pointer;
-      transition: all 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
-      position: relative;
+      border-radius: 24px;
       overflow: hidden;
+      box-shadow: 0 10px 40px rgba(0, 0, 0, 0.1);
+      transition: all 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+      cursor: pointer;
+      position: relative;
     }
-
+    
+    .theme-card::before {
+      content: '';
+      display: block;
+      height: 8px;
+    }
+    
+    .theme-card.default::before {
+      background: linear-gradient(90deg, #E3000F, #FFD500, #006CB7, #00A651);
+    }
+    
+    .theme-card.immersive::before {
+      background: linear-gradient(90deg, #6366F1, #8B5CF6, #FCD34D);
+    }
+    
+    .theme-card.gamified::before {
+      background: linear-gradient(90deg, #10B981, #F59E0B, #EF4444);
+    }
+    
     .theme-card:hover {
-      transform: translateY(-10px) scale(1.02);
+      transform: translateY(-10px) rotateX(2deg);
+      box-shadow: 0 20px 60px rgba(0, 0, 0, 0.15);
     }
-
-    .theme-card.active {
-      box-shadow: 0 0 0 4px #ffd600, 0 20px 40px rgba(0,0,0,0.3);
+    
+    .theme-card.selected {
+      border: 4px solid #FFD500;
     }
-
-    .theme-preview {
-      height: 150px;
-      border-radius: 15px;
-      margin-bottom: 20px;
+    
+    .theme-card.selected::after {
+      content: '✓';
+      position: absolute;
+      top: 20px;
+      right: 20px;
+      width: 40px;
+      height: 40px;
+      background: #00A651;
+      color: white;
+      border-radius: 50%;
       display: flex;
       align-items: center;
       justify-content: center;
-      font-size: 3rem;
-      position: relative;
-      overflow: hidden;
-    }
-
-    /* 乐高风格预览 */
-    .theme-card[data-theme="lego"] .theme-preview {
-      background: linear-gradient(135deg, #e53935, #ffd600, #1e88e5);
-      box-shadow: 0 8px 0 rgba(0,0,0,0.2);
-    }
-
-    .theme-card[data-theme="lego"] .theme-preview::before {
-      content: '🧱';
-      animation: legoBounce 1s ease-in-out infinite;
-    }
-
-    @keyframes legoBounce {
-      0%, 100% { transform: translateY(0) rotate(0deg); }
-      50% { transform: translateY(-10px) rotate(5deg); }
-    }
-
-    /* 童话风格预览 */
-    .theme-card[data-theme="fairy"] .theme-preview {
-      background: linear-gradient(135deg, #ffb7c5, #d4a5ff, #a8d8ff);
-    }
-
-    .theme-card[data-theme="fairy"] .theme-preview::before {
-      content: '✨';
-      animation: fairySparkle 1.5s ease-in-out infinite;
-    }
-
-    @keyframes fairySparkle {
-      0%, 100% { transform: scale(1); opacity: 0.7; }
-      50% { transform: scale(1.3); opacity: 1; }
-    }
-
-    /* 科幻风格预览 */
-    .theme-card[data-theme="scifi"] .theme-preview {
-      background: #0a0a1a;
-      border: 2px solid #00f5ff;
-      box-shadow: 0 0 20px rgba(0, 245, 255, 0.5);
-    }
-
-    .theme-card[data-theme="scifi"] .theme-preview::before {
-      content: '🚀';
-      animation: sciFloat 2s ease-in-out infinite;
-      filter: drop-shadow(0 0 10px #00f5ff);
-    }
-
-    @keyframes sciFloat {
-      0%, 100% { transform: translateY(0); }
-      50% { transform: translateY(-15px); }
-    }
-
-    /* 自然风格预览 */
-    .theme-card[data-theme="nature"] .theme-preview {
-      background: linear-gradient(180deg, #87ceeb 0%, #7cb342 100%);
-    }
-
-    .theme-card[data-theme="nature"] .theme-preview::before {
-      content: '🌲';
-      animation: treeSway 2s ease-in-out infinite;
-    }
-
-    @keyframes treeSway {
-      0%, 100% { transform: rotate(-5deg); }
-      50% { transform: rotate(5deg); }
-    }
-
-    .theme-name {
       font-size: 1.5rem;
       font-weight: bold;
-      color: #333;
-      margin-bottom: 10px;
+      box-shadow: 0 4px 10px rgba(0, 166, 81, 0.4);
     }
-
-    .theme-description {
-      font-size: 0.95rem;
+    
+    .theme-preview {
+      height: 180px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      position: relative;
+    }
+    
+    .theme-card.default .theme-preview {
+      background: linear-gradient(135deg, #FFFBF0, #FFF8E7);
+    }
+    
+    .theme-card.immersive .theme-preview {
+      background: linear-gradient(135deg, #1E1B4B, #312E81);
+    }
+    
+    .theme-card.gamified .theme-preview {
+      background: linear-gradient(135deg, #064E3B, #065F46);
+    }
+    
+    .theme-icon {
+      font-size: 5rem;
+      position: relative;
+      z-index: 1;
+    }
+    
+    .theme-card.immersive .theme-icon,
+    .theme-card.gamified .theme-icon {
+      filter: drop-shadow(0 0 20px rgba(255, 255, 255, 0.3));
+    }
+    
+    .theme-info {
+      padding: 25px;
+    }
+    
+    .theme-info h3 {
+      font-size: 1.4rem;
+      margin-bottom: 8px;
+      display: flex;
+      align-items: center;
+      gap: 10px;
+    }
+    
+    .theme-info p {
       color: #666;
-      line-height: 1.5;
+      font-size: 0.95rem;
+      margin-bottom: 15px;
     }
-
+    
     .theme-features {
       display: flex;
       flex-wrap: wrap;
       gap: 8px;
-      justify-content: center;
-      margin-top: 15px;
     }
-
+    
     .feature-tag {
-      background: #f0f0f0;
       padding: 5px 12px;
-      border-radius: 15px;
+      border-radius: 20px;
       font-size: 0.8rem;
-      color: #555;
+      font-weight: 500;
     }
-
-    .selector-actions {
+    
+    .theme-card.default .feature-tag {
+      background: #FEF3C7;
+      color: #92400E;
+    }
+    
+    .theme-card.immersive .feature-tag {
+      background: #EDE9FE;
+      color: #5B21B6;
+    }
+    
+    .theme-card.gamified .feature-tag {
+      background: #D1FAE5;
+      color: #065F46;
+    }
+    
+    .action-buttons {
       display: flex;
-      gap: 20px;
       justify-content: center;
+      gap: 20px;
       flex-wrap: wrap;
     }
-
-    .btn-select {
-      padding: 15px 50px;
-      font-size: 1.2rem;
-      border: none;
+    
+    .btn {
+      padding: 15px 40px;
       border-radius: 50px;
-      cursor: pointer;
-      transition: all 0.3s;
+      font-size: 1.1rem;
       font-weight: 600;
+      cursor: pointer;
+      transition: all 0.3s ease;
+      border: none;
+      text-decoration: none;
+      display: inline-flex;
+      align-items: center;
+      gap: 10px;
     }
-
-    .btn-primary-select {
-      background: linear-gradient(135deg, #667eea, #764ba2);
+    
+    .btn-primary {
+      background: linear-gradient(135deg, #006CB7, #448AFF);
       color: white;
-      box-shadow: 0 5px 20px rgba(102, 126, 234, 0.4);
+      box-shadow: 0 4px 0 #004a8f, 0 6px 20px rgba(0, 108, 183, 0.4);
     }
-
-    .btn-primary-select:hover {
-      transform: translateY(-3px);
-      box-shadow: 0 8px 30px rgba(102, 126, 234, 0.5);
+    
+    .btn-primary:hover {
+      transform: translateY(-2px);
+      box-shadow: 0 6px 0 #004a8f, 0 10px 30px rgba(0, 108, 183, 0.5);
     }
-
-    .btn-secondary-select {
+    
+    .btn-secondary {
       background: white;
-      color: #667eea;
-      box-shadow: 0 5px 20px rgba(0,0,0,0.1);
+      color: #006CB7;
+      border: 3px solid #006CB7;
     }
-
-    .btn-secondary-select:hover {
-      transform: translateY(-3px);
-      box-shadow: 0 8px 30px rgba(0,0,0,0.15);
+    
+    .btn-secondary:hover {
+      background: #F0F7FF;
     }
-
-    .current-theme {
-      background: rgba(255,255,255,0.2);
-      backdrop-filter: blur(10px);
-      padding: 15px 30px;
-      border-radius: 50px;
-      color: white;
-      margin-bottom: 30px;
-      display: inline-block;
+    
+    .preview-section {
+      margin-top: 60px;
+      text-align: center;
     }
-
-    @media (max-width: 768px) {
-      .selector-title {
-        font-size: 1.8rem;
-      }
-
-      .themes-grid {
-        grid-template-columns: 1fr;
-        gap: 20px;
-      }
-
-      .theme-card {
-        padding: 20px;
-      }
+    
+    .preview-section h2 {
+      font-size: 1.8rem;
+      margin-bottom: 20px;
+      color: #006CB7;
+    }
+    
+    .preview-frame {
+      background: white;
+      border-radius: 24px;
+      padding: 30px;
+      box-shadow: 0 10px 40px rgba(0, 0, 0, 0.1);
+      max-width: 800px;
+      margin: 0 auto;
+    }
+    
+    .preview-frame h4 {
+      margin-bottom: 15px;
+      color: #333;
+    }
+    
+    .preview-components {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+      gap: 20px;
+    }
+    
+    .preview-btn {
+      padding: 12px 24px;
+      border-radius: 12px;
+      font-weight: 600;
+      cursor: pointer;
+      transition: all 0.3s ease;
+      border: none;
+    }
+    
+    .preview-card {
+      padding: 20px;
+      border-radius: 16px;
+      text-align: center;
+    }
+    
+    [data-theme="immersive"] .preview-section {
+      color: #F5E6D3;
+    }
+    
+    [data-theme="immersive"] .preview-section h2 {
+      color: #FCD34D;
+    }
+    
+    [data-theme="immersive"] .preview-frame {
+      background: linear-gradient(145deg, #F5E6D3, #E8D4B8);
+      border: 2px solid #FCD34D;
+    }
+    
+    [data-theme="immersive"] .preview-frame h4 {
+      color: #1E1B4B;
+      font-family: 'Cinzel', serif;
+    }
+    
+    [data-theme="gamified"] .preview-section {
+      color: #ECFDF5;
+    }
+    
+    [data-theme="gamified"] .preview-section h2 {
+      color: #FCD34D;
+    }
+    
+    [data-theme="gamified"] .preview-frame {
+      background: linear-gradient(145deg, #047857, #065F46);
+      border: 2px solid #10B981;
+    }
+    
+    [data-theme="gamified"] .preview-frame h4 {
+      color: #FCD34D;
+      font-family: 'Rajdhani', sans-serif;
     }
   </style>
 </head>
 <body>
-  <div class="selector-container">
-    <h1 class="selector-title">🎨 选择你喜欢的风格</h1>
-    <p class="selector-subtitle">每种风格都有独特的视觉效果和动画体验</p>
-
-    <div class="current-theme" id="currentTheme">
-      当前风格：<span id="currentThemeName">默认风格</span>
+  <div class="theme-selector-container">
+    <div class="page-title">
+      <h1>🎨 选择主题风格</h1>
+      <p>为你的故事书选择一个独特的视觉风格</p>
     </div>
-
+    
     <div class="themes-grid">
-      <!-- 乐高积木风格 -->
-      <div class="theme-card" data-theme="lego" onclick="selectTheme('lego')">
-        <div class="theme-preview"></div>
-        <h3 class="theme-name">乐高积木</h3>
-        <p class="theme-description">3D积木效果、鲜艳色彩、弹性动画，充满童趣和活力</p>
-        <div class="theme-features">
-          <span class="feature-tag">🧱 积木效果</span>
-          <span class="feature-tag">🎨 鲜艳色彩</span>
-          <span class="feature-tag">⚡ 弹性动画</span>
+      <div class="theme-card default" data-theme="default">
+        <div class="theme-preview">
+          <span class="theme-icon">🧱</span>
+        </div>
+        <div class="theme-info">
+          <h3>经典乐高</h3>
+          <p>经典乐高风格，活力童趣，适合所有年龄段</p>
+          <div class="theme-features">
+            <span class="feature-tag">品牌经典</span>
+            <span class="feature-tag">活力童趣</span>
+            <span class="feature-tag">丰富动画</span>
+          </div>
         </div>
       </div>
-
-      <!-- 梦幻童话风格 -->
-      <div class="theme-card" data-theme="fairy" onclick="selectTheme('fairy')">
-        <div class="theme-preview"></div>
-        <h3 class="theme-name">梦幻童话</h3>
-        <p class="theme-description">柔和渐变、星光闪烁、漂浮动画，如梦似幻的体验</p>
-        <div class="theme-features">
-          <span class="feature-tag">✨ 星光闪烁</span>
-          <span class="feature-tag">🌸 花瓣飘落</span>
-          <span class="feature-tag">☁️ 云朵漂浮</span>
+      
+      <div class="theme-card immersive" data-theme="immersive">
+        <div class="theme-preview">
+          <span class="theme-icon">📖</span>
+        </div>
+        <div class="theme-info">
+          <h3>沉浸故事</h3>
+          <p>古典故事书风格，羊皮纸质感，沉浸式阅读体验</p>
+          <div class="theme-features">
+            <span class="feature-tag">古典优雅</span>
+            <span class="feature-tag">故事感</span>
+            <span class="feature-tag">沉浸体验</span>
+          </div>
         </div>
       </div>
-
-      <!-- 科幻未来风格 -->
-      <div class="theme-card" data-theme="scifi" onclick="selectTheme('scifi')">
-        <div class="theme-preview"></div>
-        <h3 class="theme-name">科幻未来</h3>
-        <p class="theme-description">霓虹光效、网格背景、科技感动画，进入数字世界</p>
-        <div class="theme-features">
-          <span class="feature-tag">💫 霓虹光效</span>
-          <span class="feature-tag">📊 数据流动</span>
-          <span class="feature-tag">🤖 科技感</span>
+      
+      <div class="theme-card gamified" data-theme="gamified">
+        <div class="theme-preview">
+          <span class="theme-icon">🎮</span>
         </div>
-      </div>
-
-      <!-- 自然森林风格 -->
-      <div class="theme-card" data-theme="nature" onclick="selectTheme('nature')">
-        <div class="theme-preview"></div>
-        <h3 class="theme-name">自然森林</h3>
-        <p class="theme-description">有机形态、木纹质感、生长动画，回归大自然</p>
-        <div class="theme-features">
-          <span class="feature-tag">🌿 树叶飘落</span>
-          <span class="feature-tag">🦋 蝴蝶飞舞</span>
-          <span class="feature-tag">🌱 生长动画</span>
+        <div class="theme-info">
+          <h3>游戏冒险</h3>
+          <p>游戏化界面风格，等级成就系统，增强用户粘性</p>
+          <div class="theme-features">
+            <span class="feature-tag">游戏化</span>
+            <span class="feature-tag">成就系统</span>
+            <span class="feature-tag">用户粘性</span>
+          </div>
         </div>
       </div>
     </div>
-
-    <div class="selector-actions">
-      <button class="btn-select btn-primary-select" onclick="applyTheme()">
-        ✨ 应用选中的风格
-      </button>
-      <button class="btn-select btn-secondary-select" onclick="goBack()">
-        ← 返回首页
-      </button>
+    
+    <div class="action-buttons">
+      <a href="index.html" class="btn btn-secondary">← 返回首页</a>
+      <button class="btn btn-primary" id="applyThemeBtn">应用选中主题</button>
+    </div>
+    
+    <div class="preview-section">
+      <h2>👁️ 实时预览</h2>
+      <div class="preview-frame">
+        <h4>当前主题效果预览</h4>
+        <div class="preview-components">
+          <button class="preview-btn btn-primary">主要按钮</button>
+          <button class="preview-btn btn-secondary">次要按钮</button>
+          <div class="preview-card card">
+            <p>卡片样式预览</p>
+          </div>
+        </div>
+      </div>
     </div>
   </div>
-
+  
+  <script src="js/theme-manager.js"></script>
   <script>
-    let selectedTheme = localStorage.getItem('selectedTheme') || '';
-    const themeNames = {
-      'lego': '乐高积木',
-      'fairy': '梦幻童话',
-      'scifi': '科幻未来',
-      'nature': '自然森林',
-      '': '默认风格'
-    };
-
-    // 初始化
     document.addEventListener('DOMContentLoaded', function() {
-      updateCurrentThemeDisplay();
-      highlightSelectedTheme();
-    });
-
-    // 选择主题
-    function selectTheme(theme) {
-      selectedTheme = theme;
-
-      // 移除所有active类
-      document.querySelectorAll('.theme-card').forEach(card => {
-        card.classList.remove('active');
+      var themeCards = document.querySelectorAll('.theme-card');
+      var applyBtn = document.getElementById('applyThemeBtn');
+      var selectedTheme = localStorage.getItem('lego-story-theme') || 'default';
+      
+      function updateSelectedCard(theme) {
+        themeCards.forEach(function(card) {
+          if (card.dataset.theme === theme) {
+            card.classList.add('selected');
+          } else {
+            card.classList.remove('selected');
+          }
+        });
+      }
+      
+      updateSelectedCard(selectedTheme);
+      
+      themeCards.forEach(function(card) {
+        card.addEventListener('click', function() {
+          var theme = this.dataset.theme;
+          selectedTheme = theme;
+          updateSelectedCard(theme);
+          ThemeManager.applyTheme(theme);
+        });
       });
-
-      // 添加active类到选中的卡片
-      document.querySelector(`[data-theme="${theme}"]`).classList.add('active');
-    }
-
-    // 应用主题
-    function applyTheme() {
-      if (!selectedTheme) {
-        alert('请先选择一个风格！');
-        return;
-      }
-
-      localStorage.setItem('selectedTheme', selectedTheme);
-      updateCurrentThemeDisplay();
-
-      // 显示成功提示
-      showNotification(`已切换到${themeNames[selectedTheme]}风格！`);
-
-      // 延迟后返回首页
-      setTimeout(() => {
-        window.location.href = 'index.html';
-      }, 1000);
-    }
-
-    // 返回首页
-    function goBack() {
-      window.location.href = 'index.html';
-    }
-
-    // 更新当前主题显示
-    function updateCurrentThemeDisplay() {
-      const currentTheme = localStorage.getItem('selectedTheme') || '';
-      document.getElementById('currentThemeName').textContent = themeNames[currentTheme];
-    }
-
-    // 高亮已选中的主题
-    function highlightSelectedTheme() {
-      if (selectedTheme) {
-        const card = document.querySelector(`[data-theme="${selectedTheme}"]`);
-        if (card) {
-          card.classList.add('active');
-        }
-      }
-    }
-
-    // 显示通知
-    function showNotification(message) {
-      const notification = document.createElement('div');
-      notification.style.cssText = `
-        position: fixed;
-        top: 20px;
-        left: 50%;
-        transform: translateX(-50%);
-        background: rgba(255,255,255,0.95);
-        padding: 15px 30px;
-        border-radius: 50px;
-        box-shadow: 0 10px 30px rgba(0,0,0,0.2);
-        font-weight: 600;
-        color: #333;
-        z-index: 10000;
-        animation: slideDown 0.3s ease;
-      `;
-      notification.textContent = message;
-      document.body.appendChild(notification);
-
-      setTimeout(() => {
-        notification.style.animation = 'slideUp 0.3s ease';
-        setTimeout(() => notification.remove(), 300);
-      }, 2000);
-    }
+      
+      applyBtn.addEventListener('click', function() {
+        ThemeManager.applyTheme(selectedTheme);
+        ThemeManager.showToast('主题已应用：' + ThemeManager.getThemeData(selectedTheme).name, 'success');
+        setTimeout(function() {
+          window.location.href = 'index.html';
+        }, 1000);
+      });
+      
+      document.addEventListener('themeChanged', function(e) {
+        updateSelectedCard(e.detail.theme);
+      });
+    });
   </script>
-
-  <style>
-    @keyframes slideDown {
-      from {
-        opacity: 0;
-        transform: translateX(-50%) translateY(-20px);
-      }
-      to {
-        opacity: 1;
-        transform: translateX(-50%) translateY(0);
-      }
-    }
-
-    @keyframes slideUp {
-      from {
-        opacity: 1;
-        transform: translateX(-50%) translateY(0);
-      }
-      to {
-        opacity: 0;
-        transform: translateX(-50%) translateY(-20px);
-      }
-    }
-  </style>
 </body>
 </html>
