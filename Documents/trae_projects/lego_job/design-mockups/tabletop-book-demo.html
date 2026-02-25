@@ -1,0 +1,1451 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>魔法王国的冒险 - 桌游风格</title>
+    <link href="https://fonts.googleapis.com/css2?family=Cinzel:wght@400;600;700&family=Noto+Sans+SC:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --gold: #ffd700;
+            --gold-dark: #b8860b;
+            --silver: #c0c0c0;
+            --bronze: #cd7f32;
+            --crimson: #dc2626;
+            --purple: #a855f7;
+            --green: #22c55e;
+            --blue: #3b82f6;
+            --orange: #f59e0b;
+            --bg-dark: #0d0d14;
+            --bg-medium: #1a1a2e;
+            --text-primary: #f8fafc;
+            --text-secondary: #94a3b8;
+            --font-title: 'Cinzel', serif;
+            --font-body: 'Noto Sans SC', sans-serif;
+        }
+
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+
+        body {
+            font-family: var(--font-body);
+            background: linear-gradient(180deg, #1a1a2e 0%, #0d0d14 100%);
+            min-height: 100vh;
+            color: var(--text-primary);
+            overflow-x: hidden;
+            display: flex;
+            flex-direction: column;
+        }
+
+        .particles {
+            position: fixed;
+            inset: 0;
+            pointer-events: none;
+            z-index: 0;
+        }
+
+        .particle {
+            position: absolute;
+            width: 2px;
+            height: 2px;
+            background: var(--gold);
+            border-radius: 50%;
+            opacity: 0.3;
+            animation: float 20s linear infinite;
+        }
+
+        @keyframes float {
+            0% { transform: translateY(100vh); opacity: 0; }
+            10% { opacity: 0.3; }
+            90% { opacity: 0.3; }
+            100% { transform: translateY(-100vh); opacity: 0; }
+        }
+
+        .container {
+            position: relative;
+            z-index: 1;
+            display: flex;
+            flex-direction: column;
+            min-height: 100vh;
+        }
+
+        /* Header */
+        .header {
+            height: 50px;
+            background: rgba(0,0,0,0.5);
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            padding: 0 20px;
+            border-bottom: 1px solid rgba(255,215,0,0.2);
+            flex-shrink: 0;
+        }
+
+        .nav-tabs {
+            display: flex;
+            gap: 8px;
+        }
+
+        .nav-tab {
+            padding: 8px 16px;
+            border-radius: 8px;
+            background: rgba(255,255,255,0.05);
+            border: 1px solid rgba(255,255,255,0.1);
+            color: var(--text-secondary);
+            font-size: 0.8rem;
+            font-weight: 500;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            display: flex;
+            align-items: center;
+            gap: 6px;
+            text-decoration: none;
+        }
+
+        .nav-tab:hover {
+            background: rgba(255,215,0,0.1);
+            border-color: rgba(255,215,0,0.3);
+            color: var(--text-primary);
+        }
+
+        .nav-tab.active {
+            background: linear-gradient(135deg, rgba(255,215,0,0.2), rgba(255,152,0,0.2));
+            border-color: var(--gold);
+            color: var(--gold);
+            box-shadow: 0 0 10px rgba(255,215,0,0.2);
+        }
+
+        .nav-tab-icon {
+            font-size: 1rem;
+        }
+
+        .book-cover {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+        }
+
+        .book-3d {
+            width: 36px;
+            height: 48px;
+            background: linear-gradient(135deg, #4a3728 0%, #2d1810 50%, #1a0f0a 100%);
+            border-radius: 2px 6px 6px 2px;
+            border: 2px solid var(--gold-dark);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            box-shadow: 
+                inset 0 0 10px rgba(0,0,0,0.5),
+                2px 2px 8px rgba(0,0,0,0.5);
+            position: relative;
+            transition: all 0.3s ease;
+            cursor: pointer;
+        }
+
+        .book-3d:hover {
+            box-shadow: 
+                inset 0 0 10px rgba(0,0,0,0.5),
+                0 0 15px rgba(255,215,0,0.4);
+        }
+
+        .book-3d::before {
+            content: '';
+            position: absolute;
+            left: 0;
+            top: 5px;
+            bottom: 5px;
+            width: 4px;
+            background: var(--gold-dark);
+            border-radius: 2px 0 0 2px;
+        }
+
+        .book-icon {
+            font-size: 16px;
+        }
+
+        .book-title {
+            font-family: var(--font-title);
+            font-size: 1.1rem;
+            font-weight: 700;
+            background: linear-gradient(135deg, var(--gold), #ff9800);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            text-shadow: 0 0 20px rgba(255,215,0,0.3);
+        }
+
+        .stats {
+            display: flex;
+            gap: 20px;
+        }
+
+        .stat-item {
+            display: flex;
+            align-items: center;
+            gap: 6px;
+            font-size: 0.75rem;
+        }
+
+        .stat-gem {
+            width: 16px;
+            height: 20px;
+            border-radius: 50% 50% 50% 50% / 60% 60% 40% 40%;
+            position: relative;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.4);
+        }
+
+        .stat-gem::before {
+            content: '';
+            position: absolute;
+            top: 20%;
+            left: 20%;
+            width: 30%;
+            height: 30%;
+            background: rgba(255,255,255,0.6);
+            border-radius: 50%;
+        }
+
+        .stat-gem.blue { background: linear-gradient(180deg, #60a5fa, #2563eb); }
+        .stat-gem.gold { background: linear-gradient(180deg, #ffd700, #b8860b); }
+        .stat-gem.scroll {
+            width: 18px;
+            height: 16px;
+            border-radius: 2px;
+            background: linear-gradient(180deg, #fff8e1, #f5e6c8);
+        }
+
+        .stat-value {
+            font-family: var(--font-title);
+            font-weight: 600;
+            color: var(--gold);
+        }
+
+        .stat-label {
+            color: var(--text-secondary);
+        }
+
+        /* Main Area */
+        .main-area {
+            flex: 1;
+            display: flex;
+            overflow: hidden;
+            position: relative;
+        }
+
+        /* Left Panel - Chapters */
+        .chapter-panel {
+            width: 420px;
+            background: rgba(0,0,0,0.3);
+            display: flex;
+            flex-direction: column;
+            padding: 12px;
+            gap: 8px;
+            flex-shrink: 0;
+            border-right: 1px solid rgba(255,255,255,0.1);
+        }
+
+        .panel-header {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            font-size: 0.85rem;
+            font-weight: 600;
+            padding: 8px 12px;
+            border-radius: 6px;
+            background: rgba(255,215,0,0.15);
+            color: var(--gold);
+            border: 1px solid rgba(255,215,0,0.3);
+        }
+
+        .chapters-container {
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+            gap: 8px;
+            overflow-y: auto;
+            padding-right: 5px;
+        }
+
+        .chapters-container::-webkit-scrollbar {
+            width: 4px;
+        }
+
+        .chapters-container::-webkit-scrollbar-track {
+            background: rgba(255,255,255,0.05);
+            border-radius: 2px;
+        }
+
+        .chapters-container::-webkit-scrollbar-thumb {
+            background: rgba(255,215,0,0.3);
+            border-radius: 2px;
+        }
+
+        /* Chapter Card - Dark Style */
+        .chapter-card {
+            position: relative;
+            background: linear-gradient(180deg, #2d2d44, #1a1a2e);
+            border-radius: 10px;
+            padding: 12px 15px;
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            cursor: grab;
+            transition: all 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+            border: 2px solid rgba(255,255,255,0.1);
+            box-shadow: 0 4px 8px rgba(0,0,0,0.3);
+        }
+
+        .chapter-card::after {
+            content: '';
+            position: absolute;
+            top: -50%;
+            left: -50%;
+            width: 200%;
+            height: 200%;
+            background: linear-gradient(
+                45deg,
+                transparent 40%,
+                rgba(255,255,255,0.05) 50%,
+                transparent 60%
+            );
+            transform: translateX(-100%);
+            transition: transform 0.6s ease;
+            pointer-events: none;
+        }
+
+        .chapter-card:hover::after {
+            transform: translateX(100%);
+        }
+
+        .chapter-card:hover {
+            transform: translateY(-3px);
+            box-shadow: 
+                0 8px 16px rgba(0,0,0,0.4),
+                0 0 10px rgba(255,215,0,0.15);
+            border-color: rgba(255,215,0,0.3);
+        }
+
+        .chapter-card.dragging {
+            cursor: grabbing;
+            transform: translateY(-3px) scale(1.02) rotate(1deg);
+            box-shadow: 
+                0 12px 24px rgba(0,0,0,0.5),
+                0 0 15px rgba(255,215,0,0.2);
+            z-index: 100;
+        }
+
+        .chapter-card.active {
+            border-color: var(--gold);
+            box-shadow: 
+                0 4px 8px rgba(0,0,0,0.3),
+                0 0 15px rgba(255,215,0,0.3);
+        }
+
+        .chapter-badge {
+            width: 36px;
+            height: 36px;
+            background: linear-gradient(135deg, var(--gold), var(--gold-dark));
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-family: var(--font-title);
+            font-size: 12px;
+            font-weight: 700;
+            color: #1a0f0a;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.3);
+            flex-shrink: 0;
+        }
+
+        .chapter-content {
+            flex: 1;
+            position: relative;
+            z-index: 1;
+        }
+
+        .chapter-title {
+            font-size: 0.85rem;
+            font-weight: 600;
+            color: var(--text-primary);
+        }
+
+        .chapter-meta {
+            font-size: 0.7rem;
+            color: var(--text-secondary);
+            margin-top: 2px;
+        }
+
+        .chapter-actions {
+            display: flex;
+            gap: 6px;
+            flex-shrink: 0;
+        }
+
+        .action-btn {
+            width: 26px;
+            height: 26px;
+            border-radius: 6px;
+            border: 1px solid rgba(255,255,255,0.2);
+            background: rgba(255,255,255,0.05);
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 11px;
+            transition: all 0.2s ease;
+        }
+
+        .action-btn:hover {
+            transform: translateY(-2px);
+            background: rgba(255,255,255,0.1);
+        }
+
+        .action-btn.edit:hover { border-color: var(--blue); background: rgba(59,130,246,0.2); }
+        .action-btn.delete:hover { border-color: var(--crimson); background: rgba(220,38,38,0.2); }
+
+        .chapter-status {
+            position: absolute;
+            bottom: 5px;
+            right: 5px;
+            padding: 2px 6px;
+            border-radius: 3px;
+            font-size: 8px;
+            font-weight: 700;
+            letter-spacing: 0.5px;
+        }
+
+        .chapter-status.draft {
+            background: rgba(220,38,38,0.3);
+            color: #f87171;
+            border: 1px solid rgba(220,38,38,0.5);
+        }
+
+        .chapter-status.done {
+            background: rgba(34,197,94,0.3);
+            color: #4ade80;
+            border: 1px solid rgba(34,197,94,0.5);
+        }
+
+        /* Add Chapter Button */
+        .add-chapter-btn {
+            background: linear-gradient(135deg, rgba(139,92,246,0.2), rgba(107,33,168,0.3));
+            border: 2px dashed var(--purple);
+            border-radius: 10px;
+            padding: 12px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 10px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+
+        .add-chapter-btn:hover {
+            border-style: solid;
+            border-color: var(--gold);
+            box-shadow: 0 0 15px rgba(139,92,246,0.4);
+        }
+
+        .add-icon {
+            width: 32px;
+            height: 32px;
+            background: linear-gradient(135deg, var(--purple), #6b21a8);
+            border-radius: 8px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 18px;
+            color: white;
+        }
+
+        .add-text {
+            font-family: var(--font-title);
+            font-size: 0.8rem;
+            font-weight: 600;
+            color: var(--text-primary);
+        }
+
+        /* Center Panel - Story Content */
+        .center-panel {
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+            padding: 15px;
+            min-width: 0;
+            overflow-y: auto;
+        }
+
+        .story-area {
+            background: rgba(0,0,0,0.4);
+            border-radius: 12px;
+            border: 1px solid rgba(255,215,0,0.15);
+            padding: 20px;
+            display: flex;
+            flex-direction: column;
+            gap: 12px;
+            flex: 1;
+        }
+
+        .story-header {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            padding-bottom: 12px;
+            border-bottom: 1px solid rgba(255,255,255,0.1);
+        }
+
+        .story-title {
+            font-family: var(--font-title);
+            font-size: 1.1rem;
+            font-weight: 600;
+            color: var(--gold);
+        }
+
+        .story-nav {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .nav-btn {
+            width: 28px;
+            height: 28px;
+            border-radius: 6px;
+            border: 1px solid rgba(255,255,255,0.2);
+            background: rgba(255,255,255,0.05);
+            color: var(--text-primary);
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 12px;
+            transition: all 0.2s ease;
+        }
+
+        .nav-btn:hover:not(:disabled) {
+            background: rgba(255,215,0,0.2);
+            border-color: var(--gold);
+        }
+
+        .nav-btn:disabled {
+            opacity: 0.3;
+            cursor: not-allowed;
+        }
+
+        .nav-info {
+            font-size: 0.75rem;
+            color: var(--text-secondary);
+        }
+
+        .story-content {
+            flex: 1;
+            font-size: 1rem;
+            line-height: 1.9;
+            color: var(--text-primary);
+            overflow-y: auto;
+            padding-right: 10px;
+        }
+
+        .story-content::-webkit-scrollbar {
+            width: 4px;
+        }
+
+        .story-content::-webkit-scrollbar-track {
+            background: rgba(255,255,255,0.05);
+            border-radius: 2px;
+        }
+
+        .story-content::-webkit-scrollbar-thumb {
+            background: rgba(255,215,0,0.3);
+            border-radius: 2px;
+        }
+
+        .story-content p {
+            margin-bottom: 16px;
+            text-indent: 2em;
+        }
+
+        /* Keyword Highlighting */
+        .char-name { color: #f87171; font-weight: 600; }
+        .action-word { color: #a78bfa; font-weight: 600; }
+        .emotion-word { color: #4ade80; font-weight: 600; }
+        .location-word { color: #fbbf24; font-weight: 600; }
+        .weather-word { color: #60a5fa; font-weight: 600; }
+        .item-word { color: #f472b6; font-weight: 600; }
+
+        /* Right Panel - Characters */
+        .character-panel {
+            width: 420px;
+            background: rgba(0,0,0,0.3);
+            display: flex;
+            flex-direction: column;
+            padding: 12px;
+            gap: 8px;
+            flex-shrink: 0;
+            border-left: 1px solid rgba(255,255,255,0.1);
+        }
+
+        .section-header {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            font-size: 0.85rem;
+            font-weight: 600;
+            padding: 8px 12px;
+            border-radius: 6px;
+            background: rgba(255,215,0,0.15);
+            color: var(--gold);
+            border: 1px solid rgba(255,215,0,0.3);
+        }
+
+        .characters-container {
+            flex: 1;
+            display: flex;
+            flex-wrap: wrap;
+            gap: 12px;
+            padding: 10px;
+            align-content: flex-start;
+            overflow-y: auto;
+        }
+
+        .characters-container::-webkit-scrollbar {
+            width: 4px;
+        }
+
+        .characters-container::-webkit-scrollbar-track {
+            background: rgba(255,255,255,0.05);
+            border-radius: 2px;
+        }
+
+        .characters-container::-webkit-scrollbar-thumb {
+            background: rgba(255,215,0,0.3);
+            border-radius: 2px;
+        }
+
+        /* Hearthstone Style Card */
+        .hs-card {
+            width: 90px;
+            height: 125px;
+            border-radius: 10px;
+            cursor: pointer;
+            transition: all 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+            display: flex;
+            flex-direction: column;
+            overflow: hidden;
+            box-shadow: 0 5px 15px rgba(0,0,0,0.4);
+            background: linear-gradient(180deg, #3d3d3d, #1a1a1a);
+            border: 3px solid;
+        }
+
+        .hs-card.protagonist {
+            border-color: var(--gold);
+            box-shadow: 0 5px 15px rgba(0,0,0,0.4), 0 0 10px rgba(255,215,0,0.2);
+        }
+
+        .hs-card.antagonist {
+            border-color: var(--purple);
+            box-shadow: 0 5px 15px rgba(0,0,0,0.4), 0 0 10px rgba(139,92,246,0.2);
+        }
+
+        .hs-card.supporting {
+            border-color: var(--silver);
+        }
+
+        .hs-card.bystander {
+            border-color: #6b7280;
+        }
+
+        .hs-card:hover {
+            transform: translateY(-10px) scale(1.1);
+            z-index: 100;
+            box-shadow: 0 15px 30px rgba(0,0,0,0.5), 0 0 20px rgba(255,215,0,0.3);
+        }
+
+        .hs-portrait {
+            flex: 1;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            background: linear-gradient(180deg, #4a4a4a, #2a2a2a);
+            position: relative;
+            overflow: hidden;
+        }
+
+        .hs-portrait::before {
+            content: '';
+            position: absolute;
+            inset: 0;
+            background: radial-gradient(ellipse at center top, rgba(255,255,255,0.1), transparent 50%);
+        }
+
+        .hs-avatar {
+            font-size: 2.2rem;
+            filter: drop-shadow(0 3px 6px rgba(0,0,0,0.5));
+        }
+
+        .hs-name-banner {
+            padding: 5px 6px;
+            background: linear-gradient(180deg, #5a4a3a, #3a2a1a);
+            text-align: center;
+        }
+
+        .hs-name {
+            font-family: var(--font-title);
+            font-size: 0.65rem;
+            font-weight: 600;
+            color: #fff8e1;
+            text-shadow: 1px 1px 2px rgba(0,0,0,0.8);
+        }
+
+        .hs-stats {
+            display: flex;
+            justify-content: space-between;
+            padding: 4px 6px;
+            background: linear-gradient(180deg, #2a2a2a, #1a1a1a);
+        }
+
+        .hs-gem {
+            width: 18px;
+            height: 18px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 8px;
+            font-weight: 700;
+            color: white;
+            text-shadow: 1px 1px 1px rgba(0,0,0,0.5);
+        }
+
+        .hs-gem.attack {
+            background: linear-gradient(180deg, #fbbf24, #d97706);
+            box-shadow: 0 2px 4px rgba(0,0,0,0.3);
+        }
+
+        .hs-gem.health {
+            background: linear-gradient(180deg, #f87171, #dc2626);
+            box-shadow: 0 2px 4px rgba(0,0,0,0.3);
+        }
+
+        .role-tag {
+            position: absolute;
+            top: 3px;
+            left: 3px;
+            padding: 2px 5px;
+            border-radius: 3px;
+            font-size: 7px;
+            font-weight: 700;
+            letter-spacing: 0.5px;
+        }
+
+        .hs-card.protagonist .role-tag {
+            background: linear-gradient(180deg, var(--gold), var(--gold-dark));
+            color: #1a0f0a;
+        }
+
+        .hs-card.antagonist .role-tag {
+            background: linear-gradient(180deg, var(--purple), #6b21a8);
+            color: white;
+        }
+
+        .hs-card.supporting .role-tag {
+            background: linear-gradient(180deg, var(--silver), #808080);
+            color: #1a0f0a;
+        }
+
+        .hs-card.bystander .role-tag {
+            background: linear-gradient(180deg, #6b7280, #4b5563);
+            color: white;
+        }
+
+        .hs-card-actions {
+            position: absolute;
+            top: 3px;
+            right: 3px;
+            display: flex;
+            gap: 3px;
+            opacity: 0;
+            transition: opacity 0.2s ease;
+        }
+
+        .hs-card:hover .hs-card-actions {
+            opacity: 1;
+        }
+
+        .hs-action-btn {
+            width: 18px;
+            height: 18px;
+            border-radius: 4px;
+            border: 1px solid rgba(255,255,255,0.3);
+            background: rgba(0,0,0,0.5);
+            color: white;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 9px;
+            transition: all 0.2s ease;
+        }
+
+        .hs-action-btn:hover {
+            transform: scale(1.1);
+        }
+
+        .hs-action-btn.edit-btn:hover {
+            background: rgba(59,130,246,0.6);
+            border-color: #3b82f6;
+        }
+
+        .hs-action-btn.delete-btn:hover {
+            background: rgba(220,38,38,0.6);
+            border-color: #dc2626;
+        }
+
+        /* Add Character Button */
+        .add-character-btn {
+            width: 90px;
+            height: 125px;
+            border: 2px dashed var(--purple);
+            border-radius: 10px;
+            background: linear-gradient(180deg, rgba(139,92,246,0.1), rgba(107,33,168,0.2));
+            cursor: pointer;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            gap: 6px;
+            transition: all 0.3s ease;
+        }
+
+        .add-character-btn:hover {
+            border-style: solid;
+            border-color: var(--gold);
+            box-shadow: 0 0 15px rgba(139,92,246,0.4);
+        }
+
+        .pack-icon {
+            font-size: 24px;
+            animation: pack-shake 2s ease-in-out infinite;
+        }
+
+        @keyframes pack-shake {
+            0%, 100% { transform: translateX(0) rotate(0deg); }
+            25% { transform: translateX(-2px) rotate(-1deg); }
+            75% { transform: translateX(2px) rotate(1deg); }
+        }
+
+        .pack-text {
+            font-family: var(--font-title);
+            font-size: 0.6rem;
+            font-weight: 600;
+            color: var(--text-primary);
+        }
+
+        /* Bottom Bar */
+        .bottom-bar {
+            height: 50px;
+            background: linear-gradient(180deg, transparent, rgba(0,0,0,0.8));
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 20px;
+            padding: 0 20px;
+            flex-shrink: 0;
+        }
+
+        .generate-btn {
+            padding: 10px 35px;
+            font-size: 0.95rem;
+            font-weight: 700;
+            border: none;
+            border-radius: 20px;
+            background: linear-gradient(135deg, var(--gold), #ff9800);
+            color: #000;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            font-family: var(--font-body);
+            box-shadow: 0 0 25px rgba(255,215,0,0.5);
+            animation: btn-pulse 2s ease-in-out infinite;
+        }
+
+        @keyframes btn-pulse {
+            0%, 100% { box-shadow: 0 0 25px rgba(255,215,0,0.5); }
+            50% { box-shadow: 0 0 40px rgba(255,215,0,0.8); }
+        }
+
+        .generate-btn:hover { transform: scale(1.05); }
+
+        /* Toast */
+        .toast {
+            position: fixed;
+            top: 60px;
+            left: 50%;
+            transform: translateX(-50%) translateY(-10px);
+            background: rgba(0,0,0,0.95);
+            padding: 10px 20px;
+            border-radius: 8px;
+            border: 1px solid var(--gold);
+            font-size: 0.85rem;
+            opacity: 0;
+            transition: all 0.3s ease;
+            z-index: 1002;
+        }
+
+        .toast.show { transform: translateX(-50%) translateY(0); opacity: 1; }
+
+        /* Modal */
+        .modal-overlay {
+            position: fixed;
+            inset: 0;
+            background: rgba(0,0,0,0.8);
+            display: none;
+            align-items: center;
+            justify-content: center;
+            z-index: 1000;
+            opacity: 0;
+            transition: opacity 0.3s ease;
+        }
+
+        .modal-overlay.active {
+            display: flex;
+            opacity: 1;
+        }
+
+        .spellbook-modal {
+            width: 90%;
+            max-width: 500px;
+            background: linear-gradient(180deg, #2d2d44, #1a1a2e);
+            border-radius: 15px;
+            border: 3px solid var(--gold);
+            padding: 25px;
+            position: relative;
+            transform: rotateY(-90deg) scale(0.8);
+            transition: transform 0.5s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+            box-shadow: 
+                0 20px 60px rgba(0,0,0,0.5),
+                0 0 30px rgba(255,215,0,0.2);
+        }
+
+        .modal-overlay.active .spellbook-modal {
+            transform: rotateY(0) scale(1);
+        }
+
+        .modal-title {
+            font-family: var(--font-title);
+            font-size: 1.2rem;
+            font-weight: 700;
+            color: var(--gold);
+            text-align: center;
+            margin-bottom: 15px;
+        }
+
+        .modal-content {
+            background: rgba(0,0,0,0.3);
+            border-radius: 8px;
+            padding: 15px;
+            margin-bottom: 15px;
+        }
+
+        .modal-content p {
+            color: var(--text-primary);
+            line-height: 1.5;
+            text-align: center;
+            font-size: 0.85rem;
+        }
+
+        .modal-actions {
+            display: flex;
+            justify-content: center;
+            gap: 12px;
+        }
+
+        .modal-btn {
+            padding: 10px 25px;
+            border-radius: 8px;
+            font-family: var(--font-title);
+            font-size: 0.85rem;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            border: 2px solid;
+        }
+
+        .modal-btn.primary {
+            background: linear-gradient(180deg, var(--gold), var(--gold-dark));
+            border-color: var(--gold);
+            color: #1a0f0a;
+            box-shadow: 0 4px 12px rgba(255,215,0,0.3);
+        }
+
+        .modal-btn.primary:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 6px 16px rgba(255,215,0,0.5);
+        }
+
+        .modal-btn.secondary {
+            background: transparent;
+            border-color: var(--text-secondary);
+            color: var(--text-secondary);
+        }
+
+        .modal-btn.secondary:hover {
+            background: rgba(255,255,255,0.1);
+        }
+
+        .modal-close {
+            position: absolute;
+            top: 12px;
+            right: 12px;
+            width: 26px;
+            height: 26px;
+            border-radius: 50%;
+            background: rgba(0,0,0,0.3);
+            border: 1px solid var(--text-secondary);
+            color: var(--text-primary);
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 14px;
+            transition: all 0.2s ease;
+        }
+
+        .modal-close:hover {
+            background: var(--crimson);
+            border-color: var(--crimson);
+        }
+
+        /* Responsive */
+        @media (max-width: 1200px) {
+            .chapter-panel, .character-panel {
+                width: 350px;
+            }
+        }
+
+        @media (max-width: 900px) {
+            .main-area {
+                flex-direction: column;
+            }
+
+            .chapter-panel, .character-panel {
+                width: 100%;
+                max-height: 30vh;
+            }
+
+            .center-panel {
+                order: -1;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="particles" id="particles"></div>
+
+    <div class="container">
+        <!-- Header -->
+        <header class="header">
+            <div class="nav-tabs">
+                <a href="#" class="nav-tab">
+                    <span class="nav-tab-icon">📚</span>
+                    <span>我的书架</span>
+                </a>
+                <a href="#" class="nav-tab">
+                    <span class="nav-tab-icon">🎨</span>
+                    <span>主题风格</span>
+                </a>
+                <a href="#" class="nav-tab">
+                    <span class="nav-tab-icon">📤</span>
+                    <span>分享故事</span>
+                </a>
+            </div>
+            <div class="book-cover">
+                <div class="book-3d">
+                    <span class="book-icon">📚</span>
+                </div>
+                <h1 class="book-title">魔法王国的冒险</h1>
+            </div>
+            <div class="stats">
+                <div class="stat-item">
+                    <div class="stat-gem blue"></div>
+                    <span class="stat-value">5</span>
+                    <span class="stat-label">章节</span>
+                </div>
+                <div class="stat-item">
+                    <div class="stat-gem gold"></div>
+                    <span class="stat-value">8</span>
+                    <span class="stat-label">角色</span>
+                </div>
+                <div class="stat-item">
+                    <div class="stat-gem scroll"></div>
+                    <span class="stat-value">12.5k</span>
+                    <span class="stat-label">字数</span>
+                </div>
+            </div>
+        </header>
+
+        <!-- Main Area -->
+        <main class="main-area">
+            <!-- Left Panel - Chapters -->
+            <aside class="chapter-panel">
+                <div class="panel-header">
+                    <span>📜</span>
+                    <span>章节任务板</span>
+                </div>
+                <div class="chapters-container" id="chaptersContainer">
+                    <article class="chapter-card active" data-chapter="1">
+                        <div class="chapter-badge">I</div>
+                        <div class="chapter-content">
+                            <h3 class="chapter-title">启程的黎明</h3>
+                            <p class="chapter-meta">已生成 · 2,500字</p>
+                        </div>
+                        <span class="chapter-status done">DONE</span>
+                    </article>
+
+                    <article class="chapter-card" data-chapter="2">
+                        <div class="chapter-badge">II</div>
+                        <div class="chapter-content">
+                            <h3 class="chapter-title">迷雾森林</h3>
+                            <p class="chapter-meta">草稿 · 1,200字</p>
+                        </div>
+                        <span class="chapter-status draft">DRAFT</span>
+                    </article>
+
+                    <article class="chapter-card" data-chapter="3">
+                        <div class="chapter-badge">III</div>
+                        <div class="chapter-content">
+                            <h3 class="chapter-title">龙之谷</h3>
+                            <p class="chapter-meta">已生成 · 3,000字</p>
+                        </div>
+                        <span class="chapter-status done">DONE</span>
+                    </article>
+
+                    <article class="chapter-card" data-chapter="4">
+                        <div class="chapter-badge">IV</div>
+                        <div class="chapter-content">
+                            <h3 class="chapter-title">黑暗城堡</h3>
+                            <p class="chapter-meta">草稿 · 800字</p>
+                        </div>
+                        <span class="chapter-status draft">DRAFT</span>
+                    </article>
+
+                    <article class="chapter-card" data-chapter="5">
+                        <div class="chapter-badge">V</div>
+                        <div class="chapter-content">
+                            <h3 class="chapter-title">最终决战</h3>
+                            <p class="chapter-meta">已生成 · 5,000字</p>
+                        </div>
+                        <span class="chapter-status done">DONE</span>
+                    </article>
+                </div>
+            </aside>
+
+            <!-- Center Panel - Story Content -->
+            <section class="center-panel">
+                <div class="story-area">
+                    <div class="story-header">
+                        <h2 class="story-title" id="currentChapterTitle">第一章：启程的黎明</h2>
+                        <div class="story-nav">
+                            <button class="nav-btn" id="prevBtn" disabled>←</button>
+                            <span class="nav-info" id="chapterNav">1 / 5</span>
+                            <button class="nav-btn" id="nextBtn">→</button>
+                        </div>
+                    </div>
+                    <div class="story-content" id="storyContent">
+                        <p>在<span class="location-word">魔法王国</span>的边缘，有一座被<span class="location-word">古老森林</span>环绕的小村庄。<span class="char-name">艾拉拉</span>站在村口，望着远处若隐若现的<span class="location-word">城堡</span>塔尖，心中充满了<span class="emotion-word">期待</span>和<span class="emotion-word">紧张</span>。</p>
+                        <p>"准备好了吗，年轻的冒险者？"<span class="char-name">老智者奥伦</span>的声音从身后传来，他的眼中闪烁着<span class="emotion-word">慈祥</span>的光芒。</p>
+                        <p><span class="char-name">艾拉拉</span><span class="action-word">转过身</span>，<span class="action-word">握紧</span>了手中的<span class="item-word">魔法杖</span>，坚定地点了点头。"我准备好了，奥伦大师。"</p>
+                        <p><span class="weather-word">清晨的阳光</span>透过树叶的缝隙洒落下来，在<span class="location-word">森林</span>的地面上投下斑驳的光影。<span class="char-name">雷恩</span>骑着他的战马走了过来，身上穿着闪闪发光的铠甲。</p>
+                        <p>"<span class="char-name">艾拉拉</span>，我会一直保护你的。"<span class="char-name">雷恩</span>郑重地说道，他的眼神中流露出深深的<span class="emotion-word">关切</span>。</p>
+                        <p>就在这时，<span class="location-word">森林</span>深处传来一阵诡异的笑声。<span class="char-name">黑暗领主莫甘</span>的身影在阴影中若隐若现，他的眼中燃烧着邪恶的紫色火焰。</p>
+                        <p>"哈哈哈...愚蠢的冒险者们，你们以为真的能够阻止我吗？"<span class="char-name">莫甘</span>的声音如同雷鸣般在<span class="location-word">森林</span>中回荡。</p>
+                        <p><span class="char-name">艾拉拉</span><span class="action-word">举起</span><span class="item-word">魔法杖</span>，一道金色的光芒从中涌出，照亮了整片<span class="location-word">森林</span>。<span class="char-name">雷恩</span>也拔出了他的宝剑，准备迎接即将到来的战斗。</p>
+                        <p>冒险，才刚刚开始...</p>
+                    </div>
+                </div>
+            </section>
+
+            <!-- Right Panel - Characters -->
+            <aside class="character-panel">
+                <div class="section-header">
+                    <span>🎭</span>
+                    <span>英雄与随从</span>
+                </div>
+                <div class="characters-container" id="charactersContainer">
+                    <div class="hs-card protagonist" data-char-id="1">
+                        <div class="hs-card-actions">
+                            <button class="hs-action-btn edit-btn" title="编辑">✏️</button>
+                            <button class="hs-action-btn delete-btn" title="删除">🗑️</button>
+                        </div>
+                        <span class="role-tag">主角</span>
+                        <div class="hs-portrait"><span class="hs-avatar">🧝‍♀️</span></div>
+                        <div class="hs-name-banner"><span class="hs-name">艾拉拉</span></div>
+                        <div class="hs-stats">
+                            <div class="hs-gem attack">5</div>
+                            <div class="hs-gem health">8</div>
+                        </div>
+                    </div>
+
+                    <div class="hs-card protagonist" data-char-id="2">
+                        <div class="hs-card-actions">
+                            <button class="hs-action-btn edit-btn" title="编辑">✏️</button>
+                            <button class="hs-action-btn delete-btn" title="删除">🗑️</button>
+                        </div>
+                        <span class="role-tag">主角</span>
+                        <div class="hs-portrait"><span class="hs-avatar">⚔️</span></div>
+                        <div class="hs-name-banner"><span class="hs-name">雷恩</span></div>
+                        <div class="hs-stats">
+                            <div class="hs-gem attack">7</div>
+                            <div class="hs-gem health">6</div>
+                        </div>
+                    </div>
+
+                    <div class="hs-card supporting" data-char-id="3">
+                        <div class="hs-card-actions">
+                            <button class="hs-action-btn edit-btn" title="编辑">✏️</button>
+                            <button class="hs-action-btn delete-btn" title="删除">🗑️</button>
+                        </div>
+                        <span class="role-tag">配角</span>
+                        <div class="hs-portrait"><span class="hs-avatar">🧙‍♂️</span></div>
+                        <div class="hs-name-banner"><span class="hs-name">老智者奥伦</span></div>
+                        <div class="hs-stats">
+                            <div class="hs-gem attack">2</div>
+                            <div class="hs-gem health">4</div>
+                        </div>
+                    </div>
+
+                    <div class="hs-card supporting" data-char-id="4">
+                        <div class="hs-card-actions">
+                            <button class="hs-action-btn edit-btn" title="编辑">✏️</button>
+                            <button class="hs-action-btn delete-btn" title="删除">🗑️</button>
+                        </div>
+                        <span class="role-tag">配角</span>
+                        <div class="hs-portrait"><span class="hs-avatar">🔨</span></div>
+                        <div class="hs-name-banner"><span class="hs-name">铁匠托尔</span></div>
+                        <div class="hs-stats">
+                            <div class="hs-gem attack">4</div>
+                            <div class="hs-gem health">5</div>
+                        </div>
+                    </div>
+
+                    <div class="hs-card supporting" data-char-id="5">
+                        <div class="hs-card-actions">
+                            <button class="hs-action-btn edit-btn" title="编辑">✏️</button>
+                            <button class="hs-action-btn delete-btn" title="删除">🗑️</button>
+                        </div>
+                        <span class="role-tag">配角</span>
+                        <div class="hs-portrait"><span class="hs-avatar">💰</span></div>
+                        <div class="hs-name-banner"><span class="hs-name">商人玛拉</span></div>
+                        <div class="hs-stats">
+                            <div class="hs-gem attack">1</div>
+                            <div class="hs-gem health">3</div>
+                        </div>
+                    </div>
+
+                    <div class="hs-card antagonist" data-char-id="6">
+                        <div class="hs-card-actions">
+                            <button class="hs-action-btn edit-btn" title="编辑">✏️</button>
+                            <button class="hs-action-btn delete-btn" title="删除">🗑️</button>
+                        </div>
+                        <span class="role-tag">反派</span>
+                        <div class="hs-portrait"><span class="hs-avatar">👿</span></div>
+                        <div class="hs-name-banner"><span class="hs-name">黑暗领主莫甘</span></div>
+                        <div class="hs-stats">
+                            <div class="hs-gem attack">9</div>
+                            <div class="hs-gem health">10</div>
+                        </div>
+                    </div>
+
+                    <div class="hs-card antagonist" data-char-id="7">
+                        <div class="hs-card-actions">
+                            <button class="hs-action-btn edit-btn" title="编辑">✏️</button>
+                            <button class="hs-action-btn delete-btn" title="删除">🗑️</button>
+                        </div>
+                        <span class="role-tag">反派</span>
+                        <div class="hs-portrait"><span class="hs-avatar">🗡️</span></div>
+                        <div class="hs-name-banner"><span class="hs-name">影刺客薇拉</span></div>
+                        <div class="hs-stats">
+                            <div class="hs-gem attack">8</div>
+                            <div class="hs-gem health">4</div>
+                        </div>
+                    </div>
+
+                    <div class="hs-card bystander" data-char-id="8">
+                        <div class="hs-card-actions">
+                            <button class="hs-action-btn edit-btn" title="编辑">✏️</button>
+                            <button class="hs-action-btn delete-btn" title="删除">🗑️</button>
+                        </div>
+                        <span class="role-tag">路人</span>
+                        <div class="hs-portrait"><span class="hs-avatar">👨‍🌾</span></div>
+                        <div class="hs-name-banner"><span class="hs-name">村民汤姆</span></div>
+                        <div class="hs-stats">
+                            <div class="hs-gem attack">1</div>
+                            <div class="hs-gem health">2</div>
+                        </div>
+                    </div>
+
+                    <button class="add-character-btn" id="addCharacterBtn">
+                        <span class="pack-icon">📦</span>
+                        <span class="pack-text">添加角色</span>
+                    </button>
+                </div>
+            </aside>
+        </main>
+
+        <!-- Bottom Bar -->
+        <footer class="bottom-bar">
+            <button class="generate-btn" id="generateBtn">✨ 生成下一章</button>
+        </footer>
+    </div>
+
+    <div class="toast" id="toast"></div>
+
+    <div class="modal-overlay" id="modalOverlay">
+        <div class="spellbook-modal">
+            <button class="modal-close" id="modalClose">×</button>
+            <h3 class="modal-title" id="modalTitle">法术书</h3>
+            <div class="modal-content" id="modalContent">
+                <p>内容...</p>
+            </div>
+            <div class="modal-actions">
+                <button class="modal-btn secondary" id="modalCancel">取消</button>
+                <button class="modal-btn primary" id="modalConfirm">确认</button>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        var currentChapterIndex = 0;
+        var totalChapters = 5;
+
+        var chapterContents = [
+            {
+                title: '第一章：启程的黎明',
+                content: '<p>在<span class="location-word">魔法王国</span>的边缘，有一座被<span class="location-word">古老森林</span>环绕的小村庄。<span class="char-name">艾拉拉</span>站在村口，望着远处若隐若现的<span class="location-word">城堡</span>塔尖，心中充满了<span class="emotion-word">期待</span>和<span class="emotion-word">紧张</span>。</p><p>"准备好了吗，年轻的冒险者？"<span class="char-name">老智者奥伦</span>的声音从身后传来，他的眼中闪烁着<span class="emotion-word">慈祥</span>的光芒。</p><p><span class="char-name">艾拉拉</span><span class="action-word">转过身</span>，<span class="action-word">握紧</span>了手中的<span class="item-word">魔法杖</span>，坚定地点了点头。"我准备好了，奥伦大师。"</p>'
+            },
+            {
+                title: '第二章：迷雾森林',
+                content: '<p><span class="weather-word">浓雾</span>笼罩着整片<span class="location-word">森林</span>，能见度不足十步。<span class="char-name">艾拉拉</span>和<span class="char-name">雷恩</span>小心翼翼地穿行在古树之间，每一步都充满了未知。</p><p>"小心！"<span class="char-name">雷恩</span>突然<span class="action-word">拉住</span>了<span class="char-name">艾拉拉</span>的手臂，他的剑尖指向地面——那里有一道深深的裂痕，仿佛被某种巨大的力量撕裂开来。</p><p><span class="char-name">艾拉拉</span>感到一阵<span class="emotion-word">恐惧</span>，但她知道，退缩不是她的选择。</p>'
+            },
+            {
+                title: '第三章：龙之谷',
+                content: '<p>当他们抵达<span class="location-word">龙之谷</span>时，一头巨大的<span class="item-word">金龙</span>正盘踞在山谷中央。它的鳞片在<span class="weather-word">阳光</span>下闪烁着耀眼的光芒。</p><p>"凡人，你们为何闯入我的领地？"<span class="item-word">金龙</span>的声音如同雷鸣。</p><p><span class="char-name">艾拉拉</span><span class="action-word">走上前</span>，<span class="emotion-word">勇敢</span>地说道："伟大的金龙，我们需要您的帮助来对抗<span class="char-name">黑暗领主莫甘</span>。"</p>'
+            },
+            {
+                title: '第四章：黑暗城堡',
+                content: '<p><span class="location-word">黑暗城堡</span>矗立在<span class="location-word">悬崖</span>之上，周围环绕着永不消散的<span class="weather-word">乌云</span>。<span class="char-name">莫甘</span>的邪恶气息从城堡中不断涌出。</p><p><span class="char-name">雷恩</span><span class="action-word">拔出</span>宝剑，<span class="emotion-word">坚定</span>地说："这是最后的战场了。"</p><p><span class="char-name">艾拉拉</span>点点头，她能感受到体内的魔法力量正在<span class="emotion-word">沸腾</span>。</p>'
+            },
+            {
+                title: '第五章：最终决战',
+                content: '<p>在<span class="location-word">城堡</span>的最高塔，<span class="char-name">艾拉拉</span>与<span class="char-name">莫甘</span>展开了最后的对决。<span class="weather-word">闪电</span>划破<span class="weather-word">夜空</span>，照亮了两人决绝的面容。</p><p>"结束了，<span class="char-name">莫甘</span>！"<span class="char-name">艾拉拉</span>将所有的魔法力量凝聚在<span class="item-word">魔法杖</span>上，一道璀璨的光芒直冲云霄。</p><p>当光芒散去，<span class="location-word">魔法王国</span>重新迎来了<span class="weather-word">和平</span>。<span class="char-name">艾拉拉</span>和<span class="char-name">雷恩</span>相视一笑，他们的冒险终于画上了圆满的句号。</p>'
+            }
+        ];
+
+        function updateStoryContent() {
+            var chapter = chapterContents[currentChapterIndex];
+            document.getElementById('currentChapterTitle').textContent = chapter.title;
+            document.getElementById('storyContent').innerHTML = chapter.content;
+            document.getElementById('chapterNav').textContent = (currentChapterIndex + 1) + ' / ' + totalChapters;
+            
+            document.getElementById('prevBtn').disabled = currentChapterIndex === 0;
+            document.getElementById('nextBtn').disabled = currentChapterIndex === totalChapters - 1;
+
+            document.querySelectorAll('.chapter-card').forEach(function(card, index) {
+                card.classList.toggle('active', index === currentChapterIndex);
+            });
+        }
+
+        document.getElementById('prevBtn').addEventListener('click', function() {
+            if (currentChapterIndex > 0) {
+                currentChapterIndex--;
+                updateStoryContent();
+            }
+        });
+
+        document.getElementById('nextBtn').addEventListener('click', function() {
+            if (currentChapterIndex < totalChapters - 1) {
+                currentChapterIndex++;
+                updateStoryContent();
+            }
+        });
+
+        document.querySelectorAll('.chapter-card').forEach(function(card, index) {
+            card.addEventListener('click', function() {
+                currentChapterIndex = index;
+                updateStoryContent();
+            });
+        });
+
+        document.querySelectorAll('.hs-action-btn.edit-btn').forEach(function(btn) {
+            btn.addEventListener('click', function(e) {
+                e.stopPropagation();
+                var card = this.closest('.hs-card');
+                var name = card.querySelector('.hs-name').textContent;
+                var role = card.querySelector('.role-tag').textContent;
+                openModal('✏️ 编辑角色', '<p>正在编辑角色: <strong style="color: var(--gold);">' + name + '</strong></p><p style="margin-top: 8px; font-size: 0.8rem;">角色类型: ' + role + '</p>');
+            });
+        });
+
+        document.querySelectorAll('.hs-action-btn.delete-btn').forEach(function(btn) {
+            btn.addEventListener('click', function(e) {
+                e.stopPropagation();
+                var card = this.closest('.hs-card');
+                var name = card.querySelector('.hs-name').textContent;
+                openModal('🗑️ 删除角色', '<p>确定要删除角色 <strong style="color: #f87171;">' + name + '</strong> 吗？</p><p style="margin-top: 8px; font-size: 0.75rem; opacity: 0.7;">此操作不可撤销</p>');
+                document.getElementById('modalConfirm').onclick = function() {
+                    card.remove();
+                    closeModal();
+                    showToast('角色已删除');
+                };
+            });
+        });
+
+        function showToast(msg) {
+            var toast = document.getElementById('toast');
+            toast.textContent = msg;
+            toast.classList.add('show');
+            setTimeout(function() { toast.classList.remove('show'); }, 1500);
+        }
+
+        function openModal(title, content) {
+            document.getElementById('modalTitle').textContent = title;
+            document.getElementById('modalContent').innerHTML = content;
+            document.getElementById('modalOverlay').classList.add('active');
+        }
+
+        function closeModal() {
+            document.getElementById('modalOverlay').classList.remove('active');
+        }
+
+        document.getElementById('addCharacterBtn').addEventListener('click', function() {
+            openModal('🃏 角色创建', '<p>创建新的角色加入你的冒险队伍...</p>');
+        });
+
+        document.getElementById('generateBtn').addEventListener('click', function() {
+            openModal('✨ 生成下一章', '<p>AI正在创作新的故事章节...</p><p style="margin-top: 10px; color: var(--gold);">请稍候...</p>');
+        });
+
+        document.getElementById('modalClose').addEventListener('click', closeModal);
+        document.getElementById('modalCancel').addEventListener('click', closeModal);
+        document.getElementById('modalConfirm').addEventListener('click', closeModal);
+        document.getElementById('modalOverlay').addEventListener('click', function(e) {
+            if (e.target === this) closeModal();
+        });
+
+        document.querySelectorAll('.hs-card').forEach(function(card) {
+            card.addEventListener('click', function() {
+                var name = this.querySelector('.hs-name').textContent;
+                var role = this.querySelector('.role-tag').textContent;
+                openModal('🎭 角色详情', '<p><strong style="color: var(--gold); font-size: 1.1rem;">' + name + '</strong></p><p style="margin-top: 10px;">角色类型: ' + role + '</p>');
+            });
+        });
+
+        for (var i = 0; i < 15; i++) {
+            var p = document.createElement('div');
+            p.className = 'particle';
+            p.style.left = Math.random() * 100 + '%';
+            p.style.animationDelay = Math.random() * 20 + 's';
+            document.getElementById('particles').appendChild(p);
+        }
+
+        updateStoryContent();
+    </script>
+</body>
+</html>
