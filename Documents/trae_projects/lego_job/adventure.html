@@ -561,10 +561,6 @@
         var data = await fetchAPI('/chapters?id=' + chapterId + '&userId=' + userId);
         currentChapter = data.chapter;
         
-        console.log('Chapter data:', data);
-        console.log('has_puzzle:', currentChapter?.has_puzzle);
-        console.log('puzzle:', data.puzzle);
-        
         if (!currentChapter) {
           showToast('章节不存在', 'error');
           return;
@@ -592,7 +588,7 @@
           bookSelectArea.style.display = 'none';
         }
         
-        if (currentChapter.has_puzzle && data.puzzle) {
+        if ((currentChapter.has_puzzle === 1 || currentChapter.has_puzzle === true) && data.puzzle) {
           currentPuzzle = data.puzzle;
           if (data.puzzleRecord && data.puzzleRecord.is_correct === 1) {
             puzzleSolved = true;
