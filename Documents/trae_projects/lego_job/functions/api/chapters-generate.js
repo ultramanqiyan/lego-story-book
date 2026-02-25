@@ -81,7 +81,7 @@ function buildStoryPrompt(characters, previousSummary, previousPuzzle, plotSelec
   }
   
   prompt += '【故事要求】\n';
-  prompt += '1. 故事长度：300-500字\n';
+  prompt += '1. 故事长度：100字\n';
   prompt += '2. 故事风格：乐高积木世界，充满想象力和冒险\n';
   prompt += '3. 使用所有角色，让每个角色都有出场机会\n';
   prompt += '4. 故事要连贯、有趣，适合10-12岁儿童\n';
