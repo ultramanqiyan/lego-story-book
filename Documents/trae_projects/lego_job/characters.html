@@ -240,6 +240,21 @@
       color: #fff8e1;
     }
 
+    .hs-info {
+      padding: 4px 8px;
+      background: rgba(0,0,0,0.3);
+      font-size: 0.6rem;
+      color: var(--text-secondary);
+      text-align: center;
+      line-height: 1.3;
+    }
+
+    .hs-info-item {
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+    }
+
     .hs-card-actions {
       position: absolute;
       top: 5px;
@@ -715,13 +730,17 @@
           '</div>';
         }
 
-        var systemBadge = isPreset ? '<span class="system-badge">系统预设</span>' : '';
+        var personalityText = char.personality || '';
+        var speakingStyleText = char.speaking_style || '';
 
         return '<div class="hs-card ' + roleType + '">' +
           actionButtons +
           '<div class="hs-portrait"><span class="hs-avatar">' + emoji + '</span></div>' +
           '<div class="hs-name-banner"><span class="hs-name">' + char.name + '</span></div>' +
-          systemBadge +
+          '<div class="hs-info">' +
+            (personalityText ? '<div class="hs-info-item">💫 ' + personalityText + '</div>' : '') +
+            (speakingStyleText ? '<div class="hs-info-item">🗣️ ' + speakingStyleText + '</div>' : '') +
+          '</div>' +
         '</div>';
       }).join('');
     }
