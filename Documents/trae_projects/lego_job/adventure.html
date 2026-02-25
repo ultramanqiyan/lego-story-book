@@ -530,7 +530,10 @@
         var used = data.user.time_used_today || 0;
         var limit = data.user.daily_time_limit || 120;
         
-        document.getElementById('timeDisplay').textContent = formatTime(used);
+        var timeDisplay = document.getElementById('timeDisplay');
+        if (timeDisplay) {
+          timeDisplay.textContent = formatTime(used);
+        }
         updateProgress(used, limit);
       } catch (error) {
         console.error('Failed to load time:', error);
@@ -538,8 +541,10 @@
     }
 
     function updateProgress(used, limit) {
+      var progressFill = document.getElementById('progressFill');
+      if (!progressFill) return;
       var percent = Math.min((used / limit) * 100, 100);
-      document.getElementById('progressFill').style.width = percent + '%';
+      progressFill.style.width = percent + '%';
     }
 
     function formatTime(minutes) {
@@ -556,19 +561,36 @@
         var data = await fetchAPI('/chapters?id=' + chapterId + '&userId=' + userId);
         currentChapter = data.chapter;
         
-        document.getElementById('chapterTitle').textContent = 
-          '📖 第' + currentChapter.chapter_number + '章：' + currentChapter.title;
+        console.log('Chapter data:', data);
+        console.log('has_puzzle:', currentChapter?.has_puzzle);
+        console.log('puzzle:', data.puzzle);
         
-        var content = currentChapter.content;
+        if (!currentChapter) {
+          showToast('章节不存在', 'error');
+          return;
+        }
+        
+        var chapterTitle = document.getElementById('chapterTitle');
+        var storyContent = document.getElementById('storyContent');
+        var bookSelectArea = document.getElementById('bookSelectArea');
+        
+        if (chapterTitle) {
+          chapterTitle.textContent = '📖 第' + currentChapter.chapter_number + '章：' + currentChapter.title;
+        }
+        
+        var content = currentChapter.content || '';
         if (currentChapter.book_id) {
           var bookData = await fetchAPI('/books?bookId=' + currentChapter.book_id);
           var characters = bookData.characters || [];
           content = highlightKeywords(content, characters);
         }
         
-        document.getElementById('storyContent').innerHTML = 
-          '<p style="line-height: 2; text-align: justify;">' + content + '</p>';
-        document.getElementById('bookSelectArea').style.display = 'none';
+        if (storyContent) {
+          storyContent.innerHTML = '<p style="line-height: 2; text-align: justify;">' + content + '</p>';
+        }
+        if (bookSelectArea) {
+          bookSelectArea.style.display = 'none';
+        }
         
         if (currentChapter.has_puzzle && data.puzzle) {
           currentPuzzle = data.puzzle;
@@ -635,12 +657,18 @@
 
     function showPuzzle(puzzle) {
       var container = document.getElementById('puzzleContainer');
+      if (!container) return;
+      
+      var puzzleQuestion = document.getElementById('puzzleQuestion');
+      var puzzleOptions = document.getElementById('puzzleOptions');
+      if (!puzzleQuestion || !puzzleOptions) return;
+      
       var options = JSON.parse(puzzle.options);
       currentAttempts = 0;
       puzzleSolved = false;
       
-      document.getElementById('puzzleQuestion').textContent = puzzle.question;
-      document.getElementById('puzzleOptions').innerHTML = options.map(function(opt, i) {
+      puzzleQuestion.textContent = puzzle.question;
+      puzzleOptions.innerHTML = options.map(function(opt, i) {
         var answerLetter = String.fromCharCode(65 + i);
         return '<div class="puzzle-option" onclick="selectOption(' + i + ', \'' + answerLetter + '\')">' +
           '<span style="margin-right: 10px; font-weight: bold;">' + answerLetter + '.</span>' +
@@ -649,8 +677,10 @@
       }).join('');
       
       updateAttemptsDisplay();
-      document.getElementById('hintBox').style.display = 'none';
-      document.getElementById('puzzleResult').style.display = 'none';
+      var hintBox = document.getElementById('hintBox');
+      var puzzleResult = document.getElementById('puzzleResult');
+      if (hintBox) hintBox.style.display = 'none';
+      if (puzzleResult) puzzleResult.style.display = 'none';
       container.style.display = 'block';
     }
 
@@ -751,7 +781,9 @@
 
     function showHint(hint) {
       var hintBox = document.getElementById('hintBox');
-      document.getElementById('hintText').textContent = hint;
+      var hintText = document.getElementById('hintText');
+      if (!hintBox || !hintText) return;
+      hintText.textContent = hint;
       hintBox.style.display = 'flex';
     }
 
@@ -765,6 +797,7 @@
       var punishment = punishments[Math.floor(Math.random() * punishments.length)];
       
       var resultBox = document.getElementById('puzzleResult');
+      if (!resultBox) return;
       resultBox.innerHTML = '<div class="result-punishment">' + punishment + '</div>';
       resultBox.style.display = 'block';
       
@@ -778,19 +811,23 @@
 
     function showPuzzleResult(isCorrect, correctAnswer) {
       var resultBox = document.getElementById('puzzleResult');
+      if (!resultBox) return;
+      
       if (isCorrect) {
         resultBox.innerHTML = '<div class="result-correct">🎉 恭喜你答对了！</div>';
       } else {
         resultBox.innerHTML = '<div class="result-wrong">😢 正确答案是：<strong>' + correctAnswer + '</strong></div>';
       }
       
-      var continueBtn = document.createElement('button');
-      continueBtn.className = 'continue-btn';
-      continueBtn.textContent = '➕ 添加章节';
-      continueBtn.onclick = function() {
-        window.location.href = 'book.html?id=' + currentChapter.book_id;
-      };
-      resultBox.appendChild(continueBtn);
+      if (currentChapter && currentChapter.book_id) {
+        var continueBtn = document.createElement('button');
+        continueBtn.className = 'continue-btn';
+        continueBtn.textContent = '➕ 添加章节';
+        continueBtn.onclick = function() {
+          window.location.href = 'book.html?id=' + currentChapter.book_id;
+        };
+        resultBox.appendChild(continueBtn);
+      }
       
       resultBox.style.display = 'block';
       
@@ -801,8 +838,11 @@
     }
 
     async function loadBookList() {
+      var bookList = document.getElementById('bookList');
+      if (!bookList) return;
+      
       if (!userId) {
-        document.getElementById('bookList').innerHTML = 
+        bookList.innerHTML = 
           '<p style="text-align: center; color: var(--text-secondary); grid-column: 1/-1;">请先<a href="login.html" style="color: var(--gold);">登录</a></p>';
         return;
       }
@@ -812,12 +852,12 @@
         var books = data.books || [];
         
         if (books.length === 0) {
-          document.getElementById('bookList').innerHTML = 
+          bookList.innerHTML = 
             '<p style="text-align: center; color: var(--text-secondary); grid-column: 1/-1;">还没有故事，<a href="story-create.html" style="color: var(--gold);">创建新故事</a></p>';
           return;
         }
         
-        document.getElementById('bookList').innerHTML = books.map(function(book) {
+        bookList.innerHTML = books.map(function(book) {
           return '<div class="book-select-card" onclick="selectBook(\'' + book.book_id + '\')">' +
             '<div class="book-select-icon">📖</div>' +
             '<div class="book-select-title">' + book.title + '</div>' +
@@ -825,8 +865,10 @@
           '</div>';
         }).join('');
       } catch (error) {
-        document.getElementById('bookList').innerHTML = 
-          '<p style="text-align: center; color: var(--text-secondary); grid-column: 1/-1;">加载失败，请刷新重试</p>';
+        if (bookList) {
+          bookList.innerHTML = 
+            '<p style="text-align: center; color: var(--text-secondary); grid-column: 1/-1;">加载失败，请刷新重试</p>';
+        }
       }
     }
 
@@ -850,6 +892,7 @@
 
     function showToast(msg, type) {
       var toast = document.getElementById('toast');
+      if (!toast) return;
       toast.textContent = msg;
       toast.className = 'toast show ' + (type || '');
       setTimeout(function() {

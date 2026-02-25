@@ -462,6 +462,26 @@
       position: relative;
     }
 
+    .story-content .generate-btn {
+      display: inline-block;
+      padding: 10px 25px;
+      font-size: 0.9rem;
+      font-weight: 700;
+      border: none;
+      border-radius: 20px;
+      background: linear-gradient(135deg, var(--gold), #ff9800);
+      color: #000;
+      cursor: pointer;
+      text-decoration: none;
+      transition: all 0.3s ease;
+      pointer-events: auto;
+    }
+
+    .story-content .generate-btn:hover {
+      transform: translateY(-2px);
+      box-shadow: 0 5px 20px rgba(255,152,0,0.4);
+    }
+
     .story-page {
       display: none;
       height: 100%;
@@ -706,6 +726,12 @@
       gap: 4px;
       padding: 4px;
       background: linear-gradient(180deg, #2a2a2a, #1a1a1a);
+      opacity: 0;
+      transition: opacity 0.2s ease;
+    }
+
+    .hs-card:hover .hs-card-actions-bottom {
+      opacity: 1;
     }
 
     .hs-card-actions-bottom .hs-action-btn {
@@ -838,7 +864,8 @@
       padding: 0 20px;
       flex-shrink: 0;
       position: relative;
-      z-index: 5;
+      z-index: 100;
+      pointer-events: auto;
     }
 
     .generate-btn {
