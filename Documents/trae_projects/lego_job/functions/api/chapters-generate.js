@@ -123,8 +123,7 @@ export async function onRequestPost(context) {
   try {
     var DB = context.env.DB;
     var url = new URL(context.request.url);
-    var pathParts = url.pathname.split('/');
-    var bookId = pathParts[3];
+    var bookId = url.searchParams.get('bookId');
     
     if (!bookId) {
       return createErrorResponse('书籍ID不能为空', 400);

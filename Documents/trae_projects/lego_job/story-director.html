@@ -1,0 +1,1260 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>故事导演台 - 乐高故事书</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+SC:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --gold: #ffd700;
+            --silver: #c0c0c0;
+            --bronze: #cd7f32;
+            --crimson: #dc2626;
+            --purple: #a855f7;
+            --bg-dark: #0d0d14;
+            --text-primary: #f8fafc;
+            --text-secondary: #94a3b8;
+            --font-body: 'Noto Sans SC', sans-serif;
+        }
+
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+
+        body {
+            font-family: var(--font-body);
+            background: linear-gradient(180deg, #1a1a2e 0%, #0d0d14 100%);
+            height: 100vh;
+            color: var(--text-primary);
+            overflow: hidden;
+            display: flex;
+            flex-direction: column;
+        }
+
+        .header {
+            height: 50px;
+            background: rgba(0,0,0,0.5);
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            padding: 0 20px;
+            border-bottom: 1px solid rgba(255,215,0,0.2);
+            flex-shrink: 0;
+        }
+
+        .back-btn {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            color: var(--text-secondary);
+            text-decoration: none;
+            font-size: 0.9rem;
+            transition: color 0.3s;
+        }
+
+        .back-btn:hover { color: var(--gold); }
+
+        .book-title {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            background: rgba(255,215,0,0.1);
+            padding: 6px 16px;
+            border-radius: 8px;
+            border: 1px solid rgba(255,215,0,0.2);
+        }
+
+        .book-icon { font-size: 1.2rem; }
+        .book-name { font-size: 1rem; font-weight: 600; color: var(--gold); }
+
+        .main-area {
+            flex: 1;
+            display: flex;
+            overflow: hidden;
+            position: relative;
+        }
+
+        .side-panel {
+            width: 420px;
+            background: rgba(0,0,0,0.3);
+            display: flex;
+            flex-direction: column;
+            padding: 10px;
+            gap: 6px;
+            flex-shrink: 0;
+        }
+
+        .left-panel { border-right: 1px solid rgba(255,255,255,0.1); }
+        .right-panel { border-left: 1px solid rgba(255,255,255,0.1); }
+
+        .card-section {
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+            min-height: 0;
+        }
+
+        .section-header {
+            display: flex;
+            align-items: center;
+            gap: 6px;
+            font-size: 0.75rem;
+            font-weight: 600;
+            padding: 5px 10px;
+            border-radius: 4px;
+            margin-bottom: 4px;
+        }
+
+        .section-header.character { background: rgba(255,215,0,0.15); color: var(--gold); border: 1px solid rgba(255,215,0,0.3); }
+        .section-header.adventure { background: rgba(168,85,247,0.15); color: var(--purple); border: 1px solid rgba(168,85,247,0.3); }
+        .section-header.terrain { background: rgba(34,197,94,0.15); color: #22c55e; border: 1px solid rgba(34,197,94,0.3); }
+        .section-header.weather { background: rgba(59,130,246,0.15); color: #3b82f6; border: 1px solid rgba(59,130,246,0.3); }
+        .section-header.item { background: rgba(245,158,11,0.15); color: #f59e0b; border: 1px solid rgba(245,158,11,0.3); }
+
+        .fan-container {
+            flex: 1;
+            display: flex;
+            align-items: flex-end;
+            justify-content: center;
+            padding-bottom: 5px;
+            position: relative;
+            min-height: 110px;
+        }
+
+        .fan-card {
+            width: 85px;
+            height: 125px;
+            border-radius: 10px;
+            cursor: pointer;
+            position: absolute;
+            bottom: 0;
+            transition: all 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+            transform-origin: bottom center;
+            background: linear-gradient(180deg, #2d2d44, #1a1a2e);
+            border: 2px solid;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            overflow: hidden;
+            box-shadow: 0 5px 15px rgba(0,0,0,0.3);
+        }
+
+        .fan-card.protagonist { border-color: var(--gold); }
+        .fan-card.antagonist { border-color: var(--crimson); }
+        .fan-card.supporting { border-color: var(--silver); }
+        .fan-card.bystander { border-color: #9ca3af; }
+        .fan-card.adventure { border-color: var(--purple); }
+        .fan-card.terrain { border-color: #22c55e; }
+        .fan-card.weather { border-color: #3b82f6; }
+        .fan-card.item { border-color: #f59e0b; }
+
+        .fan-card:hover {
+            transform: translateY(-50px) scale(1.25) rotate(0deg) !important;
+            z-index: 100 !important;
+            box-shadow: 0 25px 50px rgba(0,0,0,0.6), 0 0 30px rgba(255,215,0,0.3);
+        }
+
+        .fan-card.selected {
+            animation: heartbeat 0.8s ease-in-out infinite;
+            box-shadow: 0 0 30px rgba(255,215,0,0.8), 0 0 60px rgba(255,215,0,0.4), 0 10px 30px rgba(0,0,0,0.5);
+            z-index: 200 !important;
+        }
+
+        @keyframes heartbeat {
+            0%, 100% { transform: rotate(0deg) translateY(-25px) scale(1); }
+            15% { transform: rotate(0deg) translateY(-25px) scale(1.08); }
+            30% { transform: rotate(0deg) translateY(-25px) scale(1); }
+            45% { transform: rotate(0deg) translateY(-25px) scale(1.05); }
+            60% { transform: rotate(0deg) translateY(-25px) scale(1); }
+        }
+
+        .fan-card.selected::before {
+            content: '';
+            position: absolute;
+            inset: -3px;
+            border-radius: 14px;
+            background: linear-gradient(45deg, var(--gold), transparent, var(--gold));
+            animation: border-rotate 2s linear infinite;
+            z-index: -1;
+        }
+
+        @keyframes border-rotate {
+            from { transform: rotate(0deg); }
+            to { transform: rotate(360deg); }
+        }
+
+        .fan-card.selected::after {
+            content: '✓';
+            position: absolute;
+            top: 6px;
+            right: 6px;
+            width: 20px;
+            height: 20px;
+            background: var(--gold);
+            border-radius: 50%;
+            font-size: 0.75rem;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: #000;
+            font-weight: bold;
+            box-shadow: 0 0 15px rgba(255,215,0,0.9);
+            animation: check-pulse 0.8s ease-in-out infinite;
+        }
+
+        @keyframes check-pulse {
+            0%, 100% { box-shadow: 0 0 15px rgba(255,215,0,0.9); transform: scale(1); }
+            50% { box-shadow: 0 0 25px rgba(255,215,0,1); transform: scale(1.1); }
+        }
+
+        .fan-avatar { font-size: 2.5rem; }
+        .fan-name { font-size: 0.65rem; font-weight: 600; margin-top: 3px; text-align: center; padding: 0 3px; }
+
+        .role-tag {
+            position: absolute;
+            top: 6px;
+            left: 6px;
+            font-size: 0.5rem;
+            padding: 2px 5px;
+            border-radius: 3px;
+            font-weight: 600;
+        }
+
+        .fan-card.protagonist .role-tag { background: var(--gold); color: #000; }
+        .fan-card.antagonist .role-tag { background: var(--crimson); color: #fff; }
+        .fan-card.supporting .role-tag { background: var(--silver); color: #000; }
+        .fan-card.bystander .role-tag { background: #9ca3af; color: #fff; }
+
+        .center-panel {
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            padding: 10px;
+            min-width: 0;
+            max-width: 420px;
+            margin: 0 auto;
+        }
+
+        .stage-area {
+            background: rgba(0,0,0,0.4);
+            border-radius: 12px;
+            border: 1px solid rgba(255,215,0,0.15);
+            padding: 12px;
+            display: flex;
+            flex-direction: column;
+            gap: 8px;
+            width: 100%;
+            transition: all 0.3s ease;
+        }
+
+        .stage-area.shake { animation: shake 0.5s ease-in-out; }
+
+        @keyframes shake {
+            0%, 100% { transform: translateX(0); }
+            10%, 30%, 50%, 70%, 90% { transform: translateX(-3px); }
+            20%, 40%, 60%, 80% { transform: translateX(3px); }
+        }
+
+        .stage-title {
+            font-size: 0.85rem;
+            font-weight: 600;
+            color: var(--gold);
+            text-align: center;
+            padding-bottom: 6px;
+            border-bottom: 1px solid rgba(255,255,255,0.1);
+        }
+
+        .stage-grid {
+            display: grid;
+            grid-template-columns: repeat(4, 1fr);
+            gap: 6px;
+        }
+
+        .stage-slot {
+            aspect-ratio: 3/4;
+            border: 1px dashed rgba(255,255,255,0.2);
+            border-radius: 8px;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            transition: all 0.3s ease;
+            position: relative;
+            cursor: pointer;
+        }
+
+        .stage-slot.required {
+            border-color: rgba(255,215,0,0.4);
+            animation: slot-glow 2s ease-in-out infinite;
+        }
+
+        @keyframes slot-glow {
+            0%, 100% { box-shadow: 0 0 5px rgba(255,215,0,0.2); }
+            50% { box-shadow: 0 0 10px rgba(255,215,0,0.4); }
+        }
+
+        .stage-slot.filled {
+            border: none;
+            background: linear-gradient(180deg, #2d2d44, #1a1a2e);
+        }
+
+        .slot-icon { font-size: 1.1rem; opacity: 0.5; }
+        .slot-label { font-size: 0.5rem; color: var(--text-secondary); margin-top: 2px; }
+
+        .mini-card {
+            width: 100%;
+            height: 100%;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            position: relative;
+        }
+
+        .mini-avatar { font-size: 1.2rem; }
+        .mini-name { font-size: 0.5rem; font-weight: 600; margin-top: 2px; text-align: center; padding: 0 2px; }
+
+        .mini-remove {
+            position: absolute;
+            top: 2px;
+            right: 2px;
+            width: 12px;
+            height: 12px;
+            border-radius: 50%;
+            background: #ef4444;
+            color: white;
+            border: none;
+            cursor: pointer;
+            font-size: 0.5rem;
+            opacity: 0;
+            transition: opacity 0.2s;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .stage-slot:hover .mini-remove { opacity: 1; }
+
+        .story-preview {
+            background: rgba(255,255,255,0.03);
+            border-radius: 8px;
+            padding: 8px;
+            min-height: 36px;
+        }
+
+        .preview-text {
+            font-size: 0.7rem;
+            color: var(--text-secondary);
+            line-height: 1.4;
+            font-style: italic;
+            text-align: center;
+        }
+
+        .preview-text .highlight { color: var(--gold); font-weight: 600; }
+
+        .bottom-bar {
+            height: 50px;
+            background: linear-gradient(180deg, transparent, rgba(0,0,0,0.8));
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 20px;
+            padding: 0 20px;
+            flex-shrink: 0;
+        }
+
+        .requirements { display: flex; gap: 12px; }
+
+        .req-item {
+            display: flex;
+            align-items: center;
+            gap: 4px;
+            font-size: 0.7rem;
+            color: var(--text-secondary);
+        }
+
+        .req-item.met { color: #22c55e; }
+
+        .req-icon {
+            width: 14px;
+            height: 14px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 0.45rem;
+        }
+
+        .req-item.met .req-icon { background: #22c55e; color: white; }
+        .req-item:not(.met) .req-icon { border: 2px solid currentColor; }
+
+        .generate-btn {
+            padding: 10px 35px;
+            font-size: 0.95rem;
+            font-weight: 700;
+            border: none;
+            border-radius: 20px;
+            background: #333;
+            color: #666;
+            cursor: not-allowed;
+            transition: all 0.3s ease;
+            font-family: var(--font-body);
+        }
+
+        .generate-btn.ready {
+            background: linear-gradient(135deg, var(--gold), #ff9800);
+            color: #000;
+            cursor: pointer;
+            box-shadow: 0 0 25px rgba(255,215,0,0.5);
+            animation: btn-pulse 2s ease-in-out infinite;
+        }
+
+        @keyframes btn-pulse {
+            0%, 100% { box-shadow: 0 0 25px rgba(255,215,0,0.5); }
+            50% { box-shadow: 0 0 40px rgba(255,215,0,0.8); }
+        }
+
+        .generate-btn.ready:hover { transform: scale(1.05); }
+
+        .generate-btn.loading {
+            background: #555;
+            color: #aaa;
+            cursor: wait;
+        }
+
+        /* Weather Effects */
+        .thunder {
+            position: fixed;
+            inset: 0;
+            background: white;
+            opacity: 0;
+            z-index: 1001;
+            pointer-events: none;
+        }
+
+        .thunder.flash { animation: thunder-flash 0.5s ease-out; }
+
+        @keyframes thunder-flash {
+            0% { opacity: 0; }
+            10% { opacity: 0.8; }
+            20% { opacity: 0.2; }
+            30% { opacity: 0.9; }
+            40% { opacity: 0; }
+            100% { opacity: 0; }
+        }
+
+        .rain {
+            position: fixed;
+            inset: 0;
+            pointer-events: none;
+            z-index: 999;
+        }
+
+        .rain-drop {
+            position: absolute;
+            width: 2px;
+            height: 20px;
+            background: linear-gradient(180deg, transparent, rgba(174, 194, 224, 0.5));
+            animation: rain-fall 0.5s linear infinite;
+        }
+
+        @keyframes rain-fall {
+            0% { transform: translateY(-20px); }
+            100% { transform: translateY(100vh); }
+        }
+
+        .snow {
+            position: fixed;
+            inset: 0;
+            pointer-events: none;
+            z-index: 999;
+        }
+
+        .snowflake {
+            position: absolute;
+            color: white;
+            font-size: 1rem;
+            animation: snow-fall 3s linear infinite;
+            opacity: 0.8;
+        }
+
+        @keyframes snow-fall {
+            0% { transform: translateY(-10px) rotate(0deg); }
+            100% { transform: translateY(100vh) rotate(360deg); }
+        }
+
+        .fog {
+            position: fixed;
+            inset: 0;
+            background: radial-gradient(ellipse at center, rgba(200,200,200,0.3), transparent 70%);
+            pointer-events: none;
+            z-index: 999;
+            animation: fog-move 5s ease-in-out infinite;
+        }
+
+        @keyframes fog-move {
+            0%, 100% { opacity: 0.5; transform: scale(1); }
+            50% { opacity: 0.7; transform: scale(1.1); }
+        }
+
+        .sun-rays {
+            position: fixed;
+            top: -50%;
+            left: 50%;
+            transform: translateX(-50%);
+            width: 200%;
+            height: 100%;
+            background: radial-gradient(ellipse at center top, rgba(255,223,0,0.3), transparent 50%);
+            pointer-events: none;
+            z-index: 999;
+            animation: sun-pulse 3s ease-in-out infinite;
+        }
+
+        @keyframes sun-pulse {
+            0%, 100% { opacity: 0.7; }
+            50% { opacity: 1; }
+        }
+
+        .sun-orb {
+            position: fixed;
+            top: 30px;
+            right: 80px;
+            width: 80px;
+            height: 80px;
+            background: radial-gradient(circle, #FFD700 0%, #FFA500 50%, #FF8C00 100%);
+            border-radius: 50%;
+            box-shadow: 0 0 60px rgba(255,215,0,0.8), 0 0 100px rgba(255,165,0,0.6), 0 0 150px rgba(255,140,0,0.4);
+            pointer-events: none;
+            z-index: 998;
+            animation: sun-glow 4s ease-in-out infinite;
+        }
+
+        @keyframes sun-glow {
+            0%, 100% { transform: scale(1); box-shadow: 0 0 60px rgba(255,215,0,0.8), 0 0 100px rgba(255,165,0,0.6), 0 0 150px rgba(255,140,0,0.4); }
+            50% { transform: scale(1.1); box-shadow: 0 0 80px rgba(255,215,0,1), 0 0 130px rgba(255,165,0,0.8), 0 0 180px rgba(255,140,0,0.6); }
+        }
+
+        .sun-rays-beam {
+            position: fixed;
+            top: 30px;
+            right: 80px;
+            width: 80px;
+            height: 80px;
+            pointer-events: none;
+            z-index: 997;
+        }
+
+        .sun-ray-item {
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            width: 200px;
+            height: 3px;
+            background: linear-gradient(90deg, rgba(255,215,0,0.6), transparent);
+            transform-origin: left center;
+            animation: ray-rotate 20s linear infinite;
+        }
+
+        @keyframes ray-rotate {
+            from { transform: rotate(0deg); }
+            to { transform: rotate(360deg); }
+        }
+
+        .wind {
+            position: fixed;
+            inset: 0;
+            pointer-events: none;
+            z-index: 999;
+        }
+
+        .wind-particle {
+            position: absolute;
+            width: 40px;
+            height: 2px;
+            background: linear-gradient(90deg, transparent, rgba(200,200,200,0.7), transparent);
+            animation: wind-blow 0.8s linear infinite;
+        }
+
+        @keyframes wind-blow {
+            0% { transform: translateX(-100px); opacity: 0; }
+            50% { opacity: 1; }
+            100% { transform: translateX(100vw); opacity: 0; }
+        }
+
+        .rainbow {
+            position: fixed;
+            top: 5%;
+            left: 50%;
+            transform: translateX(-50%);
+            width: 90%;
+            height: 50%;
+            background: linear-gradient(180deg, rgba(255,0,0,0.25) 0%, rgba(255,127,0,0.25) 15%, rgba(255,255,0,0.25) 30%, rgba(0,255,0,0.25) 45%, rgba(0,0,255,0.25) 60%, rgba(75,0,130,0.25) 75%, rgba(148,0,211,0.25) 90%);
+            border-radius: 50% 50% 0 0;
+            pointer-events: none;
+            z-index: 999;
+            animation: rainbow-glow 3s ease-in-out infinite;
+        }
+
+        @keyframes rainbow-glow {
+            0%, 100% { opacity: 0.7; }
+            50% { opacity: 1; }
+        }
+
+        .starry {
+            position: fixed;
+            inset: 0;
+            pointer-events: none;
+            z-index: 999;
+            background: linear-gradient(180deg, rgba(25,25,112,0.4), transparent 60%);
+        }
+
+        .star {
+            position: absolute;
+            width: 3px;
+            height: 3px;
+            background: white;
+            border-radius: 50%;
+            animation: twinkle 2s ease-in-out infinite;
+        }
+
+        @keyframes twinkle {
+            0%, 100% { opacity: 0.3; transform: scale(1); }
+            50% { opacity: 1; transform: scale(1.5); }
+        }
+
+        .toast {
+            position: fixed;
+            top: 60px;
+            left: 50%;
+            transform: translateX(-50%) translateY(-10px);
+            background: rgba(0,0,0,0.95);
+            padding: 10px 20px;
+            border-radius: 8px;
+            border: 1px solid var(--gold);
+            font-size: 0.85rem;
+            opacity: 0;
+            transition: all 0.3s ease;
+            z-index: 1002;
+        }
+
+        .toast.show { transform: translateX(-50%) translateY(0); opacity: 1; }
+        .toast.error { border-color: #ef4444; }
+
+        .loading-overlay {
+            position: fixed;
+            inset: 0;
+            background: rgba(0,0,0,0.8);
+            display: none;
+            align-items: center;
+            justify-content: center;
+            z-index: 2000;
+            flex-direction: column;
+            gap: 20px;
+        }
+
+        .loading-overlay.show { display: flex; }
+
+        .loading-spinner {
+            width: 60px;
+            height: 60px;
+            border: 4px solid rgba(255,215,0,0.3);
+            border-top-color: var(--gold);
+            border-radius: 50%;
+            animation: spin 1s linear infinite;
+        }
+
+        @keyframes spin {
+            to { transform: rotate(360deg); }
+        }
+
+        .loading-text {
+            color: var(--gold);
+            font-size: 1.1rem;
+            font-weight: 600;
+        }
+    </style>
+</head>
+<body>
+    <div class="thunder" id="thunder"></div>
+    <div class="rain" id="rain"></div>
+    <div class="snow" id="snow"></div>
+    <div class="fog" id="fog"></div>
+    <div class="sun-rays" id="sunRays"></div>
+    <div class="sun-orb" id="sunOrb"></div>
+    <div class="sun-rays-beam" id="sunRaysBeam"></div>
+    <div class="wind" id="wind"></div>
+    <div class="rainbow" id="rainbow"></div>
+    <div class="starry" id="starry"></div>
+
+    <header class="header">
+        <a href="#" id="backBtn" class="back-btn">← 返回书籍</a>
+        <div class="book-title">
+            <span class="book-icon">📖</span>
+            <span class="book-name" id="bookName">加载中...</span>
+        </div>
+        <div style="width: 80px;"></div>
+    </header>
+
+    <main class="main-area">
+        <aside class="side-panel left-panel">
+            <div class="card-section">
+                <div class="section-header character">👥 角色选择 (主角必选1，其他角色可选)</div>
+                <div class="fan-container" id="characterFan"></div>
+            </div>
+            <div class="card-section">
+                <div class="section-header adventure">🗺️ 冒险类型 (必选1)</div>
+                <div class="fan-container" id="adventureFan"></div>
+            </div>
+            <div class="card-section">
+                <div class="section-header item">🎒 道具 (可选0-1)</div>
+                <div class="fan-container" id="itemFan"></div>
+            </div>
+        </aside>
+
+        <section class="center-panel">
+            <div class="stage-area" id="stageArea">
+                <div class="stage-title">🎭 舞台预览</div>
+                <div class="stage-grid">
+                    <div class="stage-slot required" data-slot="protagonist">
+                        <div class="slot-icon">👑</div>
+                        <div class="slot-label">主角</div>
+                    </div>
+                    <div class="stage-slot" data-slot="supporting1">
+                        <div class="slot-icon">🎭</div>
+                        <div class="slot-label">配角</div>
+                    </div>
+                    <div class="stage-slot" data-slot="supporting2">
+                        <div class="slot-icon">🎭</div>
+                        <div class="slot-label">配角</div>
+                    </div>
+                    <div class="stage-slot" data-slot="antagonist">
+                        <div class="slot-icon">👿</div>
+                        <div class="slot-label">反派</div>
+                    </div>
+                    <div class="stage-slot required" data-slot="adventure">
+                        <div class="slot-icon">🗺️</div>
+                        <div class="slot-label">冒险</div>
+                    </div>
+                    <div class="stage-slot required" data-slot="terrain">
+                        <div class="slot-icon">🏔️</div>
+                        <div class="slot-label">地形</div>
+                    </div>
+                    <div class="stage-slot required" data-slot="weather">
+                        <div class="slot-icon">🌤️</div>
+                        <div class="slot-label">天气</div>
+                    </div>
+                    <div class="stage-slot" data-slot="item1">
+                        <div class="slot-icon">🎒</div>
+                        <div class="slot-label">道具</div>
+                    </div>
+                </div>
+                <div class="story-preview">
+                    <div class="preview-text" id="previewText">选择卡牌来构建你的故事...</div>
+                </div>
+            </div>
+        </section>
+
+        <aside class="side-panel right-panel">
+            <div class="card-section">
+                <div class="section-header terrain">🏔️ 地形 (必选1)</div>
+                <div class="fan-container" id="terrainFan"></div>
+            </div>
+            <div class="card-section">
+                <div class="section-header weather">🌤️ 天气 (必选1)</div>
+                <div class="fan-container" id="weatherFan"></div>
+            </div>
+        </aside>
+    </main>
+
+    <footer class="bottom-bar">
+        <div class="requirements">
+            <div class="req-item" id="reqProtagonist"><span class="req-icon"></span><span>主角</span></div>
+            <div class="req-item" id="reqAdventure"><span class="req-icon"></span><span>冒险</span></div>
+            <div class="req-item" id="reqTerrain"><span class="req-icon"></span><span>地形</span></div>
+            <div class="req-item" id="reqWeather"><span class="req-icon"></span><span>天气</span></div>
+        </div>
+        <button class="generate-btn" id="generateBtn">🎬 开拍！</button>
+    </footer>
+
+    <div class="toast" id="toast"></div>
+
+    <div class="loading-overlay" id="loadingOverlay">
+        <div class="loading-spinner"></div>
+        <div class="loading-text">🎬 正在生成故事...</div>
+    </div>
+
+    <script>
+        var bookId = null;
+        var bookName = '';
+        var bookCharacters = [];
+        var plotOptions = null;
+        var currentWeatherEffect = null;
+
+        var selections = {
+            protagonist: null,
+            antagonist: null,
+            supporting: [],
+            adventure: null,
+            terrain: null,
+            weather: null,
+            items: []
+        };
+
+        async function fetchAPI(endpoint) {
+            var response = await fetch('/api' + endpoint);
+            if (!response.ok) throw new Error('API Error: ' + response.status);
+            return response.json();
+        }
+
+        async function postAPI(endpoint, data) {
+            var response = await fetch('/api' + endpoint, {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify(data)
+            });
+            if (!response.ok) {
+                var error = await response.json().catch(function() { return { error: 'Unknown error' }; });
+                throw new Error(error.error || 'API Error');
+            }
+            return response.json();
+        }
+
+        async function init() {
+            var params = new URLSearchParams(window.location.search);
+            bookId = params.get('bookId');
+
+            if (!bookId) {
+                showToast('缺少书籍ID', true);
+                setTimeout(function() { window.location.href = 'bookshelf.html'; }, 1500);
+                return;
+            }
+
+            document.getElementById('backBtn').href = 'book.html?id=' + bookId;
+
+            try {
+                var userId = localStorage.getItem('userId') || '';
+                var bookData = await fetchAPI('/books?bookId=' + bookId + '&userId=' + userId);
+                bookName = bookData.book?.title || '未命名书籍';
+                document.getElementById('bookName').textContent = bookName;
+                document.title = bookName + ' - 故事导演台';
+
+                bookCharacters = bookData.characters || [];
+
+                if (bookCharacters.length === 0) {
+                    showToast('请先添加角色', true);
+                    setTimeout(function() { window.location.href = 'book.html?id=' + bookId; }, 1500);
+                    return;
+                }
+
+                var plotData = await fetchAPI('/plot-options');
+                plotOptions = plotData.plotOptions;
+
+                renderCharacterCards();
+                renderPlotCards();
+                updateStage();
+
+            } catch (error) {
+                console.error('初始化失败:', error);
+                showToast('加载失败: ' + error.message, true);
+            }
+
+            document.getElementById('rain').style.display = 'none';
+            document.getElementById('snow').style.display = 'none';
+            document.getElementById('fog').style.display = 'none';
+            document.getElementById('sunRays').style.display = 'none';
+            document.getElementById('sunOrb').style.display = 'none';
+            document.getElementById('sunRaysBeam').style.display = 'none';
+            document.getElementById('wind').style.display = 'none';
+            document.getElementById('rainbow').style.display = 'none';
+            document.getElementById('starry').style.display = 'none';
+        }
+
+        function renderCharacterCards() {
+            var container = document.getElementById('characterFan');
+            container.innerHTML = '';
+
+            var characters = bookCharacters.map(function(c) {
+                return {
+                    id: c.character_id,
+                    name: c.custom_name || c.character_name || '未知',
+                    avatar: c.emoji || '🧑',
+                    role: c.role_type || 'supporting'
+                };
+            });
+
+            createFanCards(container, characters, 'character', 0);
+        }
+
+        function renderPlotCards() {
+            createFanCards(document.getElementById('adventureFan'), 
+                plotOptions.adventureType.map(function(o) { return { id: o.id, name: o.name, avatar: o.icon }; }), 
+                'adventure', 1);
+
+            createFanCards(document.getElementById('terrainFan'), 
+                plotOptions.terrain.map(function(o) { return { id: o.id, name: o.name, avatar: o.icon }; }), 
+                'terrain', 1);
+
+            createFanCards(document.getElementById('weatherFan'), 
+                plotOptions.weather.map(function(o) { return { id: o.id, name: o.name, avatar: o.icon, effect: o.id }; }), 
+                'weather', 1);
+
+            createFanCards(document.getElementById('itemFan'), 
+                plotOptions.equipment.map(function(o) { return { id: o.id, name: o.name, avatar: o.icon }; }), 
+                'item', 2);
+        }
+
+        function createFanCards(container, cards, type, maxSelect) {
+            container.innerHTML = '';
+
+            var count = cards.length;
+            var fanAngle = Math.min(count * 8, 80);
+            var startAngle = -fanAngle / 2;
+            var angleStep = count > 1 ? fanAngle / (count - 1) : 0;
+
+            cards.forEach(function(card, index) {
+                var div = document.createElement('div');
+                var cardType = card.role || type;
+                div.className = 'fan-card ' + cardType;
+                div.dataset.id = card.id;
+                div.dataset.type = card.role || type;
+                if (card.effect) div.dataset.effect = card.effect;
+
+                var angle = startAngle + angleStep * index;
+                var offsetX = (index - (count - 1) / 2) * 22;
+
+                div.style.left = '50%';
+                div.style.marginLeft = (-42 + offsetX) + 'px';
+                div.style.transform = 'rotate(' + angle + 'deg)';
+                div.style.zIndex = index;
+
+                var roleLabel = '';
+                if (card.role === 'protagonist') roleLabel = '<span class="role-tag">主角</span>';
+                else if (card.role === 'antagonist') roleLabel = '<span class="role-tag">反派</span>';
+                else if (card.role === 'supporting') roleLabel = '<span class="role-tag">配角</span>';
+                else if (card.role === 'bystander') roleLabel = '<span class="role-tag">路人</span>';
+
+                div.innerHTML = roleLabel + '<div class="fan-avatar">' + card.avatar + '</div><div class="fan-name">' + card.name + '</div>';
+
+                var originalAngle = angle;
+
+                div.addEventListener('click', function() {
+                    selectCard(card, card.role || type, maxSelect);
+                });
+
+                div.addEventListener('mouseleave', function() {
+                    if (!this.classList.contains('selected')) {
+                        this.style.transform = 'rotate(' + originalAngle + 'deg)';
+                    }
+                });
+
+                container.appendChild(div);
+            });
+        }
+
+        function selectCard(card, type, maxSelect) {
+            var stage = document.getElementById('stageArea');
+            stage.classList.add('shake');
+            setTimeout(function() { stage.classList.remove('shake'); }, 500);
+
+            if (type === 'protagonist' || type === 'antagonist' || type === 'adventure' || type === 'terrain' || type === 'weather') {
+                if (selections[type] && selections[type].id === card.id) {
+                    selections[type] = null;
+                    showToast('已取消: ' + card.name);
+                    if (type === 'weather') clearWeatherEffect();
+                } else {
+                    selections[type] = card;
+                    showToast('已选择: ' + card.name);
+                    if (type === 'weather' && card.effect) {
+                        triggerWeatherEffect(card.effect);
+                    }
+                }
+            } else if (type === 'supporting' || type === 'bystander') {
+                var idx = selections.supporting.findIndex(function(c) { return c.id === card.id; });
+                if (idx > -1) {
+                    selections.supporting.splice(idx, 1);
+                    showToast('已取消: ' + card.name);
+                } else if (selections.supporting.length < 2) {
+                    selections.supporting.push(card);
+                    showToast('已选择: ' + card.name);
+                } else {
+                    showToast('最多选择2个配角', true);
+                    return;
+                }
+            } else if (type === 'item') {
+                var idx = selections.items.findIndex(function(c) { return c.id === card.id; });
+                if (idx > -1) {
+                    selections.items.splice(idx, 1);
+                    showToast('已取消: ' + card.name);
+                } else if (selections.items.length < 1) {
+                    selections.items.push(card);
+                    showToast('已选择: ' + card.name);
+                } else {
+                    showToast('最多选择1个道具', true);
+                    return;
+                }
+            }
+
+            updateStage();
+            updateFanCards();
+        }
+
+        function triggerWeatherEffect(effect) {
+            clearWeatherEffect();
+            currentWeatherEffect = effect;
+
+            if (effect === 'sunny' || effect === 'sun') {
+                document.getElementById('sunRays').style.display = 'block';
+                document.getElementById('sunOrb').style.display = 'block';
+                var beamContainer = document.getElementById('sunRaysBeam');
+                beamContainer.style.display = 'block';
+                beamContainer.innerHTML = '';
+                for (var i = 0; i < 12; i++) {
+                    var ray = document.createElement('div');
+                    ray.className = 'sun-ray-item';
+                    ray.style.transform = 'rotate(' + (i * 30) + 'deg)';
+                    ray.style.animationDelay = (i * 0.5) + 's';
+                    beamContainer.appendChild(ray);
+                }
+            } else if (effect === 'rainy' || effect === 'rain') {
+                var rain = document.getElementById('rain');
+                rain.innerHTML = '';
+                for (var i = 0; i < 80; i++) {
+                    var drop = document.createElement('div');
+                    drop.className = 'rain-drop';
+                    drop.style.left = Math.random() * 100 + '%';
+                    drop.style.animationDelay = Math.random() * 0.5 + 's';
+                    drop.style.animationDuration = (0.4 + Math.random() * 0.3) + 's';
+                    rain.appendChild(drop);
+                }
+                rain.style.display = 'block';
+            } else if (effect === 'thunder') {
+                var thunder = document.getElementById('thunder');
+                var rain = document.getElementById('rain');
+                rain.innerHTML = '';
+                for (var i = 0; i < 100; i++) {
+                    var drop = document.createElement('div');
+                    drop.className = 'rain-drop';
+                    drop.style.left = Math.random() * 100 + '%';
+                    drop.style.animationDelay = Math.random() * 0.5 + 's';
+                    drop.style.animationDuration = (0.3 + Math.random() * 0.3) + 's';
+                    rain.appendChild(drop);
+                }
+                rain.style.display = 'block';
+
+                function flashThunder() {
+                    if (currentWeatherEffect !== 'thunder') return;
+                    thunder.classList.add('flash');
+                    setTimeout(function() { thunder.classList.remove('flash'); }, 500);
+                    setTimeout(flashThunder, 2000 + Math.random() * 3000);
+                }
+                flashThunder();
+            } else if (effect === 'snow') {
+                var snow = document.getElementById('snow');
+                snow.innerHTML = '';
+                for (var i = 0; i < 50; i++) {
+                    var flake = document.createElement('div');
+                    flake.className = 'snowflake';
+                    flake.textContent = '❄';
+                    flake.style.left = Math.random() * 100 + '%';
+                    flake.style.animationDelay = Math.random() * 3 + 's';
+                    flake.style.animationDuration = (2 + Math.random() * 2) + 's';
+                    flake.style.fontSize = (0.5 + Math.random() * 0.8) + 'rem';
+                    snow.appendChild(flake);
+                }
+                snow.style.display = 'block';
+            } else if (effect === 'fog') {
+                document.getElementById('fog').style.display = 'block';
+            } else if (effect === 'wind') {
+                var wind = document.getElementById('wind');
+                wind.innerHTML = '';
+                for (var i = 0; i < 25; i++) {
+                    var particle = document.createElement('div');
+                    particle.className = 'wind-particle';
+                    particle.style.top = Math.random() * 100 + '%';
+                    particle.style.animationDelay = Math.random() * 2 + 's';
+                    particle.style.animationDuration = (0.6 + Math.random() * 0.4) + 's';
+                    wind.appendChild(particle);
+                }
+                wind.style.display = 'block';
+            } else if (effect === 'rainbow') {
+                document.getElementById('rainbow').style.display = 'block';
+            } else if (effect === 'starry') {
+                var starry = document.getElementById('starry');
+                starry.innerHTML = '';
+                for (var i = 0; i < 60; i++) {
+                    var star = document.createElement('div');
+                    star.className = 'star';
+                    star.style.left = Math.random() * 100 + '%';
+                    star.style.top = Math.random() * 50 + '%';
+                    star.style.animationDelay = Math.random() * 2 + 's';
+                    star.style.width = (2 + Math.random() * 3) + 'px';
+                    star.style.height = star.style.width;
+                    starry.appendChild(star);
+                }
+                starry.style.display = 'block';
+            }
+        }
+
+        function clearWeatherEffect() {
+            currentWeatherEffect = null;
+            document.getElementById('rain').style.display = 'none';
+            document.getElementById('rain').innerHTML = '';
+            document.getElementById('snow').style.display = 'none';
+            document.getElementById('snow').innerHTML = '';
+            document.getElementById('fog').style.display = 'none';
+            document.getElementById('sunRays').style.display = 'none';
+            document.getElementById('sunOrb').style.display = 'none';
+            document.getElementById('sunRaysBeam').style.display = 'none';
+            document.getElementById('sunRaysBeam').innerHTML = '';
+            document.getElementById('wind').style.display = 'none';
+            document.getElementById('wind').innerHTML = '';
+            document.getElementById('rainbow').style.display = 'none';
+            document.getElementById('starry').style.display = 'none';
+            document.getElementById('starry').innerHTML = '';
+        }
+
+        function updateFanCards() {
+            document.querySelectorAll('.fan-card').forEach(function(card) {
+                var id = card.dataset.id;
+                var type = card.dataset.type;
+                var selected = false;
+
+                if (type === 'protagonist' || type === 'antagonist' || type === 'adventure' || type === 'terrain' || type === 'weather') {
+                    selected = selections[type] && selections[type].id === id;
+                } else if (type === 'supporting' || type === 'bystander') {
+                    selected = selections.supporting.some(function(c) { return c.id === id; });
+                } else if (type === 'item') {
+                    selected = selections.items.some(function(c) { return c.id === id; });
+                }
+
+                card.classList.toggle('selected', selected);
+                if (selected) {
+                    card.style.transform = 'rotate(0deg) translateY(-25px)';
+                }
+            });
+        }
+
+        function updateStage() {
+            updateSlot('protagonist', selections.protagonist);
+            updateSlot('antagonist', selections.antagonist);
+            updateSlot('adventure', selections.adventure);
+            updateSlot('terrain', selections.terrain);
+            updateSlot('weather', selections.weather);
+            updateSlot('supporting1', selections.supporting[0]);
+            updateSlot('supporting2', selections.supporting[1]);
+            updateSlot('item1', selections.items[0]);
+
+            document.getElementById('reqProtagonist').classList.toggle('met', !!selections.protagonist);
+            document.getElementById('reqAdventure').classList.toggle('met', !!selections.adventure);
+            document.getElementById('reqTerrain').classList.toggle('met', !!selections.terrain);
+            document.getElementById('reqWeather').classList.toggle('met', !!selections.weather);
+
+            var ready = selections.protagonist && selections.adventure && selections.terrain && selections.weather;
+            var btn = document.getElementById('generateBtn');
+            btn.classList.toggle('ready', ready);
+            btn.disabled = !ready;
+
+            updatePreview();
+        }
+
+        function updateSlot(slotName, card) {
+            var slot = document.querySelector('[data-slot="' + slotName + '"]');
+            if (card) {
+                slot.classList.add('filled');
+                slot.classList.remove('required');
+                slot.innerHTML = '<div class="mini-card"><div class="mini-avatar">' + card.avatar + '</div><div class="mini-name">' + card.name + '</div><button class="mini-remove" onclick="event.stopPropagation(); clearSlot(\'' + slotName + '\')">×</button></div>';
+            } else {
+                slot.classList.remove('filled');
+                var requiredSlots = ['protagonist', 'adventure', 'terrain', 'weather'];
+                if (requiredSlots.indexOf(slotName) !== -1) slot.classList.add('required');
+                var icons = { protagonist: '👑', antagonist: '👿', adventure: '🗺️', terrain: '🏔️', weather: '🌤️', supporting1: '🎭', supporting2: '🎭', item1: '🎒' };
+                var labels = { protagonist: '主角', antagonist: '反派', adventure: '冒险', terrain: '地形', weather: '天气', supporting1: '配角', supporting2: '配角', item1: '道具' };
+                slot.innerHTML = '<div class="slot-icon">' + icons[slotName] + '</div><div class="slot-label">' + labels[slotName] + '</div>';
+            }
+        }
+
+        function clearSlot(slotName) {
+            if (slotName === 'protagonist') selections.protagonist = null;
+            else if (slotName === 'antagonist') selections.antagonist = null;
+            else if (slotName === 'adventure') selections.adventure = null;
+            else if (slotName === 'terrain') selections.terrain = null;
+            else if (slotName === 'weather') { selections.weather = null; clearWeatherEffect(); }
+            else if (slotName === 'supporting1') selections.supporting.shift();
+            else if (slotName === 'supporting2') selections.supporting.pop();
+            else if (slotName === 'item1') selections.items.shift();
+
+            updateStage();
+            updateFanCards();
+        }
+
+        function updatePreview() {
+            var text = document.getElementById('previewText');
+            var parts = [];
+
+            if (selections.protagonist) parts.push('<span class="highlight">' + selections.protagonist.name + '</span>');
+            if (selections.supporting.length) parts.push('与' + selections.supporting.map(function(c) { return c.name; }).join('、'));
+            if (selections.antagonist) parts.push('对抗<span class="highlight" style="color:#ef4444">' + selections.antagonist.name + '</span>');
+            if (selections.adventure) parts.push('开启' + selections.adventure.name);
+            if (selections.terrain) parts.push('在' + selections.terrain.name);
+            if (selections.weather) parts.push(selections.weather.name + '中');
+            if (selections.items.length) parts.push('手持' + selections.items.map(function(c) { return c.name; }).join('、'));
+
+            text.innerHTML = parts.length ? parts.join('，') + '...' : '选择卡牌来构建你的故事...';
+        }
+
+        function showToast(msg, isError) {
+            var toast = document.getElementById('toast');
+            toast.textContent = msg;
+            toast.classList.toggle('error', isError);
+            toast.classList.add('show');
+            setTimeout(function() { toast.classList.remove('show'); }, 2000);
+        }
+
+        document.getElementById('generateBtn').addEventListener('click', async function() {
+            if (!this.classList.contains('ready') || this.classList.contains('loading')) return;
+
+            this.classList.add('loading');
+            this.textContent = '🎬 生成中...';
+            document.getElementById('loadingOverlay').classList.add('show');
+
+            try {
+                var plotSelection = {
+                    weather: selections.weather?.id,
+                    adventureType: selections.adventure?.id,
+                    terrain: selections.terrain?.id,
+                    equipment: selections.items[0]?.id
+                };
+
+                var selectedCharIds = [];
+                if (selections.protagonist) selectedCharIds.push(selections.protagonist.id);
+                if (selections.antagonist) selectedCharIds.push(selections.antagonist.id);
+                selections.supporting.forEach(function(c) { selectedCharIds.push(c.id); });
+
+                await postAPI('/chapters-generate?bookId=' + bookId, {
+                    userId: localStorage.getItem('userId') || '',
+                    plotSelection: plotSelection,
+                    characterIds: selectedCharIds
+                });
+
+                showToast('✅ 章节生成成功！');
+                setTimeout(function() {
+                    window.location.href = 'book.html?id=' + bookId;
+                }, 1000);
+
+            } catch (error) {
+                console.error('生成失败:', error);
+                showToast('生成失败: ' + error.message, true);
+                this.classList.remove('loading');
+                this.textContent = '🎬 开拍！';
+                document.getElementById('loadingOverlay').classList.remove('show');
+            }
+        });
+
+        init();
+    </script>
+</body>
+</html>
