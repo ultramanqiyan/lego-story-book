@@ -175,6 +175,7 @@
         .fan-card.selected {
             animation: heartbeat 0.8s ease-in-out infinite;
             box-shadow: 0 0 30px rgba(255,215,0,0.8), 0 0 60px rgba(255,215,0,0.4), 0 10px 30px rgba(0,0,0,0.5);
+            z-index: 200 !important;
         }
 
         @keyframes heartbeat {
@@ -251,7 +252,7 @@
             justify-content: center;
             padding: 10px;
             min-width: 0;
-            max-width: 320px;
+            max-width: 420px;
             margin: 0 auto;
         }
 
@@ -527,15 +528,75 @@
             transform: translateX(-50%);
             width: 200%;
             height: 100%;
-            background: radial-gradient(ellipse at center top, rgba(255,223,0,0.2), transparent 50%);
+            background: radial-gradient(ellipse at center top, rgba(255,223,0,0.3), transparent 50%);
             pointer-events: none;
             z-index: 999;
             animation: sun-pulse 3s ease-in-out infinite;
         }
 
         @keyframes sun-pulse {
-            0%, 100% { opacity: 0.6; }
-            50% { opacity: 0.9; }
+            0%, 100% { opacity: 0.7; }
+            50% { opacity: 1; }
+        }
+
+        .sun-orb {
+            position: fixed;
+            top: 30px;
+            right: 80px;
+            width: 80px;
+            height: 80px;
+            background: radial-gradient(circle, #FFD700 0%, #FFA500 50%, #FF8C00 100%);
+            border-radius: 50%;
+            box-shadow: 
+                0 0 60px rgba(255,215,0,0.8),
+                0 0 100px rgba(255,165,0,0.6),
+                0 0 150px rgba(255,140,0,0.4);
+            pointer-events: none;
+            z-index: 998;
+            animation: sun-glow 4s ease-in-out infinite;
+        }
+
+        @keyframes sun-glow {
+            0%, 100% { 
+                transform: scale(1);
+                box-shadow: 
+                    0 0 60px rgba(255,215,0,0.8),
+                    0 0 100px rgba(255,165,0,0.6),
+                    0 0 150px rgba(255,140,0,0.4);
+            }
+            50% { 
+                transform: scale(1.1);
+                box-shadow: 
+                    0 0 80px rgba(255,215,0,1),
+                    0 0 130px rgba(255,165,0,0.8),
+                    0 0 180px rgba(255,140,0,0.6);
+            }
+        }
+
+        .sun-rays-beam {
+            position: fixed;
+            top: 30px;
+            right: 80px;
+            width: 80px;
+            height: 80px;
+            pointer-events: none;
+            z-index: 997;
+        }
+
+        .sun-ray-item {
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            width: 200px;
+            height: 3px;
+            background: linear-gradient(90deg, rgba(255,215,0,0.6), transparent);
+            transform-origin: left center;
+            animation: ray-rotate 20s linear infinite;
+        }
+
+        @keyframes ray-rotate {
+            from { transform: rotate(0deg); }
+            to { transform: rotate(360deg); }
         }
 
         .wind {
@@ -658,6 +719,8 @@
     <div class="snow" id="snow"></div>
     <div class="fog" id="fog"></div>
     <div class="sun-rays" id="sunRays"></div>
+    <div class="sun-orb" id="sunOrb"></div>
+    <div class="sun-rays-beam" id="sunRaysBeam"></div>
     <div class="wind" id="wind"></div>
     <div class="rainbow" id="rainbow"></div>
     <div class="starry" id="starry"></div>
@@ -781,31 +844,44 @@
                 { id: 's3', name: '机械守卫', avatar: '🤖', role: 'supporting' },
             ],
             adventure: [
-                { id: 'adv1', name: '友谊考验', avatar: '🤝' },
-                { id: 'adv2', name: '魔法奇遇', avatar: '✨' },
-                { id: 'adv3', name: '英雄救美', avatar: '🦸' },
-                { id: 'adv4', name: '寻宝探险', avatar: '💎' },
+                { id: 'friendship', name: '友谊考验', avatar: '🤝' },
+                { id: 'adventure', name: '冒险之旅', avatar: '🗺️' },
+                { id: 'wisdom', name: '智慧挑战', avatar: '🧠' },
+                { id: 'courage', name: '勇气试炼', avatar: '💪' },
+                { id: 'treasure', name: '寻宝探险', avatar: '💎' },
+                { id: 'rescue', name: '救援任务', avatar: '🦸' },
+                { id: 'mystery', name: '神秘探索', avatar: '🔮' },
+                { id: 'competition', name: '竞技比赛', avatar: '🏆' },
             ],
             terrain: [
-                { id: 't1', name: '神秘森林', avatar: '🌲' },
-                { id: 't2', name: '古老城堡', avatar: '🏰' },
-                { id: 't3', name: '火山地带', avatar: '🌋' },
-                { id: 't4', name: '冰封雪原', avatar: '🏔️' },
+                { id: 'forest', name: '森林', avatar: '🌲' },
+                { id: 'castle', name: '城堡', avatar: '🏰' },
+                { id: 'ocean', name: '海洋', avatar: '🌊' },
+                { id: 'desert', name: '沙漠', avatar: '🏜️' },
+                { id: 'mountain', name: '山峰', avatar: '⛰️' },
+                { id: 'glacier', name: '冰川', avatar: '🧊' },
+                { id: 'volcano', name: '火山', avatar: '🌋' },
+                { id: 'city', name: '城市', avatar: '🏙️' },
             ],
             weather: [
-                { id: 'w1', name: '晴空万里', avatar: '☀️', effect: 'sun' },
-                { id: 'w2', name: '雷雨交加', avatar: '⛈', effect: 'thunder' },
-                { id: 'w3', name: '暴风雪', avatar: '❄️', effect: 'snow' },
-                { id: 'w4', name: '诡异迷雾', avatar: '🌫️', effect: 'fog' },
-                { id: 'w5', name: '狂风呼啸', avatar: '💨', effect: 'wind' },
-                { id: 'w6', name: '彩虹满天', avatar: '🌈', effect: 'rainbow' },
-                { id: 'w7', name: '星夜璀璨', avatar: '🌟', effect: 'starry' },
+                { id: 'sunny', name: '晴天', avatar: '☀️', effect: 'sun' },
+                { id: 'rainy', name: '下雨', avatar: '🌧️', effect: 'rain' },
+                { id: 'thunder', name: '打雷', avatar: '⛈️', effect: 'thunder' },
+                { id: 'snow', name: '下雪', avatar: '❄️', effect: 'snow' },
+                { id: 'fog', name: '大雾', avatar: '🌫️', effect: 'fog' },
+                { id: 'wind', name: '狂风', avatar: '💨', effect: 'wind' },
+                { id: 'rainbow', name: '彩虹', avatar: '🌈', effect: 'rainbow' },
+                { id: 'starry', name: '星夜', avatar: '🌟', effect: 'starry' },
             ],
             item: [
-                { id: 'i1', name: '勇者之剑', avatar: '🗡️' },
-                { id: 'i2', name: '守护之盾', avatar: '🛡️' },
-                { id: 'i3', name: '魔法水晶', avatar: '💎' },
-                { id: 'i4', name: '古老地图', avatar: '🗺️' },
+                { id: 'wand', name: '魔法杖', avatar: '🪄' },
+                { id: 'shield', name: '盾牌', avatar: '🛡️' },
+                { id: 'map', name: '地图', avatar: '🗺️' },
+                { id: 'telescope', name: '望远镜', avatar: '🔭' },
+                { id: 'sword', name: '宝剑', avatar: '⚔️' },
+                { id: 'potion', name: '药水', avatar: '🧪' },
+                { id: 'flyer', name: '飞行器', avatar: '🚀' },
+                { id: 'cloak', name: '隐身斗篷', avatar: '🧥' },
             ]
         };
 
@@ -925,7 +1001,34 @@
             clearWeatherEffect();
             currentWeatherEffect = effect;
 
-            if (effect === 'thunder') {
+            if (effect === 'sun') {
+                document.getElementById('sunRays').style.display = 'block';
+                document.getElementById('sunOrb').style.display = 'block';
+                var beamContainer = document.getElementById('sunRaysBeam');
+                beamContainer.style.display = 'block';
+                beamContainer.innerHTML = '';
+                for (var i = 0; i < 12; i++) {
+                    var ray = document.createElement('div');
+                    ray.className = 'sun-ray-item';
+                    ray.style.transform = 'rotate(' + (i * 30) + 'deg)';
+                    ray.style.animationDelay = (i * 0.5) + 's';
+                    beamContainer.appendChild(ray);
+                }
+
+            } else if (effect === 'rain') {
+                var rain = document.getElementById('rain');
+                rain.innerHTML = '';
+                for (var i = 0; i < 80; i++) {
+                    var drop = document.createElement('div');
+                    drop.className = 'rain-drop';
+                    drop.style.left = Math.random() * 100 + '%';
+                    drop.style.animationDelay = Math.random() * 0.5 + 's';
+                    drop.style.animationDuration = (0.4 + Math.random() * 0.3) + 's';
+                    rain.appendChild(drop);
+                }
+                rain.style.display = 'block';
+
+            } else if (effect === 'thunder') {
                 var thunder = document.getElementById('thunder');
                 var rain = document.getElementById('rain');
                 
@@ -965,9 +1068,6 @@
 
             } else if (effect === 'fog') {
                 document.getElementById('fog').style.display = 'block';
-
-            } else if (effect === 'sun') {
-                document.getElementById('sunRays').style.display = 'block';
 
             } else if (effect === 'wind') {
                 var wind = document.getElementById('wind');
@@ -1010,6 +1110,9 @@
             document.getElementById('snow').innerHTML = '';
             document.getElementById('fog').style.display = 'none';
             document.getElementById('sunRays').style.display = 'none';
+            document.getElementById('sunOrb').style.display = 'none';
+            document.getElementById('sunRaysBeam').style.display = 'none';
+            document.getElementById('sunRaysBeam').innerHTML = '';
             document.getElementById('wind').style.display = 'none';
             document.getElementById('wind').innerHTML = '';
             document.getElementById('rainbow').style.display = 'none';
@@ -1145,6 +1248,8 @@
         document.getElementById('snow').style.display = 'none';
         document.getElementById('fog').style.display = 'none';
         document.getElementById('sunRays').style.display = 'none';
+        document.getElementById('sunOrb').style.display = 'none';
+        document.getElementById('sunRaysBeam').style.display = 'none';
         document.getElementById('wind').style.display = 'none';
         document.getElementById('rainbow').style.display = 'none';
         document.getElementById('starry').style.display = 'none';
