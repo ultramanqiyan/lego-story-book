@@ -4,253 +4,738 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>创建故事 - 乐高故事书</title>
-  <link rel="stylesheet" href="css/styles.css">
-  <link rel="stylesheet" href="css/animations.css">
-</head>
-<body>
-  <div class="lego-brick-bg"></div>
-  <div class="particles-container">
-    <div class="particle"></div><div class="particle"></div><div class="particle"></div>
-    <div class="particle"></div><div class="particle"></div><div class="particle"></div>
-    <div class="particle"></div><div class="particle"></div><div class="particle"></div>
-    <div class="particle"></div>
-  </div>
-
-  <div class="container page-wrapper">
-    <header class="header">
-      <h1 class="neon-text rainbow-text">✨ 创建新故事</h1>
-      <nav class="nav">
-        <a href="bookshelf.html" class="nav-glow">📚 我的书架</a>
-        <a href="characters.html" class="nav-glow">🎭 人仔角色</a>
-      </nav>
-    </header>
-
-    <main>
-      <div class="card card-3d neon-border scroll-fade-in" id="step0Card">
-        <h2>第一步：选择书籍</h2>
-        <p style="margin-bottom: 20px; color: #666;">选择一个已有书籍继续创作，或创建新书籍</p>
-        
-        <div id="existingBooks" style="margin-bottom: 20px;">
-          <div class="loading"><div class="spinner"></div></div>
-        </div>
-        
-        <div class="neon-border scroll-fade-in" style="text-align: center; padding: 20px; background: #FFF8E7; border-radius: 20px; border: 3px dashed var(--lego-yellow);">
-          <p class="float-animation" style="margin-bottom: 15px; color: #666;">或者创建新书籍</p>
-          <div class="form-group" style="margin-bottom: 15px;">
-            <input type="text" id="newBookTitle" class="input-glow" placeholder="输入新书籍名称" maxlength="50" style="text-align: center;">
-          </div>
-          <button class="btn btn-primary btn-glow btn-ripple magnetic-btn" onclick="createNewBook()">📖 创建新书籍</button>
-        </div>
-      </div>
-
-      <div class="card card-3d scroll-slide-left" id="step1Card" style="display: none;">
-        <h2 class="bounce-animation">第二步：选择故事类型</h2>
-        <p class="float-animation" style="margin-bottom: 20px; color: #666;">选择一个你喜欢的冒险类型！</p>
-        <div class="grid" id="plotList"></div>
-      </div>
-
-      <div class="card card-3d scroll-slide-right" id="step2Card" style="display: none;">
-        <h2 class="bounce-animation">第三步：选择角色</h2>
-        <p class="float-animation" style="margin-bottom: 15px; color: #666;">选择故事中的角色，必须选择一个主角！</p>
-
-        <div class="neon-border scroll-fade-in" style="background: #FFF8E7; border-radius: 15px; padding: 15px; margin-bottom: 20px; border: 3px dashed var(--lego-yellow);">
-          <h3 style="color: var(--lego-blue); margin-bottom: 10px;" class="pulse-scale">📋 已选角色 (<span id="selectedCount">0</span>)</h3>
-          <div id="selectedCharacters" style="min-height: 50px;">
-            <p style="color: #999; text-align: center;">点击下方人仔添加角色</p>
-          </div>
-        </div>
-
-        <h3 style="color: var(--lego-blue); margin-bottom: 15px;" class="pulse-scale">🎭 可选人仔</h3>
-        <div class="grid" id="characterList"></div>
-      </div>
-
-      <div class="card card-3d neon-border scroll-scale" id="step3Card" style="display: none;">
-        <h2 class="bounce-animation">第四步：确认创建</h2>
-        <form id="storyForm">
-          <button type="submit" class="btn btn-primary btn-glow btn-ripple magnetic-btn" style="width: 100%; font-size: 1.2rem;">
-            🚀 开始创作
-          </button>
-        </form>
-      </div>
-
-      <div style="display: flex; justify-content: center; gap: 20px; margin-top: 20px;">
-        <div id="stepIndicator" style="display: flex; gap: 10px; align-items: center;">
-          <span class="step-dot active" data-step="0">1</span>
-          <span style="color: #ccc;">━━</span>
-          <span class="step-dot" data-step="1">2</span>
-          <span style="color: #ccc;">━━</span>
-          <span class="step-dot" data-step="2">3</span>
-          <span style="color: #ccc;">━━</span>
-          <span class="step-dot" data-step="3">4</span>
-        </div>
-      </div>
-    </main>
-  </div>
-
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Cinzel:wght@400;600;700&family=Noto+Sans+SC:wght@300;400;500;600&display=swap" rel="stylesheet">
   <style>
-    .step-dot {
-      width: 40px;
-      height: 40px;
+    :root {
+      --gold: #ffd700;
+      --gold-dark: #b8860b;
+      --gold-light: #ffed4a;
+      --silver: #c0c0c0;
+      --crimson: #dc2626;
+      --purple: #a855f7;
+      --green: #22c55e;
+      --blue: #3b82f6;
+      --orange: #f59e0b;
+      --bg-dark: #0d0d14;
+      --bg-medium: #1a1a2e;
+      --bg-light: #252542;
+      --text-primary: #f8fafc;
+      --text-secondary: #94a3b8;
+      --text-muted: #64748b;
+      --font-title: 'Cinzel', serif;
+      --font-body: 'Noto Sans SC', sans-serif;
+    }
+
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+    }
+
+    body {
+      font-family: var(--font-body);
+      background: var(--bg-dark);
+      color: var(--text-primary);
+      min-height: 100vh;
+      overflow-x: hidden;
+    }
+
+    .bg-pattern {
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      background: 
+        radial-gradient(ellipse at 20% 20%, rgba(255, 215, 0, 0.08) 0%, transparent 50%),
+        radial-gradient(ellipse at 80% 80%, rgba(168, 85, 247, 0.08) 0%, transparent 50%),
+        radial-gradient(ellipse at 50% 50%, rgba(59, 130, 246, 0.05) 0%, transparent 60%);
+      pointer-events: none;
+      z-index: 0;
+    }
+
+    #particles {
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      pointer-events: none;
+      z-index: 1;
+    }
+
+    .particle {
+      position: absolute;
+      width: 4px;
+      height: 4px;
+      background: var(--gold);
       border-radius: 50%;
-      background: #E0E0E0;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      font-weight: bold;
-      color: #999;
-      transition: all 0.3s ease;
+      opacity: 0.6;
+      animation: float 20s infinite ease-in-out;
+      box-shadow: 0 0 6px var(--gold);
     }
-    .step-dot.active {
-      background: var(--lego-yellow);
-      color: var(--text-dark);
-      transform: scale(1.2);
-      box-shadow: 0 0 20px rgba(255, 213, 0, 0.5);
+
+    @keyframes float {
+      0%, 100% { transform: translateY(100vh) rotate(0deg); opacity: 0; }
+      10% { opacity: 0.6; }
+      90% { opacity: 0.6; }
+      100% { transform: translateY(-100px) rotate(720deg); opacity: 0; }
     }
-    .plot-card {
-      background: white;
-      border-radius: 25px;
-      padding: 25px;
+
+    .container {
+      position: relative;
+      z-index: 10;
+      max-width: 1000px;
+      margin: 0 auto;
+      padding: 30px 20px;
+    }
+
+    header {
       text-align: center;
-      box-shadow: 0 8px 0 rgba(0, 0, 0, 0.1), 0 10px 30px rgba(0, 0, 0, 0.1);
-      cursor: pointer;
+      margin-bottom: 40px;
+    }
+
+    .page-title {
+      font-family: var(--font-title);
+      font-size: 2.5rem;
+      font-weight: 700;
+      background: linear-gradient(135deg, var(--gold), var(--gold-light), var(--gold));
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+      background-clip: text;
+      text-shadow: 0 0 30px rgba(255, 215, 0, 0.3);
+      margin-bottom: 20px;
+      letter-spacing: 2px;
+    }
+
+    .nav {
+      display: flex;
+      justify-content: center;
+      gap: 20px;
+      flex-wrap: wrap;
+    }
+
+    .nav a {
+      color: var(--text-secondary);
+      text-decoration: none;
+      padding: 10px 20px;
+      border: 1px solid rgba(255, 215, 0, 0.3);
+      border-radius: 8px;
       transition: all 0.3s ease;
-      border: 4px solid transparent;
-    }
-    .plot-card:hover {
-      transform: translateY(-10px);
-      box-shadow: 0 15px 0 rgba(0, 0, 0, 0.1), 0 20px 40px rgba(0, 0, 0, 0.15);
-    }
-    .plot-card.selected {
-      border-color: var(--lego-green);
-      background: linear-gradient(135deg, #E8F5E9, white);
-    }
-    .plot-icon {
-      font-size: 3rem;
-      margin-bottom: 15px;
-    }
-    .plot-card h3 {
-      color: var(--lego-blue);
-      margin-bottom: 8px;
-    }
-    .plot-card p {
-      color: #666;
       font-size: 0.9rem;
     }
-    .selected-character-item {
+
+    .nav a:hover {
+      color: var(--gold);
+      border-color: var(--gold);
+      background: rgba(255, 215, 0, 0.1);
+    }
+
+    .step-card {
+      background: linear-gradient(145deg, var(--bg-medium), var(--bg-light));
+      border: 2px solid rgba(255, 215, 0, 0.2);
+      border-radius: 20px;
+      padding: 30px;
+      margin-bottom: 30px;
+      box-shadow: 0 10px 40px rgba(0, 0, 0, 0.3);
+    }
+
+    .step-card h2 {
+      font-family: var(--font-title);
+      font-size: 1.5rem;
+      color: var(--gold);
+      margin-bottom: 10px;
       display: flex;
       align-items: center;
       gap: 10px;
-      padding: 12px 15px;
-      background: white;
-      border-radius: 15px;
-      margin-bottom: 10px;
-      box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
     }
-    .selected-character-item .avatar {
-      width: 40px;
-      height: 40px;
+
+    .step-card > p {
+      color: var(--text-secondary);
+      margin-bottom: 20px;
+    }
+
+    .step-indicator {
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      gap: 15px;
+      margin-top: 30px;
+      padding: 20px;
+    }
+
+    .step-dot {
+      width: 45px;
+      height: 45px;
       border-radius: 50%;
-      background: var(--lego-yellow);
+      background: var(--bg-light);
+      border: 2px solid rgba(255, 215, 0, 0.3);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-weight: 600;
+      color: var(--text-muted);
+      transition: all 0.4s ease;
+      font-family: var(--font-title);
+    }
+
+    .step-dot.active {
+      background: linear-gradient(135deg, var(--gold), var(--gold-dark));
+      color: var(--bg-dark);
+      transform: scale(1.15);
+      box-shadow: 0 0 25px rgba(255, 215, 0, 0.5);
+      border-color: var(--gold);
+    }
+
+    .step-line {
+      width: 40px;
+      height: 2px;
+      background: rgba(255, 215, 0, 0.3);
+    }
+
+    .book-list {
+      display: flex;
+      flex-direction: column;
+      gap: 15px;
+      margin-bottom: 25px;
+    }
+
+    .book-card {
+      background: var(--bg-light);
+      border: 2px solid rgba(255, 215, 0, 0.2);
+      border-radius: 15px;
+      padding: 20px;
+      display: flex;
+      align-items: center;
+      gap: 20px;
+      cursor: pointer;
+      transition: all 0.3s ease;
+    }
+
+    .book-card:hover {
+      transform: translateY(-5px);
+      border-color: var(--gold);
+      box-shadow: 0 10px 30px rgba(255, 215, 0, 0.15);
+    }
+
+    .book-card.selected {
+      border-color: var(--green);
+      background: linear-gradient(135deg, rgba(34, 197, 94, 0.1), var(--bg-light));
+      box-shadow: 0 0 20px rgba(34, 197, 94, 0.2);
+    }
+
+    .book-icon {
+      width: 60px;
+      height: 60px;
+      background: linear-gradient(135deg, var(--blue), var(--purple));
+      border-radius: 12px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 1.8rem;
+      box-shadow: 0 5px 15px rgba(59, 130, 246, 0.3);
+    }
+
+    .book-info h3 {
+      color: var(--text-primary);
+      font-size: 1.1rem;
+      margin-bottom: 5px;
+    }
+
+    .book-info p {
+      color: var(--text-secondary);
+      font-size: 0.9rem;
+    }
+
+    .new-book-section {
+      background: linear-gradient(135deg, rgba(255, 215, 0, 0.05), var(--bg-light));
+      border: 2px dashed rgba(255, 215, 0, 0.4);
+      border-radius: 15px;
+      padding: 25px;
+      text-align: center;
+    }
+
+    .new-book-section h3 {
+      color: var(--gold);
+      margin-bottom: 15px;
+      font-family: var(--font-title);
+    }
+
+    .input-field {
+      width: 100%;
+      max-width: 400px;
+      padding: 15px 20px;
+      background: var(--bg-dark);
+      border: 2px solid rgba(255, 215, 0, 0.3);
+      border-radius: 10px;
+      color: var(--text-primary);
+      font-size: 1rem;
+      text-align: center;
+      margin-bottom: 15px;
+      transition: all 0.3s ease;
+    }
+
+    .input-field:focus {
+      outline: none;
+      border-color: var(--gold);
+      box-shadow: 0 0 15px rgba(255, 215, 0, 0.2);
+    }
+
+    .input-field::placeholder {
+      color: var(--text-muted);
+    }
+
+    .btn-primary {
+      background: linear-gradient(135deg, var(--gold), var(--gold-dark));
+      color: var(--bg-dark);
+      border: none;
+      padding: 15px 40px;
+      border-radius: 10px;
+      font-size: 1rem;
+      font-weight: 600;
+      cursor: pointer;
+      transition: all 0.3s ease;
+      font-family: var(--font-body);
+    }
+
+    .btn-primary:hover {
+      transform: translateY(-3px);
+      box-shadow: 0 10px 25px rgba(255, 215, 0, 0.3);
+    }
+
+    .btn-primary:disabled {
+      opacity: 0.5;
+      cursor: not-allowed;
+      transform: none;
+    }
+
+    .plot-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+      gap: 20px;
+    }
+
+    .plot-card {
+      background: linear-gradient(145deg, var(--bg-light), var(--bg-medium));
+      border: 2px solid rgba(255, 215, 0, 0.2);
+      border-radius: 15px;
+      padding: 25px;
+      text-align: center;
+      cursor: pointer;
+      transition: all 0.3s ease;
+      aspect-ratio: 3/4;
+      display: flex;
+      flex-direction: column;
+      justify-content: center;
+      align-items: center;
+    }
+
+    .plot-card:hover {
+      transform: translateY(-10px) scale(1.02);
+      border-color: var(--gold);
+      box-shadow: 0 15px 35px rgba(255, 215, 0, 0.15);
+    }
+
+    .plot-card.selected {
+      border-color: var(--green);
+      background: linear-gradient(135deg, rgba(34, 197, 94, 0.15), var(--bg-light));
+      box-shadow: 0 0 25px rgba(34, 197, 94, 0.25);
+    }
+
+    .plot-icon {
+      font-size: 3rem;
+      margin-bottom: 15px;
+      filter: drop-shadow(0 0 10px rgba(255, 215, 0, 0.3));
+    }
+
+    .plot-card h3 {
+      color: var(--gold);
+      font-family: var(--font-title);
+      font-size: 1.1rem;
+      margin-bottom: 8px;
+    }
+
+    .plot-card p {
+      color: var(--text-secondary);
+      font-size: 0.85rem;
+    }
+
+    .selected-characters-panel {
+      background: linear-gradient(135deg, rgba(255, 215, 0, 0.08), var(--bg-light));
+      border: 2px solid rgba(255, 215, 0, 0.3);
+      border-radius: 15px;
+      padding: 20px;
+      margin-bottom: 25px;
+    }
+
+    .selected-characters-panel h3 {
+      color: var(--gold);
+      margin-bottom: 15px;
+      font-family: var(--font-title);
+      display: flex;
+      align-items: center;
+      gap: 10px;
+    }
+
+    .selected-characters-list {
+      min-height: 60px;
+    }
+
+    .selected-characters-list .empty-text {
+      color: var(--text-muted);
+      text-align: center;
+      padding: 20px;
+    }
+
+    .selected-character-item {
+      display: flex;
+      align-items: center;
+      gap: 15px;
+      padding: 15px;
+      background: var(--bg-medium);
+      border-radius: 12px;
+      margin-bottom: 12px;
+      border: 1px solid rgba(255, 215, 0, 0.2);
+    }
+
+    .character-avatar {
+      width: 50px;
+      height: 50px;
+      background: linear-gradient(135deg, var(--gold), var(--orange));
+      border-radius: 50%;
       display: flex;
       align-items: center;
       justify-content: center;
       font-size: 1.5rem;
+      box-shadow: 0 5px 15px rgba(255, 215, 0, 0.2);
     }
-    .selected-character-item .info {
+
+    .character-info {
       flex: 1;
     }
-    .selected-character-item .info input {
-      width: 100%;
-      padding: 8px 12px;
-      border: 2px solid #E0E0E0;
-      border-radius: 10px;
-      font-size: 0.95rem;
-      margin-top: 5px;
+
+    .character-info .name-row {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 8px;
     }
-    .selected-character-item .info input:focus {
-      outline: none;
-      border-color: var(--lego-blue);
+
+    .character-info .name-row strong {
+      color: var(--text-primary);
     }
-    .selected-character-item .info input.error {
-      border-color: var(--lego-red);
-      background: #FFF0F0;
-    }
-    .selected-character-item select {
-      padding: 8px 12px;
-      border: 2px solid #E0E0E0;
-      border-radius: 10px;
-      font-size: 0.9rem;
+
+    .role-select {
+      padding: 6px 12px;
+      background: var(--bg-dark);
+      border: 1px solid rgba(255, 215, 0, 0.3);
+      border-radius: 6px;
+      color: var(--text-primary);
+      font-size: 0.85rem;
       cursor: pointer;
     }
-    .selected-character-item .remove-btn {
-      background: var(--lego-red);
+
+    .role-select:focus {
+      outline: none;
+      border-color: var(--gold);
+    }
+
+    .custom-name-input {
+      width: 100%;
+      padding: 10px 15px;
+      background: var(--bg-dark);
+      border: 1px solid rgba(255, 215, 0, 0.3);
+      border-radius: 8px;
+      color: var(--text-primary);
+      font-size: 0.9rem;
+    }
+
+    .custom-name-input:focus {
+      outline: none;
+      border-color: var(--gold);
+    }
+
+    .custom-name-input.error {
+      border-color: var(--crimson);
+      background: rgba(220, 38, 38, 0.1);
+    }
+
+    .error-message {
+      color: var(--crimson);
+      font-size: 0.8rem;
+      margin-top: 5px;
+    }
+
+    .remove-btn {
+      background: var(--crimson);
       color: white;
       border: none;
-      width: 30px;
-      height: 30px;
+      width: 35px;
+      height: 35px;
       border-radius: 50%;
       cursor: pointer;
       font-size: 1.2rem;
       display: flex;
       align-items: center;
       justify-content: center;
-    }
-    .character-card.disabled {
-      opacity: 0.5;
-      pointer-events: none;
-    }
-    .book-select-card {
-      background: white;
-      border-radius: 20px;
-      padding: 20px;
-      margin-bottom: 15px;
-      box-shadow: 0 4px 15px rgba(0, 0, 0, 0.1);
-      cursor: pointer;
       transition: all 0.3s ease;
-      border: 3px solid transparent;
-      display: flex;
-      align-items: center;
+    }
+
+    .remove-btn:hover {
+      transform: scale(1.1);
+      box-shadow: 0 5px 15px rgba(220, 38, 38, 0.3);
+    }
+
+    .character-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(150px, 1fr));
       gap: 15px;
     }
-    .book-select-card:hover {
-      transform: translateY(-5px);
-      box-shadow: 0 8px 25px rgba(0, 0, 0, 0.15);
+
+    .character-card {
+      background: linear-gradient(145deg, var(--bg-light), var(--bg-medium));
+      border: 2px solid rgba(255, 215, 0, 0.2);
+      border-radius: 12px;
+      padding: 20px;
+      text-align: center;
+      cursor: pointer;
+      transition: all 0.3s ease;
     }
-    .book-select-card.selected {
-      border-color: var(--lego-green);
-      background: linear-gradient(135deg, #E8F5E9, white);
+
+    .character-card:hover {
+      transform: translateY(-8px);
+      border-color: var(--gold);
+      box-shadow: 0 10px 25px rgba(255, 215, 0, 0.15);
     }
-    .book-select-card .book-icon {
+
+    .character-card.disabled {
+      opacity: 0.4;
+      pointer-events: none;
+    }
+
+    .character-card .avatar {
       width: 60px;
       height: 60px;
-      background: linear-gradient(135deg, var(--lego-blue), var(--lego-purple));
-      border-radius: 15px;
+      background: linear-gradient(135deg, var(--purple), var(--blue));
+      border-radius: 50%;
       display: flex;
       align-items: center;
       justify-content: center;
-      font-size: 2rem;
+      font-size: 1.8rem;
+      margin: 0 auto 12px;
+      box-shadow: 0 5px 15px rgba(168, 85, 247, 0.3);
     }
-    .book-select-card .book-info {
-      flex: 1;
-    }
-    .book-select-card .book-info h3 {
-      color: var(--lego-blue);
+
+    .character-card h3 {
+      color: var(--text-primary);
+      font-size: 1rem;
       margin-bottom: 5px;
     }
-    .book-select-card .book-info p {
-      color: #666;
-      font-size: 0.9rem;
+
+    .character-card p {
+      color: var(--text-secondary);
+      font-size: 0.8rem;
     }
-    .error-message {
-      color: var(--lego-red);
-      font-size: 0.85rem;
-      margin-top: 5px;
+
+    .loading {
+      text-align: center;
+      padding: 40px;
+    }
+
+    .spinner {
+      width: 40px;
+      height: 40px;
+      border: 3px solid rgba(255, 215, 0, 0.2);
+      border-top-color: var(--gold);
+      border-radius: 50%;
+      animation: spin 1s linear infinite;
+      margin: 0 auto;
+    }
+
+    @keyframes spin {
+      to { transform: rotate(360deg); }
+    }
+
+    .section-title {
+      color: var(--gold);
+      font-family: var(--font-title);
+      font-size: 1.2rem;
+      margin-bottom: 15px;
+      display: flex;
+      align-items: center;
+      gap: 10px;
+    }
+
+    .btn-submit {
+      width: 100%;
+      padding: 18px;
+      background: linear-gradient(135deg, var(--gold), var(--gold-dark));
+      color: var(--bg-dark);
+      border: none;
+      border-radius: 12px;
+      font-size: 1.2rem;
+      font-weight: 600;
+      cursor: pointer;
+      transition: all 0.3s ease;
+      font-family: var(--font-body);
+    }
+
+    .btn-submit:hover {
+      transform: translateY(-3px);
+      box-shadow: 0 10px 30px rgba(255, 215, 0, 0.3);
+    }
+
+    .toast {
+      position: fixed;
+      bottom: 30px;
+      left: 50%;
+      transform: translateX(-50%);
+      padding: 15px 30px;
+      border-radius: 10px;
+      font-size: 0.95rem;
+      z-index: 1000;
+      animation: slideUp 0.3s ease;
+    }
+
+    .toast.success {
+      background: linear-gradient(135deg, var(--green), #16a34a);
+      color: white;
+    }
+
+    .toast.error {
+      background: linear-gradient(135deg, var(--crimson), #b91c1c);
+      color: white;
+    }
+
+    .toast.info {
+      background: linear-gradient(135deg, var(--blue), #2563eb);
+      color: white;
+    }
+
+    @keyframes slideUp {
+      from { transform: translateX(-50%) translateY(20px); opacity: 0; }
+      to { transform: translateX(-50%) translateY(0); opacity: 1; }
+    }
+
+    @media (max-width: 600px) {
+      .page-title {
+        font-size: 1.8rem;
+      }
+
+      .step-card {
+        padding: 20px;
+      }
+
+      .plot-grid {
+        grid-template-columns: repeat(2, 1fr);
+        gap: 12px;
+      }
+
+      .plot-card {
+        padding: 15px;
+      }
+
+      .plot-icon {
+        font-size: 2rem;
+      }
+
+      .character-grid {
+        grid-template-columns: repeat(2, 1fr);
+      }
+
+      .step-dot {
+        width: 35px;
+        height: 35px;
+        font-size: 0.9rem;
+      }
+
+      .step-line {
+        width: 25px;
+      }
     }
   </style>
+</head>
+<body>
+  <div class="bg-pattern"></div>
+  <div id="particles"></div>
+
+  <div class="container">
+    <header>
+      <h1 class="page-title">✨ 创建新故事</h1>
+      <nav class="nav">
+        <a href="bookshelf.html">📚 我的书架</a>
+        <a href="characters.html">🎭 人仔角色</a>
+      </nav>
+    </header>
+
+    <main>
+      <div class="step-card" id="step0Card">
+        <h2>📖 第一步：选择书籍</h2>
+        <p>选择一个已有书籍继续创作，或创建新书籍</p>
+        
+        <div id="existingBooks" class="book-list">
+          <div class="loading"><div class="spinner"></div></div>
+        </div>
+        
+        <div class="new-book-section">
+          <h3>或者创建新书籍</h3>
+          <input type="text" id="newBookTitle" class="input-field" placeholder="输入新书籍名称" maxlength="50">
+          <button class="btn-primary" onclick="createNewBook()">📖 创建新书籍</button>
+        </div>
+      </div>
+
+      <div class="step-card" id="step1Card" style="display: none;">
+        <h2>🗺️ 第二步：选择故事类型</h2>
+        <p>选择一个你喜欢的冒险类型！</p>
+        <div class="plot-grid" id="plotList"></div>
+      </div>
+
+      <div class="step-card" id="step2Card" style="display: none;">
+        <h2>🎭 第三步：选择角色</h2>
+        <p>选择故事中的角色，必须选择一个主角！</p>
+
+        <div class="selected-characters-panel">
+          <h3>📋 已选角色 (<span id="selectedCount">0</span>)</h3>
+          <div id="selectedCharacters" class="selected-characters-list">
+            <p class="empty-text">点击下方人仔添加角色</p>
+          </div>
+        </div>
+
+        <h3 class="section-title">🎭 可选人仔</h3>
+        <div class="character-grid" id="characterList"></div>
+      </div>
+
+      <div class="step-card" id="step3Card" style="display: none;">
+        <h2>🚀 第四步：确认创建</h2>
+        <form id="storyForm">
+          <button type="submit" class="btn-submit">🚀 开始创作</button>
+        </form>
+      </div>
+
+      <div class="step-indicator">
+        <span class="step-dot active" data-step="0">1</span>
+        <span class="step-line"></span>
+        <span class="step-dot" data-step="1">2</span>
+        <span class="step-line"></span>
+        <span class="step-dot" data-step="2">3</span>
+        <span class="step-line"></span>
+        <span class="step-dot" data-step="3">4</span>
+      </div>
+    </main>
+  </div>
 
   <script src="js/utils.js"></script>
-  <script src="js/animations.js"></script>
   <script>
+    for (var i = 0; i < 15; i++) {
+      var p = document.createElement('div');
+      p.className = 'particle';
+      p.style.left = Math.random() * 100 + '%';
+      p.style.animationDelay = Math.random() * 20 + 's';
+      document.getElementById('particles').appendChild(p);
+    }
+
     var userId = getUserId();
     var selectedBookId = null;
     var selectedBookTitle = '';
@@ -291,12 +776,12 @@
         var container = document.getElementById('existingBooks');
         
         if (books.length === 0) {
-          container.innerHTML = '<p style="text-align: center; color: #999; padding: 20px;">暂无已有书籍，请创建新书籍</p>';
+          container.innerHTML = '<p style="text-align: center; color: var(--text-muted); padding: 20px;">暂无已有书籍，请创建新书籍</p>';
           return;
         }
         
         container.innerHTML = books.map(function(book) {
-          return '<div class="book-select-card" onclick="selectBook(\'' + book.book_id + '\', \'' + book.title.replace(/'/g, "\\'") + '\')" data-id="' + book.book_id + '">' +
+          return '<div class="book-card" onclick="selectBook(\'' + book.book_id + '\', \'' + book.title.replace(/'/g, "\\'") + '\')" data-id="' + book.book_id + '">' +
             '<div class="book-icon">📖</div>' +
             '<div class="book-info">' +
               '<h3>' + book.title + '</h3>' +
@@ -306,7 +791,7 @@
         }).join('');
       } catch (error) {
         console.error('Failed to load books:', error);
-        document.getElementById('existingBooks').innerHTML = '<p style="text-align: center; color: #999;">加载失败</p>';
+        document.getElementById('existingBooks').innerHTML = '<p style="text-align: center; color: var(--text-muted);">加载失败</p>';
       }
     }
 
@@ -314,7 +799,7 @@
       selectedBookId = bookId;
       selectedBookTitle = title;
       
-      document.querySelectorAll('.book-select-card').forEach(function(card) {
+      document.querySelectorAll('.book-card').forEach(function(card) {
         if (card.dataset.id === bookId) {
           card.classList.add('selected');
         } else {
@@ -386,19 +871,10 @@
     function loadPlots() {
       var container = document.getElementById('plotList');
       container.innerHTML = plots.map(function(plot, index) {
-        return '<div class="plot-card card-3d flip-card" onclick="selectPlot(\'' + plot.id + '\')" style="animation-delay: ' + (index * 0.1) + 's">' +
-          '<div class="flip-card-inner">' +
-            '<div class="flip-card-front">' +
-              '<div class="plot-icon ' + plot.anim + '">' + plot.icon + '</div>' +
-              '<h3>' + plot.name + '</h3>' +
-              '<p>' + plot.desc + '</p>' +
-            '</div>' +
-            '<div class="flip-card-back">' +
-              '<div style="font-size: 3rem; margin-bottom: 10px;">' + plot.icon + '</div>' +
-              '<h3>' + plot.name + '</h3>' +
-              '<p>点击选择</p>' +
-            '</div>' +
-          '</div>' +
+        return '<div class="plot-card" onclick="selectPlot(\'' + plot.id + '\')" style="animation-delay: ' + (index * 0.1) + 's">' +
+          '<div class="plot-icon">' + plot.icon + '</div>' +
+          '<h3>' + plot.name + '</h3>' +
+          '<p>' + plot.desc + '</p>' +
         '</div>';
       }).join('');
     }
@@ -418,7 +894,7 @@
         var emoji = emojis[index % emojis.length];
         var isSelected = selectedCharacters.some(function(c) { return c.id === char.character_id; });
         return '<div class="character-card ' + (isSelected ? 'disabled' : '') + '" onclick="addCharacter(\'' + char.character_id + '\')" data-id="' + char.character_id + '" style="animation-delay: ' + (index * 0.05) + 's">' +
-          '<div class="character-avatar">' + emoji + '</div>' +
+          '<div class="avatar">' + emoji + '</div>' +
           '<h3>' + char.name + '</h3>' +
           '<p>' + (char.description || '神秘角色') + '</p>' +
         '</div>';
@@ -521,7 +997,7 @@
               var err = document.createElement('div');
               err.className = 'error-message';
               err.textContent = '名称重复，请修改';
-              item.querySelector('.info').appendChild(err);
+              item.querySelector('.character-info').appendChild(err);
             }
           } else {
             input.classList.remove('error');
@@ -539,7 +1015,7 @@
       document.getElementById('selectedCount').textContent = selectedCharacters.length;
       
       if (selectedCharacters.length === 0) {
-        container.innerHTML = '<p style="color: #999; text-align: center;">点击下方人仔添加角色</p>';
+        container.innerHTML = '<p class="empty-text">点击下方人仔添加角色</p>';
         document.getElementById('step3Card').style.display = 'none';
         updateStepIndicator(2);
         return;
@@ -552,13 +1028,13 @@
         }).join('');
         
         return '<div class="selected-character-item" data-id="' + char.id + '">' +
-          '<div class="avatar">' + char.emoji + '</div>' +
-          '<div class="info">' +
-            '<div style="display: flex; justify-content: space-between; align-items: center;">' +
+          '<div class="character-avatar">' + char.emoji + '</div>' +
+          '<div class="character-info">' +
+            '<div class="name-row">' +
               '<strong>' + char.name + '</strong>' +
-              '<select onchange="updateCharacterRole(\'' + char.id + '\', this.value)">' + options + '</select>' +
+              '<select class="role-select" onchange="updateCharacterRole(\'' + char.id + '\', this.value)">' + options + '</select>' +
             '</div>' +
-            '<input type="text" placeholder="自定义名称" value="' + char.customName + '" onchange="updateCharacterName(\'' + char.id + '\', this.value)" maxlength="20">' +
+            '<input type="text" class="custom-name-input" placeholder="自定义名称" value="' + char.customName + '" onchange="updateCharacterName(\'' + char.id + '\', this.value)" maxlength="20">' +
           '</div>' +
           '<button class="remove-btn" onclick="removeCharacter(\'' + char.id + '\')">×</button>' +
         '</div>';
@@ -582,6 +1058,20 @@
           dot.classList.remove('active');
         }
       });
+    }
+
+    function showToast(message, type) {
+      var existing = document.querySelector('.toast');
+      if (existing) existing.remove();
+      
+      var toast = document.createElement('div');
+      toast.className = 'toast ' + type;
+      toast.textContent = message;
+      document.body.appendChild(toast);
+      
+      setTimeout(function() {
+        toast.remove();
+      }, 3000);
     }
 
     document.getElementById('storyForm').addEventListener('submit', async function(e) {

@@ -6,110 +6,838 @@
   <title>章节阅读 - 乐高故事书</title>
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-  <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+SC:wght@400;500;700&family=Noto+Serif+SC:wght@400;600&family=Rajdhani:wght@500;600;700&family=Exo+2:wght@400;500;600&family=Cinzel:wght@400;600;700&family=Lora:wght@400;500&display=swap" rel="stylesheet">
-  <link rel="stylesheet" href="css/lego-theme.css">
-  <link rel="stylesheet" href="css/loading.css">
-  <link rel="stylesheet" id="theme-stylesheet" href="" disabled>
+  <link href="https://fonts.googleapis.com/css2?family=Cinzel:wght@400;600;700&family=Noto+Sans+SC:wght@300;400;500;600&family=Noto+Serif+SC:wght@400;600&display=swap" rel="stylesheet">
+  <style>
+    :root {
+      --gold: #ffd700;
+      --gold-dark: #b8860b;
+      --gold-light: #ffed4a;
+      --silver: #c0c0c0;
+      --crimson: #dc2626;
+      --purple: #a855f7;
+      --green: #22c55e;
+      --blue: #3b82f6;
+      --orange: #f59e0b;
+      --bg-dark: #0d0d14;
+      --bg-medium: #1a1a2e;
+      --bg-light: #252542;
+      --text-primary: #f8fafc;
+      --text-secondary: #94a3b8;
+      --text-muted: #64748b;
+      --font-title: 'Cinzel', serif;
+      --font-body: 'Noto Sans SC', sans-serif;
+      --font-serif: 'Noto Serif SC', serif;
+    }
+
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+    }
+
+    body {
+      font-family: var(--font-body);
+      background: var(--bg-dark);
+      color: var(--text-primary);
+      min-height: 100vh;
+      overflow-x: hidden;
+    }
+
+    .bg-pattern {
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      background: 
+        radial-gradient(ellipse at 20% 20%, rgba(255, 215, 0, 0.08) 0%, transparent 50%),
+        radial-gradient(ellipse at 80% 80%, rgba(168, 85, 247, 0.08) 0%, transparent 50%),
+        radial-gradient(ellipse at 50% 50%, rgba(59, 130, 246, 0.05) 0%, transparent 60%);
+      pointer-events: none;
+      z-index: 0;
+    }
+
+    #particles {
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      pointer-events: none;
+      z-index: 1;
+    }
+
+    .particle {
+      position: absolute;
+      width: 4px;
+      height: 4px;
+      background: var(--gold);
+      border-radius: 50%;
+      opacity: 0.6;
+      animation: float 20s infinite ease-in-out;
+      box-shadow: 0 0 6px var(--gold);
+    }
+
+    @keyframes float {
+      0%, 100% { transform: translateY(100vh) rotate(0deg); opacity: 0; }
+      10% { opacity: 0.6; }
+      90% { opacity: 0.6; }
+      100% { transform: translateY(-100px) rotate(720deg); opacity: 0; }
+    }
+
+    .page-container {
+      position: relative;
+      z-index: 10;
+      min-height: 100vh;
+      padding-bottom: 80px;
+    }
+
+    .page-header {
+      background: linear-gradient(180deg, var(--bg-medium), transparent);
+      padding: 20px;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      position: sticky;
+      top: 0;
+      z-index: 100;
+      backdrop-filter: blur(10px);
+      border-bottom: 1px solid rgba(255, 215, 0, 0.1);
+    }
+
+    .page-header-left {
+      display: flex;
+      align-items: center;
+      gap: 15px;
+    }
+
+    .back-btn {
+      background: linear-gradient(135deg, var(--blue), var(--purple));
+      color: white;
+      border: none;
+      width: 45px;
+      height: 45px;
+      border-radius: 12px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 1.2rem;
+      cursor: pointer;
+      transition: all 0.3s ease;
+      text-decoration: none;
+    }
+
+    .back-btn:hover {
+      transform: scale(1.1);
+      box-shadow: 0 5px 20px rgba(59, 130, 246, 0.4);
+    }
+
+    .book-title {
+      font-family: var(--font-title);
+      font-size: 1.25rem;
+      color: var(--gold);
+    }
+
+    .chapter-info {
+      color: var(--text-secondary);
+      font-size: 0.9rem;
+    }
+
+    .chapter-nav {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+    }
+
+    .nav-btn {
+      background: var(--bg-light);
+      border: 1px solid rgba(255, 215, 0, 0.3);
+      color: var(--text-primary);
+      width: 40px;
+      height: 40px;
+      border-radius: 10px;
+      cursor: pointer;
+      transition: all 0.3s ease;
+      font-size: 1.1rem;
+    }
+
+    .nav-btn:hover:not(:disabled) {
+      background: var(--gold);
+      color: var(--bg-dark);
+      border-color: var(--gold);
+    }
+
+    .nav-btn:disabled {
+      opacity: 0.3;
+      cursor: not-allowed;
+    }
+
+    .chapter-count {
+      font-family: var(--font-title);
+      color: var(--gold);
+      font-size: 0.95rem;
+    }
+
+    .content-wrapper {
+      max-width: 800px;
+      margin: 0 auto;
+      padding: 20px;
+    }
+
+    .prompt-card {
+      background: linear-gradient(145deg, var(--bg-medium), var(--bg-light));
+      border: 2px solid rgba(59, 130, 246, 0.3);
+      border-radius: 16px;
+      margin-bottom: 25px;
+      overflow: hidden;
+    }
+
+    .prompt-toggle {
+      width: 100%;
+      padding: 18px 20px;
+      background: transparent;
+      border: none;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      cursor: pointer;
+      color: var(--text-primary);
+    }
+
+    .prompt-toggle-left {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+    }
+
+    .prompt-toggle-icon {
+      font-size: 1.3rem;
+    }
+
+    .prompt-toggle-text {
+      font-weight: 600;
+      font-family: var(--font-title);
+    }
+
+    .prompt-arrow {
+      color: var(--gold);
+      transition: transform 0.3s ease;
+    }
+
+    .prompt-content {
+      padding: 0 20px 20px;
+      border-top: 1px solid rgba(255, 215, 0, 0.2);
+      margin-top: 0;
+      padding-top: 20px;
+    }
+
+    .prompt-block {
+      margin-bottom: 18px;
+    }
+
+    .prompt-block:last-child {
+      margin-bottom: 0;
+    }
+
+    .prompt-block h4 {
+      font-size: 0.95rem;
+      margin-bottom: 10px;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+
+    .prompt-block h4.char-title { color: var(--crimson); }
+    .prompt-block h4.bg-title { color: var(--blue); }
+    .prompt-block h4.summary-title { color: var(--green); }
+
+    .prompt-block-content {
+      font-size: 0.9rem;
+      color: var(--text-secondary);
+      background: var(--bg-dark);
+      padding: 12px;
+      border-radius: 10px;
+    }
+
+    .char-item {
+      margin-bottom: 10px;
+      padding: 10px;
+      background: var(--bg-light);
+      border-radius: 8px;
+      border-left: 3px solid var(--gold);
+    }
+
+    .char-item:last-child {
+      margin-bottom: 0;
+    }
+
+    .char-name {
+      color: var(--gold);
+      font-weight: 600;
+    }
+
+    .char-detail {
+      color: var(--text-muted);
+      font-size: 0.85rem;
+      margin-top: 4px;
+    }
+
+    .story-card {
+      background: linear-gradient(145deg, var(--bg-medium), var(--bg-light));
+      border: 2px solid rgba(255, 215, 0, 0.2);
+      border-radius: 20px;
+      padding: 30px;
+      margin-bottom: 25px;
+    }
+
+    .chapter-title {
+      font-family: var(--font-title);
+      font-size: 1.8rem;
+      text-align: center;
+      color: var(--gold);
+      margin-bottom: 25px;
+      text-shadow: 0 0 20px rgba(255, 215, 0, 0.3);
+    }
+
+    .story-content {
+      font-family: var(--font-serif);
+      font-size: 1.15rem;
+      line-height: 2;
+      color: var(--text-primary);
+    }
+
+    .story-content p {
+      margin-bottom: 18px;
+      text-indent: 2em;
+    }
+
+    .character-name { color: var(--gold); font-weight: 600; }
+    .action { color: var(--purple); font-weight: 500; }
+    .emotion { color: var(--green); font-weight: 500; }
+    .location { color: var(--blue); font-weight: 500; }
+
+    .puzzle-card {
+      background: linear-gradient(145deg, rgba(255, 215, 0, 0.1), var(--bg-light));
+      border: 2px solid var(--gold);
+      border-radius: 20px;
+      padding: 25px;
+      margin-bottom: 25px;
+    }
+
+    .puzzle-header {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      margin-bottom: 20px;
+    }
+
+    .puzzle-icon {
+      font-size: 2rem;
+    }
+
+    .puzzle-title {
+      font-family: var(--font-title);
+      font-size: 1.3rem;
+      color: var(--gold);
+    }
+
+    .puzzle-question {
+      font-size: 1.1rem;
+      font-weight: 600;
+      margin-bottom: 20px;
+      color: var(--text-primary);
+    }
+
+    .hint-area {
+      background: var(--bg-dark);
+      border: 1px solid var(--blue);
+      border-radius: 12px;
+      padding: 15px;
+      margin-bottom: 20px;
+      display: flex;
+      align-items: flex-start;
+      gap: 10px;
+    }
+
+    .hint-icon {
+      font-size: 1.3rem;
+    }
+
+    .hint-text {
+      font-size: 0.9rem;
+      color: var(--text-secondary);
+    }
+
+    .puzzle-options {
+      display: grid;
+      grid-template-columns: repeat(2, 1fr);
+      gap: 12px;
+    }
+
+    .puzzle-option {
+      background: var(--bg-medium);
+      border: 2px solid rgba(255, 215, 0, 0.3);
+      border-radius: 12px;
+      padding: 15px;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      transition: all 0.3s ease;
+      color: var(--text-primary);
+      font-size: 1rem;
+    }
+
+    .puzzle-option:hover {
+      border-color: var(--gold);
+      background: var(--bg-light);
+      transform: translateY(-3px);
+    }
+
+    .puzzle-option.correct {
+      border-color: var(--green);
+      background: rgba(34, 197, 94, 0.2);
+    }
+
+    .puzzle-option.wrong {
+      border-color: var(--crimson);
+      background: rgba(220, 38, 38, 0.2);
+      animation: shake 0.5s ease;
+    }
+
+    @keyframes shake {
+      0%, 100% { transform: translateX(0); }
+      25% { transform: translateX(-5px); }
+      75% { transform: translateX(5px); }
+    }
+
+    .option-letter {
+      width: 32px;
+      height: 32px;
+      border-radius: 50%;
+      background: linear-gradient(135deg, var(--gold), var(--gold-dark));
+      color: var(--bg-dark);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-weight: bold;
+      flex-shrink: 0;
+    }
+
+    .attempts-info {
+      text-align: center;
+      margin-top: 18px;
+      color: var(--text-secondary);
+      font-size: 0.9rem;
+    }
+
+    .attempts-count {
+      color: var(--gold);
+      font-weight: 600;
+    }
+
+    .puzzle-complete-card {
+      background: linear-gradient(145deg, rgba(34, 197, 94, 0.2), var(--bg-light));
+      border: 2px solid var(--green);
+      border-radius: 20px;
+      padding: 40px;
+      text-align: center;
+      margin-bottom: 25px;
+    }
+
+    .complete-icon {
+      font-size: 4rem;
+      margin-bottom: 15px;
+    }
+
+    .complete-title {
+      font-family: var(--font-title);
+      font-size: 1.5rem;
+      color: var(--green);
+      margin-bottom: 10px;
+    }
+
+    .complete-text {
+      color: var(--text-secondary);
+    }
+
+    .continue-area {
+      text-align: center;
+      margin-top: 30px;
+    }
+
+    .continue-btn {
+      background: linear-gradient(135deg, var(--gold), var(--gold-dark));
+      color: var(--bg-dark);
+      border: none;
+      padding: 18px 40px;
+      border-radius: 12px;
+      font-size: 1.1rem;
+      font-weight: 600;
+      cursor: pointer;
+      transition: all 0.3s ease;
+      font-family: var(--font-body);
+    }
+
+    .continue-btn:hover {
+      transform: translateY(-3px);
+      box-shadow: 0 10px 30px rgba(255, 215, 0, 0.3);
+    }
+
+    .plot-modal {
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      background: rgba(0, 0, 0, 0.8);
+      display: none;
+      justify-content: center;
+      align-items: center;
+      z-index: 1000;
+      backdrop-filter: blur(5px);
+    }
+
+    .plot-modal-content {
+      background: linear-gradient(145deg, var(--bg-medium), var(--bg-light));
+      border: 2px solid var(--gold);
+      border-radius: 20px;
+      width: 90%;
+      max-width: 600px;
+      max-height: 85vh;
+      overflow: hidden;
+      display: flex;
+      flex-direction: column;
+      box-shadow: 0 20px 60px rgba(0, 0, 0, 0.5);
+    }
+
+    .plot-modal-header {
+      background: linear-gradient(135deg, var(--crimson), var(--orange));
+      padding: 20px;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+    }
+
+    .plot-modal-header h3 {
+      font-family: var(--font-title);
+      font-size: 1.3rem;
+      color: white;
+    }
+
+    .plot-modal-close {
+      background: rgba(255, 255, 255, 0.2);
+      border: none;
+      color: white;
+      width: 36px;
+      height: 36px;
+      border-radius: 50%;
+      font-size: 1.3rem;
+      cursor: pointer;
+      transition: all 0.3s ease;
+    }
+
+    .plot-modal-close:hover {
+      background: rgba(255, 255, 255, 0.3);
+    }
+
+    .plot-modal-body {
+      padding: 25px;
+      overflow-y: auto;
+      flex: 1;
+    }
+
+    .plot-section {
+      margin-bottom: 25px;
+    }
+
+    .plot-section:last-child {
+      margin-bottom: 0;
+    }
+
+    .plot-section h4 {
+      font-size: 1rem;
+      color: var(--gold);
+      margin-bottom: 12px;
+      font-family: var(--font-title);
+    }
+
+    .plot-options {
+      display: grid;
+      grid-template-columns: repeat(4, 1fr);
+      gap: 10px;
+    }
+
+    .plot-option-btn {
+      background: var(--bg-dark);
+      border: 2px solid rgba(255, 215, 0, 0.2);
+      border-radius: 10px;
+      padding: 12px 8px;
+      cursor: pointer;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 6px;
+      transition: all 0.3s ease;
+    }
+
+    .plot-option-btn:hover {
+      border-color: var(--gold);
+      background: var(--bg-light);
+    }
+
+    .plot-option-btn.selected {
+      border-color: var(--gold);
+      background: rgba(255, 215, 0, 0.15);
+    }
+
+    .plot-option-icon {
+      font-size: 1.5rem;
+    }
+
+    .plot-option-name {
+      font-size: 0.75rem;
+      color: var(--text-secondary);
+      text-align: center;
+    }
+
+    .plot-option-btn.selected .plot-option-name {
+      color: var(--gold);
+    }
+
+    .plot-modal-footer {
+      padding: 20px;
+      border-top: 1px solid rgba(255, 215, 0, 0.2);
+      display: flex;
+      justify-content: space-between;
+      gap: 15px;
+    }
+
+    .modal-btn {
+      flex: 1;
+      padding: 14px;
+      border: none;
+      border-radius: 10px;
+      font-size: 1rem;
+      font-weight: 600;
+      cursor: pointer;
+      transition: all 0.3s ease;
+      font-family: var(--font-body);
+    }
+
+    .modal-btn.random {
+      background: var(--bg-dark);
+      color: var(--text-primary);
+      border: 2px solid rgba(255, 215, 0, 0.3);
+    }
+
+    .modal-btn.random:hover {
+      border-color: var(--gold);
+    }
+
+    .modal-btn.confirm {
+      background: linear-gradient(135deg, var(--gold), var(--gold-dark));
+      color: var(--bg-dark);
+    }
+
+    .modal-btn.confirm:hover {
+      box-shadow: 0 5px 20px rgba(255, 215, 0, 0.3);
+    }
+
+    .loading-overlay {
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      background: rgba(13, 13, 20, 0.95);
+      display: none;
+      justify-content: center;
+      align-items: center;
+      z-index: 2000;
+      flex-direction: column;
+      gap: 20px;
+    }
+
+    .loading-spinner {
+      width: 60px;
+      height: 60px;
+      border: 4px solid rgba(255, 215, 0, 0.2);
+      border-top-color: var(--gold);
+      border-radius: 50%;
+      animation: spin 1s linear infinite;
+    }
+
+    @keyframes spin {
+      to { transform: rotate(360deg); }
+    }
+
+    .loading-text {
+      color: var(--gold);
+      font-family: var(--font-title);
+      font-size: 1.2rem;
+    }
+
+    .loading-subtext {
+      color: var(--text-secondary);
+      font-size: 0.9rem;
+    }
+
+    .toast {
+      position: fixed;
+      bottom: 30px;
+      left: 50%;
+      transform: translateX(-50%);
+      padding: 15px 30px;
+      border-radius: 10px;
+      font-size: 0.95rem;
+      z-index: 1001;
+      animation: slideUp 0.3s ease;
+    }
+
+    .toast.success {
+      background: linear-gradient(135deg, var(--green), #16a34a);
+      color: white;
+    }
+
+    .toast.error {
+      background: linear-gradient(135deg, var(--crimson), #b91c1c);
+      color: white;
+    }
+
+    @keyframes slideUp {
+      from { transform: translateX(-50%) translateY(20px); opacity: 0; }
+      to { transform: translateX(-50%) translateY(0); opacity: 1; }
+    }
+
+    @media (max-width: 600px) {
+      .page-header {
+        flex-direction: column;
+        gap: 15px;
+        padding: 15px;
+      }
+
+      .page-header-left {
+        width: 100%;
+      }
+
+      .chapter-nav {
+        width: 100%;
+        justify-content: center;
+      }
+
+      .story-card {
+        padding: 20px;
+      }
+
+      .chapter-title {
+        font-size: 1.4rem;
+      }
+
+      .story-content {
+        font-size: 1rem;
+      }
+
+      .puzzle-options {
+        grid-template-columns: 1fr;
+      }
+
+      .plot-options {
+        grid-template-columns: repeat(2, 1fr);
+      }
+
+      .plot-modal-footer {
+        flex-direction: column;
+      }
+    }
+  </style>
 </head>
 <body>
+  <div class="bg-pattern"></div>
+  <div id="particles"></div>
+
   <div class="page-container">
     <header class="page-header">
       <div class="page-header-left">
-        <a href="#" id="backBtn" class="lego-btn lego-btn-blue">
-          <span>←</span>
-        </a>
+        <a href="#" id="backBtn" class="back-btn">←</a>
         <div>
-          <h1 class="lego-title" id="bookTitle" style="font-size: 1.25rem;">加载中...</h1>
-          <p class="page-header-subtitle" id="chapterInfo">第 1 章</p>
+          <h1 class="book-title" id="bookTitle">加载中...</h1>
+          <p class="chapter-info" id="chapterInfo">第 1 章</p>
         </div>
       </div>
 
-      <div style="display: flex; align-items: center; gap: 8px;">
-        <button id="prevChapterBtn" class="nav-btn" disabled>
-          <span>←</span>
-        </button>
-        <span id="chapterNav" class="font-bold">1 / 1</span>
-        <button id="nextChapterBtn" class="nav-btn" disabled>
-          <span>→</span>
-        </button>
+      <div class="chapter-nav">
+        <button id="prevChapterBtn" class="nav-btn" disabled>←</button>
+        <span id="chapterNav" class="chapter-count">1 / 1</span>
+        <button id="nextChapterBtn" class="nav-btn" disabled>→</button>
       </div>
     </header>
 
-    <div class="max-w-3xl mx-auto">
-      <div id="promptSection" class="lego-card mb-4" style="background: #f0f9ff; border-color: var(--lego-blue);">
+    <div class="content-wrapper">
+      <div id="promptSection" class="prompt-card">
         <button id="promptToggle" class="prompt-toggle" onclick="togglePrompt()">
-          <div style="display: flex; align-items: center; gap: 8px;">
-            <span style="font-size: 20px;">📝</span>
-            <span style="font-weight: bold;">故事创作提示</span>
+          <div class="prompt-toggle-left">
+            <span class="prompt-toggle-icon">📝</span>
+            <span class="prompt-toggle-text">故事创作提示</span>
           </div>
           <span id="promptArrow" class="prompt-arrow">▼</span>
         </button>
         <div id="promptContent" class="prompt-content" style="display: none;">
           <div class="prompt-block">
-            <h4 style="margin: 0 0 8px; color: var(--lego-red);">🎭 角色信息</h4>
-            <div id="promptCharacters" style="font-size: 0.875rem; color: #4b5563;"></div>
+            <h4 class="char-title">🎭 角色信息</h4>
+            <div id="promptCharacters" class="prompt-block-content"></div>
           </div>
           <div class="prompt-block">
-            <h4 style="margin: 0 0 8px; color: var(--lego-blue);">📖 故事背景</h4>
-            <div id="promptBackground" style="font-size: 0.875rem; color: #4b5563;"></div>
+            <h4 class="bg-title">📖 故事背景</h4>
+            <div id="promptBackground" class="prompt-block-content"></div>
           </div>
           <div class="prompt-block">
-            <h4 style="margin: 0 0 8px; color: var(--lego-green);">📚 前情提要</h4>
-            <div id="promptSummary" style="font-size: 0.875rem; color: #4b5563;"></div>
+            <h4 class="summary-title">📚 前情提要</h4>
+            <div id="promptSummary" class="prompt-block-content"></div>
           </div>
         </div>
       </div>
 
-      <div class="lego-card mb-6">
-        <h2 id="chapterTitle" class="text-2xl font-black mb-4 text-center" style="font-size: 1.5rem;">
-          加载中...
-        </h2>
-        
-        <div id="storyContent" class="story-content" style="font-size: 1.125rem; line-height: 1.8;">
-          <p style="text-align: center; color: #6b7280;">正在加载故事内容...</p>
+      <div class="story-card">
+        <h2 id="chapterTitle" class="chapter-title">加载中...</h2>
+        <div id="storyContent" class="story-content">
+          <p style="text-align: center; color: var(--text-muted);">正在加载故事内容...</p>
         </div>
       </div>
 
-      <div id="puzzleArea" class="lego-card mb-6" style="display: none; background: var(--lego-yellow); border-color: var(--lego-orange);">
-        <div style="display: flex; align-items: center; gap: 8px; margin-bottom: 16px;">
-          <span style="font-size: 24px;">❓</span>
-          <h3 style="font-size: 1.25rem; font-weight: 900; margin: 0;">互动谜题</h3>
+      <div id="puzzleArea" class="puzzle-card" style="display: none;">
+        <div class="puzzle-header">
+          <span class="puzzle-icon">❓</span>
+          <h3 class="puzzle-title">互动谜题</h3>
         </div>
 
-        <p id="puzzleQuestion" style="font-size: 1.125rem; font-weight: bold; margin-bottom: 24px;"></p>
+        <p id="puzzleQuestion" class="puzzle-question"></p>
 
-        <div id="hintArea" style="display: none; margin-bottom: 16px; padding: 12px; background: white; border-radius: 12px; border: 2px solid var(--lego-blue);">
-          <div style="display: flex; align-items: flex-start; gap: 8px;">
-            <span style="font-size: 20px;">💡</span>
-            <p id="hintText" style="font-size: 0.875rem; margin: 0;"></p>
-          </div>
+        <div id="hintArea" class="hint-area" style="display: none;">
+          <span class="hint-icon">💡</span>
+          <p id="hintText" class="hint-text"></p>
         </div>
 
-        <div id="puzzleOptions" style="display: grid; grid-template-columns: repeat(2, 1fr); gap: 12px;"></div>
+        <div id="puzzleOptions" class="puzzle-options"></div>
 
-        <p id="attemptsInfo" style="text-align: center; margin-top: 16px; font-size: 0.875rem;">
-          尝试次数: <span id="attemptsCount">0</span> / 3
+        <p id="attemptsInfo" class="attempts-info">
+          尝试次数: <span id="attemptsCount" class="attempts-count">0</span> / 3
         </p>
       </div>
 
-      <div id="puzzleComplete" class="lego-card mb-6" style="display: none; background: var(--lego-green); color: white; text-align: center;">
-        <span style="font-size: 64px; display: block; margin-bottom: 16px;">✅</span>
-        <h3 style="font-size: 1.5rem; font-weight: 900; margin: 0 0 8px;">太棒了！</h3>
-        <p style="margin: 0 0 16px;">你成功解开了谜题，可以继续冒险了！</p>
+      <div id="puzzleComplete" class="puzzle-complete-card" style="display: none;">
+        <span class="complete-icon">✅</span>
+        <h3 class="complete-title">太棒了！</h3>
+        <p class="complete-text">你成功解开了谜题，可以继续冒险了！</p>
       </div>
 
-      <div id="continueArea" style="text-align: center; margin-top: 32px; display: none;">
-        <button id="continueBtn" class="lego-btn lego-btn-red" style="font-size: 1.125rem; padding: 16px 32px;">
-          <span>✨</span>
-          继续生成故事
-        </button>
+      <div id="continueArea" class="continue-area" style="display: none;">
+        <button id="continueBtn" class="continue-btn">✨ 继续生成故事</button>
       </div>
     </div>
-
-    <div class="lego-footer-bar"></div>
   </div>
 
-  <div id="plotModal" class="plot-modal" style="display: none;">
+  <div id="plotModal" class="plot-modal">
     <div class="plot-modal-content">
       <div class="plot-modal-header">
         <h3>🎭 选择故事情节</h3>
@@ -134,16 +862,28 @@
         </div>
       </div>
       <div class="plot-modal-footer">
-        <button class="lego-btn lego-btn-blue" onclick="randomPlotSelection()">🎲 随机选择</button>
-        <button class="lego-btn lego-btn-red" onclick="confirmPlotSelection()">✨ 确认生成</button>
+        <button class="modal-btn random" onclick="randomPlotSelection()">🎲 随机选择</button>
+        <button class="modal-btn confirm" onclick="confirmPlotSelection()">✨ 确认生成</button>
       </div>
     </div>
   </div>
 
+  <div id="loadingOverlay" class="loading-overlay">
+    <div class="loading-spinner"></div>
+    <div class="loading-text">AI正在创作新章节...</div>
+    <div class="loading-subtext">发挥想象力，编织精彩故事</div>
+  </div>
+
   <script src="js/utils.js"></script>
-  <script src="js/loading-manager.js"></script>
-  <script src="js/theme-manager.js"></script>
   <script>
+    for (var i = 0; i < 15; i++) {
+      var p = document.createElement('div');
+      p.className = 'particle';
+      p.style.left = Math.random() * 100 + '%';
+      p.style.animationDelay = Math.random() * 20 + 's';
+      document.getElementById('particles').appendChild(p);
+    }
+
     var userId = requireAuth();
     var bookId = getQueryParam('bookId');
     var chapterId = getQueryParam('chapterId');
@@ -163,8 +903,6 @@
     };
 
     document.addEventListener('DOMContentLoaded', function() {
-      initLoadingManager();
-
       if (!bookId) {
         window.location.href = 'index.html';
         return;
@@ -228,33 +966,33 @@
       if (book.characters && book.characters.length > 0) {
         charactersHtml = book.characters.map(function(char) {
           var roleLabel = getRoleLabel(char.role);
-          return '<div style="margin-bottom: 8px; padding: 8px; background: white; border-radius: 8px;">' +
-            '<strong>' + char.customName + '</strong> (' + roleLabel + ')' +
-            (char.personality ? '<br><span style="color: #6b7280;">性格: ' + char.personality + '</span>' : '') +
-            (char.speechStyle ? '<br><span style="color: #6b7280;">说话风格: ' + char.speechStyle + '</span>' : '') +
+          return '<div class="char-item">' +
+            '<span class="char-name">' + char.customName + '</span> (' + roleLabel + ')' +
+            (char.personality ? '<div class="char-detail">性格: ' + char.personality + '</div>' : '') +
+            (char.speechStyle ? '<div class="char-detail">说话风格: ' + char.speechStyle + '</div>' : '') +
           '</div>';
         }).join('');
       } else {
-        charactersHtml = '<p style="color: #9ca3af;">暂无角色信息</p>';
+        charactersHtml = '<p style="color: var(--text-muted);">暂无角色信息</p>';
       }
       document.getElementById('promptCharacters').innerHTML = charactersHtml;
 
       var backgroundHtml = '';
       if (book.plotSelection || book.plotType || book.theme || book.setting) {
-        backgroundHtml = '<div style="padding: 8px; background: white; border-radius: 8px;">';
+        backgroundHtml = '<div style="padding: 10px; background: var(--bg-light); border-radius: 8px;">';
         if (book.plotSelection) {
-          backgroundHtml += '<p style="margin-bottom: 8px;"><strong>🎭 情节设定</strong></p>';
+          backgroundHtml += '<p style="margin-bottom: 8px; color: var(--gold);">🎭 情节设定</p>';
           if (book.plotSelection.weather) {
-            backgroundHtml += '<p style="font-size: 0.875rem;">☀️ 天气: ' + getPlotNameDisplay('weather', book.plotSelection.weather) + '</p>';
+            backgroundHtml += '<p style="font-size: 0.85rem;">☀️ 天气: ' + getPlotNameDisplay('weather', book.plotSelection.weather) + '</p>';
           }
           if (book.plotSelection.adventureType) {
-            backgroundHtml += '<p style="font-size: 0.875rem;">🗺️ 冒险: ' + getPlotNameDisplay('adventureType', book.plotSelection.adventureType) + '</p>';
+            backgroundHtml += '<p style="font-size: 0.85rem;">🗺️ 冒险: ' + getPlotNameDisplay('adventureType', book.plotSelection.adventureType) + '</p>';
           }
           if (book.plotSelection.terrain) {
-            backgroundHtml += '<p style="font-size: 0.875rem;">🌲 地形: ' + getPlotNameDisplay('terrain', book.plotSelection.terrain) + '</p>';
+            backgroundHtml += '<p style="font-size: 0.85rem;">🌲 地形: ' + getPlotNameDisplay('terrain', book.plotSelection.terrain) + '</p>';
           }
           if (book.plotSelection.equipment) {
-            backgroundHtml += '<p style="font-size: 0.875rem;">🪄 装备: ' + getPlotNameDisplay('equipment', book.plotSelection.equipment) + '</p>';
+            backgroundHtml += '<p style="font-size: 0.85rem;">🪄 装备: ' + getPlotNameDisplay('equipment', book.plotSelection.equipment) + '</p>';
           }
         }
         if (book.plotType) backgroundHtml += '<p><strong>情节类型:</strong> ' + book.plotType + '</p>';
@@ -262,19 +1000,19 @@
         if (book.setting) backgroundHtml += '<p><strong>场景:</strong> ' + book.setting + '</p>';
         backgroundHtml += '</div>';
       } else {
-        backgroundHtml = '<p style="color: #9ca3af;">暂无背景信息</p>';
+        backgroundHtml = '<p style="color: var(--text-muted);">暂无背景信息</p>';
       }
       document.getElementById('promptBackground').innerHTML = backgroundHtml;
 
       var summaryHtml = '';
       if (currentChapterIndex > 0) {
         var prevChapter = book.chapters[currentChapterIndex - 1];
-        summaryHtml = '<div style="padding: 8px; background: white; border-radius: 8px;">' +
-          '<p><strong>上一章:</strong> ' + prevChapter.title + '</p>' +
-          '<p style="margin-top: 8px;">' + getShortSummary(prevChapter.content) + '</p>' +
+        summaryHtml = '<div style="padding: 10px; background: var(--bg-light); border-radius: 8px;">' +
+          '<p style="color: var(--gold); margin-bottom: 8px;">上一章: ' + prevChapter.title + '</p>' +
+          '<p style="font-size: 0.85rem; color: var(--text-secondary);">' + getShortSummary(prevChapter.content) + '</p>' +
         '</div>';
       } else {
-        summaryHtml = '<p style="color: #9ca3af;">这是第一章，故事刚刚开始...</p>';
+        summaryHtml = '<p style="color: var(--text-muted);">这是第一章，故事刚刚开始...</p>';
       }
       document.getElementById('promptSummary').innerHTML = summaryHtml;
     }
@@ -391,8 +1129,8 @@
       var optionsHtml = puzzle.options.map(function(option, index) {
         var letter = String.fromCharCode(65 + index);
         return '<button class="puzzle-option" onclick="selectAnswer(' + index + ')" data-index="' + index + '">' +
-          '<span style="display: inline-flex; align-items: center; justify-content: center; width: 32px; height: 32px; border-radius: 50%; background: black; color: white; font-weight: bold; margin-right: 12px;">' + letter + '</span>' +
-          option +
+          '<span class="option-letter">' + letter + '</span>' +
+          '<span>' + option + '</span>' +
         '</button>';
       }).join('');
 
@@ -560,8 +1298,18 @@
       await generateChapterWithPlot(null);
     }
 
+    function showLoading(message, subtext) {
+      document.querySelector('.loading-text').textContent = message || '加载中...';
+      document.querySelector('.loading-subtext').textContent = subtext || '';
+      document.getElementById('loadingOverlay').style.display = 'flex';
+    }
+
+    function hideLoading() {
+      document.getElementById('loadingOverlay').style.display = 'none';
+    }
+
     async function generateChapterWithPlot(plotSelection) {
-      showLoading({ message: 'AI正在创作新章节...', subtext: '发挥想象力，编织精彩故事' });
+      showLoading('AI正在创作新章节...', '发挥想象力，编织精彩故事');
 
       try {
         var body = { userId: userId };
@@ -588,167 +1336,20 @@
       renderChapter();
       renderPromptInfo();
     }
+
+    function showToast(message, type) {
+      var existing = document.querySelector('.toast');
+      if (existing) existing.remove();
+      
+      var toast = document.createElement('div');
+      toast.className = 'toast ' + type;
+      toast.textContent = message;
+      document.body.appendChild(toast);
+      
+      setTimeout(function() {
+        toast.remove();
+      }, 3000);
+    }
   </script>
-
-  <style>
-    .max-w-3xl { max-width: 48rem; margin-left: auto; margin-right: auto; }
-    .mx-auto { margin-left: auto; margin-right: auto; }
-
-    .story-content p {
-      margin-bottom: 16px;
-    }
-
-    .character-name { color: var(--lego-red); font-weight: bold; }
-    .action { color: var(--lego-purple); font-weight: bold; }
-    .emotion { color: var(--lego-green); font-weight: bold; }
-    .location { color: var(--lego-orange); font-weight: bold; }
-
-    .prompt-toggle {
-      width: 100%;
-      display: flex;
-      justify-content: space-between;
-      align-items: center;
-      padding: 0;
-      background: transparent;
-      border: none;
-      cursor: pointer;
-      font-size: 1rem;
-    }
-
-    .prompt-arrow {
-      transition: transform 0.2s ease;
-    }
-
-    .prompt-content {
-      margin-top: 16px;
-      padding-top: 16px;
-      border-top: 2px dashed var(--lego-blue);
-    }
-
-    .prompt-block {
-      margin-bottom: 16px;
-    }
-
-    .prompt-block:last-child {
-      margin-bottom: 0;
-    }
-
-    .plot-modal {
-      position: fixed;
-      top: 0;
-      left: 0;
-      width: 100%;
-      height: 100%;
-      background: rgba(0, 0, 0, 0.5);
-      display: flex;
-      justify-content: center;
-      align-items: center;
-      z-index: 1000;
-    }
-
-    .plot-modal-content {
-      background: white;
-      border-radius: 16px;
-      width: 90%;
-      max-width: 600px;
-      max-height: 80vh;
-      overflow: hidden;
-      display: flex;
-      flex-direction: column;
-      box-shadow: 0 10px 40px rgba(0, 0, 0, 0.3);
-    }
-
-    .plot-modal-header {
-      background: var(--lego-red);
-      color: white;
-      padding: 16px 20px;
-      display: flex;
-      justify-content: space-between;
-      align-items: center;
-    }
-
-    .plot-modal-header h3 {
-      margin: 0;
-      font-size: 1.25rem;
-    }
-
-    .plot-modal-close {
-      background: none;
-      border: none;
-      color: white;
-      font-size: 24px;
-      cursor: pointer;
-      padding: 0;
-      line-height: 1;
-    }
-
-    .plot-modal-body {
-      padding: 20px;
-      overflow-y: auto;
-      flex: 1;
-    }
-
-    .plot-section {
-      margin-bottom: 20px;
-    }
-
-    .plot-section h4 {
-      margin: 0 0 12px;
-      font-size: 1rem;
-      color: var(--lego-blue);
-    }
-
-    .plot-options {
-      display: grid;
-      grid-template-columns: repeat(4, 1fr);
-      gap: 8px;
-    }
-
-    .plot-option-btn {
-      background: #f3f4f6;
-      border: 2px solid transparent;
-      border-radius: 8px;
-      padding: 8px;
-      cursor: pointer;
-      display: flex;
-      flex-direction: column;
-      align-items: center;
-      gap: 4px;
-      transition: all 0.2s;
-    }
-
-    .plot-option-btn:hover {
-      background: #e5e7eb;
-    }
-
-    .plot-option-btn.selected {
-      background: var(--lego-yellow);
-      border-color: var(--lego-orange);
-    }
-
-    .plot-option-icon {
-      font-size: 24px;
-    }
-
-    .plot-option-name {
-      font-size: 0.75rem;
-      font-weight: bold;
-      text-align: center;
-    }
-
-    .plot-modal-footer {
-      padding: 16px 20px;
-      border-top: 1px solid #e5e7eb;
-      display: flex;
-      justify-content: space-between;
-      gap: 12px;
-    }
-
-    @media (max-width: 480px) {
-      .plot-options {
-        grid-template-columns: repeat(2, 1fr);
-      }
-    }
-  </style>
 </body>
 </html>

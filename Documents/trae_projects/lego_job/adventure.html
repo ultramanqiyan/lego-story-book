@@ -4,75 +4,515 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>冒险模式 - 乐高故事书</title>
-  <link rel="stylesheet" href="css/styles.css">
-  <link rel="stylesheet" href="css/animations.css">
+  <link href="https://fonts.googleapis.com/css2?family=Cinzel:wght@400;600;700&family=Noto+Sans+SC:wght@400;500;600;700&display=swap" rel="stylesheet">
+  <style>
+    :root {
+      --gold: #ffd700;
+      --gold-dark: #b8860b;
+      --silver: #c0c0c0;
+      --crimson: #dc2626;
+      --purple: #a855f7;
+      --green: #22c55e;
+      --blue: #3b82f6;
+      --orange: #f59e0b;
+      --bg-dark: #0d0d14;
+      --bg-medium: #1a1a2e;
+      --text-primary: #f8fafc;
+      --text-secondary: #94a3b8;
+      --font-title: 'Cinzel', serif;
+      --font-body: 'Noto Sans SC', sans-serif;
+    }
+
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+
+    body {
+      font-family: var(--font-body);
+      background: linear-gradient(180deg, #1a1a2e 0%, #0d0d14 100%);
+      min-height: 100vh;
+      color: var(--text-primary);
+      overflow-x: hidden;
+    }
+
+    .particles {
+      position: fixed;
+      inset: 0;
+      pointer-events: none;
+      z-index: 0;
+    }
+
+    .particle {
+      position: absolute;
+      width: 2px;
+      height: 2px;
+      background: var(--gold);
+      border-radius: 50%;
+      opacity: 0.3;
+      animation: float 20s linear infinite;
+    }
+
+    @keyframes float {
+      0% { transform: translateY(100vh); opacity: 0; }
+      10% { opacity: 0.3; }
+      90% { opacity: 0.3; }
+      100% { transform: translateY(-100vh); opacity: 0; }
+    }
+
+    .container {
+      position: relative;
+      z-index: 1;
+      max-width: 1000px;
+      margin: 0 auto;
+      padding: 20px;
+    }
+
+    .header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      padding: 15px 0;
+      border-bottom: 1px solid rgba(255,215,0,0.2);
+      margin-bottom: 20px;
+      flex-wrap: wrap;
+      gap: 15px;
+    }
+
+    .header-title {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+    }
+
+    .header-icon {
+      font-size: 2rem;
+    }
+
+    .header-text {
+      font-family: var(--font-title);
+      font-size: 1.8rem;
+      font-weight: 700;
+      background: linear-gradient(135deg, var(--gold), #ff9800);
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+    }
+
+    .nav-tabs {
+      display: flex;
+      gap: 10px;
+    }
+
+    .nav-tab {
+      padding: 10px 18px;
+      border-radius: 10px;
+      background: rgba(255,255,255,0.05);
+      border: 1px solid rgba(255,255,255,0.1);
+      color: var(--text-secondary);
+      font-size: 0.85rem;
+      font-weight: 500;
+      cursor: pointer;
+      transition: all 0.3s ease;
+      text-decoration: none;
+      display: flex;
+      align-items: center;
+      gap: 6px;
+    }
+
+    .nav-tab:hover {
+      background: rgba(255,215,0,0.1);
+      border-color: rgba(255,215,0,0.3);
+      color: var(--text-primary);
+    }
+
+    .time-panel {
+      background: linear-gradient(180deg, #2d2d44, #1a1a2e);
+      border-radius: 15px;
+      border: 2px solid rgba(255,215,0,0.3);
+      padding: 25px;
+      text-align: center;
+      margin-bottom: 25px;
+    }
+
+    .time-label {
+      color: var(--text-secondary);
+      font-size: 0.9rem;
+      margin-bottom: 10px;
+    }
+
+    .time-display {
+      font-family: var(--font-title);
+      font-size: 2.5rem;
+      font-weight: 700;
+      color: var(--gold);
+      margin-bottom: 15px;
+    }
+
+    .progress-bar {
+      height: 8px;
+      background: rgba(0,0,0,0.3);
+      border-radius: 4px;
+      overflow: hidden;
+    }
+
+    .progress-fill {
+      height: 100%;
+      background: linear-gradient(90deg, var(--gold), var(--orange));
+      border-radius: 4px;
+      width: 35%;
+      animation: progress-pulse 2s ease-in-out infinite;
+    }
+
+    @keyframes progress-pulse {
+      0%, 100% { opacity: 1; }
+      50% { opacity: 0.7; }
+    }
+
+    .time-limit {
+      color: var(--text-secondary);
+      font-size: 0.8rem;
+      margin-top: 10px;
+    }
+
+    .story-card {
+      background: linear-gradient(180deg, #2d2d44, #1a1a2e);
+      border-radius: 15px;
+      border: 2px solid rgba(255,215,0,0.2);
+      padding: 25px;
+      margin-bottom: 25px;
+    }
+
+    .story-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 20px;
+      padding-bottom: 15px;
+      border-bottom: 1px solid rgba(255,255,255,0.1);
+    }
+
+    .story-title {
+      font-family: var(--font-title);
+      font-size: 1.3rem;
+      font-weight: 600;
+      color: var(--gold);
+    }
+
+    .story-content {
+      font-size: 1.1rem;
+      line-height: 2;
+      color: var(--text-primary);
+    }
+
+    .story-content p {
+      margin-bottom: 20px;
+      text-indent: 2em;
+    }
+
+    .char-name { color: #f87171; font-weight: 600; }
+    .action-word { color: #a78bfa; font-weight: 600; }
+    .emotion-word { color: #4ade80; font-weight: 600; }
+    .location-word { color: #fbbf24; font-weight: 600; }
+    .weather-word { color: #60a5fa; font-weight: 600; }
+
+    .puzzle-container {
+      background: linear-gradient(180deg, #2d2d44, #1a1a2e);
+      border-radius: 15px;
+      border: 2px solid var(--purple);
+      padding: 25px;
+      display: none;
+    }
+
+    .puzzle-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 20px;
+    }
+
+    .puzzle-question {
+      font-size: 1.1rem;
+      font-weight: 600;
+      color: var(--text-primary);
+    }
+
+    .attempts-display {
+      display: flex;
+      gap: 8px;
+    }
+
+    .attempt-dot {
+      width: 12px;
+      height: 12px;
+      border-radius: 50%;
+      background: rgba(255,255,255,0.2);
+      transition: all 0.3s ease;
+    }
+
+    .attempt-dot.active {
+      background: var(--gold);
+      box-shadow: 0 0 10px rgba(255,215,0,0.5);
+    }
+
+    .puzzle-options {
+      display: grid;
+      grid-template-columns: repeat(2, 1fr);
+      gap: 15px;
+    }
+
+    .puzzle-option {
+      background: linear-gradient(180deg, #3d3d3d, #2a2a2a);
+      border-radius: 12px;
+      padding: 20px;
+      text-align: center;
+      cursor: pointer;
+      transition: all 0.3s ease;
+      border: 2px solid transparent;
+      font-size: 1rem;
+    }
+
+    .puzzle-option:hover {
+      border-color: var(--purple);
+      transform: translateY(-3px);
+      box-shadow: 0 5px 15px rgba(0,0,0,0.3);
+    }
+
+    .puzzle-option.selected {
+      border-color: var(--gold);
+      background: linear-gradient(180deg, #4a4a4a, #3a3a3a);
+    }
+
+    .puzzle-option.correct {
+      border-color: var(--green);
+      background: linear-gradient(180deg, #1a4a2e, #166534);
+    }
+
+    .puzzle-option.wrong {
+      border-color: var(--crimson);
+      background: linear-gradient(180deg, #4a2a2e, #3f3f46);
+      animation: shake 0.5s ease-in-out;
+    }
+
+    @keyframes shake {
+      0%, 100% { transform: translateX(0); }
+      20%, 60% { transform: translateX(-5px); }
+      40%, 80% { transform: translateX(5px); }
+    }
+
+    .puzzle-result {
+      text-align: center;
+      padding: 20px;
+      border-radius: 10px;
+      margin-top: 20px;
+      display: none;
+    }
+
+    .result-correct {
+      background: rgba(34,197,94,0.2);
+      color: var(--green);
+      font-size: 1.2rem;
+      font-weight: 600;
+    }
+
+    .result-wrong {
+      background: rgba(220,38,38,0.2);
+      color: #f87171;
+      font-size: 1rem;
+    }
+
+    .result-punishment {
+      background: rgba(245,158,11,0.2);
+      color: var(--orange);
+      font-size: 1rem;
+    }
+
+    .hint-box {
+      display: none;
+      align-items: center;
+      gap: 10px;
+      padding: 15px;
+      background: rgba(59,130,246,0.1);
+      border: 1px solid var(--blue);
+      border-radius: 10px;
+      margin-top: 15px;
+    }
+
+    .hint-icon {
+      font-size: 1.5rem;
+    }
+
+    .hint-text {
+      color: var(--text-secondary);
+    }
+
+    .book-select-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+      gap: 15px;
+    }
+
+    .book-select-card {
+      background: linear-gradient(180deg, #2d2d44, #1a1a2e);
+      border-radius: 12px;
+      padding: 20px;
+      cursor: pointer;
+      transition: all 0.3s ease;
+      border: 2px solid transparent;
+    }
+
+    .book-select-card:hover {
+      border-color: var(--gold);
+      transform: translateY(-5px);
+    }
+
+    .book-select-card.selected {
+      border-color: var(--green);
+      background: linear-gradient(180deg, #1a3a2e, #1a1a2e);
+    }
+
+    .book-select-icon {
+      font-size: 2rem;
+      margin-bottom: 10px;
+    }
+
+    .book-select-title {
+      font-size: 0.95rem;
+      font-weight: 600;
+      margin-bottom: 5px;
+    }
+
+    .book-select-info {
+      font-size: 0.8rem;
+      color: var(--text-secondary);
+    }
+
+    .continue-btn {
+      margin-top: 15px;
+      padding: 12px 25px;
+      font-size: 1rem;
+      font-weight: 600;
+      border: none;
+      border-radius: 20px;
+      background: linear-gradient(135deg, var(--gold), #ff9800);
+      color: #000;
+      cursor: pointer;
+      transition: all 0.3s ease;
+      font-family: var(--font-body);
+    }
+
+    .continue-btn:hover {
+      transform: scale(1.05);
+    }
+
+    .footer {
+      text-align: center;
+      padding: 20px;
+      color: var(--text-secondary);
+      font-size: 0.9rem;
+      border-top: 1px solid rgba(255,255,255,0.1);
+      margin-top: 30px;
+    }
+
+    .toast {
+      position: fixed;
+      top: 20px;
+      left: 50%;
+      transform: translateX(-50%) translateY(-10px);
+      background: rgba(0,0,0,0.95);
+      padding: 12px 25px;
+      border-radius: 10px;
+      border: 1px solid var(--gold);
+      font-size: 0.9rem;
+      opacity: 0;
+      transition: all 0.3s ease;
+      z-index: 1002;
+    }
+
+    .toast.show {
+      transform: translateX(-50%) translateY(0);
+      opacity: 1;
+    }
+
+    .toast.success { border-color: var(--green); color: var(--green); }
+    .toast.error { border-color: var(--crimson); color: #f87171; }
+    .toast.info { border-color: var(--blue); color: var(--blue); }
+
+    @media (max-width: 600px) {
+      .puzzle-options {
+        grid-template-columns: 1fr;
+      }
+    }
+  </style>
 </head>
 <body>
-  <div class="lego-brick-bg"></div>
-  <div class="particles-container">
-    <div class="particle"></div><div class="particle"></div><div class="particle"></div>
-    <div class="particle"></div><div class="particle"></div><div class="particle"></div>
-    <div class="particle"></div><div class="particle"></div><div class="particle"></div>
-    <div class="particle"></div>
-  </div>
+  <div class="particles" id="particles"></div>
 
-  <div class="container page-wrapper">
+  <div class="container">
     <header class="header">
-      <h1 class="neon-text rainbow-text">🗺️ 冒险模式</h1>
-      <nav class="nav">
-        <a href="index.html" class="nav-glow">🏠 首页</a>
-        <a href="bookshelf.html" class="nav-glow">📚 我的书架</a>
+      <div class="header-title">
+        <span class="header-icon">🗺️</span>
+        <h1 class="header-text">冒险模式</h1>
+      </div>
+      <nav class="nav-tabs">
+        <a href="index.html" class="nav-tab">🏠 首页</a>
+        <a href="bookshelf.html" class="nav-tab">📚 我的书架</a>
       </nav>
     </header>
 
-    <main>
-      <div class="time-display neon-border scroll-fade-in">
-        <p class="float-animation" style="font-size: 1.1rem; color: #666;">⏰ 今日阅读时间</p>
-        <div class="time pulse-scale" id="timeDisplay">0分钟</div>
-        <div class="progress-bar progress-striped">
-          <div class="progress-fill" style="width: 0%"></div>
-        </div>
-        <p style="font-size: 0.9rem; color: #999;">每日限额：120分钟</p>
+    <div class="time-panel">
+      <p class="time-label">⏰ 今日阅读时间</p>
+      <div class="time-display" id="timeDisplay">0分钟</div>
+      <div class="progress-bar">
+        <div class="progress-fill" id="progressFill"></div>
       </div>
+      <p class="time-limit">每日限额：120分钟</p>
+    </div>
 
-      <div class="card card-3d neon-border scroll-fade-in" id="storyCard">
-        <h2 id="chapterTitle" class="bounce-animation">选择一个故事开始冒险</h2>
-        <div id="storyContent" style="font-size: 1.1rem; line-height: 1.8;">
-          <div id="bookSelectArea">
-            <p class="float-animation" style="text-align: center; color: #666; padding: 20px 0;">
-              🗺️ 选择一个故事开始你的冒险！
-            </p>
-            <div id="bookList" class="grid" style="grid-template-columns: repeat(auto-fill, minmax(200px, 1fr)); gap: 15px;"></div>
-          </div>
+    <div class="story-card" id="storyCard">
+      <div class="story-header">
+        <h2 class="story-title" id="chapterTitle">选择一个故事开始冒险</h2>
+      </div>
+      <div class="story-content" id="storyContent">
+        <div id="bookSelectArea">
+          <p style="text-align: center; color: var(--text-secondary); padding: 20px 0;">
+            🗺️ 选择一个故事开始你的冒险！
+          </p>
+          <div class="book-select-grid" id="bookList"></div>
         </div>
       </div>
+    </div>
 
-      <div class="puzzle-container neon-border" id="puzzleContainer" style="display: none;">
-        <div class="puzzle-header">
-          <div class="puzzle-question" id="puzzleQuestion"></div>
-          <div class="attempts-display" id="attemptsDisplay">
-            <span class="attempt-dot active"></span>
-            <span class="attempt-dot active"></span>
-            <span class="attempt-dot active"></span>
-          </div>
+    <div class="puzzle-container" id="puzzleContainer">
+      <div class="puzzle-header">
+        <div class="puzzle-question" id="puzzleQuestion"></div>
+        <div class="attempts-display" id="attemptsDisplay">
+          <span class="attempt-dot active"></span>
+          <span class="attempt-dot active"></span>
+          <span class="attempt-dot active"></span>
         </div>
-        <div class="puzzle-options" id="puzzleOptions"></div>
-        <div class="hint-box" id="hintBox" style="display: none;">
-          <div class="hint-icon">💡</div>
-          <div class="hint-text" id="hintText"></div>
-        </div>
-        <div class="puzzle-result" id="puzzleResult" style="display: none;"></div>
       </div>
-    </main>
+      <div class="puzzle-options" id="puzzleOptions"></div>
+      <div class="hint-box" id="hintBox">
+        <span class="hint-icon">💡</span>
+        <span class="hint-text" id="hintText"></span>
+      </div>
+      <div class="puzzle-result" id="puzzleResult"></div>
+    </div>
 
     <footer class="footer">
       <p>乐高故事书 &copy; 2024 - 让想象力飞翔</p>
     </footer>
   </div>
 
+  <div class="toast" id="toast"></div>
+
   <script src="js/utils.js"></script>
-  <script src="js/animations.js"></script>
   <script>
+    for (var i = 0; i < 15; i++) {
+      var p = document.createElement('div');
+      p.className = 'particle';
+      p.style.left = Math.random() * 100 + '%';
+      p.style.animationDelay = Math.random() * 20 + 's';
+      document.getElementById('particles').appendChild(p);
+    }
+
     var userId = getUserId();
     var currentChapter = null;
     var currentPuzzle = null;
@@ -97,6 +537,15 @@
       }
     }
 
+    function updateProgress(used, limit) {
+      var percent = Math.min((used / limit) * 100, 100);
+      document.getElementById('progressFill').style.width = percent + '%';
+    }
+
+    function formatTime(minutes) {
+      return minutes + '分钟';
+    }
+
     async function loadChapter(chapterId) {
       if (!userId) {
         showToast('请先登录', 'error');
@@ -119,6 +568,7 @@
         
         document.getElementById('storyContent').innerHTML = 
           '<p style="line-height: 2; text-align: justify;">' + content + '</p>';
+        document.getElementById('bookSelectArea').style.display = 'none';
         
         if (currentChapter.has_puzzle && data.puzzle) {
           currentPuzzle = data.puzzle;
@@ -138,10 +588,7 @@
       var keywords = [];
       characters.forEach(function(char) {
         if (char.custom_name) {
-          keywords.push({
-            text: char.custom_name,
-            role: char.role_type
-          });
+          keywords.push({ text: char.custom_name, role: char.role_type });
         }
       });
       
@@ -166,13 +613,13 @@
         var regex = new RegExp('(' + escapeRegex(kw.text) + ')', 'g');
         var highlightClass;
         if (kw.role) {
-          highlightClass = 'keyword-highlight keyword-' + kw.role;
+          highlightClass = 'char-name';
         } else if (kw.type === 'action') {
-          highlightClass = 'keyword-highlight keyword-action';
+          highlightClass = 'action-word';
         } else if (kw.type === 'emotion') {
-          highlightClass = 'keyword-highlight keyword-emotion';
+          highlightClass = 'emotion-word';
         } else if (kw.type === 'location') {
-          highlightClass = 'keyword-highlight keyword-location';
+          highlightClass = 'location-word';
         }
         if (highlightClass) {
           content = content.replace(regex, '<span class="' + highlightClass + '">$1</span>');
@@ -306,7 +753,6 @@
       var hintBox = document.getElementById('hintBox');
       document.getElementById('hintText').textContent = hint;
       hintBox.style.display = 'flex';
-      hintBox.style.animation = 'hintSlideIn 0.5s ease';
     }
 
     function showGentlePunishment() {
@@ -339,9 +785,8 @@
       }
       
       var continueBtn = document.createElement('button');
-      continueBtn.className = 'btn btn-primary';
+      continueBtn.className = 'continue-btn';
       continueBtn.textContent = '➕ 添加章节';
-      continueBtn.style.marginTop = '15px';
       continueBtn.onclick = function() {
         window.location.href = 'book.html?id=' + currentChapter.book_id;
       };
@@ -355,23 +800,10 @@
       });
     }
 
-    function showContinueButton() {
-      var resultBox = document.getElementById('puzzleResult');
-      var continueBtn = document.createElement('button');
-      continueBtn.className = 'btn btn-primary';
-      continueBtn.textContent = '➕ 添加章节';
-      continueBtn.style.marginTop = '15px';
-      continueBtn.onclick = function() {
-        window.location.href = 'book.html?id=' + currentChapter.book_id;
-      };
-      
-      resultBox.appendChild(continueBtn);
-    }
-
     async function loadBookList() {
       if (!userId) {
         document.getElementById('bookList').innerHTML = 
-          '<p style="text-align: center; color: #999; grid-column: 1/-1;">请先<a href="login.html">登录</a></p>';
+          '<p style="text-align: center; color: var(--text-secondary); grid-column: 1/-1;">请先<a href="login.html" style="color: var(--gold);">登录</a></p>';
         return;
       }
       
@@ -381,19 +813,20 @@
         
         if (books.length === 0) {
           document.getElementById('bookList').innerHTML = 
-            '<p style="text-align: center; color: #999; grid-column: 1/-1;">还没有故事，<a href="story-create.html">创建新故事</a></p>';
+            '<p style="text-align: center; color: var(--text-secondary); grid-column: 1/-1;">还没有故事，<a href="story-create.html" style="color: var(--gold);">创建新故事</a></p>';
           return;
         }
         
         document.getElementById('bookList').innerHTML = books.map(function(book) {
-          return '<div class="book-select-card" onclick="selectBook(\'' + book.book_id + '\')" style="cursor: pointer; padding: 20px; background: linear-gradient(135deg, #fff, #f0f0f0); border-radius: 15px; border: 3px solid var(--lego-yellow); transition: all 0.3s;">' +
-            '<h3 style="margin: 0 0 10px 0; color: #333;">📖 ' + book.title + '</h3>' +
-            '<p style="margin: 0; color: #666; font-size: 0.9rem;">📚 ' + book.chapter_count + '章</p>' +
+          return '<div class="book-select-card" onclick="selectBook(\'' + book.book_id + '\')">' +
+            '<div class="book-select-icon">📖</div>' +
+            '<div class="book-select-title">' + book.title + '</div>' +
+            '<div class="book-select-info">📚 ' + book.chapter_count + '章</div>' +
           '</div>';
         }).join('');
       } catch (error) {
         document.getElementById('bookList').innerHTML = 
-          '<p style="text-align: center; color: #999; grid-column: 1/-1;">加载失败，请刷新重试</p>';
+          '<p style="text-align: center; color: var(--text-secondary); grid-column: 1/-1;">加载失败，请刷新重试</p>';
       }
     }
 
@@ -413,6 +846,15 @@
       } catch (error) {
         showToast('加载失败：' + error.message, 'error');
       }
+    }
+
+    function showToast(msg, type) {
+      var toast = document.getElementById('toast');
+      toast.textContent = msg;
+      toast.className = 'toast show ' + (type || '');
+      setTimeout(function() {
+        toast.classList.remove('show');
+      }, 2000);
     }
 
     var chapterId = getQueryParam('chapterId') || getQueryParam('chapter');

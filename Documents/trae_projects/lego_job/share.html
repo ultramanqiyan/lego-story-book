@@ -4,85 +4,430 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>分享故事 - 乐高故事书</title>
-  <link rel="stylesheet" href="css/styles.css">
-  <link rel="stylesheet" href="css/animations.css">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Cinzel:wght@400;600;700&family=Noto+Sans+SC:wght@300;400;500;600&display=swap" rel="stylesheet">
   <script src="https://cdn.jsdelivr.net/npm/qrcode@1.5.3/build/qrcode.min.js"></script>
+  <style>
+    :root {
+      --gold: #ffd700;
+      --gold-dark: #b8860b;
+      --gold-light: #ffed4a;
+      --silver: #c0c0c0;
+      --crimson: #dc2626;
+      --purple: #a855f7;
+      --green: #22c55e;
+      --blue: #3b82f6;
+      --orange: #f59e0b;
+      --bg-dark: #0d0d14;
+      --bg-medium: #1a1a2e;
+      --bg-light: #252542;
+      --text-primary: #f8fafc;
+      --text-secondary: #94a3b8;
+      --text-muted: #64748b;
+      --font-title: 'Cinzel', serif;
+      --font-body: 'Noto Sans SC', sans-serif;
+    }
+
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+    }
+
+    body {
+      font-family: var(--font-body);
+      background: var(--bg-dark);
+      color: var(--text-primary);
+      min-height: 100vh;
+      overflow-x: hidden;
+    }
+
+    .bg-pattern {
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      background: 
+        radial-gradient(ellipse at 20% 20%, rgba(255, 215, 0, 0.08) 0%, transparent 50%),
+        radial-gradient(ellipse at 80% 80%, rgba(168, 85, 247, 0.08) 0%, transparent 50%),
+        radial-gradient(ellipse at 50% 50%, rgba(59, 130, 246, 0.05) 0%, transparent 60%);
+      pointer-events: none;
+      z-index: 0;
+    }
+
+    #particles {
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      pointer-events: none;
+      z-index: 1;
+    }
+
+    .particle {
+      position: absolute;
+      width: 4px;
+      height: 4px;
+      background: var(--gold);
+      border-radius: 50%;
+      opacity: 0.6;
+      animation: float 20s infinite ease-in-out;
+      box-shadow: 0 0 6px var(--gold);
+    }
+
+    @keyframes float {
+      0%, 100% { transform: translateY(100vh) rotate(0deg); opacity: 0; }
+      10% { opacity: 0.6; }
+      90% { opacity: 0.6; }
+      100% { transform: translateY(-100px) rotate(720deg); opacity: 0; }
+    }
+
+    .container {
+      position: relative;
+      z-index: 10;
+      max-width: 600px;
+      margin: 0 auto;
+      padding: 30px 20px;
+    }
+
+    header {
+      text-align: center;
+      margin-bottom: 40px;
+    }
+
+    .page-title {
+      font-family: var(--font-title);
+      font-size: 2.5rem;
+      font-weight: 700;
+      background: linear-gradient(135deg, var(--gold), var(--gold-light), var(--gold));
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+      background-clip: text;
+      text-shadow: 0 0 30px rgba(255, 215, 0, 0.3);
+      margin-bottom: 20px;
+      letter-spacing: 2px;
+    }
+
+    .nav {
+      display: flex;
+      justify-content: center;
+      gap: 20px;
+      flex-wrap: wrap;
+    }
+
+    .nav a {
+      color: var(--text-secondary);
+      text-decoration: none;
+      padding: 10px 20px;
+      border: 1px solid rgba(255, 215, 0, 0.3);
+      border-radius: 8px;
+      transition: all 0.3s ease;
+      font-size: 0.9rem;
+    }
+
+    .nav a:hover {
+      color: var(--gold);
+      border-color: var(--gold);
+      background: rgba(255, 215, 0, 0.1);
+    }
+
+    .share-card {
+      background: linear-gradient(145deg, var(--bg-medium), var(--bg-light));
+      border: 2px solid rgba(255, 215, 0, 0.2);
+      border-radius: 20px;
+      padding: 30px;
+      margin-bottom: 25px;
+      box-shadow: 0 10px 40px rgba(0, 0, 0, 0.3);
+    }
+
+    .share-card h2 {
+      font-family: var(--font-title);
+      font-size: 1.4rem;
+      color: var(--gold);
+      margin-bottom: 25px;
+      display: flex;
+      align-items: center;
+      gap: 10px;
+    }
+
+    .form-group {
+      margin-bottom: 20px;
+    }
+
+    .form-group label {
+      display: block;
+      margin-bottom: 8px;
+      color: var(--text-secondary);
+      font-size: 0.95rem;
+    }
+
+    .checkbox-label {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      cursor: pointer;
+    }
+
+    .checkbox-label input[type="checkbox"] {
+      width: 22px;
+      height: 22px;
+      accent-color: var(--gold);
+    }
+
+    .input-field {
+      width: 100%;
+      padding: 15px 18px;
+      background: var(--bg-dark);
+      border: 2px solid rgba(255, 215, 0, 0.3);
+      border-radius: 12px;
+      color: var(--text-primary);
+      font-size: 1rem;
+      transition: all 0.3s ease;
+    }
+
+    .input-field:focus {
+      outline: none;
+      border-color: var(--gold);
+      box-shadow: 0 0 15px rgba(255, 215, 0, 0.2);
+    }
+
+    .input-field::placeholder {
+      color: var(--text-muted);
+    }
+
+    .input-field.code-input {
+      text-align: center;
+      font-size: 1.5rem;
+      letter-spacing: 4px;
+      font-family: var(--font-title);
+    }
+
+    .btn-primary {
+      width: 100%;
+      background: linear-gradient(135deg, var(--gold), var(--gold-dark));
+      color: var(--bg-dark);
+      border: none;
+      padding: 16px;
+      border-radius: 12px;
+      font-size: 1.1rem;
+      font-weight: 600;
+      cursor: pointer;
+      transition: all 0.3s ease;
+      font-family: var(--font-body);
+    }
+
+    .btn-primary:hover {
+      transform: translateY(-3px);
+      box-shadow: 0 10px 25px rgba(255, 215, 0, 0.3);
+    }
+
+    .btn-secondary {
+      width: 100%;
+      background: var(--bg-dark);
+      color: var(--text-primary);
+      border: 2px solid rgba(255, 215, 0, 0.3);
+      padding: 16px;
+      border-radius: 12px;
+      font-size: 1.1rem;
+      font-weight: 600;
+      cursor: pointer;
+      transition: all 0.3s ease;
+      font-family: var(--font-body);
+    }
+
+    .btn-secondary:hover {
+      border-color: var(--gold);
+      background: var(--bg-light);
+    }
+
+    .result-card {
+      background: linear-gradient(145deg, rgba(34, 197, 94, 0.1), var(--bg-light));
+      border: 2px solid var(--green);
+    }
+
+    .result-card h2 {
+      color: var(--green);
+    }
+
+    .qr-container {
+      text-align: center;
+      margin: 25px 0;
+    }
+
+    .qr-container canvas {
+      border: 4px solid var(--gold);
+      border-radius: 15px;
+      box-shadow: 0 5px 20px rgba(255, 215, 0, 0.2);
+    }
+
+    .button-row {
+      display: flex;
+      gap: 12px;
+      margin-top: 20px;
+    }
+
+    .button-row button {
+      flex: 1;
+      padding: 14px;
+      border-radius: 10px;
+      font-size: 1rem;
+      font-weight: 600;
+      cursor: pointer;
+      transition: all 0.3s ease;
+      font-family: var(--font-body);
+    }
+
+    .btn-copy {
+      background: var(--bg-dark);
+      color: var(--text-primary);
+      border: 2px solid rgba(255, 215, 0, 0.3);
+    }
+
+    .btn-copy:hover {
+      border-color: var(--gold);
+    }
+
+    .btn-download {
+      background: linear-gradient(135deg, var(--blue), var(--purple));
+      color: white;
+      border: none;
+    }
+
+    .btn-download:hover {
+      transform: translateY(-2px);
+      box-shadow: 0 5px 20px rgba(59, 130, 246, 0.4);
+    }
+
+    .toast {
+      position: fixed;
+      bottom: 30px;
+      left: 50%;
+      transform: translateX(-50%);
+      padding: 15px 30px;
+      border-radius: 10px;
+      font-size: 0.95rem;
+      z-index: 1000;
+      animation: slideUp 0.3s ease;
+    }
+
+    .toast.success {
+      background: linear-gradient(135deg, var(--green), #16a34a);
+      color: white;
+    }
+
+    .toast.error {
+      background: linear-gradient(135deg, var(--crimson), #b91c1c);
+      color: white;
+    }
+
+    @keyframes slideUp {
+      from { transform: translateX(-50%) translateY(20px); opacity: 0; }
+      to { transform: translateX(-50%) translateY(0); opacity: 1; }
+    }
+
+    footer {
+      text-align: center;
+      margin-top: 40px;
+      padding: 20px;
+      color: var(--text-muted);
+      font-size: 0.9rem;
+    }
+
+    @media (max-width: 480px) {
+      .page-title {
+        font-size: 2rem;
+      }
+
+      .share-card {
+        padding: 20px;
+      }
+
+      .button-row {
+        flex-direction: column;
+      }
+    }
+  </style>
 </head>
 <body>
-  <div class="lego-brick-bg"></div>
-  <div class="particles-container">
-    <div class="particle"></div><div class="particle"></div><div class="particle"></div>
-    <div class="particle"></div><div class="particle"></div><div class="particle"></div>
-    <div class="particle"></div><div class="particle"></div><div class="particle"></div>
-    <div class="particle"></div>
-  </div>
+  <div class="bg-pattern"></div>
+  <div id="particles"></div>
 
-  <div class="container page-wrapper">
-    <header class="header">
-      <h1 class="neon-text rainbow-text">📤 分享故事</h1>
+  <div class="container">
+    <header>
+      <h1 class="page-title">📤 分享故事</h1>
       <nav class="nav">
-        <a href="bookshelf.html" class="nav-glow">📚 我的书架</a>
-        <a href="index.html" class="nav-glow">🏠 首页</a>
+        <a href="bookshelf.html">📚 我的书架</a>
+        <a href="index.html">🏠 首页</a>
       </nav>
     </header>
 
     <main>
-      <div class="card card-3d neon-border scroll-fade-in" id="shareCard">
-        <h2 class="bounce-animation">🔗 创建分享链接</h2>
+      <div class="share-card" id="shareCard">
+        <h2>🔗 创建分享链接</h2>
         <form id="shareForm">
           <div class="form-group">
-            <label class="float-animation" style="display: flex; align-items: center; gap: 10px; cursor: pointer;">
-              <input type="checkbox" id="isPublic" checked style="width: 20px; height: 20px;">
+            <label class="checkbox-label">
+              <input type="checkbox" id="isPublic" checked>
               <span>🌍 公开分享</span>
             </label>
           </div>
           <div class="form-group">
-            <label for="password" class="float-animation" style="animation-delay: 0.1s;">🔒 访问密码（可选）</label>
-            <input type="text" id="password" name="password" class="input-glow" placeholder="留空则无需密码" maxlength="20">
+            <label for="password">🔒 访问密码（可选）</label>
+            <input type="text" id="password" name="password" class="input-field" placeholder="留空则无需密码" maxlength="20">
           </div>
-          <button type="submit" class="btn btn-primary btn-glow btn-ripple magnetic-btn" style="width: 100%;">✨ 生成分享链接</button>
+          <button type="submit" class="btn-primary">✨ 生成分享链接</button>
         </form>
       </div>
 
-      <div class="card card-3d neon-border scroll-scale" id="resultCard" style="display: none;">
-        <h2 class="success-animation">🎉 分享链接已生成</h2>
-        <div style="text-align: center; margin: 20px 0;">
-          <canvas id="qrcode" class="neon-border" style="border: 5px solid var(--lego-yellow); border-radius: 15px;"></canvas>
+      <div class="share-card result-card" id="resultCard" style="display: none;">
+        <h2>🎉 分享链接已生成</h2>
+        <div class="qr-container">
+          <canvas id="qrcode"></canvas>
         </div>
         <div class="form-group">
-          <label class="float-animation">📎 分享链接</label>
-          <input type="text" id="shareLink" class="input-glow" readonly onclick="this.select()">
+          <label>📎 分享链接</label>
+          <input type="text" id="shareLink" class="input-field" readonly onclick="this.select()">
         </div>
         <div class="form-group">
-          <label class="float-animation" style="animation-delay: 0.1s;">🔢 分享码</label>
-          <input type="text" id="shareCode" class="input-glow" readonly onclick="this.select()" style="text-align: center; font-size: 1.5rem;">
+          <label>🔢 分享码</label>
+          <input type="text" id="shareCode" class="input-field code-input" readonly onclick="this.select()">
         </div>
-        <div style="display: flex; gap: 10px;">
-          <button class="btn btn-secondary btn-glow btn-ripple" onclick="copyLink()" style="flex: 1;">📋 复制链接</button>
-          <button class="btn btn-primary btn-glow btn-ripple" onclick="downloadQRCode()" style="flex: 1;">📱 下载二维码</button>
+        <div class="button-row">
+          <button class="btn-copy" onclick="copyLink()">📋 复制链接</button>
+          <button class="btn-download" onclick="downloadQRCode()">📱 下载二维码</button>
         </div>
       </div>
 
-      <div class="card card-3d scroll-slide-right">
-        <h2 class="pulse-scale">🔍 访问分享</h2>
+      <div class="share-card">
+        <h2>🔍 访问分享</h2>
         <form id="accessForm">
           <div class="form-group">
-            <label for="accessCode" class="float-animation">🔢 输入分享码</label>
-            <input type="text" id="accessCode" name="accessCode" class="input-glow" placeholder="输入8位分享码" maxlength="8" style="text-align: center; font-size: 1.3rem;">
+            <label for="accessCode">🔢 输入分享码</label>
+            <input type="text" id="accessCode" name="accessCode" class="input-field code-input" placeholder="输入8位分享码" maxlength="8">
           </div>
-          <button type="submit" class="btn btn-secondary btn-glow btn-ripple magnetic-btn" style="width: 100%;">🚀 访问故事</button>
+          <button type="submit" class="btn-secondary">🚀 访问故事</button>
         </form>
       </div>
     </main>
 
-    <footer class="footer">
+    <footer>
       <p>乐高故事书 &copy; 2024 - 让想象力飞翔</p>
     </footer>
   </div>
 
   <script src="js/utils.js"></script>
-  <script src="js/animations.js"></script>
   <script>
+    for (var i = 0; i < 15; i++) {
+      var p = document.createElement('div');
+      p.className = 'particle';
+      p.style.left = Math.random() * 100 + '%';
+      p.style.animationDelay = Math.random() * 20 + 's';
+      document.getElementById('particles').appendChild(p);
+    }
+
     var userId = requireAuth();
     var bookId = getQueryParam('bookId');
 
@@ -120,8 +465,8 @@
         width: 200,
         margin: 2,
         color: {
-          dark: '#333333',
-          light: '#ffffff'
+          dark: '#ffd700',
+          light: '#0d0d14'
         }
       }, function(error) {
         if (error) console.error(error);
@@ -155,6 +500,20 @@
       link.select();
       document.execCommand('copy');
       showToast('链接已复制！📋', 'success');
+    }
+
+    function showToast(message, type) {
+      var existing = document.querySelector('.toast');
+      if (existing) existing.remove();
+      
+      var toast = document.createElement('div');
+      toast.className = 'toast ' + type;
+      toast.textContent = message;
+      document.body.appendChild(toast);
+      
+      setTimeout(function() {
+        toast.remove();
+      }, 3000);
     }
   </script>
 </body>

@@ -4,66 +4,503 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>回收站 - 乐高故事书</title>
-  <link rel="stylesheet" href="css/lego-theme.css">
-  <link rel="stylesheet" href="css/loading.css">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Cinzel:wght@400;600;700&family=Noto+Sans+SC:wght@300;400;500;600&display=swap" rel="stylesheet">
+  <style>
+    :root {
+      --gold: #ffd700;
+      --gold-dark: #b8860b;
+      --gold-light: #ffed4a;
+      --silver: #c0c0c0;
+      --crimson: #dc2626;
+      --purple: #a855f7;
+      --green: #22c55e;
+      --blue: #3b82f6;
+      --orange: #f59e0b;
+      --bg-dark: #0d0d14;
+      --bg-medium: #1a1a2e;
+      --bg-light: #252542;
+      --text-primary: #f8fafc;
+      --text-secondary: #94a3b8;
+      --text-muted: #64748b;
+      --font-title: 'Cinzel', serif;
+      --font-body: 'Noto Sans SC', sans-serif;
+    }
+
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+    }
+
+    body {
+      font-family: var(--font-body);
+      background: var(--bg-dark);
+      color: var(--text-primary);
+      min-height: 100vh;
+      overflow-x: hidden;
+    }
+
+    .bg-pattern {
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      background: 
+        radial-gradient(ellipse at 20% 20%, rgba(255, 215, 0, 0.08) 0%, transparent 50%),
+        radial-gradient(ellipse at 80% 80%, rgba(168, 85, 247, 0.08) 0%, transparent 50%),
+        radial-gradient(ellipse at 50% 50%, rgba(59, 130, 246, 0.05) 0%, transparent 60%);
+      pointer-events: none;
+      z-index: 0;
+    }
+
+    #particles {
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      pointer-events: none;
+      z-index: 1;
+    }
+
+    .particle {
+      position: absolute;
+      width: 4px;
+      height: 4px;
+      background: var(--gold);
+      border-radius: 50%;
+      opacity: 0.6;
+      animation: float 20s infinite ease-in-out;
+      box-shadow: 0 0 6px var(--gold);
+    }
+
+    @keyframes float {
+      0%, 100% { transform: translateY(100vh) rotate(0deg); opacity: 0; }
+      10% { opacity: 0.6; }
+      90% { opacity: 0.6; }
+      100% { transform: translateY(-100px) rotate(720deg); opacity: 0; }
+    }
+
+    .page-container {
+      position: relative;
+      z-index: 10;
+      min-height: 100vh;
+      padding-bottom: 80px;
+    }
+
+    .page-header {
+      background: linear-gradient(180deg, var(--bg-medium), transparent);
+      padding: 20px;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      position: sticky;
+      top: 0;
+      z-index: 100;
+      backdrop-filter: blur(10px);
+      border-bottom: 1px solid rgba(255, 215, 0, 0.1);
+    }
+
+    .page-header-left {
+      display: flex;
+      align-items: center;
+      gap: 15px;
+    }
+
+    .back-btn {
+      background: linear-gradient(135deg, var(--blue), var(--purple));
+      color: white;
+      border: none;
+      width: 45px;
+      height: 45px;
+      border-radius: 12px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 1.2rem;
+      cursor: pointer;
+      transition: all 0.3s ease;
+      text-decoration: none;
+    }
+
+    .back-btn:hover {
+      transform: scale(1.1);
+      box-shadow: 0 5px 20px rgba(59, 130, 246, 0.4);
+    }
+
+    .page-title {
+      font-family: var(--font-title);
+      font-size: 1.5rem;
+      color: var(--gold);
+    }
+
+    .page-subtitle {
+      color: var(--text-secondary);
+      font-size: 0.85rem;
+    }
+
+    .empty-btn {
+      background: var(--crimson);
+      color: white;
+      border: none;
+      padding: 12px 20px;
+      border-radius: 10px;
+      font-size: 0.9rem;
+      font-weight: 600;
+      cursor: pointer;
+      transition: all 0.3s ease;
+      font-family: var(--font-body);
+    }
+
+    .empty-btn:hover {
+      transform: translateY(-2px);
+      box-shadow: 0 5px 20px rgba(220, 38, 38, 0.3);
+    }
+
+    .content-wrapper {
+      max-width: 800px;
+      margin: 0 auto;
+      padding: 20px;
+    }
+
+    .trash-card {
+      background: linear-gradient(145deg, var(--bg-medium), var(--bg-light));
+      border: 2px solid rgba(255, 215, 0, 0.2);
+      border-radius: 16px;
+      padding: 20px;
+      margin-bottom: 16px;
+      transition: all 0.3s ease;
+    }
+
+    .trash-card:hover {
+      border-color: var(--gold);
+      box-shadow: 0 10px 30px rgba(255, 215, 0, 0.1);
+    }
+
+    .trash-header {
+      display: flex;
+      align-items: center;
+      gap: 16px;
+    }
+
+    .trash-icon {
+      width: 60px;
+      height: 60px;
+      background: linear-gradient(135deg, var(--blue), var(--purple));
+      border-radius: 12px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 2rem;
+      flex-shrink: 0;
+    }
+
+    .trash-info {
+      flex: 1;
+    }
+
+    .trash-info h3 {
+      color: var(--text-primary);
+      font-size: 1.1rem;
+      margin-bottom: 4px;
+    }
+
+    .trash-meta {
+      color: var(--text-muted);
+      font-size: 0.875rem;
+    }
+
+    .trash-expire {
+      color: var(--orange);
+      font-size: 0.75rem;
+      margin-top: 4px;
+    }
+
+    .trash-actions {
+      display: flex;
+      gap: 8px;
+      margin-top: 16px;
+      justify-content: flex-end;
+    }
+
+    .restore-btn {
+      background: var(--green);
+      color: white;
+      border: none;
+      padding: 10px 20px;
+      border-radius: 8px;
+      font-size: 0.9rem;
+      font-weight: 600;
+      cursor: pointer;
+      transition: all 0.3s ease;
+      font-family: var(--font-body);
+    }
+
+    .restore-btn:hover {
+      transform: scale(1.05);
+      box-shadow: 0 5px 15px rgba(34, 197, 94, 0.3);
+    }
+
+    .delete-btn {
+      background: var(--crimson);
+      color: white;
+      border: none;
+      padding: 10px 20px;
+      border-radius: 8px;
+      font-size: 0.9rem;
+      font-weight: 600;
+      cursor: pointer;
+      transition: all 0.3s ease;
+      font-family: var(--font-body);
+    }
+
+    .delete-btn:hover {
+      transform: scale(1.05);
+      box-shadow: 0 5px 15px rgba(220, 38, 38, 0.3);
+    }
+
+    .empty-state {
+      padding: 64px;
+      background: linear-gradient(145deg, var(--bg-medium), var(--bg-light));
+      border: 2px dashed rgba(255, 215, 0, 0.3);
+      border-radius: 20px;
+      text-align: center;
+    }
+
+    .empty-icon {
+      font-size: 4rem;
+      margin-bottom: 16px;
+    }
+
+    .empty-title {
+      font-weight: bold;
+      font-size: 1.125rem;
+      margin-bottom: 8px;
+      color: var(--text-primary);
+    }
+
+    .empty-text {
+      color: var(--text-muted);
+    }
+
+    .confirm-dialog {
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      background: rgba(0, 0, 0, 0.8);
+      display: none;
+      justify-content: center;
+      align-items: center;
+      z-index: 1000;
+      backdrop-filter: blur(5px);
+    }
+
+    .dialog-content {
+      background: linear-gradient(145deg, var(--bg-medium), var(--bg-light));
+      border: 2px solid var(--gold);
+      border-radius: 20px;
+      padding: 30px;
+      max-width: 400px;
+      width: 90%;
+      text-align: center;
+    }
+
+    .dialog-title {
+      font-family: var(--font-title);
+      font-size: 1.3rem;
+      color: var(--gold);
+      margin-bottom: 20px;
+    }
+
+    .dialog-message {
+      color: var(--text-secondary);
+      margin-bottom: 25px;
+    }
+
+    .dialog-buttons {
+      display: flex;
+      gap: 12px;
+    }
+
+    .dialog-btn {
+      flex: 1;
+      padding: 14px;
+      border-radius: 10px;
+      font-size: 1rem;
+      font-weight: 600;
+      cursor: pointer;
+      transition: all 0.3s ease;
+      font-family: var(--font-body);
+    }
+
+    .dialog-btn.cancel {
+      background: var(--bg-dark);
+      color: var(--text-primary);
+      border: 2px solid rgba(255, 215, 0, 0.3);
+    }
+
+    .dialog-btn.confirm {
+      background: var(--crimson);
+      color: white;
+      border: none;
+    }
+
+    .dialog-btn:hover {
+      transform: translateY(-2px);
+    }
+
+    .loading-overlay {
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      background: rgba(13, 13, 20, 0.95);
+      display: none;
+      justify-content: center;
+      align-items: center;
+      z-index: 2000;
+      flex-direction: column;
+      gap: 20px;
+    }
+
+    .loading-spinner {
+      width: 50px;
+      height: 50px;
+      border: 3px solid rgba(255, 215, 0, 0.2);
+      border-top-color: var(--gold);
+      border-radius: 50%;
+      animation: spin 1s linear infinite;
+    }
+
+    @keyframes spin {
+      to { transform: rotate(360deg); }
+    }
+
+    .loading-text {
+      color: var(--gold);
+      font-family: var(--font-title);
+    }
+
+    .toast {
+      position: fixed;
+      bottom: 30px;
+      left: 50%;
+      transform: translateX(-50%);
+      padding: 15px 30px;
+      border-radius: 10px;
+      font-size: 0.95rem;
+      z-index: 1001;
+      animation: slideUp 0.3s ease;
+    }
+
+    .toast.success {
+      background: linear-gradient(135deg, var(--green), #16a34a);
+      color: white;
+    }
+
+    .toast.error {
+      background: linear-gradient(135deg, var(--crimson), #b91c1c);
+      color: white;
+    }
+
+    @keyframes slideUp {
+      from { transform: translateX(-50%) translateY(20px); opacity: 0; }
+      to { transform: translateX(-50%) translateY(0); opacity: 1; }
+    }
+
+    @media (max-width: 600px) {
+      .page-header {
+        flex-direction: column;
+        gap: 15px;
+      }
+
+      .trash-header {
+        flex-direction: column;
+        align-items: flex-start;
+      }
+
+      .trash-actions {
+        width: 100%;
+      }
+
+      .trash-actions button {
+        flex: 1;
+      }
+
+      .dialog-buttons {
+        flex-direction: column;
+      }
+    }
+  </style>
 </head>
 <body>
+  <div class="bg-pattern"></div>
+  <div id="particles"></div>
+
   <div class="page-container">
     <header class="page-header">
       <div class="page-header-left">
-        <a href="index.html" class="lego-btn lego-btn-blue">
-          <span>←</span>
-        </a>
+        <a href="index.html" class="back-btn">←</a>
         <div>
-          <h1 class="lego-title" style="font-size: 1.5rem;">回收站</h1>
-          <p class="page-header-subtitle">已删除的书籍将保留30天</p>
+          <h1 class="page-title">回收站</h1>
+          <p class="page-subtitle">已删除的书籍将保留30天</p>
         </div>
       </div>
 
-      <button id="emptyTrashBtn" class="lego-btn lego-btn-red" style="display: none;">
-        <span>🗑️</span>
-        <span class="hide-mobile">清空回收站</span>
+      <button id="emptyTrashBtn" class="empty-btn" style="display: none;">
+        🗑️ 清空回收站
       </button>
     </header>
 
-    <div class="max-w-4xl mx-auto">
+    <div class="content-wrapper">
       <div id="trashList">
-        <div class="empty-state" style="padding: 64px; background: rgba(255, 213, 0, 0.2); border-radius: 16px; border: 2px dashed var(--lego-black); text-align: center;">
-          <span style="font-size: 64px; display: block; margin-bottom: 16px;">🗑️</span>
-          <p style="font-weight: bold; font-size: 1.125rem; margin: 0 0 8px;">回收站是空的</p>
-          <p style="color: #6b7280; margin: 0;">删除的书籍会在这里显示</p>
+        <div class="empty-state">
+          <span class="empty-icon">🗑️</span>
+          <p class="empty-title">回收站是空的</p>
+          <p class="empty-text">删除的书籍会在这里显示</p>
         </div>
       </div>
     </div>
-
-    <div class="lego-footer-bar"></div>
   </div>
 
-  <div id="confirmDialog" class="lego-dialog-overlay" style="display: none;">
-    <div class="lego-dialog" style="max-width: 400px;">
-      <div class="lego-dialog-header">
-        <h2 class="lego-dialog-title" id="confirmTitle">确认操作</h2>
-      </div>
-      <div>
-        <p id="confirmMessage" style="text-align: center; margin-bottom: 24px;"></p>
-        <div style="display: flex; gap: 12px;">
-          <button onclick="closeConfirmDialog()" class="lego-btn lego-btn-gray flex-1">取消</button>
-          <button id="confirmBtn" class="lego-btn lego-btn-red flex-1">确认</button>
-        </div>
+  <div id="confirmDialog" class="confirm-dialog">
+    <div class="dialog-content">
+      <h2 class="dialog-title" id="confirmTitle">确认操作</h2>
+      <p class="dialog-message" id="confirmMessage"></p>
+      <div class="dialog-buttons">
+        <button class="dialog-btn cancel" onclick="closeConfirmDialog()">取消</button>
+        <button id="confirmBtn" class="dialog-btn confirm">确认</button>
       </div>
     </div>
+  </div>
+
+  <div id="loadingOverlay" class="loading-overlay">
+    <div class="loading-spinner"></div>
+    <div class="loading-text">正在处理...</div>
   </div>
 
   <script src="js/utils.js"></script>
-  <script src="js/loading-manager.js"></script>
   <script>
+    for (var i = 0; i < 15; i++) {
+      var p = document.createElement('div');
+      p.className = 'particle';
+      p.style.left = Math.random() * 100 + '%';
+      p.style.animationDelay = Math.random() * 20 + 's';
+      document.getElementById('particles').appendChild(p);
+    }
+
     var userId = requireAuth();
     var archivedBooks = [];
     var pendingAction = null;
     var pendingBookId = null;
 
     document.addEventListener('DOMContentLoaded', function() {
-      initLoadingManager();
       loadArchivedBooks();
 
       document.getElementById('emptyTrashBtn').addEventListener('click', function() {
@@ -72,11 +509,14 @@
     });
 
     async function loadArchivedBooks() {
+      showLoading();
       try {
         var data = await fetchAPI('/books?userId=' + userId + '&archived=true');
         archivedBooks = data.books || [];
+        hideLoading();
         renderTrashList();
       } catch (error) {
+        hideLoading();
         showToast('加载回收站失败', 'error');
         console.error(error);
       }
@@ -88,48 +528,46 @@
 
       if (archivedBooks.length === 0) {
         emptyBtn.style.display = 'none';
-        container.innerHTML = '' +
-          '<div class="empty-state" style="padding: 64px; background: rgba(255, 213, 0, 0.2); border-radius: 16px; border: 2px dashed var(--lego-black); text-align: center;">' +
-            '<span style="font-size: 64px; display: block; margin-bottom: 16px;">🗑️</span>' +
-            '<p style="font-weight: bold; font-size: 1.125rem; margin: 0 0 8px;">回收站是空的</p>' +
-            '<p style="color: #6b7280; margin: 0;">删除的书籍会在这里显示</p>' +
+        container.innerHTML = 
+          '<div class="empty-state">' +
+            '<span class="empty-icon">🗑️</span>' +
+            '<p class="empty-title">回收站是空的</p>' +
+            '<p class="empty-text">删除的书籍会在这里显示</p>' +
           '</div>';
         return;
       }
 
-      emptyBtn.style.display = 'flex';
+      emptyBtn.style.display = 'block';
 
-      var html = '<div style="display: flex; flex-direction: column; gap: 16px;">';
-
+      var html = '';
       archivedBooks.forEach(function(book) {
         var deletedDate = new Date(book.updated_at);
         var expireDate = new Date(deletedDate.getTime() + 30 * 24 * 60 * 60 * 1000);
         var daysLeft = Math.ceil((expireDate - new Date()) / (24 * 60 * 60 * 1000));
         daysLeft = Math.max(0, daysLeft);
 
-        html += '' +
-          '<div class="lego-card" style="padding: 20px;">' +
-            '<div style="display: flex; align-items: center; gap: 16px;">' +
-              '<div style="width: 60px; height: 60px; background: linear-gradient(135deg, var(--lego-blue), var(--lego-purple)); border-radius: 12px; display: flex; align-items: center; justify-content: center; font-size: 2rem;">📖</div>' +
-              '<div style="flex: 1;">' +
-                '<h3 style="font-weight: bold; margin: 0 0 4px;">' + book.title + '</h3>' +
-                '<p style="font-size: 0.875rem; color: #6b7280; margin: 0;">' + book.chapter_count + ' 章</p>' +
-                '<p style="font-size: 0.75rem; color: #9ca3af; margin: 4px 0 0;">剩余 ' + daysLeft + ' 天后自动删除</p>' +
+        html += 
+          '<div class="trash-card">' +
+            '<div class="trash-header">' +
+              '<div class="trash-icon">📖</div>' +
+              '<div class="trash-info">' +
+                '<h3>' + book.title + '</h3>' +
+                '<p class="trash-meta">' + book.chapter_count + ' 章</p>' +
+                '<p class="trash-expire">剩余 ' + daysLeft + ' 天后自动删除</p>' +
               '</div>' +
-              '<div style="display: flex; gap: 8px;">' +
-                '<button onclick="restoreBook(\'' + book.book_id + '\')" class="lego-btn lego-btn-green" style="padding: 8px 16px;">恢复</button>' +
-                '<button onclick="confirmPermanentDelete(\'' + book.book_id + '\', \'' + book.title.replace(/'/g, "\\'") + '\')" class="lego-btn lego-btn-red" style="padding: 8px 16px;">永久删除</button>' +
-              '</div>' +
+            '</div>' +
+            '<div class="trash-actions">' +
+              '<button class="restore-btn" onclick="restoreBook(\'' + book.book_id + '\')">恢复</button>' +
+              '<button class="delete-btn" onclick="confirmPermanentDelete(\'' + book.book_id + '\', \'' + book.title.replace(/'/g, "\\'") + '\')">永久删除</button>' +
             '</div>' +
           '</div>';
       });
 
-      html += '</div>';
       container.innerHTML = html;
     }
 
     async function restoreBook(bookId) {
-      showLoading({ message: '正在恢复...' });
+      showLoading();
 
       try {
         await fetchAPI('/books', {
@@ -157,7 +595,7 @@
     async function permanentDelete() {
       if (!pendingBookId) return;
 
-      showLoading({ message: '正在删除...' });
+      showLoading();
 
       try {
         await fetchAPI('/books/' + pendingBookId + '?permanent=true', {
@@ -176,7 +614,7 @@
     }
 
     async function emptyTrash() {
-      showLoading({ message: '正在清空回收站...' });
+      showLoading();
 
       try {
         for (var i = 0; i < archivedBooks.length; i++) {
@@ -206,11 +644,28 @@
       document.getElementById('confirmDialog').style.display = 'none';
       pendingBookId = null;
     }
-  </script>
 
-  <style>
-    .max-w-4xl { max-width: 56rem; margin-left: auto; margin-right: auto; }
-    .mx-auto { margin-left: auto; margin-right: auto; }
-  </style>
+    function showLoading() {
+      document.getElementById('loadingOverlay').style.display = 'flex';
+    }
+
+    function hideLoading() {
+      document.getElementById('loadingOverlay').style.display = 'none';
+    }
+
+    function showToast(message, type) {
+      var existing = document.querySelector('.toast');
+      if (existing) existing.remove();
+      
+      var toast = document.createElement('div');
+      toast.className = 'toast ' + type;
+      toast.textContent = message;
+      document.body.appendChild(toast);
+      
+      setTimeout(function() {
+        toast.remove();
+      }, 3000);
+    }
+  </script>
 </body>
 </html>

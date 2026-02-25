@@ -6,12 +6,38 @@
   <title>选择主题风格 - 乐高故事书</title>
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-  <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+SC:wght@400;500;700&family=Noto+Serif+SC:wght@400;600&family=Rajdhani:wght@500;600;700&family=Exo+2:wght@400;500;600&family=Cinzel:wght@400;600;700&family=Lora:wght@400;500&display=swap" rel="stylesheet">
-  <link rel="stylesheet" href="css/styles.css">
-  <link rel="stylesheet" href="css/animations.css">
-  <link rel="stylesheet" id="theme-stylesheet" href="" disabled>
+  <link href="https://fonts.googleapis.com/css2?family=Cinzel:wght@400;600;700&family=Noto+Sans+SC:wght@300;400;500;600&display=swap" rel="stylesheet">
   <style>
+    :root {
+      --gold: #ffd700;
+      --gold-dark: #b8860b;
+      --gold-light: #ffed4a;
+      --silver: #c0c0c0;
+      --crimson: #dc2626;
+      --purple: #a855f7;
+      --green: #22c55e;
+      --blue: #3b82f6;
+      --orange: #f59e0b;
+      --bg-dark: #0d0d14;
+      --bg-medium: #1a1a2e;
+      --bg-light: #252542;
+      --text-primary: #f8fafc;
+      --text-secondary: #94a3b8;
+      --text-muted: #64748b;
+      --font-title: 'Cinzel', serif;
+      --font-body: 'Noto Sans SC', sans-serif;
+    }
+
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+    }
+
     body {
+      font-family: var(--font-body);
+      background: var(--bg-dark);
+      color: var(--text-primary);
       min-height: 100vh;
       display: flex;
       flex-direction: column;
@@ -19,82 +45,123 @@
       justify-content: center;
       padding: 40px 20px;
     }
-    
+
+    .bg-pattern {
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      background: 
+        radial-gradient(ellipse at 20% 20%, rgba(255, 215, 0, 0.08) 0%, transparent 50%),
+        radial-gradient(ellipse at 80% 80%, rgba(168, 85, 247, 0.08) 0%, transparent 50%),
+        radial-gradient(ellipse at 50% 50%, rgba(59, 130, 246, 0.05) 0%, transparent 60%);
+      pointer-events: none;
+      z-index: 0;
+    }
+
+    #particles {
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      pointer-events: none;
+      z-index: 1;
+    }
+
+    .particle {
+      position: absolute;
+      width: 4px;
+      height: 4px;
+      background: var(--gold);
+      border-radius: 50%;
+      opacity: 0.6;
+      animation: float 20s infinite ease-in-out;
+      box-shadow: 0 0 6px var(--gold);
+    }
+
+    @keyframes float {
+      0%, 100% { transform: translateY(100vh) rotate(0deg); opacity: 0; }
+      10% { opacity: 0.6; }
+      90% { opacity: 0.6; }
+      100% { transform: translateY(-100px) rotate(720deg); opacity: 0; }
+    }
+
     .theme-selector-container {
+      position: relative;
+      z-index: 10;
       max-width: 900px;
       width: 100%;
     }
-    
+
     .page-title {
       text-align: center;
       margin-bottom: 40px;
     }
-    
+
     .page-title h1 {
+      font-family: var(--font-title);
       font-size: 2.5rem;
-      margin-bottom: 10px;
-      background: linear-gradient(90deg, #E3000F, #FF6B35, #FFD500, #00A651, #006CB7);
-      background-size: 200% auto;
+      background: linear-gradient(135deg, var(--gold), var(--gold-light), var(--gold));
       -webkit-background-clip: text;
-      background-clip: text;
       -webkit-text-fill-color: transparent;
-      animation: rainbowMove 3s linear infinite;
+      background-clip: text;
+      margin-bottom: 10px;
+      letter-spacing: 2px;
     }
-    
+
     .page-title p {
-      color: #666;
+      color: var(--text-secondary);
       font-size: 1.1rem;
     }
-    
-    @keyframes rainbowMove {
-      0% { background-position: 0% center; }
-      100% { background-position: 200% center; }
-    }
-    
+
     .themes-grid {
       display: grid;
       grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
       gap: 25px;
       margin-bottom: 40px;
     }
-    
+
     .theme-card {
-      background: white;
-      border-radius: 24px;
+      background: linear-gradient(145deg, var(--bg-medium), var(--bg-light));
+      border: 2px solid rgba(255, 215, 0, 0.2);
+      border-radius: 20px;
       overflow: hidden;
-      box-shadow: 0 10px 40px rgba(0, 0, 0, 0.1);
-      transition: all 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+      transition: all 0.4s ease;
       cursor: pointer;
       position: relative;
     }
-    
+
     .theme-card::before {
       content: '';
       display: block;
       height: 8px;
     }
-    
+
     .theme-card.default::before {
-      background: linear-gradient(90deg, #E3000F, #FFD500, #006CB7, #00A651);
+      background: linear-gradient(90deg, var(--crimson), var(--gold), var(--blue), var(--green));
     }
-    
+
     .theme-card.immersive::before {
-      background: linear-gradient(90deg, #6366F1, #8B5CF6, #FCD34D);
+      background: linear-gradient(90deg, #6366F1, #8B5CF6, var(--gold));
     }
-    
+
     .theme-card.gamified::before {
-      background: linear-gradient(90deg, #10B981, #F59E0B, #EF4444);
+      background: linear-gradient(90deg, var(--green), var(--orange), var(--crimson));
     }
-    
+
     .theme-card:hover {
-      transform: translateY(-10px) rotateX(2deg);
-      box-shadow: 0 20px 60px rgba(0, 0, 0, 0.15);
+      transform: translateY(-10px);
+      border-color: var(--gold);
+      box-shadow: 0 20px 40px rgba(255, 215, 0, 0.15);
     }
-    
+
     .theme-card.selected {
-      border: 4px solid #FFD500;
+      border-color: var(--gold);
+      box-shadow: 0 0 30px rgba(255, 215, 0, 0.3);
     }
-    
+
     .theme-card.selected::after {
       content: '✓';
       position: absolute;
@@ -102,7 +169,7 @@
       right: 20px;
       width: 40px;
       height: 40px;
-      background: #00A651;
+      background: var(--green);
       color: white;
       border-radius: 50%;
       display: flex;
@@ -110,9 +177,9 @@
       justify-content: center;
       font-size: 1.5rem;
       font-weight: bold;
-      box-shadow: 0 4px 10px rgba(0, 166, 81, 0.4);
+      box-shadow: 0 4px 15px rgba(34, 197, 94, 0.4);
     }
-    
+
     .theme-preview {
       height: 180px;
       display: flex;
@@ -120,86 +187,88 @@
       justify-content: center;
       position: relative;
     }
-    
+
     .theme-card.default .theme-preview {
       background: linear-gradient(135deg, #FFFBF0, #FFF8E7);
     }
-    
+
     .theme-card.immersive .theme-preview {
       background: linear-gradient(135deg, #1E1B4B, #312E81);
     }
-    
+
     .theme-card.gamified .theme-preview {
       background: linear-gradient(135deg, #064E3B, #065F46);
     }
-    
+
     .theme-icon {
       font-size: 5rem;
       position: relative;
       z-index: 1;
     }
-    
+
     .theme-card.immersive .theme-icon,
     .theme-card.gamified .theme-icon {
       filter: drop-shadow(0 0 20px rgba(255, 255, 255, 0.3));
     }
-    
+
     .theme-info {
       padding: 25px;
     }
-    
+
     .theme-info h3 {
+      font-family: var(--font-title);
       font-size: 1.4rem;
+      color: var(--gold);
       margin-bottom: 8px;
       display: flex;
       align-items: center;
       gap: 10px;
     }
-    
+
     .theme-info p {
-      color: #666;
+      color: var(--text-secondary);
       font-size: 0.95rem;
       margin-bottom: 15px;
     }
-    
+
     .theme-features {
       display: flex;
       flex-wrap: wrap;
       gap: 8px;
     }
-    
+
     .feature-tag {
       padding: 5px 12px;
       border-radius: 20px;
       font-size: 0.8rem;
       font-weight: 500;
     }
-    
+
     .theme-card.default .feature-tag {
-      background: #FEF3C7;
-      color: #92400E;
+      background: rgba(255, 215, 0, 0.15);
+      color: var(--gold);
     }
-    
+
     .theme-card.immersive .feature-tag {
-      background: #EDE9FE;
-      color: #5B21B6;
+      background: rgba(139, 92, 246, 0.2);
+      color: var(--purple);
     }
-    
+
     .theme-card.gamified .feature-tag {
-      background: #D1FAE5;
-      color: #065F46;
+      background: rgba(34, 197, 94, 0.2);
+      color: var(--green);
     }
-    
+
     .action-buttons {
       display: flex;
       justify-content: center;
       gap: 20px;
       flex-wrap: wrap;
     }
-    
+
     .btn {
       padding: 15px 40px;
-      border-radius: 50px;
+      border-radius: 12px;
       font-size: 1.1rem;
       font-weight: 600;
       cursor: pointer;
@@ -209,113 +278,143 @@
       display: inline-flex;
       align-items: center;
       gap: 10px;
+      font-family: var(--font-body);
     }
-    
+
     .btn-primary {
-      background: linear-gradient(135deg, #006CB7, #448AFF);
-      color: white;
-      box-shadow: 0 4px 0 #004a8f, 0 6px 20px rgba(0, 108, 183, 0.4);
+      background: linear-gradient(135deg, var(--gold), var(--gold-dark));
+      color: var(--bg-dark);
     }
-    
+
     .btn-primary:hover {
-      transform: translateY(-2px);
-      box-shadow: 0 6px 0 #004a8f, 0 10px 30px rgba(0, 108, 183, 0.5);
+      transform: translateY(-3px);
+      box-shadow: 0 10px 30px rgba(255, 215, 0, 0.3);
     }
-    
+
     .btn-secondary {
-      background: white;
-      color: #006CB7;
-      border: 3px solid #006CB7;
+      background: var(--bg-medium);
+      color: var(--text-primary);
+      border: 2px solid rgba(255, 215, 0, 0.3);
     }
-    
+
     .btn-secondary:hover {
-      background: #F0F7FF;
+      border-color: var(--gold);
+      background: var(--bg-light);
     }
-    
+
     .preview-section {
       margin-top: 60px;
       text-align: center;
     }
-    
+
     .preview-section h2 {
+      font-family: var(--font-title);
       font-size: 1.8rem;
+      color: var(--gold);
       margin-bottom: 20px;
-      color: #006CB7;
     }
-    
+
     .preview-frame {
-      background: white;
-      border-radius: 24px;
+      background: linear-gradient(145deg, var(--bg-medium), var(--bg-light));
+      border: 2px solid rgba(255, 215, 0, 0.2);
+      border-radius: 20px;
       padding: 30px;
-      box-shadow: 0 10px 40px rgba(0, 0, 0, 0.1);
       max-width: 800px;
       margin: 0 auto;
     }
-    
+
     .preview-frame h4 {
-      margin-bottom: 15px;
-      color: #333;
+      font-family: var(--font-title);
+      color: var(--gold);
+      margin-bottom: 20px;
     }
-    
+
     .preview-components {
       display: grid;
       grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
       gap: 20px;
     }
-    
+
     .preview-btn {
       padding: 12px 24px;
-      border-radius: 12px;
+      border-radius: 10px;
       font-weight: 600;
       cursor: pointer;
       transition: all 0.3s ease;
       border: none;
+      font-family: var(--font-body);
     }
-    
+
+    .preview-btn.primary {
+      background: linear-gradient(135deg, var(--gold), var(--gold-dark));
+      color: var(--bg-dark);
+    }
+
+    .preview-btn.secondary {
+      background: var(--bg-dark);
+      color: var(--text-primary);
+      border: 2px solid rgba(255, 215, 0, 0.3);
+    }
+
     .preview-card {
       padding: 20px;
-      border-radius: 16px;
+      background: var(--bg-dark);
+      border-radius: 12px;
       text-align: center;
+      border: 1px solid rgba(255, 215, 0, 0.2);
     }
-    
-    [data-theme="immersive"] .preview-section {
-      color: #F5E6D3;
+
+    .preview-card p {
+      color: var(--text-secondary);
     }
-    
-    [data-theme="immersive"] .preview-section h2 {
-      color: #FCD34D;
+
+    .toast {
+      position: fixed;
+      bottom: 30px;
+      left: 50%;
+      transform: translateX(-50%);
+      padding: 15px 30px;
+      border-radius: 10px;
+      font-size: 0.95rem;
+      z-index: 1000;
+      animation: slideUp 0.3s ease;
     }
-    
-    [data-theme="immersive"] .preview-frame {
-      background: linear-gradient(145deg, #F5E6D3, #E8D4B8);
-      border: 2px solid #FCD34D;
+
+    .toast.success {
+      background: linear-gradient(135deg, var(--green), #16a34a);
+      color: white;
     }
-    
-    [data-theme="immersive"] .preview-frame h4 {
-      color: #1E1B4B;
-      font-family: 'Cinzel', serif;
+
+    @keyframes slideUp {
+      from { transform: translateX(-50%) translateY(20px); opacity: 0; }
+      to { transform: translateX(-50%) translateY(0); opacity: 1; }
     }
-    
-    [data-theme="gamified"] .preview-section {
-      color: #ECFDF5;
-    }
-    
-    [data-theme="gamified"] .preview-section h2 {
-      color: #FCD34D;
-    }
-    
-    [data-theme="gamified"] .preview-frame {
-      background: linear-gradient(145deg, #047857, #065F46);
-      border: 2px solid #10B981;
-    }
-    
-    [data-theme="gamified"] .preview-frame h4 {
-      color: #FCD34D;
-      font-family: 'Rajdhani', sans-serif;
+
+    @media (max-width: 600px) {
+      .page-title h1 {
+        font-size: 2rem;
+      }
+
+      .themes-grid {
+        grid-template-columns: 1fr;
+      }
+
+      .action-buttons {
+        flex-direction: column;
+        align-items: center;
+      }
+
+      .btn {
+        width: 100%;
+        justify-content: center;
+      }
     }
   </style>
 </head>
 <body>
+  <div class="bg-pattern"></div>
+  <div id="particles"></div>
+
   <div class="theme-selector-container">
     <div class="page-title">
       <h1>🎨 选择主题风格</h1>
@@ -379,9 +478,9 @@
       <div class="preview-frame">
         <h4>当前主题效果预览</h4>
         <div class="preview-components">
-          <button class="preview-btn btn-primary">主要按钮</button>
-          <button class="preview-btn btn-secondary">次要按钮</button>
-          <div class="preview-card card">
+          <button class="preview-btn primary">主要按钮</button>
+          <button class="preview-btn secondary">次要按钮</button>
+          <div class="preview-card">
             <p>卡片样式预览</p>
           </div>
         </div>
@@ -391,6 +490,14 @@
   
   <script src="js/theme-manager.js"></script>
   <script>
+    for (var i = 0; i < 15; i++) {
+      var p = document.createElement('div');
+      p.className = 'particle';
+      p.style.left = Math.random() * 100 + '%';
+      p.style.animationDelay = Math.random() * 20 + 's';
+      document.getElementById('particles').appendChild(p);
+    }
+
     document.addEventListener('DOMContentLoaded', function() {
       var themeCards = document.querySelectorAll('.theme-card');
       var applyBtn = document.getElementById('applyThemeBtn');
@@ -413,22 +520,46 @@
           var theme = this.dataset.theme;
           selectedTheme = theme;
           updateSelectedCard(theme);
-          ThemeManager.applyTheme(theme);
+          if (typeof ThemeManager !== 'undefined') {
+            ThemeManager.applyTheme(theme);
+          }
         });
       });
       
       applyBtn.addEventListener('click', function() {
-        ThemeManager.applyTheme(selectedTheme);
-        ThemeManager.showToast('主题已应用：' + ThemeManager.getThemeData(selectedTheme).name, 'success');
+        if (typeof ThemeManager !== 'undefined') {
+          ThemeManager.applyTheme(selectedTheme);
+          var themeData = ThemeManager.getThemeData ? ThemeManager.getThemeData(selectedTheme) : { name: selectedTheme };
+          showToast('主题已应用：' + themeData.name);
+        } else {
+          localStorage.setItem('lego-story-theme', selectedTheme);
+          showToast('主题已保存');
+        }
         setTimeout(function() {
           window.location.href = 'index.html';
         }, 1000);
       });
       
       document.addEventListener('themeChanged', function(e) {
-        updateSelectedCard(e.detail.theme);
+        if (e.detail) {
+          updateSelectedCard(e.detail.theme);
+        }
       });
     });
+
+    function showToast(message) {
+      var existing = document.querySelector('.toast');
+      if (existing) existing.remove();
+      
+      var toast = document.createElement('div');
+      toast.className = 'toast success';
+      toast.textContent = message;
+      document.body.appendChild(toast);
+      
+      setTimeout(function() {
+        toast.remove();
+      }, 3000);
+    }
   </script>
 </body>
 </html>
