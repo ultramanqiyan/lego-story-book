@@ -246,6 +246,7 @@ export async function onRequestPost(context) {
       chapterNumber: chapterNumber,
       title: storyData.title,
       hasPuzzle: hasPuzzle,
+      prompt: prompt,
       message: '章节生成成功'
     });
   } catch (error) {
