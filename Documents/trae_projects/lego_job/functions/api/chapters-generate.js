@@ -132,6 +132,7 @@ export async function onRequestPost(context) {
     var body = await context.request.json();
     var userId = body.userId;
     var plotSelection = body.plotSelection || null;
+    var selectedCharacterIds = body.characterIds || [];
     
     if (!plotSelection) {
       plotSelection = getRandomPlotSelection();
@@ -156,6 +157,12 @@ export async function onRequestPost(context) {
     
     if (!characters.results || characters.results.length === 0) {
       return createErrorResponse('请先添加角色', 400);
+    }
+    
+    if (selectedCharacterIds.length > 0) {
+      characters.results = characters.results.filter(function(c) {
+        return selectedCharacterIds.indexOf(c.character_id) !== -1;
+      });
     }
     
     var previousSummary = null;
