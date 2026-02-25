@@ -1,0 +1,1075 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>桌游风格卡牌选择 - 乐高故事书</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+SC:wght@400;500;700&family=Cinzel:wght@400;600;700&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --rarity-common: #9e9e9e;
+            --rarity-rare: #4fc3f7;
+            --rarity-epic: #ba68c8;
+            --rarity-legendary: #ff9800;
+            --rarity-mythic: #ffd700;
+            
+            --role-protagonist: #ffd700;
+            --role-supporting: #64b5f6;
+            --role-antagonist: #ef5350;
+            --role-bystander: #9e9e9e;
+            
+            --plot-weather: #81d4fa;
+            --plot-item: #bcaaa4;
+            --plot-terrain: #81c784;
+            --plot-event: #ff8a65;
+            --plot-special: #ce93d8;
+            
+            --bg-table: #1a472a;
+            --bg-table-dark: #0d2818;
+            --bg-card-slot: rgba(0,0,0,0.4);
+            
+            --text-primary: #f8fafc;
+            --text-secondary: #94a3b8;
+            --text-gold: #ffd700;
+            
+            --font-title: 'Cinzel', serif;
+            --font-body: 'Noto Sans SC', sans-serif;
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: var(--font-body);
+            background: var(--bg-table);
+            min-height: 100vh;
+            overflow-x: hidden;
+            position: relative;
+        }
+
+        .game-table {
+            min-height: 100vh;
+            background: 
+                radial-gradient(ellipse at center, var(--bg-table) 0%, var(--bg-table-dark) 100%),
+                url("data:image/svg+xml,%3Csvg width='60' height='60' viewBox='0 0 60 60' xmlns='http://www.w3.org/2000/svg'%3E%3Cg fill='none' fill-rule='evenodd'%3E%3Cg fill='%23ffffff' fill-opacity='0.03'%3E%3Cpath d='M36 34v-4h-2v4h-4v2h4v4h2v-4h4v-2h-4zm0-30V0h-2v4h-4v2h4v4h2V6h4V4h-4zM6 34v-4H4v4H0v2h4v4h2v-4h4v-2H6zM6 4V0H4v4H0v2h4v4h2V6h4V4H6z'/%3E%3C/g%3E%3C/g%3E%3C/svg%3E");
+            position: relative;
+        }
+
+        .table-border {
+            position: fixed;
+            inset: 0;
+            border: 20px solid;
+            border-image: linear-gradient(135deg, #8b4513, #654321, #8b4513) 1;
+            pointer-events: none;
+            z-index: 100;
+        }
+
+        .table-border::before {
+            content: '';
+            position: absolute;
+            inset: -20px;
+            border: 5px solid #d4af37;
+            opacity: 0.5;
+        }
+
+        .game-header {
+            position: fixed;
+            top: 30px;
+            left: 50%;
+            transform: translateX(-50%);
+            z-index: 50;
+            text-align: center;
+        }
+
+        .game-title {
+            font-family: var(--font-title);
+            font-size: 2rem;
+            color: var(--text-gold);
+            text-shadow: 0 0 20px rgba(255, 215, 0, 0.5), 2px 2px 4px rgba(0,0,0,0.5);
+            letter-spacing: 3px;
+        }
+
+        .game-subtitle {
+            font-size: 0.9rem;
+            color: var(--text-secondary);
+            margin-top: 5px;
+        }
+
+        .card-deck-area {
+            position: fixed;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            width: 90%;
+            max-width: 1400px;
+            z-index: 10;
+        }
+
+        .deck-section {
+            margin-bottom: 30px;
+        }
+
+        .deck-header {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            margin-bottom: 15px;
+            padding: 0 20px;
+        }
+
+        .deck-title {
+            font-family: var(--font-title);
+            font-size: 1.3rem;
+            color: var(--text-gold);
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .deck-count {
+            background: rgba(0,0,0,0.5);
+            padding: 5px 15px;
+            border-radius: 20px;
+            font-size: 0.85rem;
+            color: var(--text-secondary);
+        }
+
+        .deck-filters {
+            display: flex;
+            gap: 8px;
+        }
+
+        .filter-btn {
+            padding: 6px 14px;
+            border: none;
+            border-radius: 20px;
+            background: rgba(255,255,255,0.1);
+            color: var(--text-primary);
+            cursor: pointer;
+            font-size: 0.8rem;
+            transition: all 0.3s ease;
+            font-family: var(--font-body);
+        }
+
+        .filter-btn:hover {
+            background: rgba(255,255,255,0.2);
+        }
+
+        .filter-btn.active {
+            background: linear-gradient(135deg, var(--text-gold), #ff9800);
+            color: #000;
+            font-weight: 600;
+        }
+
+        .cards-row {
+            display: flex;
+            gap: 15px;
+            padding: 20px;
+            overflow-x: auto;
+            scroll-behavior: smooth;
+            -webkit-overflow-scrolling: touch;
+        }
+
+        .cards-row::-webkit-scrollbar {
+            height: 8px;
+        }
+
+        .cards-row::-webkit-scrollbar-track {
+            background: rgba(0,0,0,0.3);
+            border-radius: 4px;
+        }
+
+        .cards-row::-webkit-scrollbar-thumb {
+            background: linear-gradient(90deg, var(--text-gold), #ff9800);
+            border-radius: 4px;
+        }
+
+        .card-wrapper {
+            flex-shrink: 0;
+            perspective: 1000px;
+        }
+
+        .card {
+            width: 180px;
+            height: 250px;
+            position: relative;
+            transform-style: preserve-3d;
+            transition: transform 0.6s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+            cursor: pointer;
+        }
+
+        .card-wrapper:hover .card {
+            transform: translateY(-20px) rotateX(5deg);
+        }
+
+        .card-wrapper:hover .card.selected {
+            transform: translateY(-30px) rotateX(5deg) scale(1.05);
+        }
+
+        .card-face {
+            position: absolute;
+            width: 100%;
+            height: 100%;
+            backface-visibility: hidden;
+            border-radius: 12px;
+            overflow: hidden;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.5);
+        }
+
+        .card-front {
+            background: linear-gradient(180deg, #2d2d44 0%, #1a1a2e 100%);
+            display: flex;
+            flex-direction: column;
+        }
+
+        .card.selected .card-front {
+            box-shadow: 0 0 30px rgba(255, 215, 0, 0.8), 0 15px 40px rgba(0,0,0,0.5);
+        }
+
+        .card-top-bar {
+            height: 6px;
+        }
+
+        .card.rarity-common .card-top-bar { background: linear-gradient(90deg, #9e9e9e, #bdbdbd); }
+        .card.rarity-rare .card-top-bar { background: linear-gradient(90deg, #29b6f6, #4fc3f7); }
+        .card.rarity-epic .card-top-bar { background: linear-gradient(90deg, #ab47bc, #ba68c8); }
+        .card.rarity-legendary .card-top-bar { background: linear-gradient(90deg, #ff9800, #ffb74d); }
+        .card.rarity-mythic .card-top-bar { background: linear-gradient(90deg, #ffd700, #ffeb3b); }
+
+        .card-type-badge {
+            position: absolute;
+            top: 12px;
+            left: 12px;
+            padding: 3px 8px;
+            border-radius: 8px;
+            font-size: 0.65rem;
+            font-weight: 600;
+            z-index: 2;
+        }
+
+        .badge-character { background: rgba(255, 215, 0, 0.9); color: #000; }
+        .badge-plot { background: rgba(139, 69, 19, 0.9); color: #fff; }
+
+        .card-rarity-gem {
+            position: absolute;
+            top: 12px;
+            right: 12px;
+            width: 18px;
+            height: 18px;
+            border-radius: 50%;
+            z-index: 2;
+        }
+
+        .card.rarity-common .card-rarity-gem { background: linear-gradient(135deg, #e0e0e0, #9e9e9e); }
+        .card.rarity-rare .card-rarity-gem { background: linear-gradient(135deg, #81d4fa, #0288d1); box-shadow: 0 0 10px rgba(79, 195, 247, 0.6); }
+        .card.rarity-epic .card-rarity-gem { background: linear-gradient(135deg, #ce93d8, #7b1fa2); box-shadow: 0 0 10px rgba(186, 104, 200, 0.6); }
+        .card.rarity-legendary .card-rarity-gem { background: linear-gradient(135deg, #ffcc80, #ef6c00); box-shadow: 0 0 15px rgba(255, 152, 0, 0.8); animation: gem-glow 2s ease-in-out infinite; }
+        .card.rarity-mythic .card-rarity-gem { background: linear-gradient(135deg, #ffd700, #ff8f00); box-shadow: 0 0 20px rgba(255, 215, 0, 1); animation: gem-glow 1.5s ease-in-out infinite; }
+
+        @keyframes gem-glow {
+            0%, 100% { box-shadow: 0 0 15px currentColor; }
+            50% { box-shadow: 0 0 25px currentColor, 0 0 35px currentColor; }
+        }
+
+        .card-image {
+            height: 100px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            position: relative;
+            background: rgba(0,0,0,0.2);
+        }
+
+        .card-avatar {
+            font-size: 3rem;
+            filter: drop-shadow(0 4px 8px rgba(0,0,0,0.3));
+        }
+
+        .card-content {
+            padding: 12px;
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+        }
+
+        .card-name {
+            font-family: var(--font-title);
+            font-size: 0.95rem;
+            font-weight: 600;
+            margin-bottom: 3px;
+            color: var(--text-primary);
+        }
+
+        .card-subtitle {
+            font-size: 0.7rem;
+            color: var(--text-secondary);
+            font-style: italic;
+            margin-bottom: 8px;
+        }
+
+        .card-tags {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 4px;
+            margin-bottom: 8px;
+        }
+
+        .card-tag {
+            padding: 2px 6px;
+            background: rgba(255,255,255,0.1);
+            border-radius: 8px;
+            font-size: 0.6rem;
+        }
+
+        .card-desc {
+            font-size: 0.7rem;
+            color: var(--text-secondary);
+            line-height: 1.3;
+            margin-top: auto;
+            display: -webkit-box;
+            -webkit-line-clamp: 2;
+            -webkit-box-orient: vertical;
+            overflow: hidden;
+        }
+
+        .card-footer {
+            height: 30px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            background: rgba(0,0,0,0.3);
+        }
+
+        .card-select-indicator {
+            width: 20px;
+            height: 20px;
+            border-radius: 50%;
+            border: 2px solid rgba(255,255,255,0.3);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            transition: all 0.3s ease;
+        }
+
+        .card.selected .card-select-indicator {
+            background: var(--text-gold);
+            border-color: var(--text-gold);
+        }
+
+        .card.selected .card-select-indicator::after {
+            content: '✓';
+            color: #000;
+            font-size: 0.8rem;
+            font-weight: bold;
+        }
+
+        .card-border {
+            position: absolute;
+            inset: 0;
+            border-radius: 12px;
+            border: 3px solid transparent;
+            pointer-events: none;
+            transition: all 0.3s ease;
+        }
+
+        .card.rarity-common .card-border { border-color: rgba(158, 158, 158, 0.5); }
+        .card.rarity-rare .card-border { border-color: rgba(79, 195, 247, 0.7); }
+        .card.rarity-epic .card-border { border-color: rgba(186, 104, 200, 0.7); animation: border-pulse 2s ease-in-out infinite; }
+        .card.rarity-legendary .card-border { border-color: rgba(255, 152, 0, 0.9); animation: border-pulse 2s ease-in-out infinite; }
+        .card.rarity-mythic .card-border { border-color: rgba(255, 215, 0, 1); animation: border-pulse 1.5s ease-in-out infinite; }
+
+        @keyframes border-pulse {
+            0%, 100% { box-shadow: 0 0 10px currentColor; }
+            50% { box-shadow: 0 0 20px currentColor; }
+        }
+
+        .selection-panel {
+            position: fixed;
+            bottom: 0;
+            left: 0;
+            right: 0;
+            background: linear-gradient(180deg, rgba(13, 40, 24, 0.95), rgba(0, 0, 0, 0.98));
+            border-top: 3px solid #d4af37;
+            padding: 20px 30px;
+            z-index: 50;
+            backdrop-filter: blur(10px);
+        }
+
+        .selection-header {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            margin-bottom: 15px;
+        }
+
+        .selection-title {
+            font-family: var(--font-title);
+            font-size: 1.1rem;
+            color: var(--text-gold);
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .selection-requirements {
+            display: flex;
+            gap: 20px;
+            font-size: 0.85rem;
+        }
+
+        .requirement {
+            display: flex;
+            align-items: center;
+            gap: 5px;
+            color: var(--text-secondary);
+        }
+
+        .requirement.met {
+            color: #4caf50;
+        }
+
+        .requirement-icon {
+            width: 20px;
+            height: 20px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 0.7rem;
+        }
+
+        .requirement.met .requirement-icon {
+            background: #4caf50;
+            color: white;
+        }
+
+        .requirement:not(.met) .requirement-icon {
+            border: 2px solid var(--text-secondary);
+        }
+
+        .selected-cards {
+            display: flex;
+            gap: 15px;
+            overflow-x: auto;
+            padding: 10px 0;
+        }
+
+        .selected-slot {
+            width: 120px;
+            height: 170px;
+            border: 2px dashed rgba(255,255,255,0.2);
+            border-radius: 10px;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            flex-shrink: 0;
+            transition: all 0.3s ease;
+            position: relative;
+        }
+
+        .selected-slot:hover {
+            border-color: rgba(255, 215, 0, 0.5);
+            background: rgba(255, 215, 0, 0.05);
+        }
+
+        .selected-slot.filled {
+            border: none;
+            background: transparent;
+        }
+
+        .selected-slot.premium {
+            border-color: var(--text-gold);
+            background: rgba(255, 215, 0, 0.1);
+        }
+
+        .slot-icon {
+            font-size: 1.5rem;
+            opacity: 0.5;
+        }
+
+        .slot-label {
+            font-size: 0.7rem;
+            color: var(--text-secondary);
+            margin-top: 5px;
+        }
+
+        .mini-card {
+            width: 100%;
+            height: 100%;
+            border-radius: 8px;
+            overflow: hidden;
+            position: relative;
+        }
+
+        .mini-card-content {
+            width: 100%;
+            height: 100%;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            background: linear-gradient(180deg, #2d2d44, #1a1a2e);
+            padding: 10px;
+        }
+
+        .mini-card-avatar {
+            font-size: 2rem;
+            margin-bottom: 5px;
+        }
+
+        .mini-card-name {
+            font-size: 0.7rem;
+            font-weight: 600;
+            text-align: center;
+        }
+
+        .mini-card-type {
+            font-size: 0.6rem;
+            color: var(--text-secondary);
+            margin-top: 2px;
+        }
+
+        .mini-card-remove {
+            position: absolute;
+            top: 5px;
+            right: 5px;
+            width: 18px;
+            height: 18px;
+            border-radius: 50%;
+            background: #ef5350;
+            color: white;
+            border: none;
+            cursor: pointer;
+            font-size: 0.7rem;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            opacity: 0;
+            transition: opacity 0.3s ease;
+        }
+
+        .selected-slot:hover .mini-card-remove {
+            opacity: 1;
+        }
+
+        .confirm-section {
+            display: flex;
+            align-items: center;
+            gap: 20px;
+            margin-left: auto;
+        }
+
+        .confirm-btn {
+            padding: 12px 35px;
+            font-size: 1rem;
+            font-weight: 600;
+            border: none;
+            border-radius: 25px;
+            background: linear-gradient(135deg, var(--text-gold), #ff9800);
+            color: #000;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            font-family: var(--font-body);
+            box-shadow: 0 4px 15px rgba(255, 215, 0, 0.4);
+        }
+
+        .confirm-btn:hover:not(:disabled) {
+            transform: translateY(-2px);
+            box-shadow: 0 6px 25px rgba(255, 215, 0, 0.6);
+        }
+
+        .confirm-btn:disabled {
+            background: #555;
+            color: #888;
+            cursor: not-allowed;
+            box-shadow: none;
+        }
+
+        .clear-btn {
+            padding: 10px 20px;
+            font-size: 0.85rem;
+            border: 2px solid rgba(255,255,255,0.3);
+            border-radius: 20px;
+            background: transparent;
+            color: var(--text-secondary);
+            cursor: pointer;
+            transition: all 0.3s ease;
+            font-family: var(--font-body);
+        }
+
+        .clear-btn:hover {
+            border-color: #ef5350;
+            color: #ef5350;
+        }
+
+        .particles {
+            position: fixed;
+            inset: 0;
+            pointer-events: none;
+            overflow: hidden;
+            z-index: 1;
+        }
+
+        .particle {
+            position: absolute;
+            width: 3px;
+            height: 3px;
+            background: var(--text-gold);
+            border-radius: 50%;
+            opacity: 0.4;
+            animation: float-up 20s linear infinite;
+        }
+
+        @keyframes float-up {
+            0% {
+                transform: translateY(100vh) rotate(0deg);
+                opacity: 0;
+            }
+            10% { opacity: 0.4; }
+            90% { opacity: 0.4; }
+            100% {
+                transform: translateY(-100vh) rotate(720deg);
+                opacity: 0;
+            }
+        }
+
+        .toast {
+            position: fixed;
+            top: 100px;
+            left: 50%;
+            transform: translateX(-50%) translateY(-20px);
+            background: rgba(0,0,0,0.9);
+            color: white;
+            padding: 12px 25px;
+            border-radius: 10px;
+            border: 1px solid var(--text-gold);
+            opacity: 0;
+            transition: all 0.3s ease;
+            z-index: 1000;
+            font-size: 0.9rem;
+        }
+
+        .toast.show {
+            transform: translateX(-50%) translateY(0);
+            opacity: 1;
+        }
+
+        .card-glow {
+            position: absolute;
+            inset: -5px;
+            border-radius: 15px;
+            opacity: 0;
+            transition: opacity 0.3s ease;
+            pointer-events: none;
+        }
+
+        .card.selected .card-glow {
+            opacity: 1;
+            background: radial-gradient(circle at center, rgba(255, 215, 0, 0.3), transparent 70%);
+            animation: glow-pulse 2s ease-in-out infinite;
+        }
+
+        @keyframes glow-pulse {
+            0%, 100% { opacity: 0.5; }
+            50% { opacity: 1; }
+        }
+
+        .deck-divider {
+            height: 1px;
+            background: linear-gradient(90deg, transparent, rgba(255,215,0,0.3), transparent);
+            margin: 10px 20px;
+        }
+
+        .help-tip {
+            position: fixed;
+            top: 80px;
+            left: 50%;
+            transform: translateX(-50%);
+            background: rgba(0,0,0,0.7);
+            padding: 8px 20px;
+            border-radius: 20px;
+            font-size: 0.8rem;
+            color: var(--text-secondary);
+            z-index: 40;
+        }
+    </style>
+</head>
+<body>
+    <div class="particles" id="particles"></div>
+    <div class="table-border"></div>
+
+    <div class="game-table">
+        <header class="game-header">
+            <h1 class="game-title">🎴 故事卡牌工坊</h1>
+            <p class="game-subtitle">选择角色与情节，创造你的冒险故事</p>
+        </header>
+
+        <div class="help-tip">💡 点击卡牌选中/取消，拖动查看更多卡牌</div>
+
+        <div class="card-deck-area">
+            <div class="deck-section">
+                <div class="deck-header">
+                    <div class="deck-title">
+                        <span>🎭 角色卡牌</span>
+                        <span class="deck-count" id="characterCount">10张可用</span>
+                    </div>
+                    <div class="deck-filters">
+                        <button class="filter-btn active" data-filter="all-char">全部</button>
+                        <button class="filter-btn" data-filter="protagonist">⭐ 主角</button>
+                        <button class="filter-btn" data-filter="supporting">🎭 配角</button>
+                        <button class="filter-btn" data-filter="antagonist">👿 反派</button>
+                    </div>
+                </div>
+                <div class="cards-row" id="characterDeck"></div>
+            </div>
+
+            <div class="deck-divider"></div>
+
+            <div class="deck-section">
+                <div class="deck-header">
+                    <div class="deck-title">
+                        <span>🎴 情节卡牌</span>
+                        <span class="deck-count" id="plotCount">12张可用</span>
+                    </div>
+                    <div class="deck-filters">
+                        <button class="filter-btn active" data-filter="all-plot">全部</button>
+                        <button class="filter-btn" data-filter="weather">🌤 天气</button>
+                        <button class="filter-btn" data-filter="item">🎒 道具</button>
+                        <button class="filter-btn" data-filter="terrain">🏔 地形</button>
+                        <button class="filter-btn" data-filter="event">⚡ 事件</button>
+                    </div>
+                </div>
+                <div class="cards-row" id="plotDeck"></div>
+            </div>
+        </div>
+
+        <div class="selection-panel">
+            <div class="selection-header">
+                <div class="selection-title">
+                    <span>📋 已选卡牌</span>
+                </div>
+                <div class="selection-requirements">
+                    <div class="requirement" id="reqProtagonist">
+                        <span class="requirement-icon"></span>
+                        <span>主角 ×1</span>
+                    </div>
+                    <div class="requirement" id="reqCharacters">
+                        <span class="requirement-icon"></span>
+                        <span>角色 1-4</span>
+                    </div>
+                    <div class="requirement" id="reqPlots">
+                        <span class="requirement-icon"></span>
+                        <span>情节 1-4</span>
+                    </div>
+                </div>
+                <div class="confirm-section">
+                    <button class="clear-btn" onclick="clearSelection()">清空选择</button>
+                    <button class="confirm-btn" id="confirmBtn" disabled onclick="confirmSelection()">确认选择</button>
+                </div>
+            </div>
+            <div class="selected-cards" id="selectedCards">
+                <div class="selected-slot premium" data-slot="protagonist">
+                    <div class="slot-icon">👑</div>
+                    <div class="slot-label">主角</div>
+                </div>
+                <div class="selected-slot" data-slot="char1">
+                    <div class="slot-icon">➕</div>
+                    <div class="slot-label">角色</div>
+                </div>
+                <div class="selected-slot" data-slot="char2">
+                    <div class="slot-icon">➕</div>
+                    <div class="slot-label">角色</div>
+                </div>
+                <div class="selected-slot" data-slot="char3">
+                    <div class="slot-icon">➕</div>
+                    <div class="slot-label">角色</div>
+                </div>
+                <div class="selected-slot" data-slot="plot1">
+                    <div class="slot-icon">➕</div>
+                    <div class="slot-label">情节</div>
+                </div>
+                <div class="selected-slot" data-slot="plot2">
+                    <div class="slot-icon">➕</div>
+                    <div class="slot-label">情节</div>
+                </div>
+                <div class="selected-slot" data-slot="plot3">
+                    <div class="slot-icon">➕</div>
+                    <div class="slot-label">情节</div>
+                </div>
+                <div class="selected-slot" data-slot="plot4">
+                    <div class="slot-icon">➕</div>
+                    <div class="slot-label">情节</div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="toast" id="toast"></div>
+
+    <script>
+        var characters = [
+            { id: 'c1', name: '龙骑士', title: '传说守护者', avatar: '🐉', rarity: 'legendary', role: 'protagonist', tags: ['🔥 龙焰', '⚔️ 骑士'], desc: '与巨龙缔结契约的传奇骑士' },
+            { id: 'c2', name: '光明骑士', title: '正义化身', avatar: '🦸', rarity: 'legendary', role: 'protagonist', tags: ['☀️ 光明', '🛡️ 守护'], desc: '正义的化身，守护世界' },
+            { id: 'c3', name: '冰雪女王', title: '寒冰统治者', avatar: '👸', rarity: 'epic', role: 'protagonist', tags: ['❄️ 冰雪', '👑 王室'], desc: '统治冰雪王国的女王' },
+            { id: 'c4', name: '暗影刺客', title: '夜幕行者', avatar: '🦹', rarity: 'epic', role: 'antagonist', tags: ['🌙 暗影', '🗡️ 刺客'], desc: '潜伏在黑暗中的致命刺客' },
+            { id: 'c5', name: '精灵法师', title: '自然守护者', avatar: '🧝', rarity: 'rare', role: 'supporting', tags: ['🌿 自然', '✨ 魔法'], desc: '来自精灵森林的法师' },
+            { id: 'c6', name: '智慧法师', title: '知识守护者', avatar: '🧙', rarity: 'epic', role: 'supporting', tags: ['📚 智慧', '✨ 魔法'], desc: '博学的法师' },
+            { id: 'c7', name: '黑暗领主', title: '混沌使者', avatar: '😈', rarity: 'epic', role: 'antagonist', tags: ['🌑 黑暗', '💀 毁灭'], desc: '邪恶的黑暗领主' },
+            { id: 'c8', name: '吸血伯爵', title: '暗夜贵族', avatar: '🧛', rarity: 'rare', role: 'antagonist', tags: ['🦇 吸血', '🏰 贵族'], desc: '神秘的吸血鬼伯爵' },
+            { id: 'c9', name: '机械守卫', title: '普通型号', avatar: '🤖', rarity: 'common', role: 'supporting', tags: ['🤖 机械', '⚖️ 中立'], desc: '标准的机械守卫' },
+            { id: 'c10', name: '村庄农夫', title: '普通村民', avatar: '👨‍🌾', rarity: 'common', role: 'supporting', tags: ['🏠 村民', '🌾 务农'], desc: '普通的村庄农夫' },
+        ];
+
+        var plots = [
+            { id: 'p1', name: '晴空万里', avatar: '🌤', rarity: 'common', type: 'weather', tags: ['☀️ 阳光'], desc: '阳光明媚，视野开阔' },
+            { id: 'p2', name: '雷雨交加', avatar: '⛈', rarity: 'rare', type: 'weather', tags: ['⚡ 雷电'], desc: '电闪雷鸣，行动受阻' },
+            { id: 'p3', name: '暴风雪', avatar: '❄️', rarity: 'epic', type: 'weather', tags: ['🌨 暴雪'], desc: '冰天雪地，生存挑战' },
+            { id: 'p4', name: '勇者之剑', avatar: '🗡️', rarity: 'rare', type: 'item', tags: ['⚔️ 武器'], desc: '攻击力+30%' },
+            { id: 'p5', name: '守护之盾', avatar: '🛡️', rarity: 'rare', type: 'item', tags: ['🛡 防御'], desc: '防御力+30%' },
+            { id: 'p6', name: '魔法水晶', avatar: '💎', rarity: 'epic', type: 'item', tags: ['✨ 魔法'], desc: '魔法力+50%' },
+            { id: 'p7', name: '神秘森林', avatar: '🌲', rarity: 'rare', type: 'terrain', tags: ['🌳 森林'], desc: '隐藏着神秘生物' },
+            { id: 'p8', name: '古老城堡', avatar: '🏰', rarity: 'epic', type: 'terrain', tags: ['🏯 建筑'], desc: '充满历史与秘密' },
+            { id: 'p9', name: '火山地带', avatar: '🌋', rarity: 'legendary', type: 'terrain', tags: ['🔥 危险'], desc: '危险与机遇并存' },
+            { id: 'p10', name: '意外相遇', avatar: '🤝', rarity: 'common', type: 'event', tags: ['👤 NPC'], desc: '遇到神秘人物' },
+            { id: 'p11', name: '宝藏发现', avatar: '💰', rarity: 'rare', type: 'event', tags: ['🎁 奖励'], desc: '发现珍贵宝藏' },
+            { id: 'p12', name: '命运转折', avatar: '🔮', rarity: 'legendary', type: 'event', tags: ['⭐ 特殊'], desc: '改变故事走向' },
+        ];
+
+        var selectedCharacters = [];
+        var selectedPlots = [];
+
+        function createCard(item, isCharacter) {
+            var rarityClass = 'rarity-' + item.rarity;
+            var typeBadge = isCharacter ? 
+                '<span class="card-type-badge badge-character">' + (item.role === 'protagonist' ? '主角' : item.role === 'supporting' ? '配角' : item.role === 'antagonist' ? '反派' : '路人') + '</span>' :
+                '<span class="card-type-badge badge-plot">' + (item.type === 'weather' ? '天气' : item.type === 'item' ? '道具' : item.type === 'terrain' ? '地形' : '事件') + '</span>';
+            
+            var tags = item.tags.map(function(t) { return '<span class="card-tag">' + t + '</span>'; }).join('');
+
+            return '<div class="card-wrapper" data-id="' + item.id + '" data-type="' + (isCharacter ? 'character' : 'plot') + '" data-role="' + (isCharacter ? item.role : '') + '" data-plot-type="' + (isCharacter ? '' : item.type) + '">' +
+                '<div class="card ' + rarityClass + '" onclick="toggleCard(\'' + item.id + '\', ' + isCharacter + ')">' +
+                    '<div class="card-glow"></div>' +
+                    '<div class="card-face card-front">' +
+                        '<div class="card-top-bar"></div>' +
+                        typeBadge +
+                        '<div class="card-rarity-gem"></div>' +
+                        '<div class="card-image">' +
+                            '<div class="card-avatar">' + item.avatar + '</div>' +
+                        '</div>' +
+                        '<div class="card-content">' +
+                            '<div class="card-name">' + item.name + '</div>' +
+                            '<div class="card-subtitle">' + item.title + '</div>' +
+                            '<div class="card-tags">' + tags + '</div>' +
+                            '<div class="card-desc">' + item.desc + '</div>' +
+                        '</div>' +
+                        '<div class="card-footer">' +
+                            '<div class="card-select-indicator"></div>' +
+                        '</div>' +
+                    '</div>' +
+                    '<div class="card-border"></div>' +
+                '</div>' +
+            '</div>';
+        }
+
+        function renderCharacters(filter) {
+            var deck = document.getElementById('characterDeck');
+            var filtered = filter === 'all-char' ? characters : characters.filter(function(c) { return c.role === filter; });
+            deck.innerHTML = filtered.map(function(c) { return createCard(c, true); }).join('');
+            updateCardStates();
+        }
+
+        function renderPlots(filter) {
+            var deck = document.getElementById('plotDeck');
+            var filtered = filter === 'all-plot' ? plots : plots.filter(function(p) { return p.type === filter; });
+            deck.innerHTML = filtered.map(function(p) { return createCard(p, false); }).join('');
+            updateCardStates();
+        }
+
+        function toggleCard(id, isCharacter) {
+            var arr = isCharacter ? selectedCharacters : selectedPlots;
+            var item = isCharacter ? characters.find(function(c) { return c.id === id; }) : plots.find(function(p) { return p.id === id; });
+            
+            if (!item) return;
+
+            var index = arr.findIndex(function(i) { return i.id === id; });
+            
+            if (index > -1) {
+                arr.splice(index, 1);
+                showToast('已取消: ' + item.name);
+            } else {
+                if (isCharacter) {
+                    if (selectedCharacters.length >= 4) {
+                        showToast('最多选择4个角色！', 'error');
+                        return;
+                    }
+                    if (item.role === 'protagonist' && selectedCharacters.some(function(c) { return c.role === 'protagonist'; })) {
+                        showToast('只能选择1个主角！', 'error');
+                        return;
+                    }
+                } else {
+                    if (selectedPlots.length >= 4) {
+                        showToast('最多选择4个情节！', 'error');
+                        return;
+                    }
+                }
+                arr.push(item);
+                showToast('已选择: ' + item.name);
+            }
+
+            updateCardStates();
+            updateSelectionPanel();
+        }
+
+        function updateCardStates() {
+            document.querySelectorAll('.card-wrapper').forEach(function(wrapper) {
+                var id = wrapper.dataset.id;
+                var isCharacter = wrapper.dataset.type === 'character';
+                var arr = isCharacter ? selectedCharacters : selectedPlots;
+                var isSelected = arr.some(function(i) { return i.id === id; });
+                var card = wrapper.querySelector('.card');
+                
+                if (isSelected) {
+                    card.classList.add('selected');
+                } else {
+                    card.classList.remove('selected');
+                }
+            });
+        }
+
+        function updateSelectionPanel() {
+            var slots = document.querySelectorAll('.selected-slot');
+            
+            var protagonistSlot = document.querySelector('[data-slot="protagonist"]');
+            var charSlots = document.querySelectorAll('[data-slot^="char"]');
+            var plotSlots = document.querySelectorAll('[data-slot^="plot"]');
+
+            var protagonist = selectedCharacters.find(function(c) { return c.role === 'protagonist'; });
+            var otherChars = selectedCharacters.filter(function(c) { return c.role !== 'protagonist'; });
+
+            if (protagonist) {
+                protagonistSlot.classList.add('filled');
+                protagonistSlot.innerHTML = createMiniCard(protagonist, true);
+            } else {
+                protagonistSlot.classList.remove('filled');
+                protagonistSlot.innerHTML = '<div class="slot-icon">👑</div><div class="slot-label">主角</div>';
+            }
+
+            charSlots.forEach(function(slot, index) {
+                if (otherChars[index]) {
+                    slot.classList.add('filled');
+                    slot.innerHTML = createMiniCard(otherChars[index], true);
+                } else {
+                    slot.classList.remove('filled');
+                    slot.innerHTML = '<div class="slot-icon">➕</div><div class="slot-label">角色</div>';
+                }
+            });
+
+            plotSlots.forEach(function(slot, index) {
+                if (selectedPlots[index]) {
+                    slot.classList.add('filled');
+                    slot.innerHTML = createMiniCard(selectedPlots[index], false);
+                } else {
+                    slot.classList.remove('filled');
+                    slot.innerHTML = '<div class="slot-icon">➕</div><div class="slot-label">情节</div>';
+                }
+            });
+
+            var hasProtagonist = !!protagonist;
+            var hasCharacters = selectedCharacters.length >= 1;
+            var hasPlots = selectedPlots.length >= 1;
+
+            document.getElementById('reqProtagonist').classList.toggle('met', hasProtagonist);
+            document.getElementById('reqCharacters').classList.toggle('met', hasCharacters);
+            document.getElementById('reqPlots').classList.toggle('met', hasPlots);
+
+            document.getElementById('confirmBtn').disabled = !(hasProtagonist && hasCharacters && hasPlots);
+        }
+
+        function createMiniCard(item, isCharacter) {
+            var typeLabel = isCharacter ?
+                (item.role === 'protagonist' ? '主角' : item.role === 'supporting' ? '配角' : item.role === 'antagonist' ? '反派' : '路人') :
+                (item.type === 'weather' ? '天气' : item.type === 'item' ? '道具' : item.type === 'terrain' ? '地形' : '事件');
+            
+            return '<div class="mini-card">' +
+                '<div class="mini-card-content">' +
+                    '<div class="mini-card-avatar">' + item.avatar + '</div>' +
+                    '<div class="mini-card-name">' + item.name + '</div>' +
+                    '<div class="mini-card-type">' + typeLabel + '</div>' +
+                '</div>' +
+                '<button class="mini-card-remove" onclick="event.stopPropagation(); removeItem(\'' + item.id + '\', ' + isCharacter + ')">×</button>' +
+            '</div>';
+        }
+
+        function removeItem(id, isCharacter) {
+            var arr = isCharacter ? selectedCharacters : selectedPlots;
+            var item = arr.find(function(i) { return i.id === id; });
+            var index = arr.findIndex(function(i) { return i.id === id; });
+            
+            if (index > -1) {
+                arr.splice(index, 1);
+                showToast('已移除: ' + item.name);
+                updateCardStates();
+                updateSelectionPanel();
+            }
+        }
+
+        function clearSelection() {
+            selectedCharacters = [];
+            selectedPlots = [];
+            updateCardStates();
+            updateSelectionPanel();
+            showToast('已清空所有选择');
+        }
+
+        function confirmSelection() {
+            var message = '选择完成！\n角色: ' + selectedCharacters.map(function(c) { return c.name; }).join(', ') + '\n情节: ' + selectedPlots.map(function(p) { return p.name; }).join(', ');
+            showToast('🎉 故事卡牌选择完成！');
+            alert(message);
+        }
+
+        function showToast(message, type) {
+            var toast = document.getElementById('toast');
+            toast.textContent = message;
+            toast.style.borderColor = type === 'error' ? '#ef5350' : type === 'success' ? '#4caf50' : 'var(--text-gold)';
+            toast.classList.add('show');
+            setTimeout(function() { toast.classList.remove('show'); }, 2000);
+        }
+
+        document.querySelectorAll('.filter-btn[data-filter]').forEach(function(btn) {
+            btn.addEventListener('click', function() {
+                var filter = this.dataset.filter;
+                
+                if (filter.endsWith('-char')) {
+                    document.querySelectorAll('.filter-btn[data-filter$="-char"]').forEach(function(b) { b.classList.remove('active'); });
+                    this.classList.add('active');
+                    renderCharacters(filter);
+                } else {
+                    document.querySelectorAll('.filter-btn[data-filter$="-plot"]').forEach(function(b) { b.classList.remove('active'); });
+                    this.classList.add('active');
+                    renderPlots(filter);
+                }
+            });
+        });
+
+        var particlesContainer = document.getElementById('particles');
+        for (var i = 0; i < 30; i++) {
+            var particle = document.createElement('div');
+            particle.className = 'particle';
+            particle.style.left = Math.random() * 100 + '%';
+            particle.style.animationDelay = Math.random() * 20 + 's';
+            particle.style.animationDuration = (15 + Math.random() * 10) + 's';
+            particlesContainer.appendChild(particle);
+        }
+
+        renderCharacters('all-char');
+        renderPlots('all-plot');
+        updateSelectionPanel();
+    </script>
+</body>
+</html>

@@ -1,0 +1,1184 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>故事导演台 - Story Director's Desk</title>
+    <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+SC:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --gold: #ffd700;
+            --gold-dark: #b8860b;
+            --silver: #c0c0c0;
+            --crimson: #dc2626;
+            --green: #22c55e;
+            --blue: #3b82f6;
+            --orange: #f59e0b;
+            --purple: #a855f7;
+            
+            --bg-dark: #0d0d14;
+            --bg-card: #1a1a2e;
+            --bg-panel: #141420;
+            
+            --text-primary: #f8fafc;
+            --text-secondary: #94a3b8;
+            --text-muted: #64748b;
+            
+            --font-body: 'Noto Sans SC', sans-serif;
+        }
+
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+
+        body {
+            font-family: var(--font-body);
+            background: linear-gradient(180deg, #1a1a2e 0%, #0d0d14 100%);
+            height: 100vh;
+            color: var(--text-primary);
+            overflow: hidden;
+            display: flex;
+            flex-direction: column;
+        }
+
+        /* Header */
+        .header {
+            height: 40px;
+            background: rgba(0,0,0,0.5);
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            padding: 0 20px;
+            border-bottom: 1px solid rgba(255,215,0,0.2);
+            flex-shrink: 0;
+        }
+
+        .logo {
+            font-size: 1rem;
+            font-weight: 700;
+            background: linear-gradient(135deg, var(--gold), #ff9800);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+        }
+
+        .title-input {
+            background: rgba(255,255,255,0.05);
+            border: 1px solid rgba(255,215,0,0.3);
+            border-radius: 6px;
+            padding: 4px 10px;
+            color: var(--text-primary);
+            width: 150px;
+            font-size: 0.75rem;
+        }
+
+        .title-input:focus { outline: none; border-color: var(--gold); }
+
+        /* Main Area */
+        .main-area {
+            flex: 1;
+            display: flex;
+            overflow: hidden;
+            position: relative;
+        }
+
+        /* Side Panels */
+        .side-panel {
+            width: 280px;
+            background: var(--bg-panel);
+            display: flex;
+            flex-direction: column;
+            padding: 6px;
+            gap: 4px;
+            flex-shrink: 0;
+        }
+
+        .left-panel { border-right: 1px solid rgba(255,255,255,0.1); }
+        .right-panel { border-left: 1px solid rgba(255,255,255,0.1); }
+
+        .card-section {
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+            min-height: 0;
+            background: rgba(0,0,0,0.3);
+            border-radius: 10px;
+            padding: 8px;
+        }
+
+        .section-header {
+            display: flex;
+            align-items: center;
+            gap: 5px;
+            font-size: 0.7rem;
+            font-weight: 600;
+            padding: 4px 8px;
+            border-radius: 5px;
+            margin-bottom: 3px;
+        }
+
+        .section-header.protagonist { background: rgba(255,215,0,0.15); color: var(--gold); border: 1px solid rgba(255,215,0,0.3); }
+        .section-header.antagonist { background: rgba(220,38,38,0.15); color: var(--crimson); border: 1px solid rgba(220,38,38,0.3); }
+        .section-header.supporting { background: rgba(192,192,192,0.1); color: var(--silver); border: 1px solid rgba(192,192,192,0.3); }
+        .section-header.adventure { background: rgba(168,85,247,0.15); color: var(--purple); border: 1px solid rgba(168,85,247,0.3); }
+        .section-header.terrain { background: rgba(34,197,94,0.15); color: var(--green); border: 1px solid rgba(34,197,94,0.3); }
+        .section-header.weather { background: rgba(59,130,246,0.15); color: var(--blue); border: 1px solid rgba(59,130,246,0.3); }
+        .section-header.equipment { background: rgba(245,158,11,0.15); color: var(--orange); border: 1px solid rgba(245,158,11,0.3); }
+
+        /* Fan Card Container */
+        .fan-container {
+            flex: 1;
+            display: flex;
+            align-items: flex-end;
+            justify-content: center;
+            padding-bottom: 5px;
+            position: relative;
+            min-height: 140px;
+        }
+
+        .fan-card {
+            width: 100px;
+            height: 145px;
+            border-radius: 12px;
+            cursor: pointer;
+            position: absolute;
+            bottom: 0;
+            transition: all 0.5s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+            transform-origin: bottom center;
+            background: linear-gradient(180deg, #2d2d44, #1a1a2e);
+            border: 3px solid;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            overflow: hidden;
+            box-shadow: 0 5px 20px rgba(0,0,0,0.4);
+        }
+
+        .fan-card::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            height: 6px;
+        }
+
+        .fan-card.protagonist { border-color: var(--gold); }
+        .fan-card.protagonist::before { background: linear-gradient(90deg, var(--gold), #ffeb3b, var(--gold)); }
+
+        .fan-card.antagonist { border-color: var(--crimson); }
+        .fan-card.antagonist::before { background: linear-gradient(90deg, var(--crimson), #f87171, var(--crimson)); }
+
+        .fan-card.supporting { border-color: var(--silver); }
+        .fan-card.supporting::before { background: linear-gradient(90deg, #888, #ccc, #888); }
+
+        .fan-card.adventure { border-color: var(--purple); }
+        .fan-card.adventure::before { background: linear-gradient(90deg, var(--purple), #c084fc, var(--purple)); }
+
+        .fan-card.terrain { border-color: var(--green); }
+        .fan-card.terrain::before { background: linear-gradient(90deg, var(--green), #4ade80, var(--green)); }
+
+        .fan-card.weather { border-color: var(--blue); }
+        .fan-card.weather::before { background: linear-gradient(90deg, var(--blue), #60a5fa, var(--blue)); }
+
+        .fan-card.equipment { border-color: var(--orange); }
+        .fan-card.equipment::before { background: linear-gradient(90deg, var(--orange), #fbbf24, var(--orange)); }
+
+        /* 悬停弹出动画 - 三国杀风格 */
+        .fan-card:hover {
+            transform: translateY(-70px) scale(1.25) rotate(0deg) !important;
+            z-index: 100 !important;
+            box-shadow: 0 25px 50px rgba(0,0,0,0.6), 0 0 30px rgba(255,215,0,0.3);
+        }
+
+        .fan-card.selected {
+            animation: heartbeat 0.8s ease-in-out infinite;
+            box-shadow: 0 0 30px rgba(255,215,0,0.8), 0 0 60px rgba(255,215,0,0.4), 0 10px 30px rgba(0,0,0,0.5);
+        }
+
+        @keyframes heartbeat {
+            0%, 100% { transform: rotate(0deg) translateY(-25px) scale(1); }
+            15% { transform: rotate(0deg) translateY(-25px) scale(1.08); }
+            30% { transform: rotate(0deg) translateY(-25px) scale(1); }
+            45% { transform: rotate(0deg) translateY(-25px) scale(1.05); }
+            60% { transform: rotate(0deg) translateY(-25px) scale(1); }
+        }
+
+        .fan-card.selected::before {
+            animation: glow-pulse 0.8s ease-in-out infinite;
+        }
+
+        @keyframes glow-pulse {
+            0%, 100% { opacity: 1; }
+            50% { opacity: 0.6; }
+        }
+
+        .fan-card.selected::after {
+            content: '✓';
+            position: absolute;
+            top: 8px;
+            right: 6px;
+            width: 22px;
+            height: 22px;
+            background: var(--gold);
+            border-radius: 50%;
+            font-size: 0.8rem;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: #000;
+            font-weight: bold;
+            box-shadow: 0 0 15px rgba(255,215,0,0.9);
+            animation: check-pulse 0.8s ease-in-out infinite;
+        }
+
+        @keyframes check-pulse {
+            0%, 100% { box-shadow: 0 0 15px rgba(255,215,0,0.9); transform: scale(1); }
+            50% { box-shadow: 0 0 25px rgba(255,215,0,1); transform: scale(1.1); }
+        }
+
+        .fan-avatar { font-size: 3.2rem; filter: drop-shadow(2px 3px 4px rgba(0,0,0,0.4)); }
+        .fan-name { font-size: 0.75rem; font-weight: 600; margin-top: 6px; text-align: center; padding: 0 4px; }
+
+        /* Center Panel - Stage (缩小到1/5) */
+        .center-panel {
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            padding: 5px;
+            min-width: 0;
+        }
+
+        .stage-area {
+            background: rgba(0,0,0,0.5);
+            border-radius: 10px;
+            border: 1px solid rgba(255,215,0,0.2);
+            padding: 6px;
+            display: flex;
+            flex-direction: column;
+            gap: 4px;
+            width: auto;
+            max-width: 280px;
+            transition: all 0.3s ease;
+        }
+
+        .stage-area.shake { animation: shake 0.5s ease-in-out; }
+
+        @keyframes shake {
+            0%, 100% { transform: translateX(0); }
+            10%, 30%, 50%, 70%, 90% { transform: translateX(-4px); }
+            20%, 40%, 60%, 80% { transform: translateX(4px); }
+        }
+
+        .stage-title {
+            font-size: 0.75rem;
+            font-weight: 600;
+            color: var(--gold);
+            text-align: center;
+            padding-bottom: 5px;
+            border-bottom: 1px dashed rgba(255,255,255,0.2);
+        }
+
+        .stage-grid {
+            display: grid;
+            grid-template-columns: repeat(5, 1fr);
+            gap: 5px;
+        }
+
+        .stage-slot {
+            aspect-ratio: 3/4;
+            border: 2px dashed rgba(255,255,255,0.15);
+            border-radius: 6px;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            transition: all 0.3s ease;
+            position: relative;
+            cursor: pointer;
+            background: rgba(0,0,0,0.2);
+        }
+
+        .stage-slot.required {
+            border-color: rgba(255,215,0,0.4);
+            background: rgba(255,215,0,0.05);
+            animation: slot-pulse 2s ease-in-out infinite;
+        }
+
+        @keyframes slot-pulse {
+            0%, 100% { box-shadow: 0 0 5px rgba(255,215,0,0.2); }
+            50% { box-shadow: 0 0 12px rgba(255,215,0,0.4); }
+        }
+
+        .stage-slot.filled {
+            border: 2px solid rgba(255,255,255,0.2);
+            background: linear-gradient(180deg, #2d2d44, #1a1a2e);
+        }
+
+        .slot-icon { font-size: 0.85rem; opacity: 0.5; }
+        .slot-label { font-size: 0.45rem; color: var(--text-muted); margin-top: 1px; }
+
+        .mini-card {
+            width: 100%;
+            height: 100%;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            position: relative;
+        }
+
+        .mini-avatar { font-size: 1rem; }
+        .mini-name { font-size: 0.45rem; font-weight: 600; margin-top: 1px; text-align: center; }
+
+        .mini-remove {
+            position: absolute;
+            top: 1px;
+            right: 1px;
+            width: 10px;
+            height: 10px;
+            border-radius: 50%;
+            background: var(--crimson);
+            color: white;
+            border: none;
+            cursor: pointer;
+            font-size: 0.45rem;
+            opacity: 0;
+            transition: opacity 0.2s;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .stage-slot:hover .mini-remove { opacity: 1; }
+
+        /* Story Preview */
+        .story-preview {
+            background: rgba(255,215,0,0.05);
+            border-radius: 6px;
+            padding: 6px;
+            min-height: 30px;
+            border: 1px solid rgba(255,215,0,0.2);
+        }
+
+        .preview-text {
+            font-size: 0.65rem;
+            color: var(--text-secondary);
+            line-height: 1.4;
+            font-style: italic;
+            text-align: center;
+        }
+
+        .preview-text .highlight { color: var(--gold); font-weight: 600; }
+
+        /* Bottom Bar */
+        .bottom-bar {
+            height: 45px;
+            background: linear-gradient(180deg, transparent, rgba(0,0,0,0.8));
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 15px;
+            padding: 0 20px;
+            flex-shrink: 0;
+        }
+
+        .requirements {
+            display: flex;
+            gap: 10px;
+        }
+
+        .req-item {
+            display: flex;
+            align-items: center;
+            gap: 3px;
+            font-size: 0.6rem;
+            color: var(--text-muted);
+        }
+
+        .req-item.met { color: var(--green); font-weight: 600; }
+
+        .req-icon {
+            width: 12px;
+            height: 12px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 0.4rem;
+        }
+
+        .req-item.met .req-icon { background: var(--green); color: white; }
+        .req-item:not(.met) .req-icon { border: 2px solid currentColor; }
+
+        .generate-btn {
+            padding: 8px 25px;
+            font-size: 0.85rem;
+            font-weight: 700;
+            border: none;
+            border-radius: 20px;
+            background: #333;
+            color: #666;
+            cursor: not-allowed;
+            transition: all 0.3s ease;
+            font-family: var(--font-body);
+        }
+
+        .generate-btn.ready {
+            background: linear-gradient(135deg, var(--gold), #ff9800);
+            color: #000;
+            cursor: pointer;
+            box-shadow: 0 0 25px rgba(255,215,0,0.5);
+            animation: btn-glow 2s ease-in-out infinite;
+        }
+
+        @keyframes btn-glow {
+            0%, 100% { box-shadow: 0 0 25px rgba(255,215,0,0.5); }
+            50% { box-shadow: 0 0 40px rgba(255,215,0,0.8); }
+        }
+
+        .generate-btn.ready:hover { transform: scale(1.05); }
+
+        /* Weather Effects */
+        .thunder {
+            position: fixed;
+            inset: 0;
+            background: white;
+            opacity: 0;
+            z-index: 501;
+            pointer-events: none;
+        }
+
+        .thunder.flash { animation: thunder-flash 0.5s ease-out; }
+
+        @keyframes thunder-flash {
+            0% { opacity: 0; }
+            10% { opacity: 0.8; }
+            20% { opacity: 0.1; }
+            30% { opacity: 0.9; }
+            40% { opacity: 0; }
+            100% { opacity: 0; }
+        }
+
+        .rain {
+            position: fixed;
+            inset: 0;
+            pointer-events: none;
+            z-index: 499;
+            display: none;
+        }
+
+        .rain-drop {
+            position: absolute;
+            width: 2px;
+            height: 20px;
+            background: linear-gradient(180deg, transparent, rgba(100, 149, 237, 0.7));
+            animation: rain-fall 0.4s linear infinite;
+        }
+
+        @keyframes rain-fall {
+            0% { transform: translateY(-20px); }
+            100% { transform: translateY(100vh); }
+        }
+
+        .snow {
+            position: fixed;
+            inset: 0;
+            pointer-events: none;
+            z-index: 499;
+            display: none;
+        }
+
+        .snowflake {
+            position: absolute;
+            color: rgba(255,255,255,0.9);
+            animation: snow-fall 3s linear infinite;
+        }
+
+        @keyframes snow-fall {
+            0% { transform: translateY(-10px) rotate(0deg); }
+            100% { transform: translateY(100vh) rotate(360deg); }
+        }
+
+        .fog {
+            position: fixed;
+            inset: 0;
+            background: radial-gradient(ellipse at center, rgba(200,200,200,0.5), transparent 70%);
+            pointer-events: none;
+            z-index: 499;
+            display: none;
+            animation: fog-move 5s ease-in-out infinite;
+        }
+
+        @keyframes fog-move {
+            0%, 100% { opacity: 0.5; }
+            50% { opacity: 0.7; }
+        }
+
+        .sun-rays {
+            position: fixed;
+            top: -30%;
+            left: 50%;
+            transform: translateX(-50%);
+            width: 150%;
+            height: 80%;
+            background: radial-gradient(ellipse at center top, rgba(255,223,0,0.2), transparent 50%);
+            pointer-events: none;
+            z-index: 499;
+            display: none;
+            animation: sun-pulse 3s ease-in-out infinite;
+        }
+
+        @keyframes sun-pulse {
+            0%, 100% { opacity: 0.6; }
+            50% { opacity: 1; }
+        }
+
+        .wind {
+            position: fixed;
+            inset: 0;
+            pointer-events: none;
+            z-index: 499;
+            display: none;
+        }
+
+        .wind-particle {
+            position: absolute;
+            width: 40px;
+            height: 2px;
+            background: linear-gradient(90deg, transparent, rgba(200,200,200,0.7), transparent);
+            animation: wind-blow 0.8s linear infinite;
+        }
+
+        @keyframes wind-blow {
+            0% { transform: translateX(-100px); opacity: 0; }
+            50% { opacity: 1; }
+            100% { transform: translateX(100vw); opacity: 0; }
+        }
+
+        .rainbow {
+            position: fixed;
+            top: 5%;
+            left: 50%;
+            transform: translateX(-50%);
+            width: 90%;
+            height: 50%;
+            background: linear-gradient(180deg, 
+                rgba(255,0,0,0.25) 0%, 
+                rgba(255,127,0,0.25) 15%, 
+                rgba(255,255,0,0.25) 30%, 
+                rgba(0,255,0,0.25) 45%, 
+                rgba(0,0,255,0.25) 60%, 
+                rgba(75,0,130,0.25) 75%, 
+                rgba(148,0,211,0.25) 90%);
+            border-radius: 50% 50% 0 0;
+            pointer-events: none;
+            z-index: 499;
+            display: none;
+            animation: rainbow-glow 3s ease-in-out infinite;
+        }
+
+        @keyframes rainbow-glow {
+            0%, 100% { opacity: 0.7; }
+            50% { opacity: 1; }
+        }
+
+        .starry {
+            position: fixed;
+            inset: 0;
+            pointer-events: none;
+            z-index: 499;
+            display: none;
+            background: linear-gradient(180deg, rgba(25,25,112,0.4), transparent 60%);
+        }
+
+        .star {
+            position: absolute;
+            width: 3px;
+            height: 3px;
+            background: white;
+            border-radius: 50%;
+            animation: twinkle 2s ease-in-out infinite;
+        }
+
+        @keyframes twinkle {
+            0%, 100% { opacity: 0.3; transform: scale(1); }
+            50% { opacity: 1; transform: scale(1.5); }
+        }
+
+        /* Toast */
+        .toast {
+            position: fixed;
+            top: 50px;
+            left: 50%;
+            transform: translateX(-50%) translateY(-10px);
+            background: rgba(0,0,0,0.95);
+            padding: 8px 16px;
+            border-radius: 8px;
+            border: 1px solid var(--gold);
+            font-size: 0.8rem;
+            color: var(--text-primary);
+            opacity: 0;
+            transition: all 0.3s ease;
+            z-index: 1002;
+        }
+
+        .toast.show { transform: translateX(-50%) translateY(0); opacity: 1; }
+
+        /* Particles */
+        .particles {
+            position: fixed;
+            inset: 0;
+            pointer-events: none;
+            z-index: 0;
+        }
+
+        .particle {
+            position: absolute;
+            width: 2px;
+            height: 2px;
+            background: var(--gold);
+            border-radius: 50%;
+            opacity: 0.3;
+            animation: float 25s linear infinite;
+        }
+
+        @keyframes float {
+            0% { transform: translateY(100vh); opacity: 0; }
+            10% { opacity: 0.3; }
+            90% { opacity: 0.3; }
+            100% { transform: translateY(-100vh); opacity: 0; }
+        }
+    </style>
+</head>
+<body>
+    <div class="particles" id="particles"></div>
+    <div class="thunder" id="thunder"></div>
+    <div class="rain" id="rain"></div>
+    <div class="snow" id="snow"></div>
+    <div class="fog" id="fog"></div>
+    <div class="sun-rays" id="sunRays"></div>
+    <div class="wind" id="wind"></div>
+    <div class="rainbow" id="rainbow"></div>
+    <div class="starry" id="starry"></div>
+
+    <!-- Header -->
+    <header class="header">
+        <div class="logo">🎬 故事导演台</div>
+        <input type="text" class="title-input" placeholder="输入故事主题..." id="storyTitle">
+        <div style="display: flex; align-items: center; gap: 5px; font-size: 0.7rem; color: var(--text-secondary);">
+            <span>💡</span>
+            <div style="width: 40px; height: 5px; background: rgba(255,255,255,0.1); border-radius: 3px;">
+                <div style="width: 75%; height: 100%; background: linear-gradient(90deg, var(--gold), #ff9800); border-radius: 3px;"></div>
+            </div>
+        </div>
+    </header>
+
+    <!-- Main Area -->
+    <main class="main-area">
+        <!-- Left Panel - Characters -->
+        <aside class="side-panel left-panel">
+            <div class="card-section">
+                <div class="section-header protagonist">👑 主角 (必选1)</div>
+                <div class="fan-container" id="protagonistFan"></div>
+            </div>
+            <div class="card-section">
+                <div class="section-header antagonist">👿 反派 (必选1)</div>
+                <div class="fan-container" id="antagonistFan"></div>
+            </div>
+            <div class="card-section">
+                <div class="section-header supporting">🎭 配角 (可选0-2)</div>
+                <div class="fan-container" id="supportingFan"></div>
+            </div>
+        </aside>
+
+        <!-- Center Panel - Stage -->
+        <section class="center-panel">
+            <div class="stage-area" id="stageArea">
+                <div class="stage-title">🎭 舞台预览</div>
+                <div class="stage-grid">
+                    <div class="stage-slot required" data-slot="protagonist">
+                        <div class="slot-icon">👑</div>
+                        <div class="slot-label">主角</div>
+                    </div>
+                    <div class="stage-slot" data-slot="supporting1">
+                        <div class="slot-icon">🎭</div>
+                        <div class="slot-label">配角</div>
+                    </div>
+                    <div class="stage-slot required" data-slot="antagonist">
+                        <div class="slot-icon">👿</div>
+                        <div class="slot-label">反派</div>
+                    </div>
+                    <div class="stage-slot required" data-slot="adventure">
+                        <div class="slot-icon">🗺️</div>
+                        <div class="slot-label">冒险</div>
+                    </div>
+                    <div class="stage-slot required" data-slot="terrain">
+                        <div class="slot-icon">🏔️</div>
+                        <div class="slot-label">地形</div>
+                    </div>
+                    <div class="stage-slot required" data-slot="weather">
+                        <div class="slot-icon">🌤️</div>
+                        <div class="slot-label">天气</div>
+                    </div>
+                    <div class="stage-slot" data-slot="equipment1">
+                        <div class="slot-icon">🎒</div>
+                        <div class="slot-label">装备</div>
+                    </div>
+                    <div class="stage-slot" data-slot="equipment2">
+                        <div class="slot-icon">🎒</div>
+                        <div class="slot-label">装备</div>
+                    </div>
+                    <div class="stage-slot" data-slot="supporting2">
+                        <div class="slot-icon">🎭</div>
+                        <div class="slot-label">配角</div>
+                    </div>
+                    <div class="stage-slot" data-slot="equipment3">
+                        <div class="slot-icon">🎒</div>
+                        <div class="slot-label">装备</div>
+                    </div>
+                </div>
+                <div class="story-preview">
+                    <div class="preview-text" id="previewText">选择卡牌来构建你的故事...</div>
+                </div>
+            </div>
+        </section>
+
+        <!-- Right Panel - Scenes -->
+        <aside class="side-panel right-panel">
+            <div class="card-section">
+                <div class="section-header adventure">🗺️ 冒险类型 (必选1)</div>
+                <div class="fan-container" id="adventureFan"></div>
+            </div>
+            <div class="card-section">
+                <div class="section-header terrain">🏔️ 地形 (必选1)</div>
+                <div class="fan-container" id="terrainFan"></div>
+            </div>
+            <div class="card-section">
+                <div class="section-header weather">🌤️ 天气 (必选1)</div>
+                <div class="fan-container" id="weatherFan"></div>
+            </div>
+            <div class="card-section">
+                <div class="section-header equipment">🎒 装备 (可选0-3)</div>
+                <div class="fan-container" id="equipmentFan"></div>
+            </div>
+        </aside>
+    </main>
+
+    <!-- Bottom Bar -->
+    <footer class="bottom-bar">
+        <div class="requirements">
+            <div class="req-item" id="reqProtagonist"><span class="req-icon"></span><span>主角</span></div>
+            <div class="req-item" id="reqAntagonist"><span class="req-icon"></span><span>反派</span></div>
+            <div class="req-item" id="reqAdventure"><span class="req-icon"></span><span>冒险</span></div>
+            <div class="req-item" id="reqTerrain"><span class="req-icon"></span><span>地形</span></div>
+            <div class="req-item" id="reqWeather"><span class="req-icon"></span><span>天气</span></div>
+        </div>
+        <button class="generate-btn" id="generateBtn">🎬 开拍！</button>
+    </footer>
+
+    <div class="toast" id="toast"></div>
+
+    <script>
+        // 数据来自项目 plot-options.js
+        var cardData = {
+            protagonist: [
+                { id: 'protagonist1', name: '龙骑士', avatar: '🐉' },
+                { id: 'protagonist2', name: '光明骑士', avatar: '🦸' },
+                { id: 'protagonist3', name: '冰雪女王', avatar: '👸' },
+                { id: 'protagonist4', name: '火焰法师', avatar: '🔥' },
+            ],
+            antagonist: [
+                { id: 'antagonist1', name: '暗影刺客', avatar: '🦹' },
+                { id: 'antagonist2', name: '黑暗领主', avatar: '😈' },
+                { id: 'antagonist3', name: '吸血伯爵', avatar: '🧛' },
+            ],
+            supporting: [
+                { id: 'supporting1', name: '精灵法师', avatar: '🧝' },
+                { id: 'supporting2', name: '智慧法师', avatar: '🧙' },
+                { id: 'supporting3', name: '机械守卫', avatar: '🤖' },
+            ],
+            adventure: [
+                { id: 'friendship', name: '友谊考验', avatar: '🤝' },
+                { id: 'adventure', name: '冒险之旅', avatar: '🗺️' },
+                { id: 'wisdom', name: '智慧挑战', avatar: '🧠' },
+                { id: 'courage', name: '勇气试炼', avatar: '💪' },
+                { id: 'treasure', name: '寻宝探险', avatar: '💎' },
+                { id: 'rescue', name: '救援任务', avatar: '🦸' },
+                { id: 'mystery', name: '神秘探索', avatar: '🔮' },
+                { id: 'competition', name: '竞技比赛', avatar: '🏆' },
+            ],
+            terrain: [
+                { id: 'forest', name: '森林', avatar: '🌲' },
+                { id: 'castle', name: '城堡', avatar: '🏰' },
+                { id: 'ocean', name: '海洋', avatar: '🌊' },
+                { id: 'desert', name: '沙漠', avatar: '🏜️' },
+                { id: 'mountain', name: '山峰', avatar: '⛰️' },
+                { id: 'glacier', name: '冰川', avatar: '🧊' },
+                { id: 'volcano', name: '火山', avatar: '🌋' },
+                { id: 'city', name: '城市', avatar: '🏙️' },
+            ],
+            weather: [
+                { id: 'sunny', name: '晴天', avatar: '☀️', effect: 'sun' },
+                { id: 'rainy', name: '下雨', avatar: '🌧️', effect: 'rain' },
+                { id: 'thunder', name: '打雷', avatar: '⛈️', effect: 'thunder' },
+                { id: 'snow', name: '下雪', avatar: '❄️', effect: 'snow' },
+                { id: 'fog', name: '大雾', avatar: '🌫️', effect: 'fog' },
+                { id: 'wind', name: '狂风', avatar: '💨', effect: 'wind' },
+                { id: 'rainbow', name: '彩虹', avatar: '🌈', effect: 'rainbow' },
+                { id: 'starry', name: '星夜', avatar: '🌟', effect: 'starry' },
+            ],
+            equipment: [
+                { id: 'wand', name: '魔法杖', avatar: '🪄' },
+                { id: 'shield', name: '盾牌', avatar: '🛡️' },
+                { id: 'map', name: '地图', avatar: '🗺️' },
+                { id: 'telescope', name: '望远镜', avatar: '🔭' },
+                { id: 'sword', name: '宝剑', avatar: '⚔️' },
+                { id: 'potion', name: '药水', avatar: '🧪' },
+                { id: 'flyer', name: '飞行器', avatar: '🚀' },
+                { id: 'cloak', name: '隐身斗篷', avatar: '🧥' },
+            ]
+        };
+
+        var selections = {
+            protagonist: null,
+            antagonist: null,
+            supporting: [],
+            adventure: null,
+            terrain: null,
+            weather: null,
+            equipment: []
+        };
+
+        var currentWeatherEffect = null;
+
+        function createFanCards(containerId, cards, type) {
+            var container = document.getElementById(containerId);
+            container.innerHTML = '';
+            
+            var count = cards.length;
+            var fanAngle = Math.min(count * 12, 70);
+            var startAngle = -fanAngle / 2;
+            var angleStep = count > 1 ? fanAngle / (count - 1) : 0;
+
+            cards.forEach(function(card, index) {
+                var div = document.createElement('div');
+                div.className = 'fan-card ' + type;
+                div.dataset.id = card.id;
+                div.dataset.type = type;
+
+                var angle = startAngle + angleStep * index;
+                var offsetX = (index - (count - 1) / 2) * 25;
+                
+                div.style.left = '50%';
+                div.style.marginLeft = (-50 + offsetX) + 'px';
+                div.style.transform = 'rotate(' + angle + 'deg)';
+                div.style.zIndex = index;
+
+                div.innerHTML = '<div class="fan-avatar">' + card.avatar + '</div><div class="fan-name">' + card.name + '</div>';
+
+                var originalAngle = angle;
+                
+                div.addEventListener('click', function() { selectCard(card, type); });
+                div.addEventListener('mouseleave', function() { 
+                    if (!this.classList.contains('selected')) this.style.transform = 'rotate(' + originalAngle + 'deg)'; 
+                });
+
+                container.appendChild(div);
+            });
+        }
+
+        function selectCard(card, type) {
+            var stage = document.getElementById('stageArea');
+            stage.classList.add('shake');
+            setTimeout(function() { stage.classList.remove('shake'); }, 500);
+
+            var isSelected = checkIfSelected(card, type);
+
+            if (type === 'protagonist' || type === 'antagonist' || type === 'adventure' || type === 'terrain' || type === 'weather') {
+                if (isSelected) {
+                    selections[type] = null;
+                    showToast('已取消: ' + card.name);
+                    if (type === 'weather') clearWeatherEffect();
+                } else {
+                    selections[type] = card;
+                    showToast('已选择: ' + card.name);
+                    if (type === 'weather' && card.effect) triggerWeatherEffect(card.effect);
+                }
+            } else if (type === 'supporting') {
+                if (isSelected) {
+                    selections.supporting = selections.supporting.filter(function(c) { return c.id !== card.id; });
+                    showToast('已取消: ' + card.name);
+                } else if (selections.supporting.length < 2) {
+                    selections.supporting.push(card);
+                    showToast('已选择: ' + card.name);
+                } else {
+                    showToast('最多选择2个配角！', 'error');
+                    return;
+                }
+            } else if (type === 'equipment') {
+                if (isSelected) {
+                    selections.equipment = selections.equipment.filter(function(c) { return c.id !== card.id; });
+                    showToast('已取消: ' + card.name);
+                } else if (selections.equipment.length < 3) {
+                    selections.equipment.push(card);
+                    showToast('已选择: ' + card.name);
+                } else {
+                    showToast('最多选择3个装备！', 'error');
+                    return;
+                }
+            }
+
+            updateStage();
+            updateFanCards();
+        }
+
+        function checkIfSelected(card, type) {
+            if (type === 'protagonist' || type === 'antagonist' || type === 'adventure' || type === 'terrain' || type === 'weather') {
+                return selections[type] && selections[type].id === card.id;
+            } else if (type === 'supporting') {
+                return selections.supporting.some(function(c) { return c.id === card.id; });
+            } else if (type === 'equipment') {
+                return selections.equipment.some(function(c) { return c.id === card.id; });
+            }
+            return false;
+        }
+
+        function triggerWeatherEffect(effect) {
+            clearWeatherEffect();
+            currentWeatherEffect = effect;
+
+            if (effect === 'thunder') {
+                var thunder = document.getElementById('thunder');
+                var rain = document.getElementById('rain');
+                
+                rain.innerHTML = '';
+                for (var i = 0; i < 80; i++) {
+                    var drop = document.createElement('div');
+                    drop.className = 'rain-drop';
+                    drop.style.left = Math.random() * 100 + '%';
+                    drop.style.animationDelay = Math.random() * 0.4 + 's';
+                    drop.style.animationDuration = (0.3 + Math.random() * 0.2) + 's';
+                    rain.appendChild(drop);
+                }
+                rain.style.display = 'block';
+
+                function flashThunder() {
+                    if (currentWeatherEffect !== 'thunder') return;
+                    thunder.classList.add('flash');
+                    setTimeout(function() { thunder.classList.remove('flash'); }, 500);
+                    setTimeout(flashThunder, 1500 + Math.random() * 2500);
+                }
+                flashThunder();
+
+            } else if (effect === 'rain') {
+                var rain = document.getElementById('rain');
+                rain.innerHTML = '';
+                for (var i = 0; i < 60; i++) {
+                    var drop = document.createElement('div');
+                    drop.className = 'rain-drop';
+                    drop.style.left = Math.random() * 100 + '%';
+                    drop.style.animationDelay = Math.random() * 0.5 + 's';
+                    drop.style.animationDuration = (0.4 + Math.random() * 0.3) + 's';
+                    rain.appendChild(drop);
+                }
+                rain.style.display = 'block';
+
+            } else if (effect === 'snow') {
+                var snow = document.getElementById('snow');
+                snow.innerHTML = '';
+                for (var i = 0; i < 50; i++) {
+                    var flake = document.createElement('div');
+                    flake.className = 'snowflake';
+                    flake.textContent = '❄';
+                    flake.style.left = Math.random() * 100 + '%';
+                    flake.style.animationDelay = Math.random() * 3 + 's';
+                    flake.style.animationDuration = (2 + Math.random() * 2) + 's';
+                    flake.style.fontSize = (0.6 + Math.random() * 0.6) + 'rem';
+                    snow.appendChild(flake);
+                }
+                snow.style.display = 'block';
+
+            } else if (effect === 'fog') {
+                document.getElementById('fog').style.display = 'block';
+
+            } else if (effect === 'sun') {
+                document.getElementById('sunRays').style.display = 'block';
+
+            } else if (effect === 'wind') {
+                var wind = document.getElementById('wind');
+                wind.innerHTML = '';
+                for (var i = 0; i < 25; i++) {
+                    var particle = document.createElement('div');
+                    particle.className = 'wind-particle';
+                    particle.style.top = Math.random() * 100 + '%';
+                    particle.style.animationDelay = Math.random() * 2 + 's';
+                    particle.style.animationDuration = (0.6 + Math.random() * 0.4) + 's';
+                    wind.appendChild(particle);
+                }
+                wind.style.display = 'block';
+
+            } else if (effect === 'rainbow') {
+                document.getElementById('rainbow').style.display = 'block';
+
+            } else if (effect === 'starry') {
+                var starry = document.getElementById('starry');
+                starry.innerHTML = '';
+                for (var i = 0; i < 60; i++) {
+                    var star = document.createElement('div');
+                    star.className = 'star';
+                    star.style.left = Math.random() * 100 + '%';
+                    star.style.top = Math.random() * 50 + '%';
+                    star.style.animationDelay = Math.random() * 2 + 's';
+                    star.style.width = (2 + Math.random() * 3) + 'px';
+                    star.style.height = star.style.width;
+                    starry.appendChild(star);
+                }
+                starry.style.display = 'block';
+            }
+        }
+
+        function clearWeatherEffect() {
+            currentWeatherEffect = null;
+            document.getElementById('rain').style.display = 'none';
+            document.getElementById('rain').innerHTML = '';
+            document.getElementById('snow').style.display = 'none';
+            document.getElementById('snow').innerHTML = '';
+            document.getElementById('fog').style.display = 'none';
+            document.getElementById('sunRays').style.display = 'none';
+            document.getElementById('wind').style.display = 'none';
+            document.getElementById('wind').innerHTML = '';
+            document.getElementById('rainbow').style.display = 'none';
+            document.getElementById('starry').style.display = 'none';
+            document.getElementById('starry').innerHTML = '';
+        }
+
+        function updateFanCards() {
+            document.querySelectorAll('.fan-card').forEach(function(card) {
+                var id = card.dataset.id;
+                var type = card.dataset.type;
+                var selected = checkIfSelectedById(id, type);
+                card.classList.toggle('selected', selected);
+                if (selected) card.style.transform = 'rotate(0deg) translateY(-25px)';
+            });
+        }
+
+        function checkIfSelectedById(id, type) {
+            if (type === 'protagonist' || type === 'antagonist' || type === 'adventure' || type === 'terrain' || type === 'weather') {
+                return selections[type] && selections[type].id === id;
+            } else if (type === 'supporting') {
+                return selections.supporting.some(function(c) { return c.id === id; });
+            } else if (type === 'equipment') {
+                return selections.equipment.some(function(c) { return c.id === id; });
+            }
+            return false;
+        }
+
+        function updateStage() {
+            updateSlot('protagonist', selections.protagonist);
+            updateSlot('antagonist', selections.antagonist);
+            updateSlot('adventure', selections.adventure);
+            updateSlot('terrain', selections.terrain);
+            updateSlot('weather', selections.weather);
+            updateSlot('supporting1', selections.supporting[0]);
+            updateSlot('supporting2', selections.supporting[1]);
+            updateSlot('equipment1', selections.equipment[0]);
+            updateSlot('equipment2', selections.equipment[1]);
+            updateSlot('equipment3', selections.equipment[2]);
+
+            document.getElementById('reqProtagonist').classList.toggle('met', !!selections.protagonist);
+            document.getElementById('reqAntagonist').classList.toggle('met', !!selections.antagonist);
+            document.getElementById('reqAdventure').classList.toggle('met', !!selections.adventure);
+            document.getElementById('reqTerrain').classList.toggle('met', !!selections.terrain);
+            document.getElementById('reqWeather').classList.toggle('met', !!selections.weather);
+
+            var ready = selections.protagonist && selections.antagonist && selections.adventure && selections.terrain && selections.weather;
+            var btn = document.getElementById('generateBtn');
+            btn.classList.toggle('ready', ready);
+            btn.disabled = !ready;
+
+            updatePreview();
+        }
+
+        function updateSlot(slotName, card) {
+            var slot = document.querySelector('[data-slot="' + slotName + '"]');
+            if (card) {
+                slot.classList.add('filled');
+                slot.classList.remove('required');
+                slot.innerHTML = '<div class="mini-card"><div class="mini-avatar">' + card.avatar + '</div><div class="mini-name">' + card.name + '</div><button class="mini-remove" onclick="event.stopPropagation(); clearSlot(\'' + slotName + '\')">×</button></div>';
+            } else {
+                slot.classList.remove('filled');
+                var requiredSlots = ['protagonist', 'antagonist', 'adventure', 'terrain', 'weather'];
+                if (requiredSlots.indexOf(slotName) !== -1) slot.classList.add('required');
+                var icons = { protagonist: '👑', antagonist: '👿', adventure: '🗺️', terrain: '🏔️', weather: '🌤️', supporting1: '🎭', supporting2: '🎭', equipment1: '🎒', equipment2: '🎒', equipment3: '🎒' };
+                var labels = { protagonist: '主角', antagonist: '反派', adventure: '冒险', terrain: '地形', weather: '天气', supporting1: '配角', supporting2: '配角', equipment1: '装备', equipment2: '装备', equipment3: '装备' };
+                slot.innerHTML = '<div class="slot-icon">' + icons[slotName] + '</div><div class="slot-label">' + labels[slotName] + '</div>';
+            }
+        }
+
+        function clearSlot(slotName) {
+            if (slotName === 'protagonist') selections.protagonist = null;
+            else if (slotName === 'antagonist') selections.antagonist = null;
+            else if (slotName === 'adventure') selections.adventure = null;
+            else if (slotName === 'terrain') selections.terrain = null;
+            else if (slotName === 'weather') { selections.weather = null; clearWeatherEffect(); }
+            else if (slotName === 'supporting1') selections.supporting.shift();
+            else if (slotName === 'supporting2') selections.supporting.pop();
+            else if (slotName === 'equipment1') selections.equipment.shift();
+            else if (slotName === 'equipment2') selections.equipment.splice(1, 1);
+            else if (slotName === 'equipment3') selections.equipment.pop();
+            
+            updateStage();
+            updateFanCards();
+        }
+
+        function updatePreview() {
+            var text = document.getElementById('previewText');
+            var parts = [];
+
+            if (selections.protagonist) parts.push('<span class="highlight">' + selections.protagonist.name + '</span>');
+            if (selections.supporting.length) parts.push('与' + selections.supporting.map(function(c) { return c.name; }).join('、'));
+            if (selections.antagonist) parts.push('对抗<span class="highlight" style="color:var(--crimson)">' + selections.antagonist.name + '</span>');
+            if (selections.adventure) parts.push('开启' + selections.adventure.name);
+            if (selections.terrain) parts.push('在' + selections.terrain.name);
+            if (selections.weather) parts.push(selections.weather.name + '中');
+            if (selections.equipment.length) parts.push('携带' + selections.equipment.map(function(c) { return c.name; }).join('、'));
+
+            text.innerHTML = parts.length ? parts.join('，') + '...' : '选择卡牌来构建你的故事...';
+        }
+
+        function showToast(msg, type) {
+            var toast = document.getElementById('toast');
+            toast.textContent = msg;
+            toast.style.borderColor = type === 'error' ? 'var(--crimson)' : 'var(--gold)';
+            toast.classList.add('show');
+            setTimeout(function() { toast.classList.remove('show'); }, 1500);
+        }
+
+        document.getElementById('generateBtn').addEventListener('click', function() {
+            if (!this.classList.contains('ready')) return;
+            showToast('🎬 正在生成故事...');
+            setTimeout(function() { alert('故事已生成！\n\n' + document.getElementById('previewText').textContent); }, 1000);
+        });
+
+        // Particles
+        for (var i = 0; i < 20; i++) {
+            var p = document.createElement('div');
+            p.className = 'particle';
+            p.style.left = Math.random() * 100 + '%';
+            p.style.animationDelay = Math.random() * 25 + 's';
+            document.getElementById('particles').appendChild(p);
+        }
+
+        // Initialize
+        createFanCards('protagonistFan', cardData.protagonist, 'protagonist');
+        createFanCards('antagonistFan', cardData.antagonist, 'antagonist');
+        createFanCards('supportingFan', cardData.supporting, 'supporting');
+        createFanCards('adventureFan', cardData.adventure, 'adventure');
+        createFanCards('terrainFan', cardData.terrain, 'terrain');
+        createFanCards('weatherFan', cardData.weather, 'weather');
+        createFanCards('equipmentFan', cardData.equipment, 'equipment');
+        updateStage();
+    </script>
+</body>
+</html>

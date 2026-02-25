@@ -1,0 +1,966 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>2.5D扇形卡牌 - 三国杀风格</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+SC:wght@400;500;700&family=Ma+Shan+Zheng&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --rarity-common: #9e9e9e;
+            --rarity-rare: #4fc3f7;
+            --rarity-epic: #ba68c8;
+            --rarity-legendary: #ff9800;
+            --rarity-mythic: #ffd700;
+            
+            --text-gold: #ffd700;
+            --text-primary: #f8fafc;
+            --text-secondary: #94a3b8;
+            
+            --font-title: 'Ma Shan Zheng', cursive;
+            --font-body: 'Noto Sans SC', sans-serif;
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: var(--font-body);
+            background: linear-gradient(180deg, #1a1a2e 0%, #16213e 50%, #0f0f1e 100%);
+            min-height: 100vh;
+            overflow: hidden;
+            color: var(--text-primary);
+        }
+
+        #canvas-container {
+            position: fixed;
+            inset: 0;
+            z-index: 1;
+        }
+
+        .ui-overlay {
+            position: fixed;
+            z-index: 10;
+            pointer-events: none;
+        }
+
+        .ui-overlay > * {
+            pointer-events: auto;
+        }
+
+        .game-header {
+            top: 20px;
+            left: 50%;
+            transform: translateX(-50%);
+            text-align: center;
+        }
+
+        .game-title {
+            font-family: var(--font-title);
+            font-size: 2.5rem;
+            color: var(--text-gold);
+            text-shadow: 0 0 30px rgba(255, 215, 0, 0.5), 3px 3px 6px rgba(0,0,0,0.5);
+            letter-spacing: 5px;
+        }
+
+        .game-subtitle {
+            font-size: 0.9rem;
+            color: var(--text-secondary);
+            margin-top: 8px;
+        }
+
+        .deck-tabs {
+            top: 100px;
+            left: 50%;
+            transform: translateX(-50%);
+            display: flex;
+            gap: 15px;
+        }
+
+        .deck-tab {
+            padding: 12px 30px;
+            border: 2px solid rgba(255, 215, 0, 0.3);
+            border-radius: 25px;
+            background: rgba(0, 0, 0, 0.5);
+            color: var(--text-primary);
+            cursor: pointer;
+            font-size: 1rem;
+            font-family: var(--font-body);
+            transition: all 0.3s ease;
+            backdrop-filter: blur(5px);
+        }
+
+        .deck-tab:hover {
+            background: rgba(255, 215, 0, 0.1);
+            border-color: rgba(255, 215, 0, 0.6);
+        }
+
+        .deck-tab.active {
+            background: linear-gradient(135deg, var(--text-gold), #ff9800);
+            color: #000;
+            border-color: transparent;
+            font-weight: 600;
+            box-shadow: 0 0 25px rgba(255, 215, 0, 0.5);
+        }
+
+        .card-info-panel {
+            top: 50%;
+            right: 30px;
+            transform: translateY(-50%);
+            width: 280px;
+            background: rgba(0, 0, 0, 0.8);
+            border: 2px solid rgba(255, 215, 0, 0.3);
+            border-radius: 15px;
+            padding: 20px;
+            backdrop-filter: blur(10px);
+            opacity: 0;
+            transition: opacity 0.3s ease;
+        }
+
+        .card-info-panel.visible {
+            opacity: 1;
+        }
+
+        .info-header {
+            text-align: center;
+            margin-bottom: 15px;
+            padding-bottom: 15px;
+            border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+        }
+
+        .info-avatar {
+            font-size: 4rem;
+            margin-bottom: 10px;
+        }
+
+        .info-name {
+            font-family: var(--font-title);
+            font-size: 1.5rem;
+            color: var(--text-gold);
+        }
+
+        .info-title {
+            font-size: 0.85rem;
+            color: var(--text-secondary);
+            font-style: italic;
+        }
+
+        .info-stats {
+            margin-bottom: 15px;
+        }
+
+        .stat-row {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 10px;
+        }
+
+        .stat-label {
+            font-size: 0.85rem;
+            color: var(--text-secondary);
+        }
+
+        .stat-bar {
+            width: 120px;
+            height: 8px;
+            background: rgba(255, 255, 255, 0.1);
+            border-radius: 4px;
+            overflow: hidden;
+        }
+
+        .stat-fill {
+            height: 100%;
+            border-radius: 4px;
+            transition: width 0.5s ease;
+        }
+
+        .stat-fill.attack { background: linear-gradient(90deg, #ef5350, #f44336); }
+        .stat-fill.defense { background: linear-gradient(90deg, #42a5f5, #2196f3); }
+        .stat-fill.magic { background: linear-gradient(90deg, #ab47bc, #9c27b0); }
+        .stat-fill.speed { background: linear-gradient(90deg, #66bb6a, #4caf50); }
+
+        .info-desc {
+            font-size: 0.85rem;
+            color: var(--text-secondary);
+            line-height: 1.5;
+            text-align: center;
+            padding: 10px;
+            background: rgba(255, 255, 255, 0.05);
+            border-radius: 8px;
+        }
+
+        .info-btn {
+            width: 100%;
+            padding: 12px;
+            margin-top: 15px;
+            border: none;
+            border-radius: 10px;
+            background: linear-gradient(135deg, var(--text-gold), #ff9800);
+            color: #000;
+            font-size: 1rem;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            font-family: var(--font-body);
+        }
+
+        .info-btn:hover {
+            transform: scale(1.02);
+            box-shadow: 0 0 20px rgba(255, 215, 0, 0.5);
+        }
+
+        .selection-panel {
+            bottom: 0;
+            left: 0;
+            right: 0;
+            background: linear-gradient(180deg, transparent, rgba(0, 0, 0, 0.9));
+            padding: 30px 40px 25px;
+        }
+
+        .selection-header {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            margin-bottom: 15px;
+        }
+
+        .selection-title {
+            font-family: var(--font-title);
+            font-size: 1.3rem;
+            color: var(--text-gold);
+        }
+
+        .selection-requirements {
+            display: flex;
+            gap: 20px;
+        }
+
+        .requirement {
+            display: flex;
+            align-items: center;
+            gap: 6px;
+            font-size: 0.85rem;
+            color: var(--text-secondary);
+        }
+
+        .requirement.met {
+            color: #4caf50;
+        }
+
+        .requirement-icon {
+            width: 18px;
+            height: 18px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 0.6rem;
+        }
+
+        .requirement.met .requirement-icon {
+            background: #4caf50;
+            color: white;
+        }
+
+        .requirement:not(.met) .requirement-icon {
+            border: 2px solid currentColor;
+        }
+
+        .confirm-btn {
+            padding: 10px 30px;
+            border: none;
+            border-radius: 20px;
+            background: linear-gradient(135deg, var(--text-gold), #ff9800);
+            color: #000;
+            font-size: 0.95rem;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            font-family: var(--font-body);
+        }
+
+        .confirm-btn:disabled {
+            background: #555;
+            color: #888;
+            cursor: not-allowed;
+        }
+
+        .confirm-btn:not(:disabled):hover {
+            transform: scale(1.05);
+            box-shadow: 0 0 25px rgba(255, 215, 0, 0.6);
+        }
+
+        .selected-cards {
+            display: flex;
+            gap: 15px;
+            justify-content: center;
+        }
+
+        .selected-slot {
+            width: 80px;
+            height: 110px;
+            border: 2px dashed rgba(255, 255, 255, 0.2);
+            border-radius: 8px;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            transition: all 0.3s ease;
+            position: relative;
+        }
+
+        .selected-slot.premium {
+            border-color: var(--text-gold);
+            background: rgba(255, 215, 0, 0.1);
+        }
+
+        .selected-slot.filled {
+            border: none;
+        }
+
+        .slot-icon {
+            font-size: 1.2rem;
+            opacity: 0.5;
+        }
+
+        .slot-label {
+            font-size: 0.65rem;
+            color: var(--text-secondary);
+            margin-top: 3px;
+        }
+
+        .mini-card {
+            width: 100%;
+            height: 100%;
+            border-radius: 6px;
+            overflow: hidden;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            background: linear-gradient(180deg, #2d2d44, #1a1a2e);
+            position: relative;
+        }
+
+        .mini-avatar {
+            font-size: 1.5rem;
+        }
+
+        .mini-name {
+            font-size: 0.6rem;
+            font-weight: 600;
+            margin-top: 3px;
+        }
+
+        .mini-remove {
+            position: absolute;
+            top: 3px;
+            right: 3px;
+            width: 14px;
+            height: 14px;
+            border-radius: 50%;
+            background: #ef5350;
+            color: white;
+            border: none;
+            cursor: pointer;
+            font-size: 0.6rem;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            opacity: 0;
+            transition: opacity 0.3s ease;
+        }
+
+        .selected-slot:hover .mini-remove {
+            opacity: 1;
+        }
+
+        .help-tip {
+            position: fixed;
+            bottom: 200px;
+            left: 50%;
+            transform: translateX(-50%);
+            background: rgba(0, 0, 0, 0.7);
+            padding: 8px 20px;
+            border-radius: 20px;
+            font-size: 0.8rem;
+            color: var(--text-secondary);
+            z-index: 10;
+        }
+
+        .particles {
+            position: fixed;
+            inset: 0;
+            pointer-events: none;
+            z-index: 0;
+        }
+
+        .particle {
+            position: absolute;
+            width: 3px;
+            height: 3px;
+            background: var(--text-gold);
+            border-radius: 50%;
+            opacity: 0.3;
+            animation: float-up 25s linear infinite;
+        }
+
+        @keyframes float-up {
+            0% { transform: translateY(100vh); opacity: 0; }
+            10% { opacity: 0.3; }
+            90% { opacity: 0.3; }
+            100% { transform: translateY(-100vh); opacity: 0; }
+        }
+
+        .toast {
+            position: fixed;
+            top: 150px;
+            left: 50%;
+            transform: translateX(-50%) translateY(-20px);
+            background: rgba(0, 0, 0, 0.9);
+            color: white;
+            padding: 12px 25px;
+            border-radius: 10px;
+            border: 1px solid var(--text-gold);
+            opacity: 0;
+            transition: all 0.3s ease;
+            z-index: 100;
+        }
+
+        .toast.show {
+            transform: translateX(-50%) translateY(0);
+            opacity: 1;
+        }
+
+        .loading {
+            position: fixed;
+            inset: 0;
+            background: #0f0f1e;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            z-index: 1000;
+            transition: opacity 0.5s ease;
+        }
+
+        .loading.hidden {
+            opacity: 0;
+            pointer-events: none;
+        }
+
+        .loading-spinner {
+            width: 60px;
+            height: 60px;
+            border: 4px solid rgba(255, 215, 0, 0.2);
+            border-top-color: var(--text-gold);
+            border-radius: 50%;
+            animation: spin 1s linear infinite;
+        }
+
+        @keyframes spin {
+            to { transform: rotate(360deg); }
+        }
+    </style>
+</head>
+<body>
+    <div class="loading" id="loading">
+        <div class="loading-spinner"></div>
+    </div>
+
+    <div class="particles" id="particles"></div>
+    
+    <div id="canvas-container"></div>
+
+    <div class="ui-overlay game-header">
+        <h1 class="game-title">🎴 故事卡牌工坊</h1>
+        <p class="game-subtitle">选择角色与情节，创造你的冒险故事</p>
+    </div>
+
+    <div class="ui-overlay deck-tabs">
+        <button class="deck-tab active" data-deck="character">🎭 角色卡牌</button>
+        <button class="deck-tab" data-deck="plot">🎴 情节卡牌</button>
+    </div>
+
+    <div class="ui-overlay card-info-panel" id="cardInfoPanel">
+        <div class="info-header">
+            <div class="info-avatar" id="infoAvatar">🐉</div>
+            <div class="info-name" id="infoName">龙骑士</div>
+            <div class="info-title" id="infoTitle">传说守护者</div>
+        </div>
+        <div class="info-stats">
+            <div class="stat-row">
+                <span class="stat-label">攻击</span>
+                <div class="stat-bar"><div class="stat-fill attack" id="statAttack" style="width: 90%"></div></div>
+            </div>
+            <div class="stat-row">
+                <span class="stat-label">防御</span>
+                <div class="stat-bar"><div class="stat-fill defense" id="statDefense" style="width: 85%"></div></div>
+            </div>
+            <div class="stat-row">
+                <span class="stat-label">魔法</span>
+                <div class="stat-bar"><div class="stat-fill magic" id="statMagic" style="width: 75%"></div></div>
+            </div>
+        </div>
+        <div class="info-desc" id="infoDesc">与巨龙缔结契约的传奇骑士，守护世界和平。</div>
+        <button class="info-btn" id="selectBtn">选择此卡</button>
+    </div>
+
+    <div class="help-tip">🖱️ 移动鼠标悬停卡牌查看详情，点击选择</div>
+
+    <div class="ui-overlay selection-panel">
+        <div class="selection-header">
+            <div class="selection-title">📋 已选卡牌</div>
+            <div class="selection-requirements">
+                <div class="requirement" id="reqProtagonist">
+                    <span class="requirement-icon"></span>
+                    <span>主角×1</span>
+                </div>
+                <div class="requirement" id="reqCharacters">
+                    <span class="requirement-icon"></span>
+                    <span>角色1-4</span>
+                </div>
+                <div class="requirement" id="reqPlots">
+                    <span class="requirement-icon"></span>
+                    <span>情节1-4</span>
+                </div>
+            </div>
+            <button class="confirm-btn" id="confirmBtn" disabled>确认选择</button>
+        </div>
+        <div class="selected-cards" id="selectedCards">
+            <div class="selected-slot premium" data-slot="protagonist">
+                <div class="slot-icon">👑</div>
+                <div class="slot-label">主角</div>
+            </div>
+            <div class="selected-slot" data-slot="char1">
+                <div class="slot-icon">➕</div>
+                <div class="slot-label">角色</div>
+            </div>
+            <div class="selected-slot" data-slot="char2">
+                <div class="slot-icon">➕</div>
+                <div class="slot-label">角色</div>
+            </div>
+            <div class="selected-slot" data-slot="char3">
+                <div class="slot-icon">➕</div>
+                <div class="slot-label">角色</div>
+            </div>
+            <div class="selected-slot" data-slot="plot1">
+                <div class="slot-icon">➕</div>
+                <div class="slot-label">情节</div>
+            </div>
+            <div class="selected-slot" data-slot="plot2">
+                <div class="slot-icon">➕</div>
+                <div class="slot-label">情节</div>
+            </div>
+            <div class="selected-slot" data-slot="plot3">
+                <div class="slot-icon">➕</div>
+                <div class="slot-label">情节</div>
+            </div>
+            <div class="selected-slot" data-slot="plot4">
+                <div class="slot-icon">➕</div>
+                <div class="slot-label">情节</div>
+            </div>
+        </div>
+    </div>
+
+    <div class="toast" id="toast"></div>
+
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
+    <script>
+        var characters = [
+            { id: 'c1', name: '龙骑士', title: '传说守护者', avatar: '🐉', rarity: 'legendary', role: 'protagonist', attack: 95, defense: 90, magic: 80, desc: '与巨龙缔结契约的传奇骑士' },
+            { id: 'c2', name: '光明骑士', title: '正义化身', avatar: '🦸', rarity: 'legendary', role: 'protagonist', attack: 88, defense: 95, magic: 70, desc: '正义的化身，守护世界' },
+            { id: 'c3', name: '冰雪女王', title: '寒冰统治者', avatar: '👸', rarity: 'epic', role: 'protagonist', attack: 75, defense: 80, magic: 95, desc: '统治冰雪王国的女王' },
+            { id: 'c4', name: '暗影刺客', title: '夜幕行者', avatar: '🦹', rarity: 'epic', role: 'antagonist', attack: 98, defense: 50, magic: 60, desc: '潜伏在黑暗中的致命刺客' },
+            { id: 'c5', name: '精灵法师', title: '自然守护者', avatar: '🧝', rarity: 'rare', role: 'supporting', attack: 60, defense: 55, magic: 90, desc: '来自精灵森林的法师' },
+            { id: 'c6', name: '智慧法师', title: '知识守护者', avatar: '🧙', rarity: 'epic', role: 'supporting', attack: 50, defense: 60, magic: 95, desc: '博学的法师' },
+            { id: 'c7', name: '黑暗领主', title: '混沌使者', avatar: '😈', rarity: 'epic', role: 'antagonist', attack: 90, defense: 85, magic: 88, desc: '邪恶的黑暗领主' },
+            { id: 'c8', name: '吸血伯爵', title: '暗夜贵族', avatar: '🧛', rarity: 'rare', role: 'antagonist', attack: 85, defense: 70, magic: 75, desc: '神秘的吸血鬼伯爵' },
+        ];
+
+        var plots = [
+            { id: 'p1', name: '晴空万里', title: '天气', avatar: '🌤', rarity: 'common', type: 'weather', attack: 0, defense: 10, magic: 0, desc: '阳光明媚，视野开阔' },
+            { id: 'p2', name: '雷雨交加', title: '天气', avatar: '⛈', rarity: 'rare', type: 'weather', attack: 20, defense: 0, magic: 15, desc: '电闪雷鸣，行动受阻' },
+            { id: 'p3', name: '暴风雪', title: '天气', avatar: '❄️', rarity: 'epic', type: 'weather', attack: 30, defense: 0, magic: 25, desc: '冰天雪地，生存挑战' },
+            { id: 'p4', name: '勇者之剑', title: '道具', avatar: '🗡️', rarity: 'rare', type: 'item', attack: 35, defense: 0, magic: 0, desc: '攻击力+30%' },
+            { id: 'p5', name: '守护之盾', title: '道具', avatar: '🛡️', rarity: 'rare', type: 'item', attack: 0, defense: 35, magic: 0, desc: '防御力+30%' },
+            { id: 'p6', name: '魔法水晶', title: '道具', avatar: '💎', rarity: 'epic', type: 'item', attack: 0, defense: 0, magic: 50, desc: '魔法力+50%' },
+            { id: 'p7', name: '神秘森林', title: '地形', avatar: '🌲', rarity: 'rare', type: 'terrain', attack: 10, defense: 15, magic: 20, desc: '隐藏着神秘生物' },
+            { id: 'p8', name: '古老城堡', title: '地形', avatar: '🏰', rarity: 'epic', type: 'terrain', attack: 15, defense: 25, magic: 15, desc: '充满历史与秘密' },
+        ];
+
+        var selectedCharacters = [];
+        var selectedPlots = [];
+        var currentDeck = 'character';
+        var hoveredCard = null;
+
+        var scene, camera, renderer, cards = [], raycaster, mouse;
+
+        function init() {
+            scene = new THREE.Scene();
+            
+            camera = new THREE.PerspectiveCamera(60, window.innerWidth / window.innerHeight, 0.1, 1000);
+            camera.position.set(0, 2, 8);
+            camera.lookAt(0, 0, 0);
+
+            renderer = new THREE.WebGLRenderer({ antialias: true, alpha: true });
+            renderer.setSize(window.innerWidth, window.innerHeight);
+            renderer.setPixelRatio(window.devicePixelRatio);
+            document.getElementById('canvas-container').appendChild(renderer.domElement);
+
+            var ambientLight = new THREE.AmbientLight(0xffffff, 0.6);
+            scene.add(ambientLight);
+
+            var directionalLight = new THREE.DirectionalLight(0xffffff, 0.8);
+            directionalLight.position.set(5, 10, 5);
+            scene.add(directionalLight);
+
+            var pointLight = new THREE.PointLight(0xffd700, 0.5, 20);
+            pointLight.position.set(0, 5, 5);
+            scene.add(pointLight);
+
+            raycaster = new THREE.Raycaster();
+            mouse = new THREE.Vector2();
+
+            createCards(characters);
+
+            window.addEventListener('resize', onWindowResize);
+            window.addEventListener('mousemove', onMouseMove);
+            window.addEventListener('click', onClick);
+
+            document.getElementById('loading').classList.add('hidden');
+            animate();
+        }
+
+        function createCardTexture(card) {
+            var canvas = document.createElement('canvas');
+            canvas.width = 256;
+            canvas.height = 360;
+            var ctx = canvas.getContext('2d');
+
+            var rarityColors = {
+                common: { border: '#9e9e9e', glow: '#bdbdbd' },
+                rare: { border: '#4fc3f7', glow: '#81d4fa' },
+                epic: { border: '#ba68c8', glow: '#ce93d8' },
+                legendary: { border: '#ff9800', glow: '#ffb74d' },
+                mythic: { border: '#ffd700', glow: '#ffeb3b' }
+            };
+            var colors = rarityColors[card.rarity] || rarityColors.common;
+
+            var gradient = ctx.createLinearGradient(0, 0, 0, canvas.height);
+            gradient.addColorStop(0, '#2d2d44');
+            gradient.addColorStop(1, '#1a1a2e');
+            ctx.fillStyle = gradient;
+            ctx.fillRect(0, 0, canvas.width, canvas.height);
+
+            ctx.strokeStyle = colors.border;
+            ctx.lineWidth = 6;
+            ctx.strokeRect(3, 3, canvas.width - 6, canvas.height - 6);
+
+            ctx.fillStyle = colors.border;
+            ctx.fillRect(0, 0, canvas.width, 8);
+
+            ctx.font = 'bold 14px Arial';
+            ctx.fillStyle = '#ffffff';
+            ctx.textAlign = 'center';
+            var typeText = card.role ? 
+                (card.role === 'protagonist' ? '主角' : card.role === 'supporting' ? '配角' : '反派') :
+                (card.type === 'weather' ? '天气' : card.type === 'item' ? '道具' : card.type === 'terrain' ? '地形' : '事件');
+            ctx.fillText(typeText, 40, 30);
+
+            ctx.font = '80px Arial';
+            ctx.fillText(card.avatar, canvas.width / 2, 150);
+
+            ctx.font = 'bold 22px Arial';
+            ctx.fillStyle = '#ffd700';
+            ctx.fillText(card.name, canvas.width / 2, 200);
+
+            ctx.font = 'italic 14px Arial';
+            ctx.fillStyle = '#94a3b8';
+            ctx.fillText(card.title, canvas.width / 2, 225);
+
+            ctx.font = '12px Arial';
+            ctx.fillStyle = '#cccccc';
+            var desc = card.desc;
+            if (desc.length > 20) {
+                ctx.fillText(desc.substring(0, 18) + '...', canvas.width / 2, 280);
+            } else {
+                ctx.fillText(desc, canvas.width / 2, 280);
+            }
+
+            var gemGradient = ctx.createRadialGradient(canvas.width - 25, 25, 0, canvas.width - 25, 25, 15);
+            gemGradient.addColorStop(0, colors.glow);
+            gemGradient.addColorStop(1, colors.border);
+            ctx.fillStyle = gemGradient;
+            ctx.beginPath();
+            ctx.arc(canvas.width - 25, 25, 12, 0, Math.PI * 2);
+            ctx.fill();
+
+            return new THREE.CanvasTexture(canvas);
+        }
+
+        function createCards(data) {
+            cards.forEach(function(card) {
+                scene.remove(card.mesh);
+            });
+            cards = [];
+
+            var totalCards = data.length;
+            var fanAngle = Math.PI * 0.8;
+            var startAngle = -fanAngle / 2;
+            var angleStep = fanAngle / (totalCards - 1 || 1);
+            var radius = 5;
+
+            data.forEach(function(cardData, index) {
+                var geometry = new THREE.PlaneGeometry(2, 2.8);
+                var texture = createCardTexture(cardData);
+                var material = new THREE.MeshStandardMaterial({
+                    map: texture,
+                    transparent: true,
+                    side: THREE.DoubleSide
+                });
+
+                var mesh = new THREE.Mesh(geometry, material);
+
+                var angle = startAngle + angleStep * index;
+                var x = Math.sin(angle) * radius;
+                var z = Math.cos(angle) * radius - radius;
+                var rotY = -angle;
+
+                mesh.position.set(x, 0, z);
+                mesh.rotation.y = rotY;
+                mesh.userData = {
+                    cardData: cardData,
+                    originalPosition: { x: x, y: 0, z: z },
+                    originalRotation: { y: rotY },
+                    index: index
+                };
+
+                scene.add(mesh);
+                cards.push({
+                    mesh: mesh,
+                    data: cardData,
+                    isSelected: false
+                });
+            });
+        }
+
+        function onWindowResize() {
+            camera.aspect = window.innerWidth / window.innerHeight;
+            camera.updateProjectionMatrix();
+            renderer.setSize(window.innerWidth, window.innerHeight);
+        }
+
+        function onMouseMove(event) {
+            mouse.x = (event.clientX / window.innerWidth) * 2 - 1;
+            mouse.y = -(event.clientY / window.innerHeight) * 2 + 1;
+
+            raycaster.setFromCamera(mouse, camera);
+            var meshes = cards.map(function(c) { return c.mesh; });
+            var intersects = raycaster.intersectObjects(meshes);
+
+            cards.forEach(function(card) {
+                var targetY = card.mesh.userData.originalPosition.y;
+                var targetZ = card.mesh.userData.originalPosition.z;
+                
+                card.mesh.position.y += (targetY - card.mesh.position.y) * 0.1;
+                card.mesh.position.z += (targetZ - card.mesh.position.z) * 0.1;
+            });
+
+            if (intersects.length > 0) {
+                var intersected = intersects[0].object;
+                var card = cards.find(function(c) { return c.mesh === intersected; });
+                
+                if (card) {
+                    hoveredCard = card;
+                    intersected.position.y = 0.8;
+                    intersected.position.z = intersected.userData.originalPosition.z + 0.5;
+                    showCardInfo(card.data);
+                }
+            } else {
+                hoveredCard = null;
+                hideCardInfo();
+            }
+        }
+
+        function onClick(event) {
+            if (hoveredCard) {
+                toggleCard(hoveredCard.data);
+            }
+        }
+
+        function showCardInfo(card) {
+            var panel = document.getElementById('cardInfoPanel');
+            document.getElementById('infoAvatar').textContent = card.avatar;
+            document.getElementById('infoName').textContent = card.name;
+            document.getElementById('infoTitle').textContent = card.title;
+            document.getElementById('infoDesc').textContent = card.desc;
+            document.getElementById('statAttack').style.width = card.attack + '%';
+            document.getElementById('statDefense').style.width = card.defense + '%';
+            document.getElementById('statMagic').style.width = card.magic + '%';
+            
+            var isSelected = (card.role ? selectedCharacters : selectedPlots).some(function(c) { return c.id === card.id; });
+            document.getElementById('selectBtn').textContent = isSelected ? '取消选择' : '选择此卡';
+            
+            panel.classList.add('visible');
+        }
+
+        function hideCardInfo() {
+            document.getElementById('cardInfoPanel').classList.remove('visible');
+        }
+
+        function toggleCard(card) {
+            var isCharacter = !!card.role;
+            var arr = isCharacter ? selectedCharacters : selectedPlots;
+            var index = arr.findIndex(function(c) { return c.id === card.id; });
+
+            if (index > -1) {
+                arr.splice(index, 1);
+                showToast('已取消: ' + card.name);
+            } else {
+                if (isCharacter) {
+                    if (selectedCharacters.length >= 4) {
+                        showToast('最多选择4个角色！', 'error');
+                        return;
+                    }
+                    if (card.role === 'protagonist' && selectedCharacters.some(function(c) { return c.role === 'protagonist'; })) {
+                        showToast('只能选择1个主角！', 'error');
+                        return;
+                    }
+                } else {
+                    if (selectedPlots.length >= 4) {
+                        showToast('最多选择4个情节！', 'error');
+                        return;
+                    }
+                }
+                arr.push(card);
+                showToast('已选择: ' + card.name);
+            }
+
+            updateSelectionPanel();
+            if (hoveredCard && hoveredCard.data.id === card.id) {
+                showCardInfo(card);
+            }
+        }
+
+        function updateSelectionPanel() {
+            var protagonist = selectedCharacters.find(function(c) { return c.role === 'protagonist'; });
+            var otherChars = selectedCharacters.filter(function(c) { return c.role !== 'protagonist'; });
+
+            var protagonistSlot = document.querySelector('[data-slot="protagonist"]');
+            if (protagonist) {
+                protagonistSlot.classList.add('filled');
+                protagonistSlot.innerHTML = createMiniCard(protagonist);
+            } else {
+                protagonistSlot.classList.remove('filled');
+                protagonistSlot.innerHTML = '<div class="slot-icon">👑</div><div class="slot-label">主角</div>';
+            }
+
+            var charSlots = document.querySelectorAll('[data-slot^="char"]');
+            charSlots.forEach(function(slot, index) {
+                if (otherChars[index]) {
+                    slot.classList.add('filled');
+                    slot.innerHTML = createMiniCard(otherChars[index]);
+                } else {
+                    slot.classList.remove('filled');
+                    slot.innerHTML = '<div class="slot-icon">➕</div><div class="slot-label">角色</div>';
+                }
+            });
+
+            var plotSlots = document.querySelectorAll('[data-slot^="plot"]');
+            plotSlots.forEach(function(slot, index) {
+                if (selectedPlots[index]) {
+                    slot.classList.add('filled');
+                    slot.innerHTML = createMiniCard(selectedPlots[index]);
+                } else {
+                    slot.classList.remove('filled');
+                    slot.innerHTML = '<div class="slot-icon">➕</div><div class="slot-label">情节</div>';
+                }
+            });
+
+            var hasProtagonist = !!protagonist;
+            var hasCharacters = selectedCharacters.length >= 1;
+            var hasPlots = selectedPlots.length >= 1;
+
+            document.getElementById('reqProtagonist').classList.toggle('met', hasProtagonist);
+            document.getElementById('reqCharacters').classList.toggle('met', hasCharacters);
+            document.getElementById('reqPlots').classList.toggle('met', hasPlots);
+
+            document.getElementById('confirmBtn').disabled = !(hasProtagonist && hasCharacters && hasPlots);
+        }
+
+        function createMiniCard(item) {
+            return '<div class="mini-card">' +
+                '<div class="mini-avatar">' + item.avatar + '</div>' +
+                '<div class="mini-name">' + item.name + '</div>' +
+                '<button class="mini-remove" onclick="event.stopPropagation(); removeCard(\'' + item.id + '\', ' + !!item.role + ')">×</button>' +
+            '</div>';
+        }
+
+        function removeCard(id, isCharacter) {
+            var arr = isCharacter ? selectedCharacters : selectedPlots;
+            var index = arr.findIndex(function(c) { return c.id === id; });
+            if (index > -1) {
+                var item = arr[index];
+                arr.splice(index, 1);
+                showToast('已移除: ' + item.name);
+                updateSelectionPanel();
+            }
+        }
+
+        function showToast(message, type) {
+            var toast = document.getElementById('toast');
+            toast.textContent = message;
+            toast.style.borderColor = type === 'error' ? '#ef5350' : 'var(--text-gold)';
+            toast.classList.add('show');
+            setTimeout(function() { toast.classList.remove('show'); }, 2000);
+        }
+
+        document.querySelectorAll('.deck-tab').forEach(function(tab) {
+            tab.addEventListener('click', function() {
+                document.querySelectorAll('.deck-tab').forEach(function(t) { t.classList.remove('active'); });
+                this.classList.add('active');
+                
+                currentDeck = this.dataset.deck;
+                var data = currentDeck === 'character' ? characters : plots;
+                createCards(data);
+                hideCardInfo();
+            });
+        });
+
+        document.getElementById('selectBtn').addEventListener('click', function() {
+            if (hoveredCard) {
+                toggleCard(hoveredCard.data);
+            }
+        });
+
+        document.getElementById('confirmBtn').addEventListener('click', function() {
+            var message = '选择完成！\n角色: ' + selectedCharacters.map(function(c) { return c.name; }).join(', ') + '\n情节: ' + selectedPlots.map(function(p) { return p.name; }).join(', ');
+            showToast('🎉 故事卡牌选择完成！');
+            alert(message);
+        });
+
+        function animate() {
+            requestAnimationFrame(animate);
+            renderer.render(scene, camera);
+        }
+
+        var particlesContainer = document.getElementById('particles');
+        for (var i = 0; i < 25; i++) {
+            var particle = document.createElement('div');
+            particle.className = 'particle';
+            particle.style.left = Math.random() * 100 + '%';
+            particle.style.animationDelay = Math.random() * 25 + 's';
+            particle.style.animationDuration = (20 + Math.random() * 10) + 's';
+            particlesContainer.appendChild(particle);
+        }
+
+        init();
+    </script>
+</body>
+</html>

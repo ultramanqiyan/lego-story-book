@@ -1,0 +1,1306 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>故事导演台 - Story Director's Desk</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+SC:wght@400;500;600;700&family=Cinzel:wght@400;600;700&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --gold: #ffd700;
+            --gold-dark: #b8860b;
+            --silver: #c0c0c0;
+            --bronze: #cd7f32;
+            --crimson: #8b0000;
+            --purple: #6b21a8;
+            
+            --bg-dark: #0d0d14;
+            --bg-card: #1a1a2e;
+            --bg-slot: rgba(255,255,255,0.05);
+            
+            --text-primary: #f8fafc;
+            --text-secondary: #94a3b8;
+            --text-muted: #64748b;
+            
+            --font-title: 'Cinzel', serif;
+            --font-body: 'Noto Sans SC', sans-serif;
+            
+            --card-width: 140px;
+            --card-height: 200px;
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: var(--font-body);
+            background: var(--bg-dark);
+            min-height: 100vh;
+            color: var(--text-primary);
+            overflow-x: hidden;
+        }
+
+        .director-desk {
+            display: grid;
+            grid-template-rows: auto 1fr auto;
+            min-height: 100vh;
+            position: relative;
+        }
+
+        .desk-bg {
+            position: fixed;
+            inset: 0;
+            background: 
+                radial-gradient(ellipse at 20% 30%, rgba(139, 69, 19, 0.1) 0%, transparent 50%),
+                radial-gradient(ellipse at 80% 70%, rgba(75, 0, 130, 0.1) 0%, transparent 50%),
+                linear-gradient(180deg, #0d0d14 0%, #1a1a2e 50%, #0d0d14 100%);
+            z-index: 0;
+        }
+
+        .desk-border {
+            position: fixed;
+            inset: 0;
+            border: 15px solid;
+            border-image: linear-gradient(135deg, #8b4513, #654321, #8b4513, #a0522d) 1;
+            pointer-events: none;
+            z-index: 100;
+        }
+
+        /* ===== TOP SECTION ===== */
+        .top-section {
+            position: relative;
+            z-index: 10;
+            padding: 20px 30px;
+            background: linear-gradient(180deg, rgba(0,0,0,0.8), transparent);
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .story-title-area {
+            flex: 1;
+        }
+
+        .story-title-input {
+            background: rgba(255,255,255,0.05);
+            border: 2px solid rgba(255, 215, 0, 0.3);
+            border-radius: 10px;
+            padding: 12px 20px;
+            font-size: 1.2rem;
+            color: var(--text-primary);
+            width: 300px;
+            font-family: var(--font-body);
+            transition: all 0.3s ease;
+        }
+
+        .story-title-input:focus {
+            outline: none;
+            border-color: var(--gold);
+            box-shadow: 0 0 20px rgba(255, 215, 0, 0.2);
+        }
+
+        .story-title-input::placeholder {
+            color: var(--text-muted);
+        }
+
+        .logo-area {
+            text-align: center;
+        }
+
+        .logo-title {
+            font-family: var(--font-title);
+            font-size: 1.8rem;
+            background: linear-gradient(135deg, var(--gold), #ff9800);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+            text-shadow: 0 0 30px rgba(255, 215, 0, 0.3);
+        }
+
+        .logo-subtitle {
+            font-size: 0.75rem;
+            color: var(--text-secondary);
+            letter-spacing: 3px;
+        }
+
+        .inspiration-area {
+            display: flex;
+            align-items: center;
+            gap: 15px;
+        }
+
+        .inspiration-meter {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            background: rgba(0,0,0,0.3);
+            padding: 8px 15px;
+            border-radius: 20px;
+        }
+
+        .inspiration-icon {
+            font-size: 1.2rem;
+        }
+
+        .inspiration-bar {
+            width: 100px;
+            height: 8px;
+            background: rgba(255,255,255,0.1);
+            border-radius: 4px;
+            overflow: hidden;
+        }
+
+        .inspiration-fill {
+            height: 100%;
+            background: linear-gradient(90deg, var(--gold), #ff9800);
+            border-radius: 4px;
+            width: 75%;
+            transition: width 0.5s ease;
+        }
+
+        /* ===== MAIN CONTENT ===== */
+        .main-content {
+            position: relative;
+            z-index: 10;
+            display: grid;
+            grid-template-columns: 1fr 300px 1fr;
+            gap: 20px;
+            padding: 20px 30px;
+            overflow: hidden;
+        }
+
+        /* Card Library */
+        .card-library {
+            display: flex;
+            flex-direction: column;
+            gap: 15px;
+        }
+
+        .library-section {
+            background: rgba(0,0,0,0.3);
+            border-radius: 15px;
+            padding: 15px;
+            border: 1px solid rgba(255,255,255,0.1);
+        }
+
+        .section-header {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            margin-bottom: 12px;
+        }
+
+        .section-title {
+            font-family: var(--font-title);
+            font-size: 1rem;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .section-title.protagonist { color: var(--gold); }
+        .section-title.supporting { color: var(--silver); }
+        .section-title.bystander { color: var(--bronze); }
+        .section-title.antagonist { color: #ef4444; }
+        .section-title.terrain { color: #22c55e; }
+        .section-title.weather { color: #3b82f6; }
+
+        .card-carousel {
+            display: flex;
+            gap: 10px;
+            overflow-x: auto;
+            padding-bottom: 10px;
+            scroll-behavior: smooth;
+        }
+
+        .card-carousel::-webkit-scrollbar {
+            height: 4px;
+        }
+
+        .card-carousel::-webkit-scrollbar-track {
+            background: rgba(255,255,255,0.1);
+            border-radius: 2px;
+        }
+
+        .card-carousel::-webkit-scrollbar-thumb {
+            background: var(--gold);
+            border-radius: 2px;
+        }
+
+        /* Cards */
+        .card {
+            flex-shrink: 0;
+            width: var(--card-width);
+            height: var(--card-height);
+            border-radius: 12px;
+            cursor: grab;
+            position: relative;
+            transition: all 0.3s ease;
+            transform-style: preserve-3d;
+        }
+
+        .card:hover {
+            transform: translateY(-10px) scale(1.05);
+            z-index: 10;
+        }
+
+        .card.dragging {
+            opacity: 0.5;
+            cursor: grabbing;
+        }
+
+        .card-inner {
+            width: 100%;
+            height: 100%;
+            border-radius: 12px;
+            overflow: hidden;
+            display: flex;
+            flex-direction: column;
+            background: linear-gradient(180deg, #2d2d44 0%, #1a1a2e 100%);
+            border: 3px solid;
+        }
+
+        .card.protagonist .card-inner { border-color: var(--gold); box-shadow: 0 0 20px rgba(255, 215, 0, 0.3); }
+        .card.supporting .card-inner { border-color: var(--silver); box-shadow: 0 0 15px rgba(192, 192, 192, 0.2); }
+        .card.bystander .card-inner { border-color: var(--bronze); }
+        .card.antagonist .card-inner { border-color: #ef4444; box-shadow: 0 0 20px rgba(239, 68, 68, 0.3); }
+        .card.terrain .card-inner { border-color: #22c55e; box-shadow: 0 0 15px rgba(34, 197, 94, 0.2); }
+        .card.weather .card-inner { border-color: #3b82f6; box-shadow: 0 0 15px rgba(59, 130, 246, 0.2); }
+        .card.item .card-inner { border-color: #f59e0b; }
+
+        .card-top-bar {
+            height: 4px;
+        }
+
+        .card.protagonist .card-top-bar { background: linear-gradient(90deg, var(--gold), #ff9800); }
+        .card.supporting .card-top-bar { background: linear-gradient(90deg, var(--silver), #e0e0e0); }
+        .card.bystander .card-top-bar { background: linear-gradient(90deg, var(--bronze), #b87333); }
+        .card.antagonist .card-top-bar { background: linear-gradient(90deg, #ef4444, #991b1b); }
+        .card.terrain .card-top-bar { background: linear-gradient(90deg, #22c55e, #15803d); }
+        .card.weather .card-top-bar { background: linear-gradient(90deg, #3b82f6, #1d4ed8); }
+        .card.item .card-top-bar { background: linear-gradient(90deg, #f59e0b, #d97706); }
+
+        .card-image {
+            height: 80px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            background: rgba(0,0,0,0.2);
+        }
+
+        .card-avatar {
+            font-size: 2.5rem;
+            filter: drop-shadow(0 2px 4px rgba(0,0,0,0.3));
+        }
+
+        .card-content {
+            padding: 10px;
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+        }
+
+        .card-name {
+            font-size: 0.85rem;
+            font-weight: 600;
+            margin-bottom: 3px;
+            text-align: center;
+        }
+
+        .card-subtitle {
+            font-size: 0.65rem;
+            color: var(--text-secondary);
+            text-align: center;
+            margin-bottom: 5px;
+        }
+
+        .card-tags {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 3px;
+            justify-content: center;
+            margin-top: auto;
+        }
+
+        .card-tag {
+            padding: 2px 6px;
+            background: rgba(255,255,255,0.1);
+            border-radius: 6px;
+            font-size: 0.55rem;
+        }
+
+        /* Stage Preview */
+        .stage-preview {
+            background: rgba(0,0,0,0.5);
+            border-radius: 20px;
+            border: 2px solid rgba(255, 215, 0, 0.2);
+            padding: 20px;
+            display: flex;
+            flex-direction: column;
+            gap: 15px;
+        }
+
+        .stage-title {
+            font-family: var(--font-title);
+            font-size: 1.1rem;
+            color: var(--gold);
+            text-align: center;
+            padding-bottom: 10px;
+            border-bottom: 1px solid rgba(255,255,255,0.1);
+        }
+
+        .stage-section {
+            background: rgba(255,255,255,0.03);
+            border-radius: 12px;
+            padding: 12px;
+        }
+
+        .stage-section-title {
+            font-size: 0.75rem;
+            color: var(--text-muted);
+            margin-bottom: 8px;
+            display: flex;
+            align-items: center;
+            gap: 5px;
+        }
+
+        .stage-slots {
+            display: flex;
+            gap: 8px;
+            flex-wrap: wrap;
+        }
+
+        .stage-slot {
+            width: 60px;
+            height: 85px;
+            border: 2px dashed rgba(255,255,255,0.2);
+            border-radius: 8px;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            transition: all 0.3s ease;
+            position: relative;
+        }
+
+        .stage-slot.highlight {
+            border-color: var(--gold);
+            background: rgba(255, 215, 0, 0.1);
+            animation: slot-pulse 1.5s ease-in-out infinite;
+        }
+
+        @keyframes slot-pulse {
+            0%, 100% { box-shadow: 0 0 10px rgba(255, 215, 0, 0.3); }
+            50% { box-shadow: 0 0 20px rgba(255, 215, 0, 0.5); }
+        }
+
+        .stage-slot.filled {
+            border: none;
+            background: transparent;
+        }
+
+        .stage-slot.required::after {
+            content: '必选';
+            position: absolute;
+            bottom: -15px;
+            font-size: 0.55rem;
+            color: var(--gold);
+        }
+
+        .slot-icon {
+            font-size: 1rem;
+            opacity: 0.4;
+        }
+
+        .slot-label {
+            font-size: 0.55rem;
+            color: var(--text-muted);
+            margin-top: 3px;
+        }
+
+        .mini-card {
+            width: 100%;
+            height: 100%;
+            border-radius: 6px;
+            overflow: hidden;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            background: linear-gradient(180deg, #2d2d44, #1a1a2e);
+            position: relative;
+        }
+
+        .mini-avatar {
+            font-size: 1.2rem;
+        }
+
+        .mini-name {
+            font-size: 0.5rem;
+            font-weight: 600;
+            margin-top: 2px;
+            text-align: center;
+            padding: 0 2px;
+        }
+
+        .mini-remove {
+            position: absolute;
+            top: 2px;
+            right: 2px;
+            width: 12px;
+            height: 12px;
+            border-radius: 50%;
+            background: #ef4444;
+            color: white;
+            border: none;
+            cursor: pointer;
+            font-size: 0.5rem;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            opacity: 0;
+            transition: opacity 0.2s ease;
+        }
+
+        .stage-slot:hover .mini-remove {
+            opacity: 1;
+        }
+
+        /* Story Preview Text */
+        .story-preview {
+            background: rgba(255,255,255,0.03);
+            border-radius: 12px;
+            padding: 15px;
+            margin-top: auto;
+        }
+
+        .preview-text {
+            font-size: 0.8rem;
+            color: var(--text-secondary);
+            line-height: 1.6;
+            font-style: italic;
+            min-height: 60px;
+        }
+
+        .preview-text .highlight-char {
+            color: var(--gold);
+            font-weight: 600;
+        }
+
+        /* Scene Library */
+        .scene-library {
+            display: flex;
+            flex-direction: column;
+            gap: 15px;
+        }
+
+        /* ===== BOTTOM SECTION ===== */
+        .bottom-section {
+            position: relative;
+            z-index: 10;
+            background: linear-gradient(180deg, transparent, rgba(0,0,0,0.9));
+            padding: 20px 30px 25px;
+        }
+
+        .item-area {
+            display: flex;
+            align-items: center;
+            gap: 20px;
+            margin-bottom: 20px;
+        }
+
+        .item-label {
+            font-family: var(--font-title);
+            font-size: 0.9rem;
+            color: #f59e0b;
+            white-space: nowrap;
+        }
+
+        .item-slots {
+            display: flex;
+            gap: 10px;
+        }
+
+        .item-slot {
+            width: 80px;
+            height: 110px;
+            border: 2px dashed rgba(245, 158, 11, 0.3);
+            border-radius: 10px;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            transition: all 0.3s ease;
+        }
+
+        .item-slot.highlight {
+            border-color: #f59e0b;
+            background: rgba(245, 158, 11, 0.1);
+        }
+
+        .item-slot.filled {
+            border: none;
+        }
+
+        .item-carousel {
+            flex: 1;
+            display: flex;
+            gap: 10px;
+            overflow-x: auto;
+            padding: 10px 0;
+        }
+
+        .item-card {
+            flex-shrink: 0;
+            width: 80px;
+            height: 110px;
+        }
+
+        .item-card .card-inner {
+            border-width: 2px;
+        }
+
+        .item-card .card-avatar {
+            font-size: 1.8rem;
+        }
+
+        .item-card .card-name {
+            font-size: 0.7rem;
+        }
+
+        /* Generate Button */
+        .generate-area {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            gap: 30px;
+        }
+
+        .generate-btn {
+            position: relative;
+            padding: 18px 60px;
+            font-size: 1.3rem;
+            font-weight: 700;
+            border: none;
+            border-radius: 15px;
+            background: linear-gradient(135deg, #3f3f46, #27272a);
+            color: var(--text-muted);
+            cursor: not-allowed;
+            font-family: var(--font-body);
+            transition: all 0.5s ease;
+            overflow: hidden;
+        }
+
+        .generate-btn.ready {
+            background: linear-gradient(135deg, var(--gold), #ff9800);
+            color: #000;
+            cursor: pointer;
+            box-shadow: 0 0 40px rgba(255, 215, 0, 0.5);
+            animation: btn-glow 2s ease-in-out infinite;
+        }
+
+        @keyframes btn-glow {
+            0%, 100% { box-shadow: 0 0 40px rgba(255, 215, 0, 0.5); }
+            50% { box-shadow: 0 0 60px rgba(255, 215, 0, 0.8); }
+        }
+
+        .generate-btn.ready:hover {
+            transform: scale(1.05);
+            box-shadow: 0 0 60px rgba(255, 215, 0, 0.8);
+        }
+
+        .generate-btn::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: -100%;
+            width: 100%;
+            height: 100%;
+            background: linear-gradient(90deg, transparent, rgba(255,255,255,0.3), transparent);
+            transition: left 0.5s ease;
+        }
+
+        .generate-btn.ready:hover::before {
+            left: 100%;
+        }
+
+        .btn-icon {
+            font-size: 1.5rem;
+            margin-right: 10px;
+        }
+
+        .requirements-check {
+            display: flex;
+            gap: 20px;
+        }
+
+        .requirement-item {
+            display: flex;
+            align-items: center;
+            gap: 6px;
+            font-size: 0.85rem;
+            color: var(--text-muted);
+        }
+
+        .requirement-item.met {
+            color: #22c55e;
+        }
+
+        .req-icon {
+            width: 20px;
+            height: 20px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 0.6rem;
+        }
+
+        .requirement-item.met .req-icon {
+            background: #22c55e;
+            color: white;
+        }
+
+        .requirement-item:not(.met) .req-icon {
+            border: 2px solid currentColor;
+        }
+
+        /* Toast */
+        .toast {
+            position: fixed;
+            top: 100px;
+            left: 50%;
+            transform: translateX(-50%) translateY(-20px);
+            background: rgba(0,0,0,0.95);
+            color: white;
+            padding: 12px 25px;
+            border-radius: 10px;
+            border: 1px solid var(--gold);
+            opacity: 0;
+            transition: all 0.3s ease;
+            z-index: 1000;
+        }
+
+        .toast.show {
+            transform: translateX(-50%) translateY(0);
+            opacity: 1;
+        }
+
+        /* Particles */
+        .particles {
+            position: fixed;
+            inset: 0;
+            pointer-events: none;
+            z-index: 1;
+        }
+
+        .particle {
+            position: absolute;
+            width: 3px;
+            height: 3px;
+            background: var(--gold);
+            border-radius: 50%;
+            opacity: 0.3;
+            animation: float-up 25s linear infinite;
+        }
+
+        @keyframes float-up {
+            0% { transform: translateY(100vh); opacity: 0; }
+            10% { opacity: 0.3; }
+            90% { opacity: 0.3; }
+            100% { transform: translateY(-100vh); opacity: 0; }
+        }
+
+        /* Synergy Warning */
+        .synergy-warning {
+            position: fixed;
+            bottom: 200px;
+            left: 50%;
+            transform: translateX(-50%);
+            background: rgba(239, 68, 68, 0.9);
+            color: white;
+            padding: 10px 20px;
+            border-radius: 10px;
+            font-size: 0.85rem;
+            display: none;
+            z-index: 50;
+            animation: warning-pulse 1s ease-in-out infinite;
+        }
+
+        .synergy-warning.show {
+            display: block;
+        }
+
+        @keyframes warning-pulse {
+            0%, 100% { transform: translateX(-50%) scale(1); }
+            50% { transform: translateX(-50%) scale(1.02); }
+        }
+
+        /* Responsive */
+        @media (max-width: 1200px) {
+            .main-content {
+                grid-template-columns: 1fr;
+                grid-template-rows: auto auto 250px;
+            }
+            
+            .stage-preview {
+                order: -1;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="particles" id="particles"></div>
+    <div class="desk-bg"></div>
+    <div class="desk-border"></div>
+
+    <div class="director-desk">
+        <!-- Top Section -->
+        <header class="top-section">
+            <div class="story-title-area">
+                <input type="text" class="story-title-input" placeholder="输入故事主题..." id="storyTitle">
+            </div>
+            <div class="logo-area">
+                <h1 class="logo-title">🎬 故事导演台</h1>
+                <p class="logo-subtitle">STORY DIRECTOR'S DESK</p>
+            </div>
+            <div class="inspiration-area">
+                <div class="inspiration-meter">
+                    <span class="inspiration-icon">💡</span>
+                    <span>灵感值</span>
+                    <div class="inspiration-bar">
+                        <div class="inspiration-fill" id="inspirationFill"></div>
+                    </div>
+                    <span id="inspirationValue">75</span>
+                </div>
+            </div>
+        </header>
+
+        <!-- Main Content -->
+        <main class="main-content">
+            <!-- Left: Character Library -->
+            <div class="card-library">
+                <div class="library-section">
+                    <div class="section-header">
+                        <div class="section-title protagonist">👑 主角 Protagonist</div>
+                        <span style="font-size: 0.7rem; color: var(--text-muted);">必选 1</span>
+                    </div>
+                    <div class="card-carousel" id="protagonistCards"></div>
+                </div>
+
+                <div class="library-section">
+                    <div class="section-header">
+                        <div class="section-title supporting">🎭 配角 Supporting</div>
+                        <span style="font-size: 0.7rem; color: var(--text-muted);">可选 0-2</span>
+                    </div>
+                    <div class="card-carousel" id="supportingCards"></div>
+                </div>
+
+                <div class="library-section">
+                    <div class="section-header">
+                        <div class="section-title bystander">👤 路人 NPC</div>
+                        <span style="font-size: 0.7rem; color: var(--text-muted);">可选 0-2</span>
+                    </div>
+                    <div class="card-carousel" id="bystanderCards"></div>
+                </div>
+
+                <div class="library-section">
+                    <div class="section-header">
+                        <div class="section-title antagonist">👿 反派 Antagonist</div>
+                        <span style="font-size: 0.7rem; color: var(--text-muted);">必选 1</span>
+                    </div>
+                    <div class="card-carousel" id="antagonistCards"></div>
+                </div>
+            </div>
+
+            <!-- Center: Stage Preview -->
+            <div class="stage-preview">
+                <div class="stage-title">🎭 舞台预览 Stage Preview</div>
+                
+                <div class="stage-section">
+                    <div class="stage-section-title">👥 角色阵容</div>
+                    <div class="stage-slots">
+                        <div class="stage-slot required highlight" data-slot="protagonist">
+                            <div class="slot-icon">👑</div>
+                            <div class="slot-label">主角</div>
+                        </div>
+                        <div class="stage-slot" data-slot="supporting1">
+                            <div class="slot-icon">🎭</div>
+                            <div class="slot-label">配角</div>
+                        </div>
+                        <div class="stage-slot" data-slot="supporting2">
+                            <div class="slot-icon">🎭</div>
+                            <div class="slot-label">配角</div>
+                        </div>
+                        <div class="stage-slot required highlight" data-slot="antagonist">
+                            <div class="slot-icon">👿</div>
+                            <div class="slot-label">反派</div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="stage-section">
+                    <div class="stage-section-title">🌍 场景设定</div>
+                    <div class="stage-slots">
+                        <div class="stage-slot required highlight" data-slot="terrain">
+                            <div class="slot-icon">🏔️</div>
+                            <div class="slot-label">地形</div>
+                        </div>
+                        <div class="stage-slot required highlight" data-slot="weather">
+                            <div class="slot-icon">🌤️</div>
+                            <div class="slot-label">天气</div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="story-preview">
+                    <div class="preview-text" id="previewText">
+                        选择卡牌来构建你的故事...<br>
+                        <span style="color: var(--text-muted);">拖拽或点击卡牌放入对应槽位</span>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Right: Scene Library -->
+            <div class="scene-library">
+                <div class="library-section">
+                    <div class="section-header">
+                        <div class="section-title terrain">🏔️ 地形 Terrain</div>
+                        <span style="font-size: 0.7rem; color: var(--text-muted);">必选 1</span>
+                    </div>
+                    <div class="card-carousel" id="terrainCards"></div>
+                </div>
+
+                <div class="library-section">
+                    <div class="section-header">
+                        <div class="section-title weather">🌤️ 天气 Weather</div>
+                        <span style="font-size: 0.7rem; color: var(--text-muted);">必选 1</span>
+                    </div>
+                    <div class="card-carousel" id="weatherCards"></div>
+                </div>
+            </div>
+        </main>
+
+        <!-- Bottom Section -->
+        <footer class="bottom-section">
+            <div class="item-area">
+                <div class="item-label">🎒 道具 Items</div>
+                <div class="item-slots">
+                    <div class="item-slot" data-slot="item1">
+                        <div class="slot-icon" style="font-size: 0.8rem;">➕</div>
+                    </div>
+                    <div class="item-slot" data-slot="item2">
+                        <div class="slot-icon" style="font-size: 0.8rem;">➕</div>
+                    </div>
+                    <div class="item-slot" data-slot="item3">
+                        <div class="slot-icon" style="font-size: 0.8rem;">➕</div>
+                    </div>
+                </div>
+                <div class="item-carousel" id="itemCards"></div>
+            </div>
+
+            <div class="generate-area">
+                <div class="requirements-check">
+                    <div class="requirement-item" id="reqProtagonist">
+                        <span class="req-icon"></span>
+                        <span>主角</span>
+                    </div>
+                    <div class="requirement-item" id="reqAntagonist">
+                        <span class="req-icon"></span>
+                        <span>反派</span>
+                    </div>
+                    <div class="requirement-item" id="reqTerrain">
+                        <span class="req-icon"></span>
+                        <span>地形</span>
+                    </div>
+                    <div class="requirement-item" id="reqWeather">
+                        <span class="req-icon"></span>
+                        <span>天气</span>
+                    </div>
+                </div>
+                <button class="generate-btn" id="generateBtn">
+                    <span class="btn-icon">🎬</span>
+                    <span>开拍！</span>
+                </button>
+            </div>
+        </footer>
+    </div>
+
+    <div class="synergy-warning" id="synergyWarning">
+        ⚠️ 高风险组合！故事可能走向灾难结局
+    </div>
+    <div class="toast" id="toast"></div>
+
+    <script>
+        var cardData = {
+            protagonist: [
+                { id: 'p1', name: '龙骑士', avatar: '🐉', title: '传说守护者', tags: ['🔥 龙焰', '⚔️ 骑士'] },
+                { id: 'p2', name: '光明骑士', avatar: '🦸', title: '正义化身', tags: ['☀️ 光明', '🛡️ 守护'] },
+                { id: 'p3', name: '冰雪女王', avatar: '👸', title: '寒冰统治者', tags: ['❄️ 冰雪', '👑 王室'] },
+                { id: 'p4', name: '火焰法师', avatar: '🔥', title: '烈焰使者', tags: ['🔥 火焰', '✨ 魔法'] },
+            ],
+            supporting: [
+                { id: 's1', name: '精灵法师', avatar: '🧝', title: '自然守护者', tags: ['🌿 自然', '✨ 魔法'] },
+                { id: 's2', name: '智慧法师', avatar: '🧙', title: '知识守护者', tags: ['📚 智慧', '✨ 魔法'] },
+                { id: 's3', name: '机械守卫', avatar: '🤖', title: '钢铁卫士', tags: ['🤖 机械', '🛡️ 防御'] },
+            ],
+            bystander: [
+                { id: 'b1', name: '村庄农夫', avatar: '👨‍🌾', title: '普通村民', tags: ['🏠 村民', '🌾 务农'] },
+                { id: 'b2', name: '神秘商人', avatar: '🧳', title: '旅行商人', tags: ['💰 交易', '🗺️ 旅行'] },
+            ],
+            antagonist: [
+                { id: 'a1', name: '暗影刺客', avatar: '🦹', title: '夜幕行者', tags: ['🌙 暗影', '🗡️ 刺客'] },
+                { id: 'a2', name: '黑暗领主', avatar: '😈', title: '混沌使者', tags: ['🌑 黑暗', '💀 毁灭'] },
+                { id: 'a3', name: '吸血伯爵', avatar: '🧛', title: '暗夜贵族', tags: ['🦇 吸血', '🏰 贵族'] },
+            ],
+            terrain: [
+                { id: 't1', name: '神秘森林', avatar: '🌲', title: '古老密林', tags: ['#隐蔽', '#神秘'] },
+                { id: 't2', name: '古老城堡', avatar: '🏰', title: '废墟遗迹', tags: ['#危险', '#秘密'] },
+                { id: 't3', name: '火山地带', avatar: '🌋', title: '熔岩之地', tags: ['#危险', '#高温'] },
+                { id: 't4', name: '冰封雪原', avatar: '🏔️', title: '极寒之地', tags: ['#寒冷', '#开阔'] },
+            ],
+            weather: [
+                { id: 'w1', name: '晴空万里', avatar: '☀️', title: '阳光明媚', tags: ['#视野好', '#温暖'] },
+                { id: 'w2', name: '雷雨交加', avatar: '⛈', title: '暴风雨', tags: ['#危险', '#压抑'] },
+                { id: 'w3', name: '暴风雪', avatar: '❄️', title: '冰雪风暴', tags: ['#寒冷', '#视野低'] },
+                { id: 'w4', name: '诡异迷雾', avatar: '🌫️', title: '神秘大雾', tags: ['#神秘', '#视野低'] },
+            ],
+            item: [
+                { id: 'i1', name: '勇者之剑', avatar: '🗡️', title: '传说武器', tags: ['⚔️ 攻击+30'] },
+                { id: 'i2', name: '守护之盾', avatar: '🛡️', title: '防御装备', tags: ['🛡️ 防御+30'] },
+                { id: 'i3', name: '魔法水晶', avatar: '💎', title: '魔力源泉', tags: ['✨ 魔法+50'] },
+                { id: 'i4', name: '古老地图', avatar: '🗺️', title: '指引道具', tags: ['📍 导航'] },
+                { id: 'i5', name: '神秘药水', avatar: '🧪', title: '恢复道具', tags: ['💚 治疗'] },
+            ]
+        };
+
+        var selections = {
+            protagonist: null,
+            supporting: [],
+            bystander: [],
+            antagonist: null,
+            terrain: null,
+            weather: null,
+            items: []
+        };
+
+        function createCard(card, type) {
+            var div = document.createElement('div');
+            div.className = 'card ' + type;
+            div.draggable = true;
+            div.dataset.id = card.id;
+            div.dataset.type = type;
+            
+            div.innerHTML = 
+                '<div class="card-inner">' +
+                    '<div class="card-top-bar"></div>' +
+                    '<div class="card-image"><div class="card-avatar">' + card.avatar + '</div></div>' +
+                    '<div class="card-content">' +
+                        '<div class="card-name">' + card.name + '</div>' +
+                        '<div class="card-subtitle">' + card.title + '</div>' +
+                        '<div class="card-tags">' + card.tags.map(function(t) { return '<span class="card-tag">' + t + '</span>'; }).join('') + '</div>' +
+                    '</div>' +
+                '</div>';
+            
+            div.addEventListener('click', function() { selectCard(card, type); });
+            div.addEventListener('dragstart', function(e) { 
+                e.dataTransfer.setData('text/plain', JSON.stringify({id: card.id, type: type}));
+                div.classList.add('dragging');
+            });
+            div.addEventListener('dragend', function() { div.classList.remove('dragging'); });
+            
+            return div;
+        }
+
+        function renderCards() {
+            var types = ['protagonist', 'supporting', 'bystander', 'antagonist', 'terrain', 'weather', 'item'];
+            types.forEach(function(type) {
+                var container = document.getElementById(type + 'Cards');
+                if (container) {
+                    container.innerHTML = '';
+                    cardData[type].forEach(function(card) {
+                        container.appendChild(createCard(card, type));
+                    });
+                }
+            });
+        }
+
+        function selectCard(card, type) {
+            if (type === 'protagonist') {
+                if (selections.protagonist && selections.protagonist.id === card.id) {
+                    selections.protagonist = null;
+                    showToast('已取消主角选择');
+                } else {
+                    selections.protagonist = card;
+                    showToast('已选择主角: ' + card.name);
+                }
+            } else if (type === 'antagonist') {
+                if (selections.antagonist && selections.antagonist.id === card.id) {
+                    selections.antagonist = null;
+                    showToast('已取消反派选择');
+                } else {
+                    selections.antagonist = card;
+                    showToast('已选择反派: ' + card.name);
+                }
+            } else if (type === 'terrain') {
+                if (selections.terrain && selections.terrain.id === card.id) {
+                    selections.terrain = null;
+                    showToast('已取消地形选择');
+                } else {
+                    selections.terrain = card;
+                    showToast('已选择地形: ' + card.name);
+                }
+            } else if (type === 'weather') {
+                if (selections.weather && selections.weather.id === card.id) {
+                    selections.weather = null;
+                    showToast('已取消天气选择');
+                } else {
+                    selections.weather = card;
+                    showToast('已选择天气: ' + card.name);
+                }
+            } else if (type === 'supporting') {
+                var index = selections.supporting.findIndex(function(c) { return c.id === card.id; });
+                if (index > -1) {
+                    selections.supporting.splice(index, 1);
+                    showToast('已取消配角: ' + card.name);
+                } else if (selections.supporting.length < 2) {
+                    selections.supporting.push(card);
+                    showToast('已选择配角: ' + card.name);
+                } else {
+                    showToast('最多选择2个配角！', 'error');
+                    return;
+                }
+            } else if (type === 'bystander') {
+                var index = selections.bystander.findIndex(function(c) { return c.id === card.id; });
+                if (index > -1) {
+                    selections.bystander.splice(index, 1);
+                    showToast('已取消路人: ' + card.name);
+                } else if (selections.bystander.length < 2) {
+                    selections.bystander.push(card);
+                    showToast('已选择路人: ' + card.name);
+                } else {
+                    showToast('最多选择2个路人！', 'error');
+                    return;
+                }
+            } else if (type === 'item') {
+                var index = selections.items.findIndex(function(c) { return c.id === card.id; });
+                if (index > -1) {
+                    selections.items.splice(index, 1);
+                    showToast('已取消道具: ' + card.name);
+                } else if (selections.items.length < 3) {
+                    selections.items.push(card);
+                    showToast('已选择道具: ' + card.name);
+                } else {
+                    showToast('最多选择3个道具！', 'error');
+                    return;
+                }
+            }
+            
+            updateStage();
+            checkSynergy();
+        }
+
+        function updateStage() {
+            // Update protagonist slot
+            var protSlot = document.querySelector('[data-slot="protagonist"]');
+            if (selections.protagonist) {
+                protSlot.classList.add('filled');
+                protSlot.classList.remove('highlight');
+                protSlot.innerHTML = createMiniCard(selections.protagonist);
+            } else {
+                protSlot.classList.remove('filled');
+                protSlot.classList.add('highlight');
+                protSlot.innerHTML = '<div class="slot-icon">👑</div><div class="slot-label">主角</div>';
+            }
+
+            // Update supporting slots
+            var suppSlots = document.querySelectorAll('[data-slot^="supporting"]');
+            suppSlots.forEach(function(slot, index) {
+                if (selections.supporting[index]) {
+                    slot.classList.add('filled');
+                    slot.innerHTML = createMiniCard(selections.supporting[index]);
+                } else {
+                    slot.classList.remove('filled');
+                    slot.innerHTML = '<div class="slot-icon">🎭</div><div class="slot-label">配角</div>';
+                }
+            });
+
+            // Update antagonist slot
+            var antSlot = document.querySelector('[data-slot="antagonist"]');
+            if (selections.antagonist) {
+                antSlot.classList.add('filled');
+                antSlot.classList.remove('highlight');
+                antSlot.innerHTML = createMiniCard(selections.antagonist);
+            } else {
+                antSlot.classList.remove('filled');
+                antSlot.classList.add('highlight');
+                antSlot.innerHTML = '<div class="slot-icon">👿</div><div class="slot-label">反派</div>';
+            }
+
+            // Update terrain slot
+            var terrainSlot = document.querySelector('[data-slot="terrain"]');
+            if (selections.terrain) {
+                terrainSlot.classList.add('filled');
+                terrainSlot.classList.remove('highlight');
+                terrainSlot.innerHTML = createMiniCard(selections.terrain);
+            } else {
+                terrainSlot.classList.remove('filled');
+                terrainSlot.classList.add('highlight');
+                terrainSlot.innerHTML = '<div class="slot-icon">🏔️</div><div class="slot-label">地形</div>';
+            }
+
+            // Update weather slot
+            var weatherSlot = document.querySelector('[data-slot="weather"]');
+            if (selections.weather) {
+                weatherSlot.classList.add('filled');
+                weatherSlot.classList.remove('highlight');
+                slot.innerHTML = createMiniCard(selections.weather);
+            } else {
+                weatherSlot.classList.remove('filled');
+                weatherSlot.classList.add('highlight');
+                weatherSlot.innerHTML = '<div class="slot-icon">🌤️</div><div class="slot-label">天气</div>';
+            }
+
+            // Update item slots
+            var itemSlots = document.querySelectorAll('[data-slot^="item"]');
+            itemSlots.forEach(function(slot, index) {
+                if (selections.items[index]) {
+                    slot.classList.add('filled');
+                    slot.innerHTML = createMiniCard(selections.items[index], true);
+                } else {
+                    slot.classList.remove('filled');
+                    slot.innerHTML = '<div class="slot-icon" style="font-size: 0.8rem;">➕</div>';
+                }
+            });
+
+            // Update preview text
+            updatePreviewText();
+
+            // Update requirements
+            document.getElementById('reqProtagonist').classList.toggle('met', !!selections.protagonist);
+            document.getElementById('reqAntagonist').classList.toggle('met', !!selections.antagonist);
+            document.getElementById('reqTerrain').classList.toggle('met', !!selections.terrain);
+            document.getElementById('reqWeather').classList.toggle('met', !!selections.weather);
+
+            // Update generate button
+            var btn = document.getElementById('generateBtn');
+            var ready = selections.protagonist && selections.antagonist && selections.terrain && selections.weather;
+            btn.classList.toggle('ready', ready);
+            btn.disabled = !ready;
+        }
+
+        function createMiniCard(card, isItem) {
+            return '<div class="mini-card">' +
+                '<div class="mini-avatar">' + card.avatar + '</div>' +
+                '<div class="mini-name">' + card.name + '</div>' +
+                '<button class="mini-remove" onclick="event.stopPropagation(); removeSelection(\'' + card.id + '\')">×</button>' +
+            '</div>';
+        }
+
+        function removeSelection(id) {
+            if (selections.protagonist && selections.protagonist.id === id) selections.protagonist = null;
+            if (selections.antagonist && selections.antagonist.id === id) selections.antagonist = null;
+            if (selections.terrain && selections.terrain.id === id) selections.terrain = null;
+            if (selections.weather && selections.weather.id === id) selections.weather = null;
+            selections.supporting = selections.supporting.filter(function(c) { return c.id !== id; });
+            selections.bystander = selections.bystander.filter(function(c) { return c.id !== id; });
+            selections.items = selections.items.filter(function(c) { return c.id !== id; });
+            updateStage();
+            showToast('已移除卡牌');
+        }
+
+        function updatePreviewText() {
+            var text = document.getElementById('previewText');
+            var parts = [];
+
+            if (selections.protagonist) {
+                parts.push('<span class="highlight-char">' + selections.protagonist.name + '</span>');
+            }
+
+            if (selections.supporting.length > 0) {
+                parts.push('与' + selections.supporting.map(function(c) { return c.name; }).join('、'));
+            }
+
+            if (selections.antagonist) {
+                parts.push('对抗<span class="highlight-char" style="color: #ef4444;">' + selections.antagonist.name + '</span>');
+            }
+
+            if (selections.terrain) {
+                parts.push('在' + selections.terrain.name);
+            }
+
+            if (selections.weather) {
+                parts.push(selections.weather.name + '中');
+            }
+
+            if (selections.items.length > 0) {
+                parts.push('手持' + selections.items.map(function(c) { return c.name; }).join('、'));
+            }
+
+            if (parts.length > 0) {
+                text.innerHTML = parts.join('，') + '...<br><span style="color: var(--text-muted); font-size: 0.75rem;">点击「开拍！」生成完整故事</span>';
+            } else {
+                text.innerHTML = '选择卡牌来构建你的故事...<br><span style="color: var(--text-muted);">拖拽或点击卡牌放入对应槽位</span>';
+            }
+        }
+
+        function checkSynergy() {
+            var warning = document.getElementById('synergyWarning');
+            var hasWarning = false;
+
+            // Check for dangerous combinations
+            if (selections.protagonist && selections.protagonist.id === 'p4' && 
+                selections.terrain && selections.terrain.id === 't3' &&
+                selections.weather && selections.weather.id === 'w1') {
+                hasWarning = true;
+            }
+
+            warning.classList.toggle('show', hasWarning);
+        }
+
+        function showToast(message, type) {
+            var toast = document.getElementById('toast');
+            toast.textContent = message;
+            toast.style.borderColor = type === 'error' ? '#ef4444' : 'var(--gold)';
+            toast.classList.add('show');
+            setTimeout(function() { toast.classList.remove('show'); }, 2000);
+        }
+
+        document.getElementById('generateBtn').addEventListener('click', function() {
+            if (!this.classList.contains('ready')) return;
+            
+            showToast('🎬 故事生成中...');
+            
+            setTimeout(function() {
+                var story = '【' + (document.getElementById('storyTitle').value || '未命名故事') + '】\n\n';
+                story += '在' + (selections.terrain ? selections.terrain.name : '神秘之地') + '，';
+                story += (selections.weather ? selections.weather.name : '平静的天空') + '下，\n';
+                story += (selections.protagonist ? selections.protagonist.name : '英雄') + '踏上了冒险之旅...\n\n';
+                story += '然而，' + (selections.antagonist ? selections.antagonist.name : '黑暗势力') + '正在暗中窥视...';
+                
+                alert(story + '\n\n✨ 故事已生成！完整版本将在实际应用中呈现。');
+            }, 1500);
+        });
+
+        // Particles
+        var particlesContainer = document.getElementById('particles');
+        for (var i = 0; i < 30; i++) {
+            var particle = document.createElement('div');
+            particle.className = 'particle';
+            particle.style.left = Math.random() * 100 + '%';
+            particle.style.animationDelay = Math.random() * 25 + 's';
+            particle.style.animationDuration = (20 + Math.random() * 10) + 's';
+            particlesContainer.appendChild(particle);
+        }
+
+        // Initialize
+        renderCards();
+        updateStage();
+    </script>
+</body>
+</html>

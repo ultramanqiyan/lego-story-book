@@ -1,0 +1,1210 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>故事导演台 - Story Director's Desk</title>
+    <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+SC:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --gold: #d4af37;
+            --gold-light: #f4e4ba;
+            --silver: #8b8b8b;
+            --crimson: #c41e3a;
+            --green: #228b22;
+            --blue: #4169e1;
+            --orange: #ff8c00;
+            
+            --bg-light: #faf8f5;
+            --bg-cream: #f5f0e6;
+            --bg-card: #ffffff;
+            --bg-panel: #fffef9;
+            
+            --text-primary: #2c2c2c;
+            --text-secondary: #5a5a5a;
+            --text-muted: #8a8a8a;
+            
+            --border-light: #e8e0d0;
+            --border-gold: #d4af37;
+            
+            --font-body: 'Noto Sans SC', sans-serif;
+        }
+
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+
+        body {
+            font-family: var(--font-body);
+            background: linear-gradient(180deg, var(--bg-cream) 0%, var(--bg-light) 100%);
+            height: 100vh;
+            color: var(--text-primary);
+            overflow: hidden;
+            display: flex;
+            flex-direction: column;
+        }
+
+        /* Header */
+        .header {
+            height: 50px;
+            background: linear-gradient(180deg, var(--bg-panel), var(--bg-cream));
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            padding: 0 25px;
+            border-bottom: 2px solid var(--border-gold);
+            flex-shrink: 0;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.05);
+        }
+
+        .logo {
+            font-size: 1.2rem;
+            font-weight: 700;
+            color: var(--gold);
+            text-shadow: 1px 1px 2px rgba(0,0,0,0.1);
+        }
+
+        .title-input {
+            background: var(--bg-card);
+            border: 2px solid var(--border-light);
+            border-radius: 8px;
+            padding: 6px 14px;
+            color: var(--text-primary);
+            width: 200px;
+            font-size: 0.85rem;
+        }
+
+        .title-input:focus { 
+            outline: none; 
+            border-color: var(--gold); 
+            box-shadow: 0 0 10px rgba(212, 175, 55, 0.2);
+        }
+
+        /* Main Area */
+        .main-area {
+            flex: 1;
+            display: flex;
+            overflow: hidden;
+            position: relative;
+        }
+
+        /* Side Panels */
+        .side-panel {
+            width: 300px;
+            background: var(--bg-panel);
+            display: flex;
+            flex-direction: column;
+            padding: 12px;
+            gap: 8px;
+            flex-shrink: 0;
+        }
+
+        .left-panel { 
+            border-right: 2px solid var(--border-light); 
+        }
+        .right-panel { 
+            border-left: 2px solid var(--border-light); 
+        }
+
+        .card-section {
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+            min-height: 0;
+            background: var(--bg-card);
+            border-radius: 12px;
+            padding: 10px;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.05);
+        }
+
+        .section-header {
+            display: flex;
+            align-items: center;
+            gap: 6px;
+            font-size: 0.75rem;
+            font-weight: 600;
+            padding: 6px 10px;
+            border-radius: 6px;
+            margin-bottom: 5px;
+        }
+
+        .section-header.protagonist { background: linear-gradient(135deg, #fff8dc, #f4e4ba); color: #8b6914; border: 1px solid var(--gold); }
+        .section-header.antagonist { background: linear-gradient(135deg, #ffe4e1, #ffd0cc); color: var(--crimson); border: 1px solid #ffb6c1; }
+        .section-header.supporting { background: linear-gradient(135deg, #f0f0f0, #e8e8e8); color: #555; border: 1px solid #ccc; }
+        .section-header.terrain { background: linear-gradient(135deg, #e8f5e9, #d4edda); color: var(--green); border: 1px solid #90ee90; }
+        .section-header.weather { background: linear-gradient(135deg, #e3f2fd, #bbdefb); color: var(--blue); border: 1px solid #90caf9; }
+        .section-header.item { background: linear-gradient(135deg, #fff3e0, #ffe0b2); color: var(--orange); border: 1px solid #ffcc80; }
+
+        /* Fan Card Container */
+        .fan-container {
+            flex: 1;
+            display: flex;
+            align-items: flex-end;
+            justify-content: center;
+            padding-bottom: 8px;
+            position: relative;
+            min-height: 100px;
+        }
+
+        .fan-card {
+            width: 80px;
+            height: 115px;
+            border-radius: 10px;
+            cursor: pointer;
+            position: absolute;
+            bottom: 0;
+            transition: all 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+            transform-origin: bottom center;
+            background: linear-gradient(180deg, #fffef9, #f8f4e8);
+            border: 3px solid;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            overflow: hidden;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+        }
+
+        .fan-card::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            height: 6px;
+        }
+
+        .fan-card.protagonist { border-color: var(--gold); }
+        .fan-card.protagonist::before { background: linear-gradient(90deg, var(--gold), #f4e4ba, var(--gold)); }
+
+        .fan-card.antagonist { border-color: var(--crimson); }
+        .fan-card.antagonist::before { background: linear-gradient(90deg, var(--crimson), #ffb6c1, var(--crimson)); }
+
+        .fan-card.supporting { border-color: #888; }
+        .fan-card.supporting::before { background: linear-gradient(90deg, #888, #ccc, #888); }
+
+        .fan-card.terrain { border-color: var(--green); }
+        .fan-card.terrain::before { background: linear-gradient(90deg, var(--green), #90ee90, var(--green)); }
+
+        .fan-card.weather { border-color: var(--blue); }
+        .fan-card.weather::before { background: linear-gradient(90deg, var(--blue), #87ceeb, var(--blue)); }
+
+        .fan-card.item { border-color: var(--orange); }
+        .fan-card.item::before { background: linear-gradient(90deg, var(--orange), #ffd700, var(--orange)); }
+
+        .fan-card:hover {
+            transform: translateY(-35px) scale(1.15) rotate(0deg) !important;
+            z-index: 10 !important;
+            box-shadow: 0 15px 35px rgba(0,0,0,0.25);
+        }
+
+        .fan-card.selected {
+            box-shadow: 0 0 20px rgba(212, 175, 55, 0.6), 0 8px 25px rgba(0,0,0,0.2);
+        }
+
+        .fan-card.selected::after {
+            content: '✓';
+            position: absolute;
+            top: 12px;
+            right: 6px;
+            width: 20px;
+            height: 20px;
+            background: var(--gold);
+            border-radius: 50%;
+            font-size: 0.75rem;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: white;
+            font-weight: bold;
+            box-shadow: 0 2px 5px rgba(0,0,0,0.2);
+        }
+
+        .fan-avatar { font-size: 2.2rem; filter: drop-shadow(1px 2px 2px rgba(0,0,0,0.1)); }
+        .fan-name { font-size: 0.65rem; font-weight: 600; margin-top: 4px; text-align: center; padding: 0 4px; color: var(--text-primary); }
+
+        /* Center Panel - Stage */
+        .center-panel {
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            padding: 15px;
+            min-width: 0;
+            background: linear-gradient(180deg, rgba(212,175,55,0.05), transparent);
+        }
+
+        .stage-area {
+            background: var(--bg-card);
+            border-radius: 16px;
+            border: 3px solid var(--gold);
+            padding: 15px;
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
+            width: 100%;
+            max-width: 380px;
+            transition: all 0.3s ease;
+            box-shadow: 0 5px 20px rgba(0,0,0,0.08);
+        }
+
+        .stage-area.shake {
+            animation: shake 0.5s ease-in-out;
+        }
+
+        @keyframes shake {
+            0%, 100% { transform: translateX(0); }
+            10%, 30%, 50%, 70%, 90% { transform: translateX(-4px); }
+            20%, 40%, 60%, 80% { transform: translateX(4px); }
+        }
+
+        .stage-title {
+            font-size: 0.9rem;
+            font-weight: 600;
+            color: var(--gold);
+            text-align: center;
+            padding-bottom: 8px;
+            border-bottom: 2px dashed var(--border-light);
+        }
+
+        .stage-grid {
+            display: grid;
+            grid-template-columns: repeat(4, 1fr);
+            gap: 8px;
+        }
+
+        .stage-slot {
+            aspect-ratio: 3/4;
+            border: 2px dashed var(--border-light);
+            border-radius: 10px;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            transition: all 0.3s ease;
+            position: relative;
+            cursor: pointer;
+            background: var(--bg-cream);
+        }
+
+        .stage-slot.required {
+            border-color: var(--gold);
+            background: linear-gradient(135deg, #fff8dc, #f4e4ba);
+            animation: slot-pulse 2s ease-in-out infinite;
+        }
+
+        @keyframes slot-pulse {
+            0%, 100% { box-shadow: 0 0 5px rgba(212, 175, 55, 0.3); }
+            50% { box-shadow: 0 0 15px rgba(212, 175, 55, 0.5); }
+        }
+
+        .stage-slot.filled {
+            border: 2px solid var(--border-light);
+            background: var(--bg-card);
+        }
+
+        .slot-icon { font-size: 1rem; opacity: 0.6; }
+        .slot-label { font-size: 0.55rem; color: var(--text-muted); margin-top: 2px; }
+
+        .mini-card {
+            width: 100%;
+            height: 100%;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            position: relative;
+        }
+
+        .mini-avatar { font-size: 1.3rem; }
+        .mini-name { font-size: 0.55rem; font-weight: 600; margin-top: 2px; text-align: center; padding: 0 2px; color: var(--text-primary); }
+
+        .mini-remove {
+            position: absolute;
+            top: 2px;
+            right: 2px;
+            width: 14px;
+            height: 14px;
+            border-radius: 50%;
+            background: var(--crimson);
+            color: white;
+            border: none;
+            cursor: pointer;
+            font-size: 0.55rem;
+            opacity: 0;
+            transition: opacity 0.2s;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .stage-slot:hover .mini-remove { opacity: 1; }
+
+        /* Story Preview */
+        .story-preview {
+            background: linear-gradient(135deg, #fff8dc, #f4e4ba);
+            border-radius: 10px;
+            padding: 10px;
+            min-height: 45px;
+            border: 1px solid var(--border-gold);
+        }
+
+        .preview-text {
+            font-size: 0.75rem;
+            color: var(--text-secondary);
+            line-height: 1.5;
+            font-style: italic;
+            text-align: center;
+        }
+
+        .preview-text .highlight { color: #8b6914; font-weight: 600; }
+
+        /* Bottom Bar */
+        .bottom-bar {
+            height: 55px;
+            background: linear-gradient(180deg, transparent, var(--bg-cream));
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 25px;
+            padding: 0 20px;
+            flex-shrink: 0;
+            border-top: 1px solid var(--border-light);
+        }
+
+        .requirements {
+            display: flex;
+            gap: 15px;
+        }
+
+        .req-item {
+            display: flex;
+            align-items: center;
+            gap: 5px;
+            font-size: 0.72rem;
+            color: var(--text-muted);
+        }
+
+        .req-item.met { color: var(--green); font-weight: 600; }
+
+        .req-icon {
+            width: 16px;
+            height: 16px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 0.5rem;
+        }
+
+        .req-item.met .req-icon { background: var(--green); color: white; }
+        .req-item:not(.met) .req-icon { border: 2px solid currentColor; }
+
+        .generate-btn {
+            padding: 10px 35px;
+            font-size: 0.95rem;
+            font-weight: 700;
+            border: none;
+            border-radius: 25px;
+            background: #ccc;
+            color: #888;
+            cursor: not-allowed;
+            transition: all 0.3s ease;
+            font-family: var(--font-body);
+        }
+
+        .generate-btn.ready {
+            background: linear-gradient(135deg, var(--gold), #daa520);
+            color: white;
+            cursor: pointer;
+            box-shadow: 0 4px 15px rgba(212, 175, 55, 0.4);
+            animation: btn-glow 2s ease-in-out infinite;
+        }
+
+        @keyframes btn-glow {
+            0%, 100% { box-shadow: 0 4px 15px rgba(212, 175, 55, 0.4); }
+            50% { box-shadow: 0 4px 25px rgba(212, 175, 55, 0.6); }
+        }
+
+        .generate-btn.ready:hover { transform: scale(1.05); box-shadow: 0 6px 25px rgba(212, 175, 55, 0.5); }
+
+        /* Card Popup Modal - 三国杀风格 */
+        .card-popup-overlay {
+            position: fixed;
+            inset: 0;
+            background: rgba(0,0,0,0.6);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            z-index: 1000;
+            opacity: 0;
+            visibility: hidden;
+            transition: all 0.3s ease;
+        }
+
+        .card-popup-overlay.active {
+            opacity: 1;
+            visibility: visible;
+        }
+
+        .card-popup {
+            width: 280px;
+            background: linear-gradient(180deg, #fffef9, #f8f4e8);
+            border-radius: 20px;
+            border: 5px solid;
+            overflow: hidden;
+            transform: scale(0.5) rotateY(90deg);
+            transition: all 0.5s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+            box-shadow: 0 20px 60px rgba(0,0,0,0.3);
+        }
+
+        .card-popup-overlay.active .card-popup {
+            transform: scale(1) rotateY(0deg);
+        }
+
+        .card-popup.protagonist { border-color: var(--gold); }
+        .card-popup.antagonist { border-color: var(--crimson); }
+        .card-popup.supporting { border-color: #888; }
+        .card-popup.terrain { border-color: var(--green); }
+        .card-popup.weather { border-color: var(--blue); }
+        .card-popup.item { border-color: var(--orange); }
+
+        .popup-header {
+            height: 8px;
+        }
+
+        .card-popup.protagonist .popup-header { background: linear-gradient(90deg, var(--gold), #f4e4ba, var(--gold)); }
+        .card-popup.antagonist .popup-header { background: linear-gradient(90deg, var(--crimson), #ffb6c1, var(--crimson)); }
+        .card-popup.supporting .popup-header { background: linear-gradient(90deg, #888, #ccc, #888); }
+        .card-popup.terrain .popup-header { background: linear-gradient(90deg, var(--green), #90ee90, var(--green)); }
+        .card-popup.weather .popup-header { background: linear-gradient(90deg, var(--blue), #87ceeb, var(--blue)); }
+        .card-popup.item .popup-header { background: linear-gradient(90deg, var(--orange), #ffd700, var(--orange)); }
+
+        .popup-image {
+            height: 150px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            background: linear-gradient(180deg, rgba(255,255,255,0.8), rgba(248,244,232,0.8));
+        }
+
+        .popup-avatar {
+            font-size: 5rem;
+            filter: drop-shadow(2px 4px 6px rgba(0,0,0,0.15));
+        }
+
+        .popup-content {
+            padding: 20px;
+            text-align: center;
+        }
+
+        .popup-name {
+            font-size: 1.4rem;
+            font-weight: 700;
+            color: var(--text-primary);
+            margin-bottom: 5px;
+        }
+
+        .popup-title {
+            font-size: 0.85rem;
+            color: var(--text-secondary);
+            font-style: italic;
+            margin-bottom: 15px;
+        }
+
+        .popup-desc {
+            font-size: 0.8rem;
+            color: var(--text-muted);
+            line-height: 1.5;
+            margin-bottom: 20px;
+            padding: 10px;
+            background: rgba(0,0,0,0.03);
+            border-radius: 8px;
+        }
+
+        .popup-actions {
+            display: flex;
+            gap: 10px;
+        }
+
+        .popup-btn {
+            flex: 1;
+            padding: 12px;
+            border: none;
+            border-radius: 10px;
+            font-size: 0.9rem;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            font-family: var(--font-body);
+        }
+
+        .popup-btn.cancel {
+            background: #f0f0f0;
+            color: #666;
+        }
+
+        .popup-btn.cancel:hover {
+            background: #e0e0e0;
+        }
+
+        .popup-btn.confirm {
+            background: linear-gradient(135deg, var(--gold), #daa520);
+            color: white;
+        }
+
+        .popup-btn.confirm:hover {
+            transform: scale(1.02);
+            box-shadow: 0 4px 15px rgba(212, 175, 55, 0.4);
+        }
+
+        /* Weather Effects */
+        .weather-effect {
+            position: fixed;
+            inset: 0;
+            pointer-events: none;
+            z-index: 500;
+        }
+
+        .thunder {
+            position: fixed;
+            inset: 0;
+            background: white;
+            opacity: 0;
+            z-index: 501;
+            pointer-events: none;
+        }
+
+        .thunder.flash {
+            animation: thunder-flash 0.5s ease-out;
+        }
+
+        @keyframes thunder-flash {
+            0% { opacity: 0; }
+            10% { opacity: 0.7; }
+            20% { opacity: 0.1; }
+            30% { opacity: 0.8; }
+            40% { opacity: 0; }
+            100% { opacity: 0; }
+        }
+
+        .rain {
+            position: fixed;
+            inset: 0;
+            pointer-events: none;
+            z-index: 499;
+            display: none;
+        }
+
+        .rain-drop {
+            position: absolute;
+            width: 2px;
+            height: 15px;
+            background: linear-gradient(180deg, transparent, rgba(100, 149, 237, 0.6));
+            animation: rain-fall 0.4s linear infinite;
+        }
+
+        @keyframes rain-fall {
+            0% { transform: translateY(-15px); }
+            100% { transform: translateY(100vh); }
+        }
+
+        .snow {
+            position: fixed;
+            inset: 0;
+            pointer-events: none;
+            z-index: 499;
+            display: none;
+        }
+
+        .snowflake {
+            position: absolute;
+            color: rgba(255,255,255,0.9);
+            animation: snow-fall 3s linear infinite;
+        }
+
+        @keyframes snow-fall {
+            0% { transform: translateY(-10px) rotate(0deg); }
+            100% { transform: translateY(100vh) rotate(360deg); }
+        }
+
+        .fog {
+            position: fixed;
+            inset: 0;
+            background: radial-gradient(ellipse at center, rgba(200,200,200,0.4), transparent 70%);
+            pointer-events: none;
+            z-index: 499;
+            display: none;
+            animation: fog-move 5s ease-in-out infinite;
+        }
+
+        @keyframes fog-move {
+            0%, 100% { opacity: 0.4; }
+            50% { opacity: 0.6; }
+        }
+
+        .sun-rays {
+            position: fixed;
+            top: -30%;
+            left: 50%;
+            transform: translateX(-50%);
+            width: 150%;
+            height: 80%;
+            background: radial-gradient(ellipse at center top, rgba(255,223,0,0.15), transparent 50%);
+            pointer-events: none;
+            z-index: 499;
+            display: none;
+            animation: sun-pulse 3s ease-in-out infinite;
+        }
+
+        @keyframes sun-pulse {
+            0%, 100% { opacity: 0.5; }
+            50% { opacity: 0.8; }
+        }
+
+        /* Toast */
+        .toast {
+            position: fixed;
+            top: 60px;
+            left: 50%;
+            transform: translateX(-50%) translateY(-10px);
+            background: var(--bg-card);
+            padding: 10px 20px;
+            border-radius: 10px;
+            border: 2px solid var(--gold);
+            font-size: 0.85rem;
+            color: var(--text-primary);
+            opacity: 0;
+            transition: all 0.3s ease;
+            z-index: 1002;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.1);
+        }
+
+        .toast.show { transform: translateX(-50%) translateY(0); opacity: 1; }
+
+        /* Decorative Elements */
+        .corner-decor {
+            position: fixed;
+            width: 100px;
+            height: 100px;
+            pointer-events: none;
+            z-index: 0;
+            opacity: 0.3;
+        }
+
+        .corner-decor.top-left {
+            top: 60px;
+            left: 10px;
+            background: radial-gradient(circle at top left, var(--gold), transparent 70%);
+        }
+
+        .corner-decor.top-right {
+            top: 60px;
+            right: 10px;
+            background: radial-gradient(circle at top right, var(--gold), transparent 70%);
+        }
+    </style>
+</head>
+<body>
+    <div class="corner-decor top-left"></div>
+    <div class="corner-decor top-right"></div>
+
+    <div class="thunder" id="thunder"></div>
+    <div class="rain" id="rain"></div>
+    <div class="snow" id="snow"></div>
+    <div class="fog" id="fog"></div>
+    <div class="sun-rays" id="sunRays"></div>
+
+    <!-- Header -->
+    <header class="header">
+        <div class="logo">🎬 故事导演台</div>
+        <input type="text" class="title-input" placeholder="输入故事主题..." id="storyTitle">
+        <div style="display: flex; align-items: center; gap: 6px; font-size: 0.75rem; color: var(--text-secondary);">
+            <span>💡 灵感</span>
+            <div style="width: 50px; height: 6px; background: var(--border-light); border-radius: 3px;">
+                <div style="width: 75%; height: 100%; background: linear-gradient(90deg, var(--gold), #daa520); border-radius: 3px;"></div>
+            </div>
+        </div>
+    </header>
+
+    <!-- Main Area -->
+    <main class="main-area">
+        <!-- Left Panel - Characters -->
+        <aside class="side-panel left-panel">
+            <div class="card-section">
+                <div class="section-header protagonist">👑 主角 (必选1)</div>
+                <div class="fan-container" id="protagonistFan"></div>
+            </div>
+            <div class="card-section">
+                <div class="section-header antagonist">👿 反派 (必选1)</div>
+                <div class="fan-container" id="antagonistFan"></div>
+            </div>
+            <div class="card-section">
+                <div class="section-header supporting">🎭 配角 (可选0-2)</div>
+                <div class="fan-container" id="supportingFan"></div>
+            </div>
+        </aside>
+
+        <!-- Center Panel - Stage -->
+        <section class="center-panel">
+            <div class="stage-area" id="stageArea">
+                <div class="stage-title">🎭 舞台预览</div>
+                <div class="stage-grid">
+                    <div class="stage-slot required" data-slot="protagonist">
+                        <div class="slot-icon">👑</div>
+                        <div class="slot-label">主角</div>
+                    </div>
+                    <div class="stage-slot" data-slot="supporting1">
+                        <div class="slot-icon">🎭</div>
+                        <div class="slot-label">配角</div>
+                    </div>
+                    <div class="stage-slot" data-slot="supporting2">
+                        <div class="slot-icon">🎭</div>
+                        <div class="slot-label">配角</div>
+                    </div>
+                    <div class="stage-slot required" data-slot="antagonist">
+                        <div class="slot-icon">👿</div>
+                        <div class="slot-label">反派</div>
+                    </div>
+                    <div class="stage-slot required" data-slot="terrain">
+                        <div class="slot-icon">🏔️</div>
+                        <div class="slot-label">地形</div>
+                    </div>
+                    <div class="stage-slot required" data-slot="weather">
+                        <div class="slot-icon">🌤️</div>
+                        <div class="slot-label">天气</div>
+                    </div>
+                    <div class="stage-slot" data-slot="item1">
+                        <div class="slot-icon">🎒</div>
+                        <div class="slot-label">道具</div>
+                    </div>
+                    <div class="stage-slot" data-slot="item2">
+                        <div class="slot-icon">🎒</div>
+                        <div class="slot-label">道具</div>
+                    </div>
+                </div>
+                <div class="story-preview">
+                    <div class="preview-text" id="previewText">选择卡牌来构建你的故事...</div>
+                </div>
+            </div>
+        </section>
+
+        <!-- Right Panel - Scenes -->
+        <aside class="side-panel right-panel">
+            <div class="card-section">
+                <div class="section-header terrain">🏔️ 地形 (必选1)</div>
+                <div class="fan-container" id="terrainFan"></div>
+            </div>
+            <div class="card-section">
+                <div class="section-header weather">🌤️ 天气 (必选1)</div>
+                <div class="fan-container" id="weatherFan"></div>
+            </div>
+            <div class="card-section">
+                <div class="section-header item">🎒 道具 (可选0-2)</div>
+                <div class="fan-container" id="itemFan"></div>
+            </div>
+        </aside>
+    </main>
+
+    <!-- Bottom Bar -->
+    <footer class="bottom-bar">
+        <div class="requirements">
+            <div class="req-item" id="reqProtagonist"><span class="req-icon"></span><span>主角</span></div>
+            <div class="req-item" id="reqAntagonist"><span class="req-icon"></span><span>反派</span></div>
+            <div class="req-item" id="reqTerrain"><span class="req-icon"></span><span>地形</span></div>
+            <div class="req-item" id="reqWeather"><span class="req-icon"></span><span>天气</span></div>
+        </div>
+        <button class="generate-btn" id="generateBtn">🎬 开拍！</button>
+    </footer>
+
+    <!-- Card Popup Modal -->
+    <div class="card-popup-overlay" id="cardPopupOverlay">
+        <div class="card-popup" id="cardPopup">
+            <div class="popup-header"></div>
+            <div class="popup-image">
+                <div class="popup-avatar" id="popupAvatar">🐉</div>
+            </div>
+            <div class="popup-content">
+                <div class="popup-name" id="popupName">龙骑士</div>
+                <div class="popup-title" id="popupTitle">传说守护者</div>
+                <div class="popup-desc" id="popupDesc">与巨龙缔结契约的传奇骑士，守护世界和平。</div>
+                <div class="popup-actions">
+                    <button class="popup-btn cancel" id="popupCancel">取消</button>
+                    <button class="popup-btn confirm" id="popupConfirm">选择</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="toast" id="toast"></div>
+
+    <script>
+        var cardData = {
+            protagonist: [
+                { id: 'p1', name: '龙骑士', avatar: '🐉', title: '传说守护者', desc: '与巨龙缔结契约的传奇骑士，拥有强大的龙焰之力。' },
+                { id: 'p2', name: '光明骑士', avatar: '🦸', title: '正义化身', desc: '正义的化身，誓死守护世界的和平与光明。' },
+                { id: 'p3', name: '冰雪女王', avatar: '👸', title: '寒冰统治者', desc: '统治冰雪王国的女王，掌握永恒的冰霜魔法。' },
+                { id: 'p4', name: '火焰法师', avatar: '🔥', title: '烈焰使者', desc: '操控火焰的大法师，烈焰听从他的召唤。' },
+            ],
+            antagonist: [
+                { id: 'a1', name: '暗影刺客', avatar: '🦹', title: '夜幕行者', desc: '潜伏在黑暗中的致命刺客，无人能逃过他的追杀。' },
+                { id: 'a2', name: '黑暗领主', avatar: '😈', title: '混沌使者', desc: '邪恶的黑暗领主，带来毁灭与绝望。' },
+                { id: 'a3', name: '吸血伯爵', avatar: '🧛', title: '暗夜贵族', desc: '神秘的吸血鬼伯爵，永生不死的暗夜统治者。' },
+            ],
+            supporting: [
+                { id: 's1', name: '精灵法师', avatar: '🧝', title: '自然守护者', desc: '来自精灵森林的法师，精通自然魔法。' },
+                { id: 's2', name: '智慧法师', avatar: '🧙', title: '知识守护者', desc: '博学的法师，掌握古老的智慧与秘密。' },
+                { id: 's3', name: '机械守卫', avatar: '🤖', title: '钢铁卫士', desc: '精密的机械守卫，忠诚地执行守护任务。' },
+            ],
+            terrain: [
+                { id: 't1', name: '神秘森林', avatar: '🌲', title: '古老密林', desc: '隐藏着神秘生物的古老森林，充满未知与危险。' },
+                { id: 't2', name: '古老城堡', avatar: '🏰', title: '废墟遗迹', desc: '充满历史与秘密的古老城堡，埋藏着无数宝藏。' },
+                { id: 't3', name: '火山地带', avatar: '🌋', title: '熔岩之地', desc: '危险与机遇并存的火山地带，岩浆奔流不息。' },
+                { id: 't4', name: '冰封雪原', avatar: '🏔️', title: '极寒之地', desc: '永恒冰封的雪原，只有勇者才能穿越。' },
+            ],
+            weather: [
+                { id: 'w1', name: '晴空万里', avatar: '☀️', title: '阳光明媚', desc: '阳光普照，视野开阔，适合冒险的好天气。', effect: 'sun' },
+                { id: 'w2', name: '雷雨交加', avatar: '⛈', title: '暴风雨', desc: '电闪雷鸣，暴雨倾盆，充满戏剧性的天气。', effect: 'thunder' },
+                { id: 'w3', name: '暴风雪', avatar: '❄️', title: '冰雪风暴', desc: '漫天飞雪，寒风刺骨，考验勇者的意志。', effect: 'snow' },
+                { id: 'w4', name: '诡异迷雾', avatar: '🌫️', title: '神秘大雾', desc: '浓雾笼罩，视线模糊，隐藏着未知的危险。', effect: 'fog' },
+            ],
+            item: [
+                { id: 'i1', name: '勇者之剑', avatar: '🗡️', title: '传说武器', desc: '传说中的勇者之剑，蕴含强大的力量。' },
+                { id: 'i2', name: '守护之盾', avatar: '🛡️', title: '防御装备', desc: '坚不可摧的守护之盾，抵挡一切攻击。' },
+                { id: 'i3', name: '魔法水晶', avatar: '💎', title: '魔力源泉', desc: '蕴含纯净魔力的水晶，增强魔法力量。' },
+                { id: 'i4', name: '古老地图', avatar: '🗺️', title: '指引道具', desc: '标注着宝藏位置的古老地图，指引方向。' },
+            ]
+        };
+
+        var selections = {
+            protagonist: null,
+            antagonist: null,
+            supporting: [],
+            terrain: null,
+            weather: null,
+            items: []
+        };
+
+        var currentCard = null;
+        var currentType = null;
+        var currentWeatherEffect = null;
+
+        function createFanCards(containerId, cards, type) {
+            var container = document.getElementById(containerId);
+            container.innerHTML = '';
+            
+            var count = cards.length;
+            var fanAngle = Math.min(count * 18, 75);
+            var startAngle = -fanAngle / 2;
+            var angleStep = count > 1 ? fanAngle / (count - 1) : 0;
+
+            cards.forEach(function(card, index) {
+                var div = document.createElement('div');
+                div.className = 'fan-card ' + type;
+                div.dataset.id = card.id;
+                div.dataset.type = type;
+
+                var angle = startAngle + angleStep * index;
+                var offsetX = (index - (count - 1) / 2) * 22;
+                
+                div.style.left = '50%';
+                div.style.marginLeft = (-40 + offsetX) + 'px';
+                div.style.transform = 'rotate(' + angle + 'deg)';
+                div.style.zIndex = index;
+
+                div.innerHTML = '<div class="fan-avatar">' + card.avatar + '</div><div class="fan-name">' + card.name + '</div>';
+
+                var originalAngle = angle;
+                
+                div.addEventListener('click', function() { 
+                    showCardPopup(card, type); 
+                });
+                
+                div.addEventListener('mouseenter', function() { 
+                    this.style.transform = 'rotate(0deg) translateY(-35px) scale(1.15)';
+                });
+                
+                div.addEventListener('mouseleave', function() { 
+                    if (!this.classList.contains('selected')) {
+                        this.style.transform = 'rotate(' + originalAngle + 'deg)';
+                    }
+                });
+
+                container.appendChild(div);
+            });
+        }
+
+        function showCardPopup(card, type) {
+            currentCard = card;
+            currentType = type;
+
+            var popup = document.getElementById('cardPopup');
+            popup.className = 'card-popup ' + type;
+
+            document.getElementById('popupAvatar').textContent = card.avatar;
+            document.getElementById('popupName').textContent = card.name;
+            document.getElementById('popupTitle').textContent = card.title;
+            document.getElementById('popupDesc').textContent = card.desc;
+
+            var isSelected = checkIfSelected(card, type);
+            document.getElementById('popupConfirm').textContent = isSelected ? '取消选择' : '选择';
+
+            document.getElementById('cardPopupOverlay').classList.add('active');
+        }
+
+        function hideCardPopup() {
+            document.getElementById('cardPopupOverlay').classList.remove('active');
+            currentCard = null;
+            currentType = null;
+        }
+
+        function checkIfSelected(card, type) {
+            if (type === 'protagonist' || type === 'antagonist' || type === 'terrain' || type === 'weather') {
+                return selections[type] && selections[type].id === card.id;
+            } else if (type === 'supporting') {
+                return selections.supporting.some(function(c) { return c.id === card.id; });
+            } else if (type === 'item') {
+                return selections.items.some(function(c) { return c.id === card.id; });
+            }
+            return false;
+        }
+
+        function confirmSelection() {
+            if (!currentCard || !currentType) return;
+
+            var card = currentCard;
+            var type = currentType;
+            var stage = document.getElementById('stageArea');
+
+            // Add shake effect
+            stage.classList.add('shake');
+            setTimeout(function() { stage.classList.remove('shake'); }, 500);
+
+            var isSelected = checkIfSelected(card, type);
+
+            if (type === 'protagonist' || type === 'antagonist' || type === 'terrain' || type === 'weather') {
+                if (isSelected) {
+                    selections[type] = null;
+                    showToast('已取消: ' + card.name);
+                    if (type === 'weather') clearWeatherEffect();
+                } else {
+                    selections[type] = card;
+                    showToast('已选择: ' + card.name);
+                    if (type === 'weather' && card.effect) {
+                        triggerWeatherEffect(card.effect);
+                    }
+                }
+            } else if (type === 'supporting') {
+                if (isSelected) {
+                    selections.supporting = selections.supporting.filter(function(c) { return c.id !== card.id; });
+                    showToast('已取消: ' + card.name);
+                } else if (selections.supporting.length < 2) {
+                    selections.supporting.push(card);
+                    showToast('已选择: ' + card.name);
+                } else {
+                    showToast('最多选择2个！', 'error');
+                    return;
+                }
+            } else if (type === 'item') {
+                if (isSelected) {
+                    selections.items = selections.items.filter(function(c) { return c.id !== card.id; });
+                    showToast('已取消: ' + card.name);
+                } else if (selections.items.length < 2) {
+                    selections.items.push(card);
+                    showToast('已选择: ' + card.name);
+                } else {
+                    showToast('最多选择2个！', 'error');
+                    return;
+                }
+            }
+
+            hideCardPopup();
+            updateStage();
+            updateFanCards();
+        }
+
+        function triggerWeatherEffect(effect) {
+            clearWeatherEffect();
+            currentWeatherEffect = effect;
+
+            if (effect === 'thunder') {
+                var thunder = document.getElementById('thunder');
+                var rain = document.getElementById('rain');
+                
+                rain.innerHTML = '';
+                for (var i = 0; i < 80; i++) {
+                    var drop = document.createElement('div');
+                    drop.className = 'rain-drop';
+                    drop.style.left = Math.random() * 100 + '%';
+                    drop.style.animationDelay = Math.random() * 0.4 + 's';
+                    drop.style.animationDuration = (0.3 + Math.random() * 0.2) + 's';
+                    rain.appendChild(drop);
+                }
+                rain.style.display = 'block';
+
+                function flashThunder() {
+                    if (currentWeatherEffect !== 'thunder') return;
+                    thunder.classList.add('flash');
+                    setTimeout(function() { thunder.classList.remove('flash'); }, 500);
+                    setTimeout(flashThunder, 2000 + Math.random() * 3000);
+                }
+                flashThunder();
+
+            } else if (effect === 'snow') {
+                var snow = document.getElementById('snow');
+                snow.innerHTML = '';
+                for (var i = 0; i < 40; i++) {
+                    var flake = document.createElement('div');
+                    flake.className = 'snowflake';
+                    flake.textContent = '❄';
+                    flake.style.left = Math.random() * 100 + '%';
+                    flake.style.animationDelay = Math.random() * 3 + 's';
+                    flake.style.animationDuration = (2 + Math.random() * 2) + 's';
+                    flake.style.fontSize = (0.6 + Math.random() * 0.6) + 'rem';
+                    snow.appendChild(flake);
+                }
+                snow.style.display = 'block';
+
+            } else if (effect === 'fog') {
+                document.getElementById('fog').style.display = 'block';
+
+            } else if (effect === 'sun') {
+                document.getElementById('sunRays').style.display = 'block';
+            }
+        }
+
+        function clearWeatherEffect() {
+            currentWeatherEffect = null;
+            document.getElementById('rain').style.display = 'none';
+            document.getElementById('rain').innerHTML = '';
+            document.getElementById('snow').style.display = 'none';
+            document.getElementById('snow').innerHTML = '';
+            document.getElementById('fog').style.display = 'none';
+            document.getElementById('sunRays').style.display = 'none';
+        }
+
+        function updateFanCards() {
+            document.querySelectorAll('.fan-card').forEach(function(card) {
+                var id = card.dataset.id;
+                var type = card.dataset.type;
+                var selected = checkIfSelectedById(id, type);
+
+                card.classList.toggle('selected', selected);
+                if (selected) {
+                    card.style.transform = 'rotate(0deg) translateY(-15px)';
+                }
+            });
+        }
+
+        function checkIfSelectedById(id, type) {
+            if (type === 'protagonist' || type === 'antagonist' || type === 'terrain' || type === 'weather') {
+                return selections[type] && selections[type].id === id;
+            } else if (type === 'supporting') {
+                return selections.supporting.some(function(c) { return c.id === id; });
+            } else if (type === 'item') {
+                return selections.items.some(function(c) { return c.id === id; });
+            }
+            return false;
+        }
+
+        function updateStage() {
+            updateSlot('protagonist', selections.protagonist);
+            updateSlot('antagonist', selections.antagonist);
+            updateSlot('terrain', selections.terrain);
+            updateSlot('weather', selections.weather);
+            updateSlot('supporting1', selections.supporting[0]);
+            updateSlot('supporting2', selections.supporting[1]);
+            updateSlot('item1', selections.items[0]);
+            updateSlot('item2', selections.items[1]);
+
+            document.getElementById('reqProtagonist').classList.toggle('met', !!selections.protagonist);
+            document.getElementById('reqAntagonist').classList.toggle('met', !!selections.antagonist);
+            document.getElementById('reqTerrain').classList.toggle('met', !!selections.terrain);
+            document.getElementById('reqWeather').classList.toggle('met', !!selections.weather);
+
+            var ready = selections.protagonist && selections.antagonist && selections.terrain && selections.weather;
+            var btn = document.getElementById('generateBtn');
+            btn.classList.toggle('ready', ready);
+            btn.disabled = !ready;
+
+            updatePreview();
+        }
+
+        function updateSlot(slotName, card) {
+            var slot = document.querySelector('[data-slot="' + slotName + '"]');
+            if (card) {
+                slot.classList.add('filled');
+                slot.classList.remove('required');
+                slot.innerHTML = '<div class="mini-card"><div class="mini-avatar">' + card.avatar + '</div><div class="mini-name">' + card.name + '</div><button class="mini-remove" onclick="event.stopPropagation(); clearSlot(\'' + slotName + '\')">×</button></div>';
+            } else {
+                slot.classList.remove('filled');
+                if (slotName === 'protagonist' || slotName === 'antagonist' || slotName === 'terrain' || slotName === 'weather') {
+                    slot.classList.add('required');
+                }
+                var icons = { protagonist: '👑', antagonist: '👿', terrain: '🏔️', weather: '🌤️', supporting1: '🎭', supporting2: '🎭', item1: '🎒', item2: '🎒' };
+                var labels = { protagonist: '主角', antagonist: '反派', terrain: '地形', weather: '天气', supporting1: '配角', supporting2: '配角', item1: '道具', item2: '道具' };
+                slot.innerHTML = '<div class="slot-icon">' + icons[slotName] + '</div><div class="slot-label">' + labels[slotName] + '</div>';
+            }
+        }
+
+        function clearSlot(slotName) {
+            if (slotName === 'protagonist') selections.protagonist = null;
+            else if (slotName === 'antagonist') selections.antagonist = null;
+            else if (slotName === 'terrain') selections.terrain = null;
+            else if (slotName === 'weather') { selections.weather = null; clearWeatherEffect(); }
+            else if (slotName === 'supporting1') selections.supporting.shift();
+            else if (slotName === 'supporting2') selections.supporting.pop();
+            else if (slotName === 'item1') selections.items.shift();
+            else if (slotName === 'item2') selections.items.pop();
+            
+            updateStage();
+            updateFanCards();
+        }
+
+        function updatePreview() {
+            var text = document.getElementById('previewText');
+            var parts = [];
+
+            if (selections.protagonist) parts.push('<span class="highlight">' + selections.protagonist.name + '</span>');
+            if (selections.supporting.length) parts.push('与' + selections.supporting.map(function(c) { return c.name; }).join('、'));
+            if (selections.antagonist) parts.push('对抗<span class="highlight" style="color:var(--crimson)">' + selections.antagonist.name + '</span>');
+            if (selections.terrain) parts.push('在' + selections.terrain.name);
+            if (selections.weather) parts.push(selections.weather.name + '中');
+            if (selections.items.length) parts.push('手持' + selections.items.map(function(c) { return c.name; }).join('、'));
+
+            text.innerHTML = parts.length ? parts.join('，') + '...' : '选择卡牌来构建你的故事...';
+        }
+
+        function showToast(msg, type) {
+            var toast = document.getElementById('toast');
+            toast.textContent = msg;
+            toast.style.borderColor = type === 'error' ? 'var(--crimson)' : 'var(--gold)';
+            toast.classList.add('show');
+            setTimeout(function() { toast.classList.remove('show'); }, 1500);
+        }
+
+        // Event Listeners
+        document.getElementById('popupCancel').addEventListener('click', hideCardPopup);
+        document.getElementById('popupConfirm').addEventListener('click', confirmSelection);
+        document.getElementById('cardPopupOverlay').addEventListener('click', function(e) {
+            if (e.target === this) hideCardPopup();
+        });
+
+        document.getElementById('generateBtn').addEventListener('click', function() {
+            if (!this.classList.contains('ready')) return;
+            showToast('🎬 正在生成故事...');
+            setTimeout(function() {
+                alert('故事已生成！\n\n' + document.getElementById('previewText').textContent);
+            }, 1000);
+        });
+
+        // Initialize
+        createFanCards('protagonistFan', cardData.protagonist, 'protagonist');
+        createFanCards('antagonistFan', cardData.antagonist, 'antagonist');
+        createFanCards('supportingFan', cardData.supporting, 'supporting');
+        createFanCards('terrainFan', cardData.terrain, 'terrain');
+        createFanCards('weatherFan', cardData.weather, 'weather');
+        createFanCards('itemFan', cardData.item, 'item');
+        updateStage();
+    </script>
+</body>
+</html>

@@ -1,0 +1,1534 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>卡牌化UI设计预览 - 乐高故事书</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+SC:wght@400;500;700&family=Cinzel:wght@400;600;700&family=Playfair+Display:wght@400;600;700&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --rarity-common: #ffffff;
+            --rarity-rare: #4fc3f7;
+            --rarity-epic: #ba68c8;
+            --rarity-legendary: #ff9800;
+            --rarity-mythic: #ffd700;
+            
+            --role-protagonist: #ffd700;
+            --role-supporting: #c0c0c0;
+            --role-antagonist: #8b0000;
+            --role-bystander: #9ca3af;
+            
+            --plot-weather: #81d4fa;
+            --plot-item: #a1887f;
+            --plot-terrain: #81c784;
+            --plot-event: #ef5350;
+            --plot-special: #ce93d8;
+            
+            --bg-primary: #1a1a2e;
+            --bg-secondary: #16213e;
+            --bg-card: #0f3460;
+            --bg-card-inner: #1a1a2e;
+            
+            --text-primary: #f8fafc;
+            --text-secondary: #94a3b8;
+            --text-gold: #ffd700;
+            
+            --font-title: 'Cinzel', serif;
+            --font-body: 'Noto Sans SC', sans-serif;
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: var(--font-body);
+            background: linear-gradient(135deg, var(--bg-primary) 0%, var(--bg-secondary) 50%, var(--bg-card) 100%);
+            color: var(--text-primary);
+            min-height: 100vh;
+            overflow-x: hidden;
+        }
+
+        .demo-header {
+            background: linear-gradient(180deg, rgba(0,0,0,0.5), transparent);
+            padding: 20px 40px;
+            position: sticky;
+            top: 0;
+            z-index: 100;
+            backdrop-filter: blur(10px);
+        }
+
+        .demo-header h1 {
+            font-family: var(--font-title);
+            font-size: 1.8rem;
+            background: linear-gradient(135deg, var(--text-gold), #ff9800);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+            text-align: center;
+            margin-bottom: 10px;
+        }
+
+        .demo-nav {
+            display: flex;
+            justify-content: center;
+            gap: 15px;
+            flex-wrap: wrap;
+        }
+
+        .demo-nav a {
+            color: var(--text-secondary);
+            text-decoration: none;
+            padding: 8px 20px;
+            border-radius: 20px;
+            border: 1px solid rgba(255,255,255,0.2);
+            transition: all 0.3s ease;
+            font-size: 0.9rem;
+        }
+
+        .demo-nav a:hover, .demo-nav a.active {
+            background: linear-gradient(135deg, var(--text-gold), #ff9800);
+            color: #000;
+            border-color: transparent;
+            box-shadow: 0 0 20px rgba(255, 215, 0, 0.4);
+        }
+
+        .section {
+            padding: 40px 20px;
+            max-width: 1400px;
+            margin: 0 auto;
+        }
+
+        .section-title {
+            font-family: var(--font-title);
+            font-size: 2rem;
+            text-align: center;
+            margin-bottom: 10px;
+            color: var(--text-gold);
+        }
+
+        .section-subtitle {
+            text-align: center;
+            color: var(--text-secondary);
+            margin-bottom: 40px;
+            font-size: 1rem;
+        }
+
+        .card-showcase {
+            display: flex;
+            justify-content: center;
+            gap: 40px;
+            flex-wrap: wrap;
+            margin-bottom: 60px;
+        }
+
+        .card-container {
+            perspective: 1000px;
+        }
+
+        .card {
+            width: 240px;
+            height: 340px;
+            position: relative;
+            transform-style: preserve-3d;
+            transition: transform 0.8s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+            cursor: pointer;
+        }
+
+        .card:hover {
+            transform: rotateY(180deg);
+        }
+
+        .card-face {
+            position: absolute;
+            width: 100%;
+            height: 100%;
+            backface-visibility: hidden;
+            border-radius: 16px;
+            overflow: hidden;
+        }
+
+        .card-front {
+            background: linear-gradient(180deg, #2a2a4a 0%, #1a1a2e 100%);
+            display: flex;
+            flex-direction: column;
+        }
+
+        .card-back {
+            transform: rotateY(180deg);
+            background: linear-gradient(180deg, #1a1a2e 0%, #0f0f1e 100%);
+            padding: 20px;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+        }
+
+        .card-top-decoration {
+            height: 30px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 0 15px;
+            background: rgba(0,0,0,0.3);
+        }
+
+        .rarity-gem {
+            width: 20px;
+            height: 20px;
+            border-radius: 50%;
+            position: relative;
+        }
+
+        .rarity-gem::after {
+            content: '';
+            position: absolute;
+            top: 3px;
+            left: 3px;
+            width: 6px;
+            height: 6px;
+            background: rgba(255,255,255,0.6);
+            border-radius: 50%;
+        }
+
+        .rarity-common .rarity-gem { background: linear-gradient(135deg, #e0e0e0, #9e9e9e); }
+        .rarity-rare .rarity-gem { background: linear-gradient(135deg, #81d4fa, #0288d1); box-shadow: 0 0 10px rgba(79, 195, 247, 0.5); }
+        .rarity-epic .rarity-gem { background: linear-gradient(135deg, #ce93d8, #7b1fa2); box-shadow: 0 0 10px rgba(186, 104, 200, 0.5); }
+        .rarity-legendary .rarity-gem { background: linear-gradient(135deg, #ffcc80, #ef6c00); box-shadow: 0 0 15px rgba(255, 152, 0, 0.6); }
+        .rarity-mythic .rarity-gem { background: linear-gradient(135deg, #ffd700, #ff8f00); box-shadow: 0 0 20px rgba(255, 215, 0, 0.8); }
+
+        .role-badge {
+            font-size: 0.7rem;
+            padding: 3px 8px;
+            border-radius: 10px;
+            font-weight: 600;
+        }
+
+        .role-protagonist { background: linear-gradient(135deg, #ffd700, #ff9800); color: #000; }
+        .role-supporting { background: linear-gradient(135deg, #e0e0e0, #9e9e9e); color: #000; }
+        .role-antagonist { background: linear-gradient(135deg, #ef5350, #b71c1c); color: #fff; }
+        .role-bystander { background: linear-gradient(135deg, #9ca3af, #6b7280); color: #fff; }
+
+        .card-image-area {
+            height: 140px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .card-avatar {
+            font-size: 4rem;
+            position: relative;
+            z-index: 2;
+        }
+
+        .card-image-bg {
+            position: absolute;
+            inset: 0;
+            opacity: 0.3;
+        }
+
+        .card-name-area {
+            padding: 10px 15px;
+            text-align: center;
+            background: rgba(0,0,0,0.3);
+        }
+
+        .card-name {
+            font-family: var(--font-title);
+            font-size: 1.1rem;
+            font-weight: 600;
+            margin-bottom: 3px;
+        }
+
+        .card-title {
+            font-size: 0.75rem;
+            color: var(--text-secondary);
+            font-style: italic;
+        }
+
+        .card-attrs {
+            padding: 15px;
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+            gap: 8px;
+        }
+
+        .attr-tag {
+            display: inline-block;
+            padding: 4px 10px;
+            background: rgba(255,255,255,0.1);
+            border-radius: 12px;
+            font-size: 0.75rem;
+            margin-right: 5px;
+        }
+
+        .card-desc {
+            font-size: 0.8rem;
+            color: var(--text-secondary);
+            line-height: 1.4;
+            margin-top: auto;
+        }
+
+        .card-bottom {
+            height: 35px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            background: rgba(0,0,0,0.3);
+        }
+
+        .select-btn {
+            padding: 6px 20px;
+            border: none;
+            border-radius: 15px;
+            background: linear-gradient(135deg, var(--text-gold), #ff9800);
+            color: #000;
+            font-weight: 600;
+            font-size: 0.8rem;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+
+        .select-btn:hover {
+            transform: scale(1.05);
+            box-shadow: 0 0 20px rgba(255, 215, 0, 0.5);
+        }
+
+        .card-back-title {
+            font-family: var(--font-title);
+            font-size: 1.2rem;
+            margin-bottom: 15px;
+            color: var(--text-gold);
+        }
+
+        .card-back-stats {
+            width: 100%;
+        }
+
+        .stat-row {
+            display: flex;
+            justify-content: space-between;
+            margin-bottom: 8px;
+            font-size: 0.85rem;
+        }
+
+        .stat-bar {
+            height: 8px;
+            background: rgba(255,255,255,0.1);
+            border-radius: 4px;
+            overflow: hidden;
+            margin-top: 4px;
+        }
+
+        .stat-fill {
+            height: 100%;
+            border-radius: 4px;
+            transition: width 0.5s ease;
+        }
+
+        .stat-fill.attack { background: linear-gradient(90deg, #ef5350, #f44336); }
+        .stat-fill.defense { background: linear-gradient(90deg, #42a5f5, #2196f3); }
+        .stat-fill.magic { background: linear-gradient(90deg, #ab47bc, #9c27b0); }
+        .stat-fill.speed { background: linear-gradient(90deg, #66bb6a, #4caf50); }
+
+        .card.rarity-common { border: 3px solid var(--rarity-common); box-shadow: 0 4px 15px rgba(255, 255, 255, 0.1); }
+        .card.rarity-rare { border: 3px solid var(--rarity-rare); box-shadow: 0 0 20px rgba(79, 195, 247, 0.4); }
+        .card.rarity-epic { border: 3px solid var(--rarity-epic); box-shadow: 0 0 25px rgba(186, 104, 200, 0.5); animation: epic-pulse 2s ease-in-out infinite; }
+        .card.rarity-legendary { border: 3px solid var(--rarity-legendary); box-shadow: 0 0 30px rgba(255, 152, 0, 0.6); animation: legendary-pulse 2s ease-in-out infinite; }
+        .card.rarity-mythic { border: 3px solid var(--rarity-mythic); box-shadow: 0 0 40px rgba(255, 215, 0, 0.8); animation: mythic-pulse 1.5s ease-in-out infinite; }
+
+        @keyframes epic-pulse {
+            0%, 100% { box-shadow: 0 0 25px rgba(186, 104, 200, 0.5); }
+            50% { box-shadow: 0 0 40px rgba(186, 104, 200, 0.8); }
+        }
+
+        @keyframes legendary-pulse {
+            0%, 100% { box-shadow: 0 0 30px rgba(255, 152, 0, 0.6); }
+            50% { box-shadow: 0 0 50px rgba(255, 152, 0, 0.9); }
+        }
+
+        @keyframes mythic-pulse {
+            0%, 100% { box-shadow: 0 0 40px rgba(255, 215, 0, 0.8); }
+            50% { box-shadow: 0 0 60px rgba(255, 215, 0, 1); }
+        }
+
+        .plot-card {
+            width: 200px;
+            height: 280px;
+        }
+
+        .plot-card .card-image-area {
+            height: 100px;
+        }
+
+        .plot-card .card-avatar {
+            font-size: 3rem;
+        }
+
+        .plot-type-badge {
+            position: absolute;
+            top: 10px;
+            left: 10px;
+            padding: 4px 10px;
+            border-radius: 10px;
+            font-size: 0.7rem;
+            font-weight: 600;
+        }
+
+        .type-weather { background: var(--plot-weather); color: #000; }
+        .type-item { background: var(--plot-item); color: #fff; }
+        .type-terrain { background: var(--plot-terrain); color: #000; }
+        .type-event { background: var(--plot-event); color: #fff; }
+        .type-special { background: var(--plot-special); color: #000; }
+
+        .selection-area {
+            background: linear-gradient(180deg, rgba(0,0,0,0.3), rgba(0,0,0,0.5));
+            border-radius: 20px;
+            padding: 30px;
+            margin: 40px auto;
+            max-width: 1000px;
+            border: 2px solid rgba(255, 215, 0, 0.2);
+        }
+
+        .selection-title {
+            font-family: var(--font-title);
+            font-size: 1.3rem;
+            margin-bottom: 20px;
+            color: var(--text-gold);
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .selection-slots {
+            display: flex;
+            gap: 20px;
+            justify-content: center;
+            flex-wrap: wrap;
+        }
+
+        .selection-slot {
+            width: 120px;
+            height: 170px;
+            border: 2px dashed rgba(255,255,255,0.3);
+            border-radius: 12px;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            transition: all 0.3s ease;
+            position: relative;
+        }
+
+        .selection-slot:hover {
+            border-color: rgba(255, 215, 0, 0.6);
+            background: rgba(255, 215, 0, 0.1);
+        }
+
+        .selection-slot.filled {
+            border: none;
+            background: transparent;
+        }
+
+        .slot-icon {
+            font-size: 2rem;
+            margin-bottom: 10px;
+            opacity: 0.5;
+        }
+
+        .slot-label {
+            font-size: 0.8rem;
+            color: var(--text-secondary);
+        }
+
+        .mini-card {
+            width: 100%;
+            height: 100%;
+            border-radius: 10px;
+            overflow: hidden;
+            position: relative;
+        }
+
+        .mini-card-content {
+            width: 100%;
+            height: 100%;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            background: linear-gradient(180deg, #2a2a4a, #1a1a2e);
+        }
+
+        .mini-card-avatar {
+            font-size: 2.5rem;
+            margin-bottom: 5px;
+        }
+
+        .mini-card-name {
+            font-size: 0.75rem;
+            font-weight: 600;
+        }
+
+        .mini-card-remove {
+            position: absolute;
+            top: 5px;
+            right: 5px;
+            width: 20px;
+            height: 20px;
+            border-radius: 50%;
+            background: #ef5350;
+            color: white;
+            border: none;
+            cursor: pointer;
+            font-size: 0.8rem;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .filter-tabs {
+            display: flex;
+            gap: 12px;
+            justify-content: center;
+            margin-bottom: 30px;
+            flex-wrap: wrap;
+        }
+
+        .filter-tab {
+            padding: 10px 24px;
+            border-radius: 25px;
+            background: rgba(255, 255, 255, 0.1);
+            border: 2px solid rgba(255, 255, 255, 0.2);
+            color: var(--text-primary);
+            cursor: pointer;
+            transition: all 0.3s ease;
+            font-weight: 500;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .filter-tab:hover {
+            background: rgba(255, 255, 255, 0.2);
+            transform: translateY(-2px);
+        }
+
+        .filter-tab.active {
+            background: linear-gradient(135deg, var(--text-gold), #ff9800);
+            border-color: transparent;
+            color: #000;
+            box-shadow: 0 0 20px rgba(255, 215, 0, 0.5);
+        }
+
+        .particles {
+            position: fixed;
+            inset: 0;
+            pointer-events: none;
+            overflow: hidden;
+            z-index: 0;
+        }
+
+        .particle {
+            position: absolute;
+            width: 4px;
+            height: 4px;
+            background: var(--text-gold);
+            border-radius: 50%;
+            opacity: 0.3;
+            animation: float-particle 15s linear infinite;
+        }
+
+        @keyframes float-particle {
+            0% {
+                transform: translateY(100vh) rotate(0deg);
+                opacity: 0;
+            }
+            10% {
+                opacity: 0.3;
+            }
+            90% {
+                opacity: 0.3;
+            }
+            100% {
+                transform: translateY(-100vh) rotate(720deg);
+                opacity: 0;
+            }
+        }
+
+        .demo-page {
+            display: none;
+        }
+
+        .demo-page.active {
+            display: block;
+        }
+
+        .confirm-btn {
+            display: block;
+            margin: 30px auto 0;
+            padding: 15px 50px;
+            font-size: 1.1rem;
+            font-weight: 600;
+            border: none;
+            border-radius: 30px;
+            background: linear-gradient(135deg, var(--text-gold), #ff9800);
+            color: #000;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            box-shadow: 0 4px 20px rgba(255, 215, 0, 0.4);
+        }
+
+        .confirm-btn:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 8px 30px rgba(255, 215, 0, 0.6);
+        }
+
+        .confirm-btn:disabled {
+            background: #666;
+            cursor: not-allowed;
+            box-shadow: none;
+        }
+
+        .step-indicator {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            gap: 10px;
+            margin-bottom: 40px;
+        }
+
+        .step-dot {
+            width: 40px;
+            height: 40px;
+            border-radius: 50%;
+            background: rgba(255,255,255,0.1);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: 600;
+            transition: all 0.3s ease;
+            position: relative;
+        }
+
+        .step-dot.active {
+            background: linear-gradient(135deg, var(--text-gold), #ff9800);
+            color: #000;
+            box-shadow: 0 0 20px rgba(255, 215, 0, 0.5);
+        }
+
+        .step-dot.completed {
+            background: #4caf50;
+            color: white;
+        }
+
+        .step-connector {
+            width: 60px;
+            height: 3px;
+            background: rgba(255,255,255,0.2);
+        }
+
+        .step-connector.active {
+            background: linear-gradient(90deg, var(--text-gold), transparent);
+        }
+
+        .legend {
+            display: flex;
+            justify-content: center;
+            gap: 30px;
+            margin-bottom: 40px;
+            flex-wrap: wrap;
+        }
+
+        .legend-item {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            font-size: 0.85rem;
+        }
+
+        .legend-color {
+            width: 30px;
+            height: 20px;
+            border-radius: 4px;
+        }
+
+        .toast {
+            position: fixed;
+            bottom: 30px;
+            left: 50%;
+            transform: translateX(-50%) translateY(100px);
+            background: rgba(0,0,0,0.9);
+            color: white;
+            padding: 15px 30px;
+            border-radius: 10px;
+            border: 1px solid var(--text-gold);
+            opacity: 0;
+            transition: all 0.3s ease;
+            z-index: 1000;
+        }
+
+        .toast.show {
+            transform: translateX(-50%) translateY(0);
+            opacity: 1;
+        }
+
+        .card-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(240px, 1fr));
+            gap: 30px;
+            justify-items: center;
+        }
+
+        .plot-grid {
+            grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+        }
+
+        .hover-tip {
+            text-align: center;
+            color: var(--text-secondary);
+            font-size: 0.85rem;
+            margin-top: 20px;
+            opacity: 0.7;
+        }
+    </style>
+</head>
+<body>
+    <div class="particles" id="particles"></div>
+
+    <header class="demo-header">
+        <h1>🎴 卡牌化UI设计预览</h1>
+        <nav class="demo-nav">
+            <a href="#" class="active" data-page="overview">概览</a>
+            <a href="#" data-page="character">角色选择</a>
+            <a href="#" data-page="plot">情节选择</a>
+            <a href="#" data-page="flow">完整流程</a>
+        </nav>
+    </header>
+
+    <div id="overview" class="demo-page active">
+        <section class="section">
+            <h2 class="section-title">稀有度系统</h2>
+            <p class="section-subtitle">悬停卡牌查看背面详情</p>
+            
+            <div class="card-showcase">
+                <div class="card-container">
+                    <div class="card rarity-common">
+                        <div class="card-face card-front">
+                            <div class="card-top-decoration">
+                                <div class="rarity-gem"></div>
+                                <span class="role-badge role-bystander">路人</span>
+                            </div>
+                            <div class="card-image-area">
+                                <div class="card-avatar">🤖</div>
+                            </div>
+                            <div class="card-name-area">
+                                <div class="card-name">机械守卫</div>
+                                <div class="card-title">普通型号</div>
+                            </div>
+                            <div class="card-attrs">
+                                <div>
+                                    <span class="attr-tag">🤖 机械</span>
+                                    <span class="attr-tag">⚖️ 中立</span>
+                                </div>
+                                <div class="card-desc">标准的机械守卫，执行基础任务。</div>
+                            </div>
+                            <div class="card-bottom">
+                                <button class="select-btn">选择</button>
+                            </div>
+                        </div>
+                        <div class="card-face card-back">
+                            <div class="card-back-title">属性详情</div>
+                            <div class="card-back-stats">
+                                <div class="stat-row"><span>攻击</span><span>40</span></div>
+                                <div class="stat-bar"><div class="stat-fill attack" style="width: 40%"></div></div>
+                                <div class="stat-row"><span>防御</span><span>60</span></div>
+                                <div class="stat-bar"><div class="stat-fill defense" style="width: 60%"></div></div>
+                                <div class="stat-row"><span>魔法</span><span>20</span></div>
+                                <div class="stat-bar"><div class="stat-fill magic" style="width: 20%"></div></div>
+                            </div>
+                        </div>
+                    </div>
+                    <p style="text-align: center; margin-top: 15px; color: var(--text-secondary); font-size: 0.85rem;">普通</p>
+                </div>
+
+                <div class="card-container">
+                    <div class="card rarity-rare">
+                        <div class="card-face card-front">
+                            <div class="card-top-decoration">
+                                <div class="rarity-gem"></div>
+                                <span class="role-badge role-supporting">配角</span>
+                            </div>
+                            <div class="card-image-area">
+                                <div class="card-avatar">🧝</div>
+                            </div>
+                            <div class="card-name-area">
+                                <div class="card-name">精灵法师</div>
+                                <div class="card-title">自然守护者</div>
+                            </div>
+                            <div class="card-attrs">
+                                <div>
+                                    <span class="attr-tag">🌿 自然</span>
+                                    <span class="attr-tag">✨ 魔法</span>
+                                </div>
+                                <div class="card-desc">来自精灵森林的法师，精通自然魔法。</div>
+                            </div>
+                            <div class="card-bottom">
+                                <button class="select-btn">选择</button>
+                            </div>
+                        </div>
+                        <div class="card-face card-back">
+                            <div class="card-back-title">属性详情</div>
+                            <div class="card-back-stats">
+                                <div class="stat-row"><span>攻击</span><span>55</span></div>
+                                <div class="stat-bar"><div class="stat-fill attack" style="width: 55%"></div></div>
+                                <div class="stat-row"><span>防御</span><span>45</span></div>
+                                <div class="stat-bar"><div class="stat-fill defense" style="width: 45%"></div></div>
+                                <div class="stat-row"><span>魔法</span><span>80</span></div>
+                                <div class="stat-bar"><div class="stat-fill magic" style="width: 80%"></div></div>
+                            </div>
+                        </div>
+                    </div>
+                    <p style="text-align: center; margin-top: 15px; color: var(--rarity-rare); font-size: 0.85rem;">稀有</p>
+                </div>
+
+                <div class="card-container">
+                    <div class="card rarity-epic">
+                        <div class="card-face card-front">
+                            <div class="card-top-decoration">
+                                <div class="rarity-gem"></div>
+                                <span class="role-badge role-antagonist">反派</span>
+                            </div>
+                            <div class="card-image-area">
+                                <div class="card-avatar">🦹</div>
+                            </div>
+                            <div class="card-name-area">
+                                <div class="card-name">暗影刺客</div>
+                                <div class="card-title">夜幕行者</div>
+                            </div>
+                            <div class="card-attrs">
+                                <div>
+                                    <span class="attr-tag">🌙 暗影</span>
+                                    <span class="attr-tag">🗡️ 刺客</span>
+                                </div>
+                                <div class="card-desc">潜伏在黑暗中的致命刺客，无人能逃。</div>
+                            </div>
+                            <div class="card-bottom">
+                                <button class="select-btn">选择</button>
+                            </div>
+                        </div>
+                        <div class="card-face card-back">
+                            <div class="card-back-title">属性详情</div>
+                            <div class="card-back-stats">
+                                <div class="stat-row"><span>攻击</span><span>95</span></div>
+                                <div class="stat-bar"><div class="stat-fill attack" style="width: 95%"></div></div>
+                                <div class="stat-row"><span>防御</span><span>40</span></div>
+                                <div class="stat-bar"><div class="stat-fill defense" style="width: 40%"></div></div>
+                                <div class="stat-row"><span>速度</span><span>90</span></div>
+                                <div class="stat-bar"><div class="stat-fill speed" style="width: 90%"></div></div>
+                            </div>
+                        </div>
+                    </div>
+                    <p style="text-align: center; margin-top: 15px; color: var(--rarity-epic); font-size: 0.85rem;">史诗</p>
+                </div>
+
+                <div class="card-container">
+                    <div class="card rarity-legendary">
+                        <div class="card-face card-front">
+                            <div class="card-top-decoration">
+                                <div class="rarity-gem"></div>
+                                <span class="role-badge role-protagonist">主角</span>
+                            </div>
+                            <div class="card-image-area">
+                                <div class="card-avatar">🐉</div>
+                            </div>
+                            <div class="card-name-area">
+                                <div class="card-name">龙骑士</div>
+                                <div class="card-title">传说守护者</div>
+                            </div>
+                            <div class="card-attrs">
+                                <div>
+                                    <span class="attr-tag">🔥 龙焰</span>
+                                    <span class="attr-tag">⚔️ 骑士</span>
+                                </div>
+                                <div class="card-desc">与巨龙缔结契约的传奇骑士，守护世界和平。</div>
+                            </div>
+                            <div class="card-bottom">
+                                <button class="select-btn">选择</button>
+                            </div>
+                        </div>
+                        <div class="card-face card-back">
+                            <div class="card-back-title">属性详情</div>
+                            <div class="card-back-stats">
+                                <div class="stat-row"><span>攻击</span><span>100</span></div>
+                                <div class="stat-bar"><div class="stat-fill attack" style="width: 100%"></div></div>
+                                <div class="stat-row"><span>防御</span><span>95</span></div>
+                                <div class="stat-bar"><div class="stat-fill defense" style="width: 95%"></div></div>
+                                <div class="stat-row"><span>魔法</span><span>85</span></div>
+                                <div class="stat-bar"><div class="stat-fill magic" style="width: 85%"></div></div>
+                            </div>
+                        </div>
+                    </div>
+                    <p style="text-align: center; margin-top: 15px; color: var(--rarity-legendary); font-size: 0.85rem;">传说</p>
+                </div>
+
+                <div class="card-container">
+                    <div class="card rarity-mythic">
+                        <div class="card-face card-front">
+                            <div class="card-top-decoration">
+                                <div class="rarity-gem"></div>
+                                <span class="role-badge role-protagonist">主角</span>
+                            </div>
+                            <div class="card-image-area">
+                                <div class="card-avatar">👑</div>
+                            </div>
+                            <div class="card-name-area">
+                                <div class="card-name">神话王者</div>
+                                <div class="card-title">创世之神</div>
+                            </div>
+                            <div class="card-attrs">
+                                <div>
+                                    <span class="attr-tag">⭐ 神圣</span>
+                                    <span class="attr-tag">🌟 全能</span>
+                                </div>
+                                <div class="card-desc">传说中的神话存在，拥有创世之力。</div>
+                            </div>
+                            <div class="card-bottom">
+                                <button class="select-btn">选择</button>
+                            </div>
+                        </div>
+                        <div class="card-face card-back">
+                            <div class="card-back-title">属性详情</div>
+                            <div class="card-back-stats">
+                                <div class="stat-row"><span>攻击</span><span>100</span></div>
+                                <div class="stat-bar"><div class="stat-fill attack" style="width: 100%"></div></div>
+                                <div class="stat-row"><span>防御</span><span>100</span></div>
+                                <div class="stat-bar"><div class="stat-fill defense" style="width: 100%"></div></div>
+                                <div class="stat-row"><span>魔法</span><span>100</span></div>
+                                <div class="stat-bar"><div class="stat-fill magic" style="width: 100%"></div></div>
+                            </div>
+                        </div>
+                    </div>
+                    <p style="text-align: center; margin-top: 15px; color: var(--rarity-mythic); font-size: 0.85rem;">神话</p>
+                </div>
+            </div>
+        </section>
+
+        <section class="section">
+            <h2 class="section-title">角色类型</h2>
+            <p class="section-subtitle">不同角色类型有不同的边框和徽章样式</p>
+            
+            <div class="legend">
+                <div class="legend-item">
+                    <div class="legend-color" style="background: linear-gradient(135deg, #ffd700, #ff9800);"></div>
+                    <span>主角 ⭐</span>
+                </div>
+                <div class="legend-item">
+                    <div class="legend-color" style="background: linear-gradient(135deg, #e0e0e0, #9e9e9e);"></div>
+                    <span>配角 🎭</span>
+                </div>
+                <div class="legend-item">
+                    <div class="legend-color" style="background: linear-gradient(135deg, #ef5350, #b71c1c);"></div>
+                    <span>反派 👿</span>
+                </div>
+                <div class="legend-item">
+                    <div class="legend-color" style="background: linear-gradient(135deg, #9ca3af, #6b7280);"></div>
+                    <span>路人 🚶</span>
+                </div>
+            </div>
+
+            <div class="card-showcase">
+                <div class="card-container">
+                    <div class="card rarity-legendary">
+                        <div class="card-face card-front">
+                            <div class="card-top-decoration">
+                                <div class="rarity-gem"></div>
+                                <span class="role-badge role-protagonist">主角</span>
+                            </div>
+                            <div class="card-image-area">
+                                <div class="card-avatar">🦸</div>
+                            </div>
+                            <div class="card-name-area">
+                                <div class="card-name">光明骑士</div>
+                                <div class="card-title">正义化身</div>
+                            </div>
+                            <div class="card-attrs">
+                                <div>
+                                    <span class="attr-tag">☀️ 光明</span>
+                                    <span class="attr-tag">🛡️ 守护</span>
+                                </div>
+                                <div class="card-desc">正义的化身，守护世界的光明骑士。</div>
+                            </div>
+                            <div class="card-bottom">
+                                <button class="select-btn">选择</button>
+                            </div>
+                        </div>
+                        <div class="card-face card-back">
+                            <div class="card-back-title">主角特权</div>
+                            <div class="card-back-stats">
+                                <p style="text-align: center; margin-bottom: 15px;">主角拥有特殊剧情线</p>
+                                <div class="stat-row"><span>领导力</span><span>100</span></div>
+                                <div class="stat-bar"><div class="stat-fill" style="width: 100%; background: linear-gradient(90deg, #ffd700, #ff9800);"></div></div>
+                            </div>
+                        </div>
+                    </div>
+                    <p style="text-align: center; margin-top: 15px; color: var(--role-protagonist); font-size: 0.85rem;">主角卡牌</p>
+                </div>
+
+                <div class="card-container">
+                    <div class="card rarity-epic">
+                        <div class="card-face card-front">
+                            <div class="card-top-decoration">
+                                <div class="rarity-gem"></div>
+                                <span class="role-badge role-supporting">配角</span>
+                            </div>
+                            <div class="card-image-area">
+                                <div class="card-avatar">🧙</div>
+                            </div>
+                            <div class="card-name-area">
+                                <div class="card-name">智慧法师</div>
+                                <div class="card-title">知识守护者</div>
+                            </div>
+                            <div class="card-attrs">
+                                <div>
+                                    <span class="attr-tag">📚 智慧</span>
+                                    <span class="attr-tag">✨ 魔法</span>
+                                </div>
+                                <div class="card-desc">博学的法师，为主角提供智慧指引。</div>
+                            </div>
+                            <div class="card-bottom">
+                                <button class="select-btn">选择</button>
+                            </div>
+                        </div>
+                        <div class="card-face card-back">
+                            <div class="card-back-title">配角技能</div>
+                            <div class="card-back-stats">
+                                <p style="text-align: center; margin-bottom: 15px;">可提供辅助技能</p>
+                                <div class="stat-row"><span>辅助力</span><span>85</span></div>
+                                <div class="stat-bar"><div class="stat-fill" style="width: 85%; background: linear-gradient(90deg, #e0e0e0, #9e9e9e);"></div></div>
+                            </div>
+                        </div>
+                    </div>
+                    <p style="text-align: center; margin-top: 15px; color: var(--role-supporting); font-size: 0.85rem;">配角卡牌</p>
+                </div>
+
+                <div class="card-container">
+                    <div class="card rarity-epic">
+                        <div class="card-face card-front">
+                            <div class="card-top-decoration">
+                                <div class="rarity-gem"></div>
+                                <span class="role-badge role-antagonist">反派</span>
+                            </div>
+                            <div class="card-image-area">
+                                <div class="card-avatar">😈</div>
+                            </div>
+                            <div class="card-name-area">
+                                <div class="card-name">黑暗领主</div>
+                                <div class="card-title">混沌使者</div>
+                            </div>
+                            <div class="card-attrs">
+                                <div>
+                                    <span class="attr-tag">🌑 黑暗</span>
+                                    <span class="attr-tag">💀 毁灭</span>
+                                </div>
+                                <div class="card-desc">邪恶的黑暗领主，故事的终极敌人。</div>
+                            </div>
+                            <div class="card-bottom">
+                                <button class="select-btn">选择</button>
+                            </div>
+                        </div>
+                        <div class="card-face card-back">
+                            <div class="card-back-title">反派特性</div>
+                            <div class="card-back-stats">
+                                <p style="text-align: center; margin-bottom: 15px;">创造冲突与挑战</p>
+                                <div class="stat-row"><span>威胁度</span><span>95</span></div>
+                                <div class="stat-bar"><div class="stat-fill" style="width: 95%; background: linear-gradient(90deg, #ef5350, #b71c1c);"></div></div>
+                            </div>
+                        </div>
+                    </div>
+                    <p style="text-align: center; margin-top: 15px; color: var(--role-antagonist); font-size: 0.85rem;">反派卡牌</p>
+                </div>
+
+                <div class="card-container">
+                    <div class="card rarity-common">
+                        <div class="card-face card-front">
+                            <div class="card-top-decoration">
+                                <div class="rarity-gem"></div>
+                                <span class="role-badge role-bystander">路人</span>
+                            </div>
+                            <div class="card-image-area">
+                                <div class="card-avatar">👨‍🌾</div>
+                            </div>
+                            <div class="card-name-area">
+                                <div class="card-name">村庄农夫</div>
+                                <div class="card-title">普通村民</div>
+                            </div>
+                            <div class="card-attrs">
+                                <div>
+                                    <span class="attr-tag">🏠 村民</span>
+                                    <span class="attr-tag">🌾 务农</span>
+                                </div>
+                                <div class="card-desc">普通的村庄农夫，可能提供重要线索。</div>
+                            </div>
+                            <div class="card-bottom">
+                                <button class="select-btn">选择</button>
+                            </div>
+                        </div>
+                        <div class="card-face card-back">
+                            <div class="card-back-title">路人特点</div>
+                            <div class="card-back-stats">
+                                <p style="text-align: center; margin-bottom: 15px;">可能隐藏重要信息</p>
+                                <div class="stat-row"><span>神秘度</span><span>???</span></div>
+                                <div class="stat-bar"><div class="stat-fill" style="width: 30%; background: linear-gradient(90deg, #9ca3af, #6b7280);"></div></div>
+                            </div>
+                        </div>
+                    </div>
+                    <p style="text-align: center; margin-top: 15px; color: var(--role-bystander); font-size: 0.85rem;">路人卡牌</p>
+                </div>
+            </div>
+        </section>
+    </div>
+
+    <div id="character" class="demo-page">
+        <section class="section">
+            <h2 class="section-title">角色选择</h2>
+            <p class="section-subtitle">选择故事中的角色，必须选择一个主角</p>
+
+            <div class="filter-tabs">
+                <div class="filter-tab active" data-filter="all">全部</div>
+                <div class="filter-tab" data-filter="protagonist">⭐ 主角</div>
+                <div class="filter-tab" data-filter="supporting">🎭 配角</div>
+                <div class="filter-tab" data-filter="antagonist">👿 反派</div>
+                <div class="filter-tab" data-filter="bystander">🚶 路人</div>
+            </div>
+
+            <div class="card-grid" id="characterGrid">
+            </div>
+
+            <p class="hover-tip">💡 悬停卡牌查看详情，点击选择按钮添加角色</p>
+
+            <div class="selection-area">
+                <div class="selection-title">
+                    <span>📋</span>
+                    <span>已选角色</span>
+                    <span style="margin-left: auto; font-size: 0.9rem; color: var(--text-secondary);">需要1个主角</span>
+                </div>
+                <div class="selection-slots" id="selectedSlots">
+                    <div class="selection-slot" data-slot="0">
+                        <div class="slot-icon">➕</div>
+                        <div class="slot-label">主角位</div>
+                    </div>
+                    <div class="selection-slot" data-slot="1">
+                        <div class="slot-icon">➕</div>
+                        <div class="slot-label">配角位</div>
+                    </div>
+                    <div class="selection-slot" data-slot="2">
+                        <div class="slot-icon">➕</div>
+                        <div class="slot-label">配角位</div>
+                    </div>
+                    <div class="selection-slot" data-slot="3">
+                        <div class="slot-icon">➕</div>
+                        <div class="slot-label">可选</div>
+                    </div>
+                </div>
+                <button class="confirm-btn" id="confirmCharacters" disabled>确认角色选择</button>
+            </div>
+        </section>
+    </div>
+
+    <div id="plot" class="demo-page">
+        <section class="section">
+            <h2 class="section-title">情节选择</h2>
+            <p class="section-subtitle">选择故事中的情节元素</p>
+
+            <div class="filter-tabs">
+                <div class="filter-tab active" data-plot-filter="all">全部</div>
+                <div class="filter-tab" data-plot-filter="weather">🌤 天气</div>
+                <div class="filter-tab" data-plot-filter="item">🎒 道具</div>
+                <div class="filter-tab" data-plot-filter="terrain">🏔 地形</div>
+                <div class="filter-tab" data-plot-filter="event">⚡ 事件</div>
+            </div>
+
+            <div class="card-grid plot-grid" id="plotGrid">
+            </div>
+
+            <p class="hover-tip">💡 悬停卡牌查看详情，点击选择按钮添加情节</p>
+
+            <div class="selection-area">
+                <div class="selection-title">
+                    <span>📋</span>
+                    <span>已选情节</span>
+                </div>
+                <div class="selection-slots" id="plotSlots">
+                    <div class="selection-slot" data-plot-slot="0">
+                        <div class="slot-icon">➕</div>
+                        <div class="slot-label">情节1</div>
+                    </div>
+                    <div class="selection-slot" data-plot-slot="1">
+                        <div class="slot-icon">➕</div>
+                        <div class="slot-label">情节2</div>
+                    </div>
+                    <div class="selection-slot" data-plot-slot="2">
+                        <div class="slot-icon">➕</div>
+                        <div class="slot-label">情节3</div>
+                    </div>
+                    <div class="selection-slot" data-plot-slot="3">
+                        <div class="slot-icon">➕</div>
+                        <div class="slot-label">情节4</div>
+                    </div>
+                </div>
+                <button class="confirm-btn" id="confirmPlots">确认情节选择</button>
+            </div>
+        </section>
+    </div>
+
+    <div id="flow" class="demo-page">
+        <section class="section">
+            <h2 class="section-title">完整创建流程</h2>
+            <p class="section-subtitle">体验完整的故事创建流程</p>
+
+            <div class="step-indicator">
+                <div class="step-dot active" data-step="1">1</div>
+                <div class="step-connector"></div>
+                <div class="step-dot" data-step="2">2</div>
+                <div class="step-connector"></div>
+                <div class="step-dot" data-step="3">3</div>
+                <div class="step-connector"></div>
+                <div class="step-dot" data-step="4">4</div>
+            </div>
+
+            <div id="flowContent">
+                <div class="flow-step active" data-flow="1">
+                    <h3 style="text-align: center; margin-bottom: 30px; font-size: 1.5rem;">选择书籍</h3>
+                    <div style="display: flex; gap: 20px; justify-content: center; flex-wrap: wrap;">
+                        <div class="selection-slot filled" style="width: 200px; height: 280px; cursor: pointer;" onclick="selectBook('太空冒险')">
+                            <div class="mini-card">
+                                <div class="mini-card-content">
+                                    <div class="mini-card-avatar">📖</div>
+                                    <div class="mini-card-name">太空冒险</div>
+                                    <div style="font-size: 0.7rem; color: var(--text-secondary); margin-top: 5px;">5章</div>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="selection-slot filled" style="width: 200px; height: 280px; cursor: pointer;" onclick="selectBook('森林奇遇')">
+                            <div class="mini-card">
+                                <div class="mini-card-content">
+                                    <div class="mini-card-avatar">📖</div>
+                                    <div class="mini-card-name">森林奇遇</div>
+                                    <div style="font-size: 0.7rem; color: var(--text-secondary); margin-top: 5px;">3章</div>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="selection-slot" style="width: 200px; height: 280px; cursor: pointer;" onclick="selectBook('new')">
+                            <div class="slot-icon" style="font-size: 3rem;">➕</div>
+                            <div class="slot-label">创建新书籍</div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+    </div>
+
+    <div class="toast" id="toast"></div>
+
+    <script>
+        var characters = [
+            { id: 1, name: '龙骑士', title: '传说守护者', avatar: '🐉', rarity: 'legendary', role: 'protagonist', attrs: ['🔥 龙焰', '⚔️ 骑士'], desc: '与巨龙缔结契约的传奇骑士' },
+            { id: 2, name: '光明骑士', title: '正义化身', avatar: '🦸', rarity: 'legendary', role: 'protagonist', attrs: ['☀️ 光明', '🛡️ 守护'], desc: '正义的化身，守护世界' },
+            { id: 3, name: '暗影刺客', title: '夜幕行者', avatar: '🦹', rarity: 'epic', role: 'antagonist', attrs: ['🌙 暗影', '🗡️ 刺客'], desc: '潜伏在黑暗中的致命刺客' },
+            { id: 4, name: '精灵法师', title: '自然守护者', avatar: '🧝', rarity: 'rare', role: 'supporting', attrs: ['🌿 自然', '✨ 魔法'], desc: '来自精灵森林的法师' },
+            { id: 5, name: '智慧法师', title: '知识守护者', avatar: '🧙', rarity: 'epic', role: 'supporting', attrs: ['📚 智慧', '✨ 魔法'], desc: '博学的法师' },
+            { id: 6, name: '黑暗领主', title: '混沌使者', avatar: '😈', rarity: 'epic', role: 'antagonist', attrs: ['🌑 黑暗', '💀 毁灭'], desc: '邪恶的黑暗领主' },
+            { id: 7, name: '冰雪女王', title: '寒冰统治者', avatar: '👸', rarity: 'rare', role: 'protagonist', attrs: ['❄️ 冰雪', '👑 王室'], desc: '统治冰雪王国的女王' },
+            { id: 8, name: '机械守卫', title: '普通型号', avatar: '🤖', rarity: 'common', role: 'bystander', attrs: ['🤖 机械', '⚖️ 中立'], desc: '标准的机械守卫' },
+            { id: 9, name: '村庄农夫', title: '普通村民', avatar: '👨‍🌾', rarity: 'common', role: 'bystander', attrs: ['🏠 村民', '🌾 务农'], desc: '普通的村庄农夫' },
+            { id: 10, name: '吸血伯爵', title: '暗夜贵族', avatar: '🧛', rarity: 'rare', role: 'antagonist', attrs: ['🦇 吸血', '🏰 贵族'], desc: '神秘的吸血鬼伯爵' },
+        ];
+
+        var plots = [
+            { id: 1, name: '晴空万里', avatar: '🌤', type: 'weather', rarity: 'common', effect: '阳光明媚，视野开阔' },
+            { id: 2, name: '雷雨交加', avatar: '⛈', type: 'weather', rarity: 'rare', effect: '电闪雷鸣，行动受阻' },
+            { id: 3, name: '暴风雪', avatar: '❄️', type: 'weather', rarity: 'epic', effect: '冰天雪地，生存挑战' },
+            { id: 4, name: '勇者之剑', avatar: '🗡️', type: 'item', rarity: 'rare', effect: '攻击力+30%' },
+            { id: 5, name: '守护之盾', avatar: '🛡️', type: 'item', rarity: 'rare', effect: '防御力+30%' },
+            { id: 6, name: '魔法水晶', avatar: '💎', type: 'item', rarity: 'epic', effect: '魔法力+50%' },
+            { id: 7, name: '神秘森林', avatar: '🌲', type: 'terrain', rarity: 'rare', effect: '隐藏着神秘生物' },
+            { id: 8, name: '古老城堡', avatar: '🏰', type: 'terrain', rarity: 'epic', effect: '充满历史与秘密' },
+            { id: 9, name: '火山地带', avatar: '🌋', type: 'terrain', rarity: 'legendary', effect: '危险与机遇并存' },
+            { id: 10, name: '意外相遇', avatar: '🤝', type: 'event', rarity: 'common', effect: '遇到神秘人物' },
+            { id: 11, name: '宝藏发现', avatar: '💰', type: 'event', rarity: 'rare', effect: '发现珍贵宝藏' },
+            { id: 12, name: '命运转折', avatar: '🔮', type: 'event', rarity: 'legendary', effect: '改变故事走向' },
+        ];
+
+        var selectedCharacters = [];
+        var selectedPlots = [];
+
+        function createCharacterCard(char) {
+            var rarityClass = 'rarity-' + char.rarity;
+            var roleClass = 'role-' + char.role;
+            var roleLabel = {
+                protagonist: '主角',
+                supporting: '配角',
+                antagonist: '反派',
+                bystander: '路人'
+            }[char.role];
+
+            return '<div class="card-container" data-role="' + char.role + '">' +
+                '<div class="card ' + rarityClass + '">' +
+                    '<div class="card-face card-front">' +
+                        '<div class="card-top-decoration">' +
+                            '<div class="rarity-gem"></div>' +
+                            '<span class="role-badge ' + roleClass + '">' + roleLabel + '</span>' +
+                        '</div>' +
+                        '<div class="card-image-area">' +
+                            '<div class="card-avatar">' + char.avatar + '</div>' +
+                        '</div>' +
+                        '<div class="card-name-area">' +
+                            '<div class="card-name">' + char.name + '</div>' +
+                            '<div class="card-title">' + char.title + '</div>' +
+                        '</div>' +
+                        '<div class="card-attrs">' +
+                            '<div>' + char.attrs.map(function(a) { return '<span class="attr-tag">' + a + '</span>'; }).join('') + '</div>' +
+                            '<div class="card-desc">' + char.desc + '</div>' +
+                        '</div>' +
+                        '<div class="card-bottom">' +
+                            '<button class="select-btn" onclick="selectCharacter(' + char.id + ')">选择</button>' +
+                        '</div>' +
+                    '</div>' +
+                    '<div class="card-face card-back">' +
+                        '<div class="card-back-title">角色详情</div>' +
+                        '<div class="card-back-stats">' +
+                            '<p style="text-align: center; margin-bottom: 15px;">' + char.desc + '</p>' +
+                            '<div class="stat-row"><span>魅力</span><span>' + Math.floor(Math.random() * 40 + 60) + '</span></div>' +
+                            '<div class="stat-bar"><div class="stat-fill" style="width: ' + Math.floor(Math.random() * 40 + 60) + '%; background: linear-gradient(90deg, #ffd700, #ff9800);"></div></div>' +
+                        '</div>' +
+                    '</div>' +
+                '</div>' +
+            '</div>';
+        }
+
+        function createPlotCard(plot) {
+            var rarityClass = 'rarity-' + plot.rarity;
+            var typeClass = 'type-' + plot.type;
+            var typeLabel = {
+                weather: '天气',
+                item: '道具',
+                terrain: '地形',
+                event: '事件'
+            }[plot.type];
+
+            return '<div class="card-container" data-type="' + plot.type + '">' +
+                '<div class="card plot-card ' + rarityClass + '">' +
+                    '<div class="card-face card-front">' +
+                        '<div class="card-top-decoration">' +
+                            '<div class="rarity-gem"></div>' +
+                            '<span class="plot-type-badge ' + typeClass + '">' + typeLabel + '</span>' +
+                        '</div>' +
+                        '<div class="card-image-area">' +
+                            '<div class="card-avatar">' + plot.avatar + '</div>' +
+                        '</div>' +
+                        '<div class="card-name-area">' +
+                            '<div class="card-name">' + plot.name + '</div>' +
+                        '</div>' +
+                        '<div class="card-attrs" style="padding: 10px 15px;">' +
+                            '<div class="card-desc">' + plot.effect + '</div>' +
+                        '</div>' +
+                        '<div class="card-bottom">' +
+                            '<button class="select-btn" onclick="selectPlot(' + plot.id + ')">选择</button>' +
+                        '</div>' +
+                    '</div>' +
+                    '<div class="card-face card-back">' +
+                        '<div class="card-back-title">情节效果</div>' +
+                        '<p style="text-align: center;">' + plot.effect + '</p>' +
+                    '</div>' +
+                '</div>' +
+            '</div>';
+        }
+
+        function renderCharacters(filter) {
+            var grid = document.getElementById('characterGrid');
+            var filtered = filter === 'all' ? characters : characters.filter(function(c) { return c.role === filter; });
+            grid.innerHTML = filtered.map(createCharacterCard).join('');
+        }
+
+        function renderPlots(filter) {
+            var grid = document.getElementById('plotGrid');
+            var filtered = filter === 'all' ? plots : plots.filter(function(p) { return p.type === filter; });
+            grid.innerHTML = filtered.map(createPlotCard).join('');
+        }
+
+        function selectCharacter(id) {
+            var char = characters.find(function(c) { return c.id === id; });
+            if (!char) return;
+
+            if (selectedCharacters.some(function(c) { return c.id === id; })) {
+                showToast('已经选择了这个角色！', 'warning');
+                return;
+            }
+
+            if (selectedCharacters.length >= 4) {
+                showToast('最多只能选择4个角色！', 'error');
+                return;
+            }
+
+            if (char.role === 'protagonist' && selectedCharacters.some(function(c) { return c.role === 'protagonist'; })) {
+                showToast('只能选择一个主角！', 'error');
+                return;
+            }
+
+            selectedCharacters.push(char);
+            updateSelectedSlots();
+            showToast('已选择: ' + char.name, 'success');
+        }
+
+        function selectPlot(id) {
+            var plot = plots.find(function(p) { return p.id === id; });
+            if (!plot) return;
+
+            if (selectedPlots.some(function(p) { return p.id === id; })) {
+                showToast('已经选择了这个情节！', 'warning');
+                return;
+            }
+
+            if (selectedPlots.length >= 4) {
+                showToast('最多只能选择4个情节！', 'error');
+                return;
+            }
+
+            selectedPlots.push(plot);
+            updatePlotSlots();
+            showToast('已选择: ' + plot.name, 'success');
+        }
+
+        function updateSelectedSlots() {
+            var slots = document.querySelectorAll('#selectedSlots .selection-slot');
+            slots.forEach(function(slot, index) {
+                if (selectedCharacters[index]) {
+                    var char = selectedCharacters[index];
+                    slot.classList.add('filled');
+                    slot.innerHTML = '<div class="mini-card">' +
+                        '<div class="mini-card-content" style="background: linear-gradient(180deg, #2a2a4a, #1a1a2e); border: 2px solid ' + 
+                        (char.role === 'protagonist' ? 'var(--role-protagonist)' : 
+                         char.role === 'antagonist' ? 'var(--role-antagonist)' : 
+                         char.role === 'supporting' ? 'var(--role-supporting)' : 'var(--role-bystander)') + 
+                        '; border-radius: 10px;">' +
+                            '<div class="mini-card-avatar">' + char.avatar + '</div>' +
+                            '<div class="mini-card-name">' + char.name + '</div>' +
+                        '</div>' +
+                        '<button class="mini-card-remove" onclick="removeCharacter(' + index + ')">×</button>' +
+                    '</div>';
+                } else {
+                    slot.classList.remove('filled');
+                    slot.innerHTML = '<div class="slot-icon">➕</div><div class="slot-label">' + 
+                        (index === 0 ? '主角位' : index < 3 ? '配角位' : '可选') + '</div>';
+                }
+            });
+
+            var hasProtagonist = selectedCharacters.some(function(c) { return c.role === 'protagonist'; });
+            document.getElementById('confirmCharacters').disabled = !hasProtagonist;
+        }
+
+        function updatePlotSlots() {
+            var slots = document.querySelectorAll('#plotSlots .selection-slot');
+            slots.forEach(function(slot, index) {
+                if (selectedPlots[index]) {
+                    var plot = selectedPlots[index];
+                    slot.classList.add('filled');
+                    slot.innerHTML = '<div class="mini-card">' +
+                        '<div class="mini-card-content" style="background: linear-gradient(180deg, #2a2a4a, #1a1a2e); border-radius: 10px;">' +
+                            '<div class="mini-card-avatar">' + plot.avatar + '</div>' +
+                            '<div class="mini-card-name">' + plot.name + '</div>' +
+                        '</div>' +
+                        '<button class="mini-card-remove" onclick="removePlot(' + index + ')">×</button>' +
+                    '</div>';
+                } else {
+                    slot.classList.remove('filled');
+                    slot.innerHTML = '<div class="slot-icon">➕</div><div class="slot-label">情节' + (index + 1) + '</div>';
+                }
+            });
+        }
+
+        function removeCharacter(index) {
+            selectedCharacters.splice(index, 1);
+            updateSelectedSlots();
+        }
+
+        function removePlot(index) {
+            selectedPlots.splice(index, 1);
+            updatePlotSlots();
+        }
+
+        function showToast(message, type) {
+            var toast = document.getElementById('toast');
+            toast.textContent = message;
+            toast.style.borderColor = type === 'success' ? '#4caf50' : type === 'error' ? '#ef5350' : '#ff9800';
+            toast.classList.add('show');
+            setTimeout(function() { toast.classList.remove('show'); }, 2000);
+        }
+
+        function selectBook(name) {
+            showToast('已选择书籍: ' + (name === 'new' ? '新书籍' : name), 'success');
+        }
+
+        document.querySelectorAll('.demo-nav a').forEach(function(link) {
+            link.addEventListener('click', function(e) {
+                e.preventDefault();
+                var page = this.dataset.page;
+                
+                document.querySelectorAll('.demo-nav a').forEach(function(l) { l.classList.remove('active'); });
+                this.classList.add('active');
+                
+                document.querySelectorAll('.demo-page').forEach(function(p) { p.classList.remove('active'); });
+                document.getElementById(page).classList.add('active');
+
+                if (page === 'character') {
+                    renderCharacters('all');
+                } else if (page === 'plot') {
+                    renderPlots('all');
+                }
+            });
+        });
+
+        document.querySelectorAll('.filter-tab[data-filter]').forEach(function(tab) {
+            tab.addEventListener('click', function() {
+                document.querySelectorAll('.filter-tab[data-filter]').forEach(function(t) { t.classList.remove('active'); });
+                this.classList.add('active');
+                renderCharacters(this.dataset.filter);
+            });
+        });
+
+        document.querySelectorAll('.filter-tab[data-plot-filter]').forEach(function(tab) {
+            tab.addEventListener('click', function() {
+                document.querySelectorAll('.filter-tab[data-plot-filter]').forEach(function(t) { t.classList.remove('active'); });
+                this.classList.add('active');
+                renderPlots(this.dataset.plotFilter);
+            });
+        });
+
+        document.getElementById('confirmCharacters').addEventListener('click', function() {
+            showToast('角色选择完成！共选择 ' + selectedCharacters.length + ' 个角色', 'success');
+        });
+
+        document.getElementById('confirmPlots').addEventListener('click', function() {
+            showToast('情节选择完成！共选择 ' + selectedPlots.length + ' 个情节', 'success');
+        });
+
+        var particlesContainer = document.getElementById('particles');
+        for (var i = 0; i < 20; i++) {
+            var particle = document.createElement('div');
+            particle.className = 'particle';
+            particle.style.left = Math.random() * 100 + '%';
+            particle.style.animationDelay = Math.random() * 15 + 's';
+            particle.style.animationDuration = (15 + Math.random() * 10) + 's';
+            particlesContainer.appendChild(particle);
+        }
+    </script>
+</body>
+</html>
