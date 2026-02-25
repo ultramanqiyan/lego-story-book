@@ -6,238 +6,1200 @@
   <title>故事详情 - 乐高故事书</title>
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-  <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+SC:wght@400;500;700&family=Noto+Serif+SC:wght@400;600&family=Rajdhani:wght@500;600;700&family=Exo+2:wght@400;500;600&family=Cinzel:wght@400;600;700&family=Lora:wght@400;500&display=swap" rel="stylesheet">
+  <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+SC:wght@400;500;600;700&family=Cinzel:wght@400;600;700&display=swap" rel="stylesheet">
   <link rel="stylesheet" href="css/styles.css">
   <link rel="stylesheet" href="css/animations.css">
   <link rel="stylesheet" id="theme-stylesheet" href="" disabled>
+  <style>
+    :root {
+      --gold: #ffd700;
+      --gold-dark: #b8860b;
+      --silver: #c0c0c0;
+      --bronze: #cd7f32;
+      --crimson: #dc2626;
+      --purple: #a855f7;
+      --green: #22c55e;
+      --blue: #3b82f6;
+      --orange: #f59e0b;
+      --bg-dark: #0d0d14;
+      --bg-medium: #1a1a2e;
+      --text-primary: #f8fafc;
+      --text-secondary: #94a3b8;
+      --font-title: 'Cinzel', serif;
+      --font-body: 'Noto Sans SC', sans-serif;
+    }
+
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+
+    body {
+      font-family: var(--font-body);
+      background: linear-gradient(180deg, #1a1a2e 0%, #0d0d14 100%);
+      height: 100vh;
+      color: var(--text-primary);
+      overflow: hidden;
+      display: flex;
+      flex-direction: column;
+    }
+
+    .particles {
+      position: fixed;
+      inset: 0;
+      pointer-events: none;
+      z-index: 0;
+    }
+
+    .particle {
+      position: absolute;
+      width: 2px;
+      height: 2px;
+      background: var(--gold);
+      border-radius: 50%;
+      opacity: 0.3;
+      animation: float 20s linear infinite;
+    }
+
+    @keyframes float {
+      0% { transform: translateY(100vh); opacity: 0; }
+      10% { opacity: 0.3; }
+      90% { opacity: 0.3; }
+      100% { transform: translateY(-100vh); opacity: 0; }
+    }
+
+    .container {
+      position: relative;
+      z-index: 1;
+      display: flex;
+      flex-direction: column;
+      height: 100vh;
+    }
+
+    .header {
+      height: 50px;
+      background: rgba(0,0,0,0.5);
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 0 20px;
+      border-bottom: 1px solid rgba(255,215,0,0.2);
+      flex-shrink: 0;
+      position: relative;
+      z-index: 10;
+    }
+
+    .nav-tabs {
+      display: flex;
+      gap: 8px;
+      position: relative;
+      z-index: 11;
+    }
+
+    .nav-tab {
+      padding: 8px 16px;
+      border-radius: 8px;
+      background: rgba(255,255,255,0.05);
+      border: 1px solid rgba(255,255,255,0.1);
+      color: var(--text-secondary);
+      font-size: 0.8rem;
+      font-weight: 500;
+      cursor: pointer;
+      transition: all 0.3s ease;
+      display: flex;
+      align-items: center;
+      gap: 6px;
+      text-decoration: none;
+      position: relative;
+      z-index: 12;
+    }
+
+    .nav-tab:hover {
+      background: rgba(255,215,0,0.1);
+      border-color: rgba(255,215,0,0.3);
+      color: var(--text-primary);
+    }
+
+    .nav-tab-icon {
+      font-size: 1rem;
+    }
+
+    .book-cover {
+      display: flex;
+      align-items: center;
+      gap: 15px;
+      padding: 6px 20px;
+      background: linear-gradient(180deg, rgba(255,215,0,0.1), rgba(255,215,0,0.05));
+      border-radius: 25px;
+      border: 1px solid rgba(255,215,0,0.3);
+      box-shadow: 0 0 20px rgba(255,215,0,0.1);
+    }
+
+    .book-3d {
+      width: 32px;
+      height: 42px;
+      background: linear-gradient(135deg, #5a4030 0%, #3d2820 50%, #2a1810 100%);
+      border-radius: 2px 6px 6px 2px;
+      border: 2px solid var(--gold);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      box-shadow: inset 0 0 10px rgba(0,0,0,0.5), 0 0 10px rgba(255,215,0,0.3);
+      position: relative;
+    }
+
+    .book-3d::before {
+      content: '';
+      position: absolute;
+      left: 0;
+      top: 4px;
+      bottom: 4px;
+      width: 3px;
+      background: linear-gradient(180deg, var(--gold), var(--gold-dark));
+      border-radius: 2px 0 0 2px;
+    }
+
+    .book-title {
+      font-family: var(--font-title);
+      font-size: 1.2rem;
+      font-weight: 700;
+      background: linear-gradient(135deg, #fff 0%, var(--gold) 50%, #ff9800 100%);
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+      text-shadow: 0 0 30px rgba(255,215,0,0.5);
+      letter-spacing: 1px;
+    }
+
+    .stats {
+      display: flex;
+      gap: 20px;
+    }
+
+    .stat-item {
+      display: flex;
+      align-items: center;
+      gap: 6px;
+      font-size: 0.75rem;
+    }
+
+    .stat-gem {
+      width: 16px;
+      height: 20px;
+      border-radius: 50% 50% 50% 50% / 60% 60% 40% 40%;
+      position: relative;
+      box-shadow: 0 2px 4px rgba(0,0,0,0.4);
+    }
+
+    .stat-gem::before {
+      content: '';
+      position: absolute;
+      top: 20%;
+      left: 20%;
+      width: 30%;
+      height: 30%;
+      background: rgba(255,255,255,0.6);
+      border-radius: 50%;
+    }
+
+    .stat-gem.blue { background: linear-gradient(180deg, #60a5fa, #2563eb); }
+    .stat-gem.gold { background: linear-gradient(180deg, #ffd700, #b8860b); }
+    .stat-gem.scroll {
+      width: 18px;
+      height: 16px;
+      border-radius: 2px;
+      background: linear-gradient(180deg, #fff8e1, #f5e6c8);
+    }
+
+    .stat-value {
+      font-family: var(--font-title);
+      font-weight: 600;
+      color: var(--gold);
+    }
+
+    .stat-label {
+      color: var(--text-secondary);
+    }
+
+    .main-area {
+      flex: 1;
+      display: flex;
+      overflow: hidden;
+      position: relative;
+      z-index: 1;
+    }
+
+    .chapter-panel {
+      width: 380px;
+      background: rgba(0,0,0,0.3);
+      display: flex;
+      flex-direction: column;
+      padding: 12px;
+      gap: 8px;
+      flex-shrink: 0;
+      border-right: 1px solid rgba(255,255,255,0.1);
+    }
+
+    .panel-header {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      font-size: 0.85rem;
+      font-weight: 600;
+      padding: 8px 12px;
+      border-radius: 6px;
+      background: rgba(255,215,0,0.15);
+      color: var(--gold);
+      border: 1px solid rgba(255,215,0,0.3);
+    }
+
+    .chapters-container {
+      flex: 1;
+      display: flex;
+      flex-direction: column;
+      gap: 8px;
+      overflow-y: auto;
+      padding-right: 5px;
+    }
+
+    .chapters-container::-webkit-scrollbar {
+      width: 4px;
+    }
+
+    .chapters-container::-webkit-scrollbar-track {
+      background: rgba(255,255,255,0.05);
+      border-radius: 2px;
+    }
+
+    .chapters-container::-webkit-scrollbar-thumb {
+      background: rgba(255,215,0,0.3);
+      border-radius: 2px;
+    }
+
+    .chapter-card {
+      position: relative;
+      background: linear-gradient(180deg, #2d2d44, #1a1a2e);
+      border-radius: 10px;
+      padding: 12px 15px;
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      cursor: pointer;
+      transition: all 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+      border: 2px solid rgba(255,255,255,0.1);
+      box-shadow: 0 4px 8px rgba(0,0,0,0.3);
+    }
+
+    .chapter-card::after {
+      content: '';
+      position: absolute;
+      top: -50%;
+      left: -50%;
+      width: 200%;
+      height: 200%;
+      background: linear-gradient(45deg, transparent 40%, rgba(255,255,255,0.05) 50%, transparent 60%);
+      transform: translateX(-100%);
+      transition: transform 0.6s ease;
+      pointer-events: none;
+    }
+
+    .chapter-card:hover::after {
+      transform: translateX(100%);
+    }
+
+    .chapter-card:hover {
+      transform: translateY(-3px);
+      box-shadow: 0 8px 16px rgba(0,0,0,0.4), 0 0 10px rgba(255,215,0,0.15);
+      border-color: rgba(255,215,0,0.3);
+    }
+
+    .chapter-card.active {
+      border-color: var(--gold);
+      box-shadow: 0 4px 8px rgba(0,0,0,0.3), 0 0 15px rgba(255,215,0,0.3);
+    }
+
+    .chapter-badge {
+      width: 36px;
+      height: 36px;
+      background: linear-gradient(135deg, var(--gold), var(--gold-dark));
+      border-radius: 50%;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-family: var(--font-title);
+      font-size: 12px;
+      font-weight: 700;
+      color: #1a0f0a;
+      box-shadow: 0 2px 4px rgba(0,0,0,0.3);
+      flex-shrink: 0;
+    }
+
+    .chapter-content {
+      flex: 1;
+      position: relative;
+      z-index: 1;
+    }
+
+    .chapter-title {
+      font-size: 0.85rem;
+      font-weight: 600;
+      color: var(--text-primary);
+    }
+
+    .chapter-meta {
+      font-size: 0.7rem;
+      color: var(--text-secondary);
+      margin-top: 2px;
+    }
+
+    .chapter-status {
+      position: absolute;
+      bottom: 8px;
+      right: 8px;
+      width: 22px;
+      height: 22px;
+      border-radius: 50%;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 12px;
+      font-weight: 700;
+    }
+
+    .chapter-status.done {
+      background: linear-gradient(135deg, #22c55e, #16a34a);
+      color: white;
+      box-shadow: 0 0 8px rgba(34,197,94,0.5);
+    }
+
+    .chapter-status.draft {
+      background: linear-gradient(135deg, #ef4444, #dc2626);
+      color: white;
+      box-shadow: 0 0 8px rgba(239,68,68,0.5);
+    }
+
+    .chapter-status.pending {
+      background: linear-gradient(135deg, #f59e0b, #d97706);
+      color: white;
+      box-shadow: 0 0 8px rgba(245,158,11,0.5);
+      font-size: 10px;
+    }
+
+    .center-panel {
+      flex: 1;
+      display: flex;
+      flex-direction: column;
+      padding: 15px;
+      min-width: 0;
+      overflow-y: auto;
+    }
+
+    .story-area {
+      background: rgba(0,0,0,0.4);
+      border-radius: 12px;
+      border: 1px solid rgba(255,215,0,0.15);
+      padding: 20px;
+      display: flex;
+      flex-direction: column;
+      gap: 12px;
+      flex: 1;
+    }
+
+    .story-header {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding-bottom: 12px;
+      border-bottom: 1px solid rgba(255,255,255,0.1);
+    }
+
+    .story-title {
+      font-family: var(--font-title);
+      font-size: 1.1rem;
+      font-weight: 600;
+      color: var(--gold);
+    }
+
+    .story-nav {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+
+    .nav-btn {
+      width: 28px;
+      height: 28px;
+      border-radius: 6px;
+      border: 1px solid rgba(255,255,255,0.2);
+      background: rgba(255,255,255,0.05);
+      color: var(--text-primary);
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 12px;
+      transition: all 0.2s ease;
+    }
+
+    .nav-btn:hover:not(:disabled) {
+      background: rgba(255,215,0,0.2);
+      border-color: var(--gold);
+    }
+
+    .nav-btn:disabled {
+      opacity: 0.3;
+      cursor: not-allowed;
+    }
+
+    .nav-info {
+      font-size: 0.75rem;
+      color: var(--text-secondary);
+    }
+
+    .story-content {
+      flex: 1;
+      font-size: 1rem;
+      line-height: 1.9;
+      color: var(--text-primary);
+      overflow-y: auto;
+      padding-right: 10px;
+    }
+
+    .story-content::-webkit-scrollbar {
+      width: 4px;
+    }
+
+    .story-content::-webkit-scrollbar-track {
+      background: rgba(255,255,255,0.05);
+      border-radius: 2px;
+    }
+
+    .story-content::-webkit-scrollbar-thumb {
+      background: rgba(255,215,0,0.3);
+      border-radius: 2px;
+    }
+
+    .story-content p {
+      margin-bottom: 16px;
+      text-indent: 2em;
+    }
+
+    .char-name { color: #f87171; font-weight: 600; }
+    .action-word { color: #a78bfa; font-weight: 600; }
+    .emotion-word { color: #4ade80; font-weight: 600; }
+    .location-word { color: #fbbf24; font-weight: 600; }
+    .weather-word { color: #60a5fa; font-weight: 600; }
+    .item-word { color: #f472b6; font-weight: 600; }
+
+    .character-panel {
+      width: 380px;
+      background: rgba(0,0,0,0.3);
+      display: flex;
+      flex-direction: column;
+      padding: 12px;
+      gap: 8px;
+      flex-shrink: 0;
+      border-left: 1px solid rgba(255,255,255,0.1);
+    }
+
+    .section-header {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      font-size: 0.85rem;
+      font-weight: 600;
+      padding: 8px 12px;
+      border-radius: 6px;
+      background: rgba(255,215,0,0.15);
+      color: var(--gold);
+      border: 1px solid rgba(255,215,0,0.3);
+    }
+
+    .characters-container {
+      flex: 1;
+      display: flex;
+      flex-wrap: wrap;
+      gap: 12px;
+      padding: 10px;
+      align-content: flex-start;
+      overflow-y: auto;
+    }
+
+    .characters-container::-webkit-scrollbar {
+      width: 4px;
+    }
+
+    .characters-container::-webkit-scrollbar-track {
+      background: rgba(255,255,255,0.05);
+      border-radius: 2px;
+    }
+
+    .characters-container::-webkit-scrollbar-thumb {
+      background: rgba(255,215,0,0.3);
+      border-radius: 2px;
+    }
+
+    .hs-card {
+      width: 90px;
+      height: 125px;
+      border-radius: 10px;
+      cursor: pointer;
+      transition: all 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+      display: flex;
+      flex-direction: column;
+      overflow: hidden;
+      box-shadow: 0 5px 15px rgba(0,0,0,0.4);
+      background: linear-gradient(180deg, #3d3d3d, #1a1a1a);
+      border: 3px solid;
+      position: relative;
+    }
+
+    .hs-card.protagonist {
+      border-color: var(--gold);
+      box-shadow: 0 5px 15px rgba(0,0,0,0.4), 0 0 10px rgba(255,215,0,0.2);
+    }
+
+    .hs-card.antagonist {
+      border-color: var(--purple);
+      box-shadow: 0 5px 15px rgba(0,0,0,0.4), 0 0 10px rgba(139,92,246,0.2);
+    }
+
+    .hs-card.supporting {
+      border-color: var(--silver);
+    }
+
+    .hs-card.bystander {
+      border-color: #6b7280;
+    }
+
+    .hs-card:hover {
+      transform: translateY(-10px) scale(1.1);
+      z-index: 100;
+      box-shadow: 0 15px 30px rgba(0,0,0,0.5), 0 0 20px rgba(255,215,0,0.3);
+    }
+
+    .hs-card-actions {
+      position: absolute;
+      top: 3px;
+      right: 3px;
+      display: flex;
+      gap: 3px;
+      opacity: 0;
+      transition: opacity 0.2s ease;
+    }
+
+    .hs-card:hover .hs-card-actions {
+      opacity: 1;
+    }
+
+    .hs-action-btn {
+      width: 18px;
+      height: 18px;
+      border-radius: 4px;
+      border: 1px solid rgba(255,255,255,0.3);
+      background: rgba(0,0,0,0.5);
+      color: white;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 9px;
+      transition: all 0.2s ease;
+    }
+
+    .hs-action-btn:hover {
+      transform: scale(1.1);
+    }
+
+    .hs-action-btn.edit-btn:hover {
+      background: rgba(59,130,246,0.6);
+      border-color: #3b82f6;
+    }
+
+    .hs-action-btn.delete-btn:hover {
+      background: rgba(220,38,38,0.6);
+      border-color: #dc2626;
+    }
+
+    .hs-portrait {
+      flex: 1;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      background: linear-gradient(180deg, #4a4a4a, #2a2a2a);
+      position: relative;
+      overflow: hidden;
+    }
+
+    .hs-portrait::before {
+      content: '';
+      position: absolute;
+      inset: 0;
+      background: radial-gradient(ellipse at center top, rgba(255,255,255,0.1), transparent 50%);
+    }
+
+    .hs-avatar {
+      font-size: 2.2rem;
+      filter: drop-shadow(0 3px 6px rgba(0,0,0,0.5));
+    }
+
+    .hs-name-banner {
+      padding: 5px 6px;
+      background: linear-gradient(180deg, #5a4a3a, #3a2a1a);
+      text-align: center;
+    }
+
+    .hs-name {
+      font-family: var(--font-title);
+      font-size: 0.65rem;
+      font-weight: 600;
+      color: #fff8e1;
+      text-shadow: 1px 1px 2px rgba(0,0,0,0.8);
+    }
+
+    .hs-stats {
+      display: flex;
+      justify-content: space-between;
+      padding: 4px 6px;
+      background: linear-gradient(180deg, #2a2a2a, #1a1a1a);
+    }
+
+    .hs-gem {
+      width: 18px;
+      height: 18px;
+      border-radius: 50%;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 8px;
+      font-weight: 700;
+      color: white;
+      text-shadow: 1px 1px 1px rgba(0,0,0,0.5);
+    }
+
+    .hs-gem.attack {
+      background: linear-gradient(180deg, #fbbf24, #d97706);
+      box-shadow: 0 2px 4px rgba(0,0,0,0.3);
+    }
+
+    .hs-gem.health {
+      background: linear-gradient(180deg, #f87171, #dc2626);
+      box-shadow: 0 2px 4px rgba(0,0,0,0.3);
+    }
+
+    .role-tag {
+      position: absolute;
+      top: 3px;
+      left: 3px;
+      padding: 2px 5px;
+      border-radius: 3px;
+      font-size: 7px;
+      font-weight: 700;
+      letter-spacing: 0.5px;
+    }
+
+    .hs-card.protagonist .role-tag {
+      background: linear-gradient(180deg, var(--gold), var(--gold-dark));
+      color: #1a0f0a;
+    }
+
+    .hs-card.antagonist .role-tag {
+      background: linear-gradient(180deg, var(--purple), #6b21a8);
+      color: white;
+    }
+
+    .hs-card.supporting .role-tag {
+      background: linear-gradient(180deg, var(--silver), #808080);
+      color: #1a0f0a;
+    }
+
+    .hs-card.bystander .role-tag {
+      background: linear-gradient(180deg, #6b7280, #4b5563);
+      color: white;
+    }
+
+    .add-character-btn {
+      width: 90px;
+      height: 125px;
+      border: 2px dashed var(--purple);
+      border-radius: 10px;
+      background: linear-gradient(180deg, rgba(139,92,246,0.1), rgba(107,33,168,0.2));
+      cursor: pointer;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      gap: 6px;
+      transition: all 0.3s ease;
+    }
+
+    .add-character-btn:hover {
+      border-style: solid;
+      border-color: var(--gold);
+      box-shadow: 0 0 15px rgba(139,92,246,0.4);
+    }
+
+    .pack-icon {
+      font-size: 24px;
+      animation: pack-shake 2s ease-in-out infinite;
+    }
+
+    @keyframes pack-shake {
+      0%, 100% { transform: translateX(0) rotate(0deg); }
+      25% { transform: translateX(-2px) rotate(-1deg); }
+      75% { transform: translateX(2px) rotate(1deg); }
+    }
+
+    .pack-text {
+      font-family: var(--font-title);
+      font-size: 0.6rem;
+      font-weight: 600;
+      color: var(--text-primary);
+    }
+
+    .bottom-bar {
+      height: 50px;
+      background: linear-gradient(180deg, transparent, rgba(0,0,0,0.8));
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 15px;
+      padding: 0 20px;
+      flex-shrink: 0;
+      position: relative;
+      z-index: 5;
+    }
+
+    .generate-btn {
+      padding: 10px 30px;
+      font-size: 0.9rem;
+      font-weight: 700;
+      border: none;
+      border-radius: 20px;
+      background: linear-gradient(135deg, var(--gold), #ff9800);
+      color: #000;
+      cursor: pointer;
+      transition: all 0.3s ease;
+      font-family: var(--font-body);
+      box-shadow: 0 0 25px rgba(255,215,0,0.5);
+      animation: btn-pulse 2s ease-in-out infinite;
+    }
+
+    @keyframes btn-pulse {
+      0%, 100% { box-shadow: 0 0 25px rgba(255,215,0,0.5); }
+      50% { box-shadow: 0 0 40px rgba(255,215,0,0.8); }
+    }
+
+    .generate-btn:hover { transform: scale(1.05); }
+
+    .prompt-btn {
+      padding: 10px 20px;
+      font-size: 0.85rem;
+      font-weight: 600;
+      border: 2px solid var(--gold);
+      border-radius: 20px;
+      background: transparent;
+      color: var(--gold);
+      cursor: pointer;
+      transition: all 0.3s ease;
+      font-family: var(--font-body);
+    }
+
+    .prompt-btn:hover {
+      background: rgba(255,215,0,0.1);
+      box-shadow: 0 0 15px rgba(255,215,0,0.3);
+    }
+
+    .modal-overlay {
+      position: fixed;
+      inset: 0;
+      background: rgba(0,0,0,0.8);
+      display: none;
+      align-items: center;
+      justify-content: center;
+      z-index: 1000;
+      opacity: 0;
+      transition: opacity 0.3s ease;
+    }
+
+    .modal-overlay.active {
+      display: flex;
+      opacity: 1;
+    }
+
+    .spellbook-modal {
+      width: 90%;
+      max-width: 500px;
+      background: linear-gradient(180deg, #2d2d44, #1a1a2e);
+      border-radius: 15px;
+      border: 3px solid var(--gold);
+      padding: 25px;
+      position: relative;
+      transform: rotateY(-90deg) scale(0.8);
+      transition: transform 0.5s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+      box-shadow: 0 20px 60px rgba(0,0,0,0.5), 0 0 30px rgba(255,215,0,0.2);
+    }
+
+    .modal-overlay.active .spellbook-modal {
+      transform: rotateY(0) scale(1);
+    }
+
+    .modal-title {
+      font-family: var(--font-title);
+      font-size: 1.2rem;
+      font-weight: 700;
+      color: var(--gold);
+      text-align: center;
+      margin-bottom: 15px;
+    }
+
+    .modal-content {
+      background: rgba(0,0,0,0.3);
+      border-radius: 8px;
+      padding: 15px;
+      margin-bottom: 15px;
+      max-height: 400px;
+      overflow-y: auto;
+    }
+
+    .modal-content pre {
+      white-space: pre-wrap;
+      word-wrap: break-word;
+      font-size: 0.85rem;
+      line-height: 1.6;
+      color: var(--text-primary);
+    }
+
+    .modal-actions {
+      display: flex;
+      justify-content: center;
+      gap: 12px;
+    }
+
+    .modal-btn {
+      padding: 10px 25px;
+      border-radius: 8px;
+      font-family: var(--font-title);
+      font-size: 0.85rem;
+      font-weight: 600;
+      cursor: pointer;
+      transition: all 0.3s ease;
+      border: 2px solid;
+    }
+
+    .modal-btn.primary {
+      background: linear-gradient(180deg, var(--gold), var(--gold-dark));
+      border-color: var(--gold);
+      color: #1a0f0a;
+      box-shadow: 0 4px 12px rgba(255,215,0,0.3);
+    }
+
+    .modal-btn.primary:hover {
+      transform: translateY(-2px);
+      box-shadow: 0 6px 16px rgba(255,215,0,0.5);
+    }
+
+    .modal-close {
+      position: absolute;
+      top: 12px;
+      right: 12px;
+      width: 26px;
+      height: 26px;
+      border-radius: 50%;
+      background: rgba(0,0,0,0.3);
+      border: 1px solid var(--text-secondary);
+      color: var(--text-primary);
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 14px;
+      transition: all 0.2s ease;
+    }
+
+    .modal-close:hover {
+      background: var(--crimson);
+      border-color: var(--crimson);
+    }
+
+    .form-group {
+      margin-bottom: 15px;
+    }
+
+    .form-group label {
+      display: block;
+      margin-bottom: 8px;
+      font-weight: bold;
+      color: var(--gold);
+      font-size: 0.9rem;
+    }
+
+    .form-control {
+      width: 100%;
+      padding: 12px 15px;
+      border: 2px solid rgba(255,215,0,0.3);
+      border-radius: 10px;
+      font-size: 1rem;
+      background: rgba(0,0,0,0.3);
+      color: var(--text-primary);
+      transition: all 0.3s ease;
+    }
+
+    .form-control:focus {
+      outline: none;
+      border-color: var(--gold);
+      box-shadow: 0 0 10px rgba(255,215,0,0.2);
+    }
+
+    .form-control option {
+      background: #1a1a2e;
+      color: var(--text-primary);
+    }
+
+    .empty-state {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      padding: 40px;
+      color: var(--text-secondary);
+      text-align: center;
+    }
+
+    .empty-state-icon {
+      font-size: 3rem;
+      margin-bottom: 15px;
+      opacity: 0.5;
+    }
+
+    .toast {
+      position: fixed;
+      top: 60px;
+      left: 50%;
+      transform: translateX(-50%) translateY(-10px);
+      background: rgba(0,0,0,0.95);
+      padding: 10px 20px;
+      border-radius: 8px;
+      border: 1px solid var(--gold);
+      font-size: 0.85rem;
+      opacity: 0;
+      transition: all 0.3s ease;
+      z-index: 1002;
+    }
+
+    .toast.show { transform: translateX(-50%) translateY(0); opacity: 1; }
+
+    @media (max-width: 1200px) {
+      .chapter-panel, .character-panel {
+        width: 320px;
+      }
+    }
+
+    @media (max-width: 900px) {
+      .main-area {
+        flex-direction: column;
+      }
+
+      .chapter-panel, .character-panel {
+        width: 100%;
+        max-height: 30vh;
+      }
+
+      .center-panel {
+        order: -1;
+      }
+    }
+  </style>
 </head>
 <body>
-  <div class="lego-brick-bg"></div>
-  <div class="particles-container">
-    <div class="particle"></div><div class="particle"></div><div class="particle"></div>
-    <div class="particle"></div><div class="particle"></div><div class="particle"></div>
-    <div class="particle"></div><div class="particle"></div><div class="particle"></div>
-    <div class="particle"></div>
-  </div>
+  <div class="particles" id="particles"></div>
 
-  <div class="container page-wrapper">
+  <div class="container">
     <header class="header">
-      <h1 id="bookTitle" class="neon-text rainbow-text">📖 故事详情</h1>
-      <nav class="nav">
-        <a href="bookshelf.html" class="nav-glow">📚 我的书架</a>
-        <a href="theme-selector.html" class="nav-glow">🎨 主题风格</a>
-        <a href="share.html" id="shareBtn" class="nav-glow">📤 分享故事</a>
-      </nav>
+      <div class="nav-tabs">
+        <a href="bookshelf.html" class="nav-tab">
+          <span class="nav-tab-icon">📚</span>
+          <span>我的书架</span>
+        </a>
+        <a href="theme-selector.html" class="nav-tab">
+          <span class="nav-tab-icon">🎨</span>
+          <span>主题风格</span>
+        </a>
+        <a href="share.html" id="shareBtn" class="nav-tab">
+          <span class="nav-tab-icon">📤</span>
+          <span>分享故事</span>
+        </a>
+      </div>
+      <div class="book-cover">
+        <div class="book-3d">
+          <span>📖</span>
+        </div>
+        <h1 class="book-title" id="bookTitle">加载中...</h1>
+      </div>
+      <div class="stats">
+        <div class="stat-item">
+          <div class="stat-gem blue"></div>
+          <span class="stat-value" id="chapterCount">0</span>
+          <span class="stat-label">章节</span>
+        </div>
+        <div class="stat-item">
+          <div class="stat-gem gold"></div>
+          <span class="stat-value" id="characterCount">0</span>
+          <span class="stat-label">角色</span>
+        </div>
+        <div class="stat-item">
+          <div class="stat-gem scroll"></div>
+          <span class="stat-value" id="wordCount">0</span>
+          <span class="stat-label">字数</span>
+        </div>
+      </div>
     </header>
 
-    <main>
-      <div class="card card-3d neon-border scroll-fade-in">
-        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px;">
-          <h2 class="pulse-scale">🎭 故事角色</h2>
-          <button class="btn btn-primary btn-glow btn-ripple magnetic-btn" id="addCharacterBtn">➕ 添加角色</button>
+    <main class="main-area">
+      <aside class="chapter-panel">
+        <div class="panel-header">
+          <span>📜</span>
+          <span>章节任务板</span>
         </div>
-        <div class="grid" id="characterList"></div>
-      </div>
+        <div class="chapters-container" id="chapterList">
+          <div class="empty-state">
+            <div class="empty-state-icon">📚</div>
+            <p>还没有章节</p>
+          </div>
+        </div>
+      </aside>
 
-      <div class="card card-3d neon-border scroll-slide-left" id="addCharacterCard" style="display: none;">
-        <h2 class="bounce-animation">➕ 添加新角色</h2>
+      <section class="center-panel">
+        <div class="story-area">
+          <div class="story-header">
+            <h2 class="story-title" id="currentChapterTitle">选择章节开始阅读</h2>
+            <div class="story-nav">
+              <button class="nav-btn" id="prevBtn" disabled>←</button>
+              <span class="nav-info" id="chapterNav">0 / 0</span>
+              <button class="nav-btn" id="nextBtn" disabled>→</button>
+            </div>
+          </div>
+          <div class="story-content" id="storyContent">
+            <p style="text-align: center; color: var(--text-secondary);">请从左侧选择一个章节开始阅读</p>
+          </div>
+        </div>
+      </section>
+
+      <aside class="character-panel">
+        <div class="section-header">
+          <span>🎭</span>
+          <span>英雄与随从</span>
+        </div>
+        <div class="characters-container" id="characterList">
+          <div class="empty-state">
+            <div class="empty-state-icon">🎭</div>
+            <p>还没有角色</p>
+          </div>
+        </div>
+      </aside>
+    </main>
+
+    <footer class="bottom-bar">
+      <button class="prompt-btn" id="promptBtn" style="display: none;">📝 查看提示词</button>
+      <button class="generate-btn" id="generateBtn">✨ 生成下一章</button>
+    </footer>
+  </div>
+
+  <div class="toast" id="toast"></div>
+
+  <div class="modal-overlay" id="promptModal">
+    <div class="spellbook-modal">
+      <button class="modal-close" id="promptModalClose">×</button>
+      <h3 class="modal-title">📝 生成提示词</h3>
+      <div class="modal-content">
+        <pre id="promptContent"></pre>
+      </div>
+      <div class="modal-actions">
+        <button class="modal-btn primary" id="promptModalConfirm">关闭</button>
+      </div>
+    </div>
+  </div>
+
+  <div class="modal-overlay" id="editModal">
+    <div class="spellbook-modal">
+      <button class="modal-close" id="editModalClose">×</button>
+      <h3 class="modal-title">✏️ 编辑角色</h3>
+      <div class="modal-content">
         <div class="form-group">
-          <label class="float-animation">选择人仔</label>
-          <select id="characterSelect" class="form-control input-glow"></select>
+          <label>自定义名称</label>
+          <input type="text" id="editCustomName" class="form-control" maxlength="20">
         </div>
         <div class="form-group">
-          <label class="float-animation" style="animation-delay: 0.1s;">自定义名称</label>
-          <input type="text" id="customName" class="form-control input-glow" placeholder="为角色取个名字" maxlength="20">
-        </div>
-        <div class="form-group">
-          <label class="float-animation" style="animation-delay: 0.2s;">角色类型</label>
-          <select id="roleTypeSelect" class="form-control input-glow">
+          <label>角色类型</label>
+          <select id="editRoleType" class="form-control">
             <option value="protagonist">⭐ 主角</option>
             <option value="supporting">🎭 配角</option>
             <option value="antagonist">👿 反派</option>
             <option value="bystander">🚶 路人</option>
           </select>
         </div>
-        <div style="display: flex; gap: 10px;">
-          <button class="btn btn-primary btn-glow btn-ripple" id="saveCharacterBtn">✅ 保存</button>
-          <button class="btn btn-secondary btn-shake" id="cancelAddBtn">❌ 取消</button>
-        </div>
       </div>
-
-      <div class="card card-3d scroll-slide-right">
-        <h2 class="pulse-scale">📚 章节列表</h2>
-        <ul class="chapter-list" id="chapterList"></ul>
-        <button class="btn btn-secondary btn-glow btn-ripple magnetic-btn" id="addChapterBtn" style="margin-top: 20px;">➕ 添加章节</button>
-      </div>
-
-      <div class="card card-3d neon-border scroll-scale" id="chapterContentCard" style="display: none;">
-        <h2 class="bounce-animation">📖 章节内容</h2>
-        <div id="chapterContentDisplay" style="font-size: 1.1rem; line-height: 1.8; padding: 15px;"></div>
-      </div>
-
-      <div class="card card-3d scroll-fade-in" id="promptCard" style="display: none;">
-        <div style="display: flex; justify-content: space-between; align-items: center; cursor: pointer;" id="promptHeader">
-          <h2>📝 生成提示词</h2>
-          <span id="promptToggle">▼ 点击展开</span>
-        </div>
-        <div id="promptContent" style="display: none; margin-top: 15px;">
-          <pre style="background: #f5f5f5; padding: 15px; border-radius: 10px; white-space: pre-wrap; word-wrap: break-word; font-size: 0.9rem; line-height: 1.6;"></pre>
-        </div>
-      </div>
-    </main>
-
-    <footer class="footer">
-      <p>乐高故事书 &copy; 2024 - 让想象力飞翔</p>
-    </footer>
-  </div>
-
-  <div id="editModal" class="modal" style="display: none;">
-    <div class="modal-content">
-      <h3>✏️ 编辑角色</h3>
-      <div class="form-group">
-        <label>自定义名称</label>
-        <input type="text" id="editCustomName" class="form-control" maxlength="20">
-      </div>
-      <div class="form-group">
-        <label>角色类型</label>
-        <select id="editRoleType" class="form-control">
-          <option value="protagonist">⭐ 主角</option>
-          <option value="supporting">🎭 配角</option>
-          <option value="antagonist">👿 反派</option>
-          <option value="bystander">🚶 路人</option>
-        </select>
-      </div>
-      <div style="display: flex; gap: 10px;">
-        <button class="btn btn-primary" id="updateCharacterBtn">✅ 保存</button>
-        <button class="btn btn-secondary" id="closeModalBtn">❌ 取消</button>
+      <div class="modal-actions">
+        <button class="modal-btn primary" id="updateCharacterBtn">✅ 保存</button>
       </div>
     </div>
   </div>
 
-  <div id="plotModal" class="modal" style="display: none;">
-    <div class="modal-content" style="max-width: 600px; max-height: 80vh; overflow-y: auto;">
-      <h3 style="margin-bottom: 15px;">🎭 选择故事情节</h3>
-      <div id="plotModalBody">
+  <div class="modal-overlay" id="addCharacterModal">
+    <div class="spellbook-modal">
+      <button class="modal-close" id="addCharacterModalClose">×</button>
+      <h3 class="modal-title">➕ 添加角色</h3>
+      <div class="modal-content">
+        <div class="form-group">
+          <label>选择人仔</label>
+          <select id="characterSelect" class="form-control"></select>
+        </div>
+        <div class="form-group">
+          <label>自定义名称</label>
+          <input type="text" id="customName" class="form-control" placeholder="为角色取个名字" maxlength="20">
+        </div>
+        <div class="form-group">
+          <label>角色类型</label>
+          <select id="roleTypeSelect" class="form-control">
+            <option value="protagonist">⭐ 主角</option>
+            <option value="supporting" selected>🎭 配角</option>
+            <option value="antagonist">👿 反派</option>
+            <option value="bystander">🚶 路人</option>
+          </select>
+        </div>
+      </div>
+      <div class="modal-actions">
+        <button class="modal-btn primary" id="saveCharacterBtn">✅ 保存</button>
+      </div>
+    </div>
+  </div>
+
+  <div class="modal-overlay" id="plotModal">
+    <div class="spellbook-modal" style="max-width: 600px;">
+      <button class="modal-close" id="plotModalClose">×</button>
+      <h3 class="modal-title">🎭 选择故事情节</h3>
+      <div class="modal-content" style="max-height: 400px; overflow-y: auto;">
         <div style="margin-bottom: 20px;">
-          <h4 style="color: var(--lego-blue); margin-bottom: 10px;">☀️ 天气</h4>
+          <h4 style="color: var(--gold); margin-bottom: 10px; font-size: 0.9rem;">☀️ 天气</h4>
           <div id="weatherOptions" style="display: grid; grid-template-columns: repeat(4, 1fr); gap: 8px;"></div>
         </div>
         <div style="margin-bottom: 20px;">
-          <h4 style="color: var(--lego-blue); margin-bottom: 10px;">🗺️ 冒险类型</h4>
+          <h4 style="color: var(--gold); margin-bottom: 10px; font-size: 0.9rem;">🗺️ 冒险类型</h4>
           <div id="adventureTypeOptions" style="display: grid; grid-template-columns: repeat(4, 1fr); gap: 8px;"></div>
         </div>
         <div style="margin-bottom: 20px;">
-          <h4 style="color: var(--lego-blue); margin-bottom: 10px;">🌲 地形</h4>
+          <h4 style="color: var(--gold); margin-bottom: 10px; font-size: 0.9rem;">🌲 地形</h4>
           <div id="terrainOptions" style="display: grid; grid-template-columns: repeat(4, 1fr); gap: 8px;"></div>
         </div>
         <div style="margin-bottom: 20px;">
-          <h4 style="color: var(--lego-blue); margin-bottom: 10px;">🪄 装备与道具</h4>
+          <h4 style="color: var(--gold); margin-bottom: 10px; font-size: 0.9rem;">🪄 装备与道具</h4>
           <div id="equipmentOptions" style="display: grid; grid-template-columns: repeat(4, 1fr); gap: 8px;"></div>
         </div>
       </div>
-      <div style="display: flex; gap: 10px; justify-content: space-between;">
-        <button class="btn btn-secondary" id="randomPlotBtn">🎲 随机选择</button>
-        <div style="display: flex; gap: 10px;">
-          <button class="btn btn-secondary" id="cancelPlotBtn">❌ 取消</button>
-          <button class="btn btn-primary" id="confirmPlotBtn">✨ 确认生成</button>
+      <div class="modal-actions" style="justify-content: space-between;">
+        <button class="modal-btn primary" id="randomPlotBtn" style="background: linear-gradient(180deg, #3b82f6, #1d4ed8); border-color: #3b82f6;">🎲 随机选择</button>
+        <div style="display: flex; gap: 12px;">
+          <button class="modal-btn primary" id="confirmPlotBtn">✨ 确认生成</button>
         </div>
       </div>
     </div>
   </div>
-
-  <style>
-    .form-control {
-      width: 100%;
-      padding: 12px 15px;
-      border: 3px solid var(--lego-yellow);
-      border-radius: 15px;
-      font-size: 1rem;
-      transition: all 0.3s ease;
-    }
-    .form-control:focus {
-      outline: none;
-      border-color: var(--lego-blue);
-      box-shadow: 0 0 10px rgba(0, 107, 166, 0.2);
-    }
-    .form-group {
-      margin-bottom: 15px;
-    }
-    .form-group label {
-      display: block;
-      margin-bottom: 8px;
-      font-weight: bold;
-      color: var(--lego-blue);
-    }
-    .modal {
-      position: fixed;
-      top: 0;
-      left: 0;
-      width: 100%;
-      height: 100%;
-      background: rgba(0, 0, 0, 0.5);
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      z-index: 1000;
-    }
-    .modal-content {
-      background: white;
-      padding: 30px;
-      border-radius: 25px;
-      max-width: 400px;
-      width: 90%;
-      box-shadow: 0 10px 40px rgba(0, 0, 0, 0.3);
-    }
-    .character-card {
-      position: relative;
-    }
-    .character-actions {
-      position: absolute;
-      top: 10px;
-      right: 10px;
-      display: flex;
-      gap: 5px;
-      opacity: 0;
-      transition: opacity 0.3s ease;
-    }
-    .character-card:hover .character-actions {
-      opacity: 1;
-    }
-    .action-btn {
-      width: 30px;
-      height: 30px;
-      border-radius: 50%;
-      border: none;
-      cursor: pointer;
-      font-size: 1rem;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      transition: transform 0.2s ease;
-    }
-    .action-btn:hover {
-      transform: scale(1.1);
-    }
-    .edit-btn {
-      background: var(--lego-blue);
-      color: white;
-    }
-    .delete-btn {
-      background: var(--lego-red);
-      color: white;
-    }
-    .role-badge {
-      display: inline-block;
-      padding: 4px 12px;
-      border-radius: 20px;
-      font-size: 0.85rem;
-      font-weight: bold;
-    }
-    .role-protagonist { background: #FFF3E0; color: #E65100; }
-    .role-supporting { background: #E3F2FD; color: #1565C0; }
-    .role-antagonist { background: #FFEBEE; color: #C62828; }
-    .role-bystander { background: #F3E5F5; color: #7B1FA2; }
-  </style>
 
   <script src="js/utils.js"></script>
   <script src="js/animations.js"></script>
@@ -245,7 +1207,10 @@
   <script>
     var userId = requireAuth();
     var bookId = getQueryParam('id');
+    var bookData = null;
     var bookCharacters = [];
+    var chapters = [];
+    var currentChapterIndex = 0;
     var plotOptions = null;
     var selectedPlot = {
       weather: null,
@@ -253,15 +1218,24 @@
       terrain: null,
       equipment: null
     };
-    var pendingChapterChars = null;
     var allCharacters = [];
     var editingCharacterId = null;
+    var currentPrompt = '';
+    var emojis = ['🧝‍♀️', '⚔️', '🧙‍♂️', '🔨', '💰', '👿', '🗡️', '👨‍🌾', '🦸', '👸', '🤴', '🧛'];
 
     if (bookId) {
       loadBook();
       loadAllCharacters();
     } else {
       window.location.href = 'bookshelf.html';
+    }
+
+    for (var i = 0; i < 15; i++) {
+      var p = document.createElement('div');
+      p.className = 'particle';
+      p.style.left = Math.random() * 100 + '%';
+      p.style.animationDelay = Math.random() * 20 + 's';
+      document.getElementById('particles').appendChild(p);
     }
 
     async function loadAllCharacters() {
@@ -276,166 +1250,260 @@
     async function loadBook() {
       try {
         var data = await fetchAPI('/books?bookId=' + bookId + '&userId=' + userId);
-        document.getElementById('bookTitle').textContent = '📖 ' + data.book.title;
+        bookData = data.book;
         bookCharacters = data.characters || [];
-        
-        renderCharacters();
-        
-        var chapterContainer = document.getElementById('chapterList');
-        if (data.chapters.length === 0) {
-          chapterContainer.innerHTML = '<li class="chapter-item" style="justify-content: center; color: #999;">还没有章节，点击下方按钮添加</li>';
-        } else {
-          chapterContainer.innerHTML = data.chapters.map(function(ch) {
-            var puzzleIcon = '';
-            if (ch.has_puzzle) {
-              if (ch.puzzle_result === 1) {
-                puzzleIcon = '<span style="font-size: 1.5rem;" title="解谜成功">✅</span>';
-              } else if (ch.puzzle_result === 0) {
-                puzzleIcon = '<span style="font-size: 1.5rem;" title="解谜失败">❌</span>';
-              } else {
-                puzzleIcon = '<span style="font-size: 1.5rem;">🧩</span>';
-              }
-            }
-            return '<li class="chapter-item" onclick="readChapter(\'' + ch.chapter_id + '\')">' +
-              '<span class="chapter-number">第' + ch.chapter_number + '章</span>' +
-              '<span class="chapter-title">' + ch.title + '</span>' +
-              puzzleIcon +
-            '</li>';
-          }).join('');
-        }
-        
+        chapters = data.chapters || [];
+
+        document.getElementById('bookTitle').textContent = bookData.title;
+        document.getElementById('chapterCount').textContent = chapters.length;
+        document.getElementById('characterCount').textContent = bookCharacters.length;
+        document.getElementById('wordCount').textContent = bookData.word_count || '0';
+
         document.getElementById('shareBtn').href = 'share.html?bookId=' + bookId;
-        
+
+        renderChapters();
+        renderCharacters();
+
         var savedPrompt = sessionStorage.getItem('savedPrompt_' + bookId);
         if (savedPrompt) {
-          document.getElementById('promptCard').style.display = 'block';
-          document.getElementById('promptContent').querySelector('pre').textContent = savedPrompt;
+          currentPrompt = savedPrompt;
+          document.getElementById('promptBtn').style.display = 'block';
           sessionStorage.removeItem('savedPrompt_' + bookId);
+        }
+
+        if (chapters.length > 0) {
+          selectChapter(0);
         }
       } catch (error) {
         showToast('加载失败：' + error.message, 'error');
       }
     }
 
-    function getRoleLabel(roleType) {
-      var roles = {
-        'protagonist': '⭐ 主角',
-        'supporting': '🎭 配角',
-        'antagonist': '👿 反派',
-        'bystander': '🚶 路人'
-      };
-      return roles[roleType] || '🎭 配角';
+    function renderChapters() {
+      var container = document.getElementById('chapterList');
+
+      if (chapters.length === 0) {
+        container.innerHTML = '<div class="empty-state"><div class="empty-state-icon">📚</div><p>还没有章节</p></div>';
+        return;
+      }
+
+      var html = '';
+      for (var i = 0; i < chapters.length; i++) {
+        var ch = chapters[i];
+        var statusClass, statusText, statusIcon;
+        
+        if (!ch.has_puzzle) {
+          statusClass = 'pending';
+          statusText = '待解';
+        } else if (ch.puzzle_result === 1) {
+          statusClass = 'done';
+          statusText = '✓';
+        } else if (ch.puzzle_result === 0) {
+          statusClass = 'draft';
+          statusText = '✗';
+        } else {
+          statusClass = 'pending';
+          statusText = '?';
+        }
+        
+        var romanNum = toRoman(i + 1);
+
+        html += '<article class="chapter-card' + (i === currentChapterIndex ? ' active' : '') + '" onclick="selectChapter(' + i + ')">' +
+          '<div class="chapter-badge">' + romanNum + '</div>' +
+          '<div class="chapter-content">' +
+            '<h3 class="chapter-title">' + ch.title + '</h3>' +
+            '<p class="chapter-meta">第' + ch.chapter_number + '章</p>' +
+          '</div>' +
+          '<span class="chapter-status ' + statusClass + '">' + statusText + '</span>' +
+        '</article>';
+      }
+
+      container.innerHTML = html;
+    }
+
+    function toRoman(num) {
+      var roman = ['I', 'II', 'III', 'IV', 'V', 'VI', 'VII', 'VIII', 'IX', 'X', 'XI', 'XII', 'XIII', 'XIV', 'XV', 'XVI', 'XVII', 'XVIII', 'XIX', 'XX'];
+      return roman[num - 1] || num;
+    }
+
+    async function selectChapter(index) {
+      if (index < 0 || index >= chapters.length) return;
+
+      currentChapterIndex = index;
+      var chapter = chapters[index];
+
+      document.getElementById('currentChapterTitle').textContent = '第' + chapter.chapter_number + '章：' + chapter.title;
+      document.getElementById('chapterNav').textContent = (index + 1) + ' / ' + chapters.length;
+
+      document.getElementById('prevBtn').disabled = index === 0;
+      document.getElementById('nextBtn').disabled = index === chapters.length - 1;
+
+      try {
+        var data = await fetchAPI('/chapters?id=' + chapter.chapter_id);
+        var content = data.chapter.content;
+        var highlighted = highlightKeywords(content);
+
+        var html = '<p>' + highlighted.replace(/\n/g, '</p><p>') + '</p>';
+
+        if (data.chapter.has_puzzle) {
+          html += '<p style="text-align: center; margin-top: 20px;"><a href="adventure.html?chapterId=' + chapter.chapter_id + '" class="generate-btn" style="text-decoration: none; display: inline-block;">🧩 去解密</a></p>';
+        }
+
+        document.getElementById('storyContent').innerHTML = html;
+      } catch (error) {
+        document.getElementById('storyContent').innerHTML = '<p style="text-align: center; color: #f87171;">加载失败：' + error.message + '</p>';
+      }
+
+      renderChapters();
+    }
+
+    function highlightKeywords(content) {
+      var keywords = [];
+
+      bookCharacters.forEach(function(char) {
+        if (char.custom_name) {
+          keywords.push({ text: char.custom_name, type: 'char-name' });
+        }
+      });
+
+      var actionWords = ['飞向', '跳跃', '奔跑', '战斗', '探索', '发现', '拯救', '追逐', '攀爬', '游泳', '飞翔', '旋转', '冲刺', '躲闪', '攻击', '防御', '寻找', '收集', '建造', '修复', '转过身', '握紧', '举起', '拔出', '走上前', '拉住'];
+      actionWords.forEach(function(word) {
+        keywords.push({ text: word, type: 'action-word' });
+      });
+
+      var emotionWords = ['开心', '快乐', '勇敢', '害怕', '兴奋', '紧张', '感动', '惊讶', '愤怒', '悲伤', '期待', '满足', '自豪', '担心', '安心', '激动', '欣慰', '坚定', '犹豫', '恐惧', '慈祥', '关切'];
+      emotionWords.forEach(function(word) {
+        keywords.push({ text: word, type: 'emotion-word' });
+      });
+
+      var locationWords = ['城堡', '森林', '太空', '海底', '沙漠', '雪山', '火山', '洞穴', '城市', '村庄', '花园', '岛屿', '山脉', '河流', '星空', '云层', '迷宫', '宝藏', '遗迹', '基地', '悬崖'];
+      locationWords.forEach(function(word) {
+        keywords.push({ text: word, type: 'location-word' });
+      });
+
+      var weatherWords = ['阳光', '浓雾', '闪电', '乌云', '夜空', '和平', '清晨', '下雨', '打雷', '下雪', '大雾', '狂风', '彩虹', '星夜'];
+      weatherWords.forEach(function(word) {
+        keywords.push({ text: word, type: 'weather-word' });
+      });
+
+      var itemWords = ['魔法杖', '宝剑', '盾牌', '地图', '药水', '金龙'];
+      itemWords.forEach(function(word) {
+        keywords.push({ text: word, type: 'item-word' });
+      });
+
+      keywords.sort(function(a, b) { return b.text.length - a.text.length; });
+
+      keywords.forEach(function(kw) {
+        var regex = new RegExp('(' + escapeRegex(kw.text) + ')', 'g');
+        content = content.replace(regex, '<span class="' + kw.type + '">$1</span>');
+      });
+
+      return content;
+    }
+
+    function escapeRegex(string) {
+      return string.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
     }
 
     function renderCharacters() {
-      var emojis = ['🦸', '🧙', '🧝', '🦹', '👸', '🤴', '🧛', '🧟', '🤖', '👻', '🧚', '🧜'];
-      var charContainer = document.getElementById('characterList');
-      
+      var container = document.getElementById('characterList');
+
       if (bookCharacters.length === 0) {
-        charContainer.innerHTML = '<p style="text-align: center; color: #999; padding: 20px;">还没有角色，点击上方按钮添加</p>';
+        container.innerHTML = '<div class="empty-state"><div class="empty-state-icon">🎭</div><p>还没有角色</p></div>';
         return;
       }
-      
-      charContainer.innerHTML = bookCharacters.map(function(char, index) {
-        var emoji = emojis[index % emojis.length];
-        return '<div class="character-card">' +
-          '<div class="character-actions">' +
-            '<button class="action-btn edit-btn" onclick="openEditModal(\'' + char.id + '\')">✏️</button>' +
-            '<button class="action-btn delete-btn" onclick="deleteCharacter(\'' + char.id + '\')">🗑️</button>' +
+
+      var html = '';
+      for (var i = 0; i < bookCharacters.length; i++) {
+        var char = bookCharacters[i];
+        var emoji = emojis[i % emojis.length];
+        var attack = Math.floor(Math.random() * 5) + 3;
+        var health = Math.floor(Math.random() * 5) + 3;
+
+        html += '<div class="hs-card ' + char.role_type + '" data-char-id="' + char.id + '">' +
+          '<div class="hs-card-actions">' +
+            '<button class="hs-action-btn edit-btn" onclick="event.stopPropagation(); openEditModal(\'' + char.id + '\')">✏️</button>' +
+            '<button class="hs-action-btn delete-btn" onclick="event.stopPropagation(); deleteCharacter(\'' + char.id + '\')">🗑️</button>' +
           '</div>' +
-          '<div class="character-avatar" style="width:80px;height:80px;font-size:2rem;">' + emoji + '</div>' +
-          '<h3>' + char.custom_name + '</h3>' +
-          '<p><span class="role-badge role-' + char.role_type + '">' + getRoleLabel(char.role_type) + '</span></p>' +
+          '<span class="role-tag">' + getRoleLabel(char.role_type) + '</span>' +
+          '<div class="hs-portrait"><span class="hs-avatar">' + emoji + '</span></div>' +
+          '<div class="hs-name-banner"><span class="hs-name">' + char.custom_name + '</span></div>' +
+          '<div class="hs-stats">' +
+            '<div class="hs-gem attack">' + attack + '</div>' +
+            '<div class="hs-gem health">' + health + '</div>' +
+          '</div>' +
         '</div>';
-      }).join('');
+      }
+
+      html += '<button class="add-character-btn" onclick="openAddCharacterModal()">' +
+        '<span class="pack-icon">📦</span>' +
+        '<span class="pack-text">添加角色</span>' +
+      '</button>';
+
+      container.innerHTML = html;
     }
 
-    document.getElementById('addCharacterBtn').addEventListener('click', function() {
-      var card = document.getElementById('addCharacterCard');
-      card.style.display = card.style.display === 'none' ? 'block' : 'none';
-      
-      if (card.style.display === 'block') {
-        var existingIds = bookCharacters.map(function(c) { return c.character_id; });
-        var availableChars = allCharacters.filter(function(c) { 
-          return existingIds.indexOf(c.character_id) === -1;
-        });
-        
-        var select = document.getElementById('characterSelect');
-        if (availableChars.length === 0) {
-          select.innerHTML = '<option value="">没有可选的人仔</option>';
-        } else {
-          select.innerHTML = availableChars.map(function(c) {
-            return '<option value="' + c.character_id + '">' + c.name + '</option>';
-          }).join('');
-        }
-        
-        document.getElementById('customName').value = '';
-        document.getElementById('roleTypeSelect').value = 'supporting';
-      }
-    });
-
-    document.getElementById('cancelAddBtn').addEventListener('click', function() {
-      document.getElementById('addCharacterCard').style.display = 'none';
-    });
-
-    document.getElementById('saveCharacterBtn').addEventListener('click', async function() {
-      var characterId = document.getElementById('characterSelect').value;
-      var customName = document.getElementById('customName').value.trim();
-      var roleType = document.getElementById('roleTypeSelect').value;
-      
-      if (!characterId) {
-        showToast('请选择人仔', 'error');
-        return;
-      }
-      if (!customName) {
-        showToast('请输入自定义名称', 'error');
-        return;
-      }
-      
-      try {
-        await fetchAPI('/book-characters', {
-          method: 'POST',
-          body: {
-            bookId: bookId,
-            characterId: characterId,
-            customName: customName,
-            roleType: roleType
-          }
-        });
-        showToast('角色添加成功！🎉', 'success');
-        document.getElementById('addCharacterCard').style.display = 'none';
-        loadBook();
-      } catch (error) {
-        showToast('添加失败：' + error.message, 'error');
-      }
-    });
+    function getRoleLabel(roleType) {
+      var roles = {
+        'protagonist': '主角',
+        'supporting': '配角',
+        'antagonist': '反派',
+        'bystander': '路人'
+      };
+      return roles[roleType] || '配角';
+    }
 
     function openEditModal(id) {
       editingCharacterId = id;
       var char = bookCharacters.find(function(c) { return c.id === id; });
       if (!char) return;
-      
+
       document.getElementById('editCustomName').value = char.custom_name;
       document.getElementById('editRoleType').value = char.role_type;
-      document.getElementById('editModal').style.display = 'flex';
+      document.getElementById('editModal').classList.add('active');
     }
 
-    document.getElementById('closeModalBtn').addEventListener('click', function() {
-      document.getElementById('editModal').style.display = 'none';
-      editingCharacterId = null;
-    });
+    function openAddCharacterModal() {
+      var existingIds = bookCharacters.map(function(c) { return c.character_id; });
+      var availableChars = allCharacters.filter(function(c) {
+        return existingIds.indexOf(c.character_id) === -1;
+      });
+
+      var select = document.getElementById('characterSelect');
+      if (availableChars.length === 0) {
+        select.innerHTML = '<option value="">没有可选的人仔</option>';
+      } else {
+        select.innerHTML = availableChars.map(function(c) {
+          return '<option value="' + c.character_id + '">' + c.name + '</option>';
+        }).join('');
+      }
+
+      document.getElementById('customName').value = '';
+      document.getElementById('roleTypeSelect').value = 'supporting';
+      document.getElementById('addCharacterModal').classList.add('active');
+    }
+
+    function closeModal(modalId) {
+      document.getElementById(modalId).classList.remove('active');
+    }
+
+    document.getElementById('editModalClose').addEventListener('click', function() { closeModal('editModal'); });
+    document.getElementById('addCharacterModalClose').addEventListener('click', function() { closeModal('addCharacterModal'); });
+    document.getElementById('promptModalClose').addEventListener('click', function() { closeModal('promptModal'); });
+    document.getElementById('promptModalConfirm').addEventListener('click', function() { closeModal('promptModal'); });
+    document.getElementById('plotModalClose').addEventListener('click', function() { closeModal('plotModal'); });
 
     document.getElementById('updateCharacterBtn').addEventListener('click', async function() {
       if (!editingCharacterId) return;
-      
+
       var customName = document.getElementById('editCustomName').value.trim();
       var roleType = document.getElementById('editRoleType').value;
-      
+
       if (!customName) {
         showToast('请输入自定义名称', 'error');
         return;
       }
-      
+
       try {
         await fetchAPI('/book-characters', {
           method: 'PUT',
@@ -446,7 +1514,7 @@
           }
         });
         showToast('角色更新成功！🎉', 'success');
-        document.getElementById('editModal').style.display = 'none';
+        closeModal('editModal');
         editingCharacterId = null;
         loadBook();
       } catch (error) {
@@ -456,7 +1524,7 @@
 
     async function deleteCharacter(id) {
       if (!confirm('确定要删除这个角色吗？')) return;
-      
+
       try {
         await fetchAPI('/book-characters?id=' + id, {
           method: 'DELETE'
@@ -468,74 +1536,72 @@
       }
     }
 
-    document.getElementById('addChapterBtn').addEventListener('click', async function() {
-      if (bookCharacters.length === 0) {
-        if (confirm('还没有角色，是否现在添加角色？')) {
-          document.getElementById('addCharacterCard').style.display = 'block';
-          document.getElementById('addCharacterCard').scrollIntoView({ behavior: 'smooth' });
-        }
+    document.getElementById('saveCharacterBtn').addEventListener('click', async function() {
+      var characterId = document.getElementById('characterSelect').value;
+      var customName = document.getElementById('customName').value.trim();
+      var roleType = document.getElementById('roleTypeSelect').value;
+
+      if (!characterId) {
+        showToast('请选择人仔', 'error');
         return;
       }
-      
-      var chapterCount = document.querySelectorAll('.chapter-item').length;
-      if (chapterCount >= 100) {
-        showToast('📚 本书籍已达章节上限，请创建新书籍', 'error');
+      if (!customName) {
+        showToast('请输入自定义名称', 'error');
         return;
       }
-      
-      var promptContent = document.getElementById('promptContent').querySelector('pre').textContent;
-      if (promptContent) {
-        sessionStorage.setItem('savedPrompt_' + bookId, promptContent);
+
+      try {
+        await fetchAPI('/book-characters', {
+          method: 'POST',
+          body: {
+            bookId: bookId,
+            characterId: characterId,
+            customName: customName,
+            roleType: roleType
+          }
+        });
+        showToast('角色添加成功！🎉', 'success');
+        closeModal('addCharacterModal');
+        loadBook();
+      } catch (error) {
+        showToast('添加失败：' + error.message, 'error');
       }
-      
-      window.location.href = 'story-director.html?bookId=' + bookId;
     });
 
-    function showChapterCharacterSelect() {
-      var modal = document.createElement('div');
-      modal.className = 'modal';
-      modal.id = 'chapterCharacterModal';
-      modal.style.display = 'flex';
-      
-      var characterCheckboxes = bookCharacters.map(function(c, index) {
-        return '<div style="display: flex; align-items: center; gap: 10px; padding: 10px; background: #f5f5f5; border-radius: 10px; margin-bottom: 10px;">' +
-          '<input type="checkbox" id="char_' + index + '" value="' + c.character_id + '" checked>' +
-          '<label for="char_' + index + '" style="flex: 1; cursor: pointer;">' +
-            '<strong>' + c.custom_name + '</strong> (' + getRoleLabel(c.role_type) + ')' +
-          '</label>' +
-        '</div>';
-      }).join('');
-      
-      modal.innerHTML = '<div class="modal-content" style="max-width: 500px;">' +
-        '<h3>🎭 选择本章角色</h3>' +
-        '<p style="color: #666; margin-bottom: 15px;">选择参与本章故事的角色</p>' +
-        '<div style="max-height: 300px; overflow-y: auto;">' + characterCheckboxes + '</div>' +
-        '<div style="display: flex; gap: 10px; margin-top: 15px;">' +
-          '<button class="btn btn-primary" id="confirmChapterChars">✅ 确认生成</button>' +
-          '<button class="btn btn-secondary" onclick="document.getElementById(\'chapterCharacterModal\').remove()">❌ 取消</button>' +
-        '</div>' +
-      '</div>';
-      
-      document.body.appendChild(modal);
-      
-      document.getElementById('confirmChapterChars').addEventListener('click', async function() {
-        var selectedChars = [];
-        var checkboxes = document.querySelectorAll('#chapterCharacterModal input[type="checkbox"]:checked');
-        checkboxes.forEach(function(cb) {
-          var char = bookCharacters.find(function(c) { return c.character_id === cb.value; });
-          if (char) selectedChars.push(char);
-        });
-        
-        if (selectedChars.length === 0) {
-          showToast('请至少选择一个角色', 'error');
-          return;
-        }
-        
-        document.getElementById('chapterCharacterModal').remove();
-        pendingChapterChars = selectedChars;
-        showPlotModal();
-      });
-    }
+    document.getElementById('prevBtn').addEventListener('click', function() {
+      if (currentChapterIndex > 0) {
+        selectChapter(currentChapterIndex - 1);
+      }
+    });
+
+    document.getElementById('nextBtn').addEventListener('click', function() {
+      if (currentChapterIndex < chapters.length - 1) {
+        selectChapter(currentChapterIndex + 1);
+      }
+    });
+
+    document.getElementById('promptBtn').addEventListener('click', function() {
+      document.getElementById('promptContent').textContent = currentPrompt;
+      document.getElementById('promptModal').classList.add('active');
+    });
+
+    document.getElementById('generateBtn').addEventListener('click', async function() {
+      if (bookCharacters.length === 0) {
+        showToast('请先添加角色', 'error');
+        return;
+      }
+
+      if (chapters.length >= 100) {
+        showToast('📚 本书籍已达章节上限', 'error');
+        return;
+      }
+
+      if (currentPrompt) {
+        sessionStorage.setItem('savedPrompt_' + bookId, currentPrompt);
+      }
+
+      window.location.href = 'story-director.html?bookId=' + bookId;
+    });
 
     async function showPlotModal() {
       if (!plotOptions) {
@@ -547,9 +1613,10 @@
           plotOptions = getDefaultPlotOptions();
         }
       }
-      
+
+      selectedPlot = { weather: null, adventureType: null, terrain: null, equipment: null };
       renderPlotOptions();
-      document.getElementById('plotModal').style.display = 'flex';
+      document.getElementById('plotModal').classList.add('active');
     }
 
     function getDefaultPlotOptions() {
@@ -607,16 +1674,20 @@
     function renderPlotCategory(containerId, options, category) {
       var container = document.getElementById(containerId);
       var html = '';
-      
+
       for (var i = 0; i < options.length; i++) {
         var option = options[i];
-        var selected = selectedPlot[category] === option.id ? 'background: var(--lego-yellow); border: 2px solid var(--lego-orange);' : 'background: #f3f4f6; border: 2px solid transparent;';
-        html += '<button onclick="selectPlotOption(\'' + category + '\', \'' + option.id + '\')" style="' + selected + ' border-radius: 8px; padding: 8px; cursor: pointer; display: flex; flex-direction: column; align-items: center; gap: 4px; transition: all 0.2s;">' +
-          '<span style="font-size: 24px;">' + option.icon + '</span>' +
-          '<span style="font-size: 0.75rem; font-weight: bold;">' + option.name + '</span>' +
-          '</button>';
+        var selected = selectedPlot[category] === option.id;
+        var style = selected
+          ? 'background: rgba(255,215,0,0.3); border: 2px solid var(--gold);'
+          : 'background: rgba(255,255,255,0.05); border: 2px solid rgba(255,255,255,0.1);';
+
+        html += '<button onclick="selectPlotOption(\'' + category + '\', \'' + option.id + '\')" style="' + style + ' border-radius: 8px; padding: 8px; cursor: pointer; display: flex; flex-direction: column; align-items: center; gap: 4px; transition: all 0.2s;">' +
+          '<span style="font-size: 20px;">' + option.icon + '</span>' +
+          '<span style="font-size: 0.7rem; font-weight: bold; color: var(--text-primary);">' + option.name + '</span>' +
+        '</button>';
       }
-      
+
       container.innerHTML = html;
     }
 
@@ -625,51 +1696,32 @@
       renderPlotOptions();
     }
 
-    function initPlotModalEvents() {
-      var randomPlotBtn = document.getElementById('randomPlotBtn');
-      var cancelPlotBtn = document.getElementById('cancelPlotBtn');
-      var confirmPlotBtn = document.getElementById('confirmPlotBtn');
-      
-      if (randomPlotBtn) {
-        randomPlotBtn.addEventListener('click', function() {
-          if (!plotOptions) return;
-          selectedPlot.weather = plotOptions.weather[Math.floor(Math.random() * plotOptions.weather.length)].id;
-          selectedPlot.adventureType = plotOptions.adventureType[Math.floor(Math.random() * plotOptions.adventureType.length)].id;
-          selectedPlot.terrain = plotOptions.terrain[Math.floor(Math.random() * plotOptions.terrain.length)].id;
-          selectedPlot.equipment = plotOptions.equipment[Math.floor(Math.random() * plotOptions.equipment.length)].id;
-          renderPlotOptions();
-        });
+    document.getElementById('randomPlotBtn').addEventListener('click', function() {
+      if (!plotOptions) return;
+      selectedPlot.weather = plotOptions.weather[Math.floor(Math.random() * plotOptions.weather.length)].id;
+      selectedPlot.adventureType = plotOptions.adventureType[Math.floor(Math.random() * plotOptions.adventureType.length)].id;
+      selectedPlot.terrain = plotOptions.terrain[Math.floor(Math.random() * plotOptions.terrain.length)].id;
+      selectedPlot.equipment = plotOptions.equipment[Math.floor(Math.random() * plotOptions.equipment.length)].id;
+      renderPlotOptions();
+    });
+
+    document.getElementById('confirmPlotBtn').addEventListener('click', async function() {
+      if (!selectedPlot.weather || !selectedPlot.adventureType || !selectedPlot.terrain || !selectedPlot.equipment) {
+        showToast('请选择所有情节选项，或点击随机选择', 'error');
+        return;
       }
 
-      if (cancelPlotBtn) {
-        cancelPlotBtn.addEventListener('click', function() {
-          document.getElementById('plotModal').style.display = 'none';
-          pendingChapterChars = null;
-        });
-      }
+      closeModal('plotModal');
+      await generateNewChapter();
+    });
 
-      if (confirmPlotBtn) {
-        confirmPlotBtn.addEventListener('click', async function() {
-          if (!selectedPlot.weather || !selectedPlot.adventureType || !selectedPlot.terrain || !selectedPlot.equipment) {
-            showToast('请选择所有情节选项，或点击随机选择', 'error');
-            return;
-          }
-          
-          document.getElementById('plotModal').style.display = 'none';
-          await generateNewChapter(pendingChapterChars, selectedPlot);
-        });
-      }
-    }
-
-    initPlotModalEvents();
-
-    async function generateNewChapter(selectedChars, plotSelection) {
-      var btn = document.getElementById('addChapterBtn');
+    async function generateNewChapter() {
+      var btn = document.getElementById('generateBtn');
       btn.disabled = true;
       btn.textContent = '🔄 生成中...';
-      
+
       try {
-        var charactersData = selectedChars.map(function(c) {
+        var charactersData = bookCharacters.map(function(c) {
           return {
             character_id: c.character_id,
             custom_name: c.custom_name,
@@ -678,173 +1730,82 @@
             speaking_style: c.speaking_style || '正常'
           };
         });
-        
+
         var previousSummary = null;
         var previousPuzzle = null;
-        var previousAnswer = null;
-        var chapterItems = document.querySelectorAll('.chapter-item');
-        var currentChapterCount = chapterItems.length;
-        
-        if (chapterItems.length > 0) {
-          var lastChapterItem = chapterItems[chapterItems.length - 1];
-          var onclickAttr = lastChapterItem.getAttribute('onclick');
-          if (onclickAttr) {
-            var lastChapterId = onclickAttr.match(/'([^']+)'/);
-            if (lastChapterId) {
-              try {
-                var lastChapterData = await fetchAPI('/chapters?id=' + lastChapterId[1] + '&userId=' + userId);
-                if (lastChapterData.chapter && lastChapterData.chapter.content) {
-                  previousSummary = lastChapterData.chapter.content.substring(0, 300);
-                }
-                if (lastChapterData.puzzle) {
-                  var isCorrect = lastChapterData.puzzleRecord ? lastChapterData.puzzleRecord.is_correct === 1 : true;
-                  previousPuzzle = {
-                    question: lastChapterData.puzzle.question,
-                    answer: lastChapterData.puzzle.answer,
-                    isCorrect: isCorrect
-                  };
-                }
-              } catch (e) {
-                console.error('Failed to get previous chapter:', e);
-              }
+
+        if (chapters.length > 0) {
+          var lastChapter = chapters[chapters.length - 1];
+          try {
+            var lastChapterData = await fetchAPI('/chapters?id=' + lastChapter.chapter_id + '&userId=' + userId);
+            if (lastChapterData.chapter && lastChapterData.chapter.content) {
+              previousSummary = lastChapterData.chapter.content.substring(0, 300);
             }
+            if (lastChapterData.puzzle) {
+              var isCorrect = lastChapterData.puzzleRecord ? lastChapterData.puzzleRecord.is_correct === 1 : true;
+              previousPuzzle = {
+                question: lastChapterData.puzzle.question,
+                answer: lastChapterData.puzzle.answer,
+                isCorrect: isCorrect
+              };
+            }
+          } catch (e) {
+            console.error('Failed to get previous chapter:', e);
           }
         }
-        
+
         var requestBody = {
           characters: charactersData,
           plot: '冒险之旅',
-          chapter: (currentChapterCount + 1),
+          chapter: chapters.length + 1,
           chapterCharacters: charactersData,
           previousSummary: previousSummary,
-          previousPuzzle: previousPuzzle
+          previousPuzzle: previousPuzzle,
+          plotSelection: selectedPlot
         };
-        
-        if (plotSelection) {
-          requestBody.plotSelection = plotSelection;
-        }
-        
+
         var storyData = await fetchAPI('/story', {
           method: 'POST',
           body: requestBody
         });
-        
+
         var chapterData = {
           bookId: bookId,
           title: storyData.title || '新章节',
           content: storyData.content
         };
-        
+
         if (storyData.puzzle) {
           chapterData.puzzle = storyData.puzzle;
         }
-        
+
         await fetchAPI('/chapters', {
           method: 'POST',
           body: chapterData
         });
-        
+
         showToast('章节生成成功！🎉', 'success');
-        loadBook();
-        
+
         if (storyData.prompt) {
-          document.getElementById('promptCard').style.display = 'block';
-          document.getElementById('promptContent').querySelector('pre').textContent = storyData.prompt;
+          currentPrompt = storyData.prompt;
+          document.getElementById('promptBtn').style.display = 'block';
         }
+
+        loadBook();
       } catch (error) {
         showToast('生成失败：' + error.message, 'error');
       } finally {
         btn.disabled = false;
-        btn.textContent = '➕ 添加章节';
+        btn.textContent = '✨ 生成下一章';
       }
     }
 
-    function readChapter(chapterId) {
-      loadChapterContent(chapterId);
+    function showToast(msg) {
+      var toast = document.getElementById('toast');
+      toast.textContent = msg;
+      toast.classList.add('show');
+      setTimeout(function() { toast.classList.remove('show'); }, 2000);
     }
-
-    async function loadChapterContent(chapterId) {
-      try {
-        var data = await fetchAPI('/chapters?id=' + chapterId);
-        var chapter = data.chapter;
-        
-        var highlightedContent = highlightKeywords(chapter.content, bookCharacters);
-        
-        document.getElementById('chapterContentCard').style.display = 'block';
-        document.getElementById('chapterContentDisplay').innerHTML = 
-          '<h3 style="color: var(--lego-blue); margin-bottom: 15px;">第' + chapter.chapter_number + '章：' + chapter.title + '</h3>' +
-          '<p style="text-align: justify; line-height: 2;">' + highlightedContent + '</p>' +
-          (chapter.has_puzzle ? '<p style="text-align: center; margin-top: 20px;"><a href="adventure.html?chapterId=' + chapterId + '" class="btn btn-primary">🧩 去解密</a></p>' : '');
-        
-        document.getElementById('chapterContentCard').scrollIntoView({ behavior: 'smooth' });
-      } catch (error) {
-        showToast('加载章节失败：' + error.message, 'error');
-      }
-    }
-
-    function escapeRegex(string) {
-      return string.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
-    }
-
-    function highlightKeywords(content, characters) {
-      var keywords = [];
-      characters.forEach(function(char) {
-        if (char.custom_name) {
-          keywords.push({
-            text: char.custom_name,
-            role: char.role_type
-          });
-        }
-      });
-      
-      var actionWords = ['飞向', '跳跃', '奔跑', '战斗', '探索', '发现', '拯救', '追逐', '攀爬', '游泳', '飞翔', '旋转', '冲刺', '躲闪', '攻击', '防御', '寻找', '收集', '建造', '修复'];
-      actionWords.forEach(function(word) {
-        keywords.push({ text: word, type: 'action' });
-      });
-      
-      var emotionWords = ['开心', '快乐', '勇敢', '害怕', '兴奋', '紧张', '感动', '惊讶', '愤怒', '悲伤', '期待', '满足', '自豪', '担心', '安心', '激动', '欣慰', '坚定', '犹豫'];
-      emotionWords.forEach(function(word) {
-        keywords.push({ text: word, type: 'emotion' });
-      });
-      
-      var locationWords = ['城堡', '森林', '太空', '海底', '沙漠', '雪山', '火山', '洞穴', '城市', '村庄', '花园', '岛屿', '山脉', '河流', '星空', '云层', '迷宫', '宝藏', '遗迹', '基地'];
-      locationWords.forEach(function(word) {
-        keywords.push({ text: word, type: 'location' });
-      });
-      
-      keywords.sort(function(a, b) { return b.text.length - a.text.length; });
-      
-      keywords.forEach(function(kw) {
-        var regex = new RegExp('(' + escapeRegex(kw.text) + ')', 'g');
-        var highlightClass;
-        if (kw.role) {
-          highlightClass = 'keyword-highlight keyword-' + kw.role;
-        } else if (kw.type === 'action') {
-          highlightClass = 'keyword-highlight keyword-action';
-        } else if (kw.type === 'emotion') {
-          highlightClass = 'keyword-highlight keyword-emotion';
-        } else if (kw.type === 'location') {
-          highlightClass = 'keyword-highlight keyword-location';
-        }
-        if (highlightClass) {
-          content = content.replace(regex, '<span class="' + highlightClass + '">$1</span>');
-        }
-      });
-      
-      return content;
-    }
-
-    document.getElementById('promptHeader').addEventListener('click', function() {
-      var content = document.getElementById('promptContent');
-      var toggle = document.getElementById('promptToggle');
-      if (content.style.display === 'none') {
-        content.style.display = 'block';
-        toggle.textContent = '▲ 点击收起';
-      } else {
-        content.style.display = 'none';
-        toggle.textContent = '▼ 点击展开';
-      }
-    });
   </script>
 </body>
 </html>
