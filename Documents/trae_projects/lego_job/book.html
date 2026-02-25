@@ -305,6 +305,13 @@
         }
         
         document.getElementById('shareBtn').href = 'share.html?bookId=' + bookId;
+        
+        var savedPrompt = sessionStorage.getItem('savedPrompt_' + bookId);
+        if (savedPrompt) {
+          document.getElementById('promptCard').style.display = 'block';
+          document.getElementById('promptContent').querySelector('pre').textContent = savedPrompt;
+          sessionStorage.removeItem('savedPrompt_' + bookId);
+        }
       } catch (error) {
         showToast('加载失败：' + error.message, 'error');
       }
@@ -474,6 +481,11 @@
       if (chapterCount >= 100) {
         showToast('📚 本书籍已达章节上限，请创建新书籍', 'error');
         return;
+      }
+      
+      var promptContent = document.getElementById('promptContent').querySelector('pre').textContent;
+      if (promptContent) {
+        sessionStorage.setItem('savedPrompt_' + bookId, promptContent);
       }
       
       window.location.href = 'story-director.html?bookId=' + bookId;

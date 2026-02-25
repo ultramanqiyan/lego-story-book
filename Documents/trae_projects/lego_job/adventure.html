@@ -194,8 +194,9 @@
       
       document.getElementById('puzzleQuestion').textContent = puzzle.question;
       document.getElementById('puzzleOptions').innerHTML = options.map(function(opt, i) {
-        return '<div class="puzzle-option" onclick="selectOption(' + i + ', \'' + opt.charAt(0) + '\')">' +
-          '<span style="margin-right: 10px; font-weight: bold;">' + String.fromCharCode(65 + i) + '.</span>' +
+        var answerLetter = String.fromCharCode(65 + i);
+        return '<div class="puzzle-option" onclick="selectOption(' + i + ', \'' + answerLetter + '\')">' +
+          '<span style="margin-right: 10px; font-weight: bold;">' + answerLetter + '.</span>' +
           opt +
         '</div>';
       }).join('');
