@@ -158,7 +158,7 @@
 
     .book-title {
       font-family: var(--font-title);
-      font-size: 1.2rem;
+      font-size: 0.5rem;
       font-weight: 700;
       background: linear-gradient(135deg, #fff 0%, var(--gold) 50%, #ff9800 100%);
       -webkit-background-clip: text;
@@ -387,7 +387,7 @@
       flex-direction: column;
       padding: 15px;
       min-width: 0;
-      overflow-y: auto;
+      overflow: hidden;
     }
 
     .story-area {
@@ -399,6 +399,7 @@
       flex-direction: column;
       gap: 12px;
       flex: 1;
+      overflow: hidden;
     }
 
     .story-header {
@@ -457,27 +458,66 @@
       font-size: 1rem;
       line-height: 1.9;
       color: var(--text-primary);
-      overflow-y: auto;
-      padding-right: 10px;
+      overflow: hidden;
+      position: relative;
     }
 
-    .story-content::-webkit-scrollbar {
-      width: 4px;
+    .story-page {
+      display: none;
+      height: 100%;
+      overflow: hidden;
     }
 
-    .story-content::-webkit-scrollbar-track {
-      background: rgba(255,255,255,0.05);
-      border-radius: 2px;
+    .story-page.active {
+      display: block;
     }
 
-    .story-content::-webkit-scrollbar-thumb {
-      background: rgba(255,215,0,0.3);
-      border-radius: 2px;
-    }
-
-    .story-content p {
-      margin-bottom: 16px;
+    .story-page p {
+      margin-bottom: 12px;
       text-indent: 2em;
+    }
+
+    .page-nav {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 15px;
+      padding: 10px 0;
+      border-top: 1px solid rgba(255,255,255,0.1);
+      margin-top: 10px;
+    }
+
+    .page-nav-btn {
+      width: 36px;
+      height: 36px;
+      border-radius: 50%;
+      border: 2px solid rgba(255,215,0,0.3);
+      background: rgba(255,215,0,0.1);
+      color: var(--gold);
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 14px;
+      transition: all 0.3s ease;
+    }
+
+    .page-nav-btn:hover:not(:disabled) {
+      background: rgba(255,215,0,0.2);
+      border-color: var(--gold);
+      box-shadow: 0 0 10px rgba(255,215,0,0.3);
+    }
+
+    .page-nav-btn:disabled {
+      opacity: 0.3;
+      cursor: not-allowed;
+    }
+
+    .page-info {
+      font-size: 0.85rem;
+      color: var(--text-secondary);
+      min-width: 60px;
+      text-align: center;
     }
 
     .char-name { color: #f87171; font-weight: 600; }
@@ -1078,6 +1118,11 @@
           <div class="story-content" id="storyContent">
             <p style="text-align: center; color: var(--text-secondary);">请从左侧选择一个章节开始阅读</p>
           </div>
+          <div class="page-nav" id="pageNav" style="display: none;">
+            <button class="page-nav-btn" id="prevPageBtn" disabled>←</button>
+            <span class="page-info" id="pageInfo">1 / 1</span>
+            <button class="page-nav-btn" id="nextPageBtn">→</button>
+          </div>
         </div>
       </section>
 
@@ -1221,6 +1266,9 @@
     var allCharacters = [];
     var editingCharacterId = null;
     var currentPrompt = '';
+    var currentContent = '';
+    var contentPages = [];
+    var currentPageIndex = 0;
     var emojis = ['🧝‍♀️', '⚔️', '🧙‍♂️', '🔨', '💰', '👿', '🗡️', '👨‍🌾', '🦸', '👸', '🤴', '🧛'];
 
     if (bookId) {
@@ -1342,20 +1390,102 @@
         var data = await fetchAPI('/chapters?id=' + chapter.chapter_id);
         var content = data.chapter.content;
         var highlighted = highlightKeywords(content);
-
-        var html = '<p>' + highlighted.replace(/\n/g, '</p><p>') + '</p>';
-
+        currentContent = '<p>' + highlighted.replace(/\n/g, '</p><p>') + '</p>';
+        currentContent = currentContent.replace(/<p><\/p>/g, '');
+        
+        contentPages = [currentContent];
+        currentPageIndex = 0;
+        
         if (data.chapter.has_puzzle) {
-          html += '<p style="text-align: center; margin-top: 20px;"><a href="adventure.html?chapterId=' + chapter.chapter_id + '" class="generate-btn" style="text-decoration: none; display: inline-block;">🧩 去解密</a></p>';
+          var puzzleBtn = '<p style="text-align: center; margin-top: 20px;"><a href="adventure.html?chapterId=' + chapter.chapter_id + '" class="generate-btn" style="text-decoration: none; display: inline-block;">🧩 去解密</a></p>';
+          contentPages[contentPages.length - 1] += puzzleBtn;
         }
-
-        document.getElementById('storyContent').innerHTML = html;
+        
+        renderCurrentPage();
+        
+        setTimeout(function() {
+          checkOverflowAndSplit();
+        }, 100);
       } catch (error) {
         document.getElementById('storyContent').innerHTML = '<p style="text-align: center; color: #f87171;">加载失败：' + error.message + '</p>';
+        document.getElementById('pageNav').style.display = 'none';
       }
 
       renderChapters();
     }
+
+    function checkOverflowAndSplit() {
+      var container = document.getElementById('storyContent');
+      var content = container.innerHTML;
+      
+      var containerHeight = container.clientHeight;
+      var contentHeight = container.scrollHeight;
+      
+      if (contentHeight <= containerHeight + 5) {
+        document.getElementById('pageNav').style.display = 'none';
+        return;
+      }
+
+      var paragraphs = content.split('</p>');
+      var pages = [];
+      var currentPage = '';
+      var tempDiv = document.createElement('div');
+      tempDiv.style.cssText = 'position: absolute; visibility: hidden; width: ' + (container.clientWidth - 20) + 'px; font-size: 1rem; line-height: 1.9; padding: 0;';
+      document.body.appendChild(tempDiv);
+
+      for (var i = 0; i < paragraphs.length; i++) {
+        var p = paragraphs[i];
+        if (p.trim() === '') continue;
+        
+        var fullP = p + '</p>';
+        tempDiv.innerHTML = currentPage + fullP;
+        
+        if (tempDiv.scrollHeight > containerHeight - 10 && currentPage !== '') {
+          pages.push(currentPage);
+          currentPage = fullP;
+        } else {
+          currentPage += fullP;
+        }
+      }
+
+      document.body.removeChild(tempDiv);
+
+      if (currentPage !== '') {
+        pages.push(currentPage);
+      }
+
+      if (pages.length > 1) {
+        contentPages = pages;
+        currentPageIndex = 0;
+        renderCurrentPage();
+        document.getElementById('pageNav').style.display = 'flex';
+      } else {
+        document.getElementById('pageNav').style.display = 'none';
+      }
+    }
+
+    function renderCurrentPage() {
+      var container = document.getElementById('storyContent');
+      container.innerHTML = contentPages[currentPageIndex] || '<p>暂无内容</p>';
+      
+      document.getElementById('pageInfo').textContent = (currentPageIndex + 1) + ' / ' + contentPages.length;
+      document.getElementById('prevPageBtn').disabled = currentPageIndex === 0;
+      document.getElementById('nextPageBtn').disabled = currentPageIndex >= contentPages.length - 1;
+    }
+
+    document.getElementById('prevPageBtn').addEventListener('click', function() {
+      if (currentPageIndex > 0) {
+        currentPageIndex--;
+        renderCurrentPage();
+      }
+    });
+
+    document.getElementById('nextPageBtn').addEventListener('click', function() {
+      if (currentPageIndex < contentPages.length - 1) {
+        currentPageIndex++;
+        renderCurrentPage();
+      }
+    });
 
     function highlightKeywords(content) {
       var keywords = [];
