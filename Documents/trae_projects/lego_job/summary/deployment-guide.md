@@ -4,47 +4,169 @@
 
 | 项目名称 | 乐高故事书 |
 |----------|------------|
-| 文档版本 | V1.0 |
-| 编写日期 | 2026年2月25日 |
+| 文档版本 | V2.0 |
+| 编写日期 | 2026年2月26日 |
 | 文档状态 | 正式发布 |
 
 ---
 
-## 一、部署概述
+## 一、快速开始（5分钟部署）
 
-### 1.1 部署架构
+本章节提供最简化的部署步骤，帮助您快速完成项目部署。详细说明请参考后续章节。
 
-乐高故事书项目采用现代化的云原生部署架构，基于Cloudflare平台实现全球边缘部署。这种架构具有高可用、高性能、低成本的特点，非常适合面向全球用户的Web应用。
+### 1.1 前置条件检查
 
-**整体架构**由前端静态资源托管、后端无服务器函数、边缘数据库三个核心组件构成。前端静态资源托管在Cloudflare Pages上，通过全球CDN网络分发到用户。后端无服务器函数运行在Cloudflare Pages Functions环境中，在边缘节点执行业务逻辑。边缘数据库使用Cloudflare D1服务，数据存储在离用户最近的位置。
+在开始部署前，请确保您已具备以下条件：
 
-**架构优势**包括以下几个方面：一是全球加速，Cloudflare在全球拥有数百个边缘节点，用户访问时自动连接到最近的节点，大大降低延迟；二是自动扩展，无服务器架构根据请求量自动扩展资源，无需手动配置服务器；三是高可用性，Cloudflare平台提供九十九点九九的可用性保证，确保服务稳定运行；四是成本效益，按使用量计费，无请求不计费，适合流量波动较大的应用。
+**必需条件**：
+- Node.js 18.0.0 或更高版本
+- npm 包管理器
+- Git 版本控制工具
+- Cloudflare 账户（免费账户即可）
+- GitHub 账户（用于代码托管）
 
-**架构限制**也需要了解：一是执行时间限制，无服务器函数的执行时间有限制，需要优化代码效率；二是数据库限制，D1数据库有存储容量和查询次数的限制，需要合理设计数据结构；三是网络限制，部分地区的网络可能存在访问限制，需要考虑备用方案。
+**验证命令**：
+```bash
+# 检查 Node.js 版本
+node --version
+# 预期输出：v18.x.x 或更高
 
-### 1.2 部署环境
+# 检查 npm 版本
+npm --version
+# 预期输出：9.x.x 或更高
 
-项目部署分为开发环境、测试环境和生产环境三种。
+# 检查 Git 版本
+git --version
+# 预期输出：git version 2.x.x
+```
 
-**开发环境**用于日常开发和调试。开发环境在开发者本地机器上运行，使用Wrangler工具模拟Cloudflare环境。开发环境使用本地D1数据库，数据与生产环境隔离。开发环境支持热重载，代码修改后自动刷新页面。
+### 1.2 克隆项目代码
 
-**测试环境**用于集成测试和用户验收测试。测试环境部署在Cloudflare Pages的预览分支上，每次代码推送后自动创建预览环境。测试环境使用独立的D1数据库，数据与生产环境隔离。测试环境的URL包含预览ID，便于区分不同版本。
+```bash
+# 克隆项目仓库
+git clone https://github.com/ultramanqiyan/lego-story-book.git
 
-**生产环境**用于对外提供服务。生产环境部署在Cloudflare Pages的主分支上，使用正式域名访问。生产环境使用生产级D1数据库，包含真实用户数据。生产环境的变更需要经过严格的审核流程。
+# 进入项目目录
+cd lego-story-book
 
-### 1.3 部署流程
+# 安装依赖
+npm install
+```
 
-部署流程定义了从代码提交到服务上线的完整过程。
+### 1.3 登录 Cloudflare
 
-**代码提交阶段**是部署流程的起点。开发者在本地完成代码开发和测试后，将代码提交到GitHub仓库。提交信息需要清晰描述本次变更的内容，便于追溯。
+```bash
+# 安装 Wrangler CLI（如果未安装）
+npm install -g wrangler
 
-**自动构建阶段**在代码提交后自动触发。Cloudflare Pages检测到代码变更后，自动拉取代码、安装依赖、执行构建。构建过程包括静态资源编译、代码压缩、资源优化等步骤。
+# 登录 Cloudflare 账户
+npx wrangler login
+```
 
-**自动测试阶段**在构建完成后执行。系统自动运行单元测试和集成测试，验证代码质量。如果测试失败，部署流程终止，开发者需要修复问题后重新提交。
+执行登录命令后，浏览器会自动打开 Cloudflare 登录页面，请完成授权。
 
-**预览部署阶段**在测试通过后执行。系统创建预览环境，生成预览URL。开发者可以通过预览URL查看变更效果，进行最终确认。
+### 1.4 创建数据库
 
-**生产部署阶段**在预览确认后执行。对于主分支的代码，系统自动部署到生产环境。生产部署完成后，用户可以访问最新版本的服务。
+```bash
+# 创建 D1 数据库
+npx wrangler d1 create lego-story-db
+```
+
+**预期输出**：
+```
+✅ Successfully created DB 'lego-story-db'!
+
+[[d1_databases]]
+binding = "DB"
+database_name = "lego-story-db"
+database_id = "xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx"
+```
+
+**重要**：请记录输出的 `database_id`，后续配置需要使用。
+
+### 1.5 配置 wrangler.toml
+
+打开项目根目录的 `wrangler.toml` 文件，将 `database_id` 替换为您刚才创建的数据库ID：
+
+```toml
+name = "lego-story-book"
+compatibility_date = "2024-01-01"
+pages_build_output_dir = "."
+
+[[d1_databases]]
+binding = "DB"
+database_name = "lego-story-db"
+database_id = "您的数据库ID"  # 替换这里
+
+[vars]
+ENVIRONMENT = "development"
+
+[env.production]
+name = "lego-story-book"
+
+[[env.production.d1_databases]]
+binding = "DB"
+database_name = "lego-story-db"
+database_id = "您的数据库ID"  # 替换这里
+
+[env.production.vars]
+ENVIRONMENT = "production"
+```
+
+### 1.6 执行数据库迁移
+
+```bash
+# 执行本地数据库迁移（用于本地开发测试）
+npx wrangler d1 migrations apply lego-story-db --local
+
+# 执行远程数据库迁移（用于生产环境）
+npx wrangler d1 migrations apply lego-story-db
+```
+
+**预期输出**：
+```
+🌀 Executing on local database:
+🚣 Executed 3 migrations in XXXms.
+```
+
+### 1.7 配置环境变量
+
+在 Cloudflare Pages 项目设置中配置以下环境变量：
+
+| 变量名 | 值 | 说明 |
+|--------|-----|------|
+| DOUBAO_API_KEY | 您的API密钥 | 豆包大语言模型API |
+| SEEDREAM_API_KEY | 您的API密钥 | 火山引擎图片生成API |
+| SILICONFLOW_API_KEY | 您的API密钥 | SiliconFlow语音识别API |
+
+**配置步骤**：
+1. 登录 Cloudflare Dashboard
+2. 进入 Workers & Pages > lego-story-book
+3. 点击 Settings > Environment variables
+4. 点击 Add variable，逐个添加上述变量
+5. 分别配置 Production 和 Preview 环境
+
+### 1.8 部署项目
+
+```bash
+# 部署到 Cloudflare Pages
+npx wrangler pages deploy .
+```
+
+**预期输出**：
+```
+✨ Success! Uploaded 1 files and Deployed!
+✨ Deployment URL: https://lego-story-book.pages.dev
+```
+
+### 1.9 验证部署
+
+访问部署URL，检查以下功能：
+
+1. **首页访问**：打开 `https://您的项目名.pages.dev`
+2. **用户登录**：输入用户名测试登录功能
+3. **创建书籍**：测试创建新书籍功能
+4. **生成故事**：测试AI故事生成功能
 
 ---
 
@@ -52,382 +174,917 @@
 
 ### 2.1 开发环境配置
 
-开发环境是开发者进行日常开发工作的基础环境，需要正确配置才能顺利进行开发。
+#### 2.1.1 Node.js 安装
 
-**操作系统要求**支持主流操作系统，包括Windows、macOS和Linux。不同操作系统的配置方式略有差异，但核心工具相同。建议使用最新版本的操作系统，确保工具兼容性。
+**Windows 系统**：
+1. 访问 https://nodejs.org/
+2. 下载 LTS 版本安装包
+3. 运行安装程序，按提示完成安装
+4. 打开命令提示符，验证安装
 
-**Node.js环境**是开发的核心依赖。项目需要Node.js版本十八或更高版本。可以通过Node.js官网下载安装包，或使用版本管理工具安装。版本管理工具推荐使用nvm或fnm，便于切换不同版本的Node.js。
+**macOS 系统**：
+```bash
+# 使用 Homebrew 安装
+brew install node
 
-安装Node.js后，需要验证安装是否成功。在命令行中执行node命令查看版本号，如果显示版本号则安装成功。同时需要验证npm包管理器是否可用，执行npm命令查看版本号。
+# 或使用 nvm 安装（推荐）
+curl -o- https://raw.githubusercontent.com/nvm-sh/nvm/v0.39.0/install.sh | bash
+nvm install 18
+nvm use 18
+```
 
-**Wrangler工具**是Cloudflare的开发和部署工具。Wrangler用于本地开发、数据库管理、部署发布等操作。可以通过npm全局安装Wrangler工具。安装后需要登录Cloudflare账户进行认证。
+**Linux 系统**：
+```bash
+# Ubuntu/Debian
+curl -fsSL https://deb.nodesource.com/setup_18.x | sudo -E bash -
+sudo apt-get install -y nodejs
 
-**Git版本控制**是代码管理的基础工具。项目使用Git进行版本控制，代码托管在GitHub上。需要安装Git工具，并配置用户信息。建议配置SSH密钥，便于代码推送。
+# CentOS/RHEL
+curl -fsSL https://rpm.nodesource.com/setup_18.x | sudo bash -
+sudo yum install -y nodejs
+```
 
-**代码编辑器**推荐使用Visual Studio Code。VS Code提供了丰富的插件生态，支持JavaScript、HTML、CSS等语言的智能提示和语法高亮。推荐安装ESLint插件进行代码规范检查，安装Prettier插件进行代码格式化。
+#### 2.1.2 Wrangler CLI 安装
 
-### 2.2 测试环境配置
+```bash
+# 全局安装 Wrangler
+npm install -g wrangler
 
-测试环境用于集成测试和用户验收测试，需要与生产环境保持一致。
+# 验证安装
+npx wrangler --version
+# 预期输出：⛅️ wrangler 3.x.x
+```
 
-**Cloudflare账户**是使用Cloudflare服务的前提。需要注册Cloudflare账户，并开通Pages和D1服务。免费套餐可以满足开发和测试需求，生产环境可能需要付费套餐。
+#### 2.1.3 本地开发环境启动
 
-**GitHub仓库**用于代码托管和持续集成。需要在GitHub上创建项目仓库，并将代码推送到仓库。Cloudflare Pages需要授权访问GitHub仓库，实现自动部署。
+```bash
+# 进入项目目录
+cd lego-story-book
 
-**环境变量配置**用于存储敏感信息和配置参数。在Cloudflare Pages的项目设置中配置环境变量。环境变量包括API密钥、数据库连接信息等敏感数据。不同环境使用不同的环境变量值。
+# 安装项目依赖
+npm install
 
-**数据库初始化**需要在测试环境创建数据库并执行迁移。通过Wrangler命令创建D1数据库，记录数据库ID。执行数据库迁移脚本，创建数据表结构。导入测试数据，用于功能测试。
+# 启动本地开发服务器
+npm run dev
+```
 
-### 2.3 生产环境配置
+**预期输出**：
+```
+Ready on http://localhost:8788
+```
 
-生产环境是对外服务的正式环境，配置需要更加谨慎。
+访问 `http://localhost:8788` 即可看到项目首页。
 
-**域名配置**是生产环境的重要配置。需要将自定义域名绑定到Cloudflare Pages项目。在域名服务商处配置DNS解析，指向Cloudflare的服务器。Cloudflare自动配置SSL证书，启用HTTPS访问。
+### 2.2 Cloudflare 账户准备
 
-**性能优化**配置确保生产环境的性能。启用Cloudflare的CDN加速功能，缓存静态资源。配置页面规则，优化缓存策略。启用HTTP/3协议，提高传输效率。
+#### 2.2.1 注册 Cloudflare 账户
 
-**安全配置**确保生产环境的安全。配置Cloudflare的WAF规则，防止常见攻击。启用DDoS防护，保护服务可用性。配置访问控制，限制敏感接口的访问。
+1. 访问 https://dash.cloudflare.com/sign-up
+2. 输入邮箱和密码
+3. 验证邮箱地址
+4. 完成账户注册
 
-**监控配置**用于监控生产环境的状态。启用Cloudflare的分析功能，监控访问量和性能指标。配置告警规则，在异常时发送通知。集成第三方监控服务，获取更详细的监控数据。
+#### 2.2.2 开通 Pages 服务
 
-### 2.4 依赖安装说明
+1. 登录 Cloudflare Dashboard
+2. 点击左侧菜单 "Workers & Pages"
+3. 点击 "Create application"
+4. 选择 "Pages" 标签
+5. 点击 "Connect to Git"
 
-项目依赖包括运行时依赖和开发依赖，需要正确安装。
+#### 2.2.3 开通 D1 数据库服务
 
-**运行时依赖**是项目运行所需的包。运行时依赖定义在package.json的dependencies字段中。安装运行时依赖使用npm install命令。运行时依赖包括各种工具库和框架。
+1. 在 Cloudflare Dashboard 中
+2. 点击左侧菜单 "Workers & Pages" > "D1 SQL Database"
+3. 点击 "Create database"
+4. 输入数据库名称并创建
 
-**开发依赖**是开发和构建所需的包。开发依赖定义在package.json的devDependencies字段中。安装开发依赖使用npm install命令，会同时安装运行时依赖。开发依赖包括测试框架、构建工具、代码检查工具等。
+### 2.3 第三方服务账户准备
 
-**依赖版本管理**确保依赖版本的稳定性。package-lock.json文件记录了确切的依赖版本，确保不同环境安装相同版本的依赖。提交代码时需要包含package-lock.json文件。
+本项目使用以下第三方服务，需要分别注册并获取API密钥。
 
-**依赖更新策略**需要谨慎处理。定期更新依赖可以获取新功能和安全修复，但也可能引入不兼容的变更。建议使用npm outdated命令检查过时的依赖，使用npm update命令更新依赖。重大版本更新需要充分测试后再进行。
+#### 2.3.1 火山引擎（豆包API + Seedream API）
+
+**注册步骤**：
+1. 访问 https://www.volcengine.com/
+2. 点击右上角 "登录/注册"
+3. 完成账户注册和实名认证
+
+**获取 API 密钥**：
+1. 登录火山引擎控制台
+2. 访问 https://console.volcengine.com/ark
+3. 点击左侧菜单 "API Key管理"
+4. 点击 "创建新的API Key"
+5. 复制并保存API Key
+
+**豆包大语言模型配置**：
+1. 在 ARK 控制台中
+2. 点击 "模型推理" > "推理"
+3. 创建接入点，选择模型 `doubao-1-5-pro-32k-250115`
+4. 记录接入点ID
+
+**Seedream 图片生成配置**：
+- Seedream 使用相同的火山引擎API Key
+- 模型名称：`doubao-seedream-4-0-250828`
+
+#### 2.3.2 SiliconFlow（语音识别）
+
+**注册步骤**：
+1. 访问 https://cloud.siliconflow.cn/
+2. 点击 "注册/登录"
+3. 完成账户注册
+
+**获取 API 密钥**：
+1. 登录 SiliconFlow 控制台
+2. 点击左侧菜单 "API密钥"
+3. 点击 "创建新密钥"
+4. 复制并保存API Key
+
+**语音识别模型**：
+- 模型名称：`FunAudioLLM/SenseVoiceSmall`
 
 ---
 
-## 三、Cloudflare Pages部署
+## 三、数据库配置详解
 
-### 3.1 项目配置
+### 3.1 数据库创建
 
-Cloudflare Pages项目配置决定了部署行为和运行环境。
+#### 3.1.1 创建命令
 
-**项目创建**是部署的第一步。在Cloudflare控制台中创建新的Pages项目。选择连接GitHub仓库，授权访问项目代码。选择要部署的分支，通常选择main分支作为生产分支。
+```bash
+npx wrangler d1 create lego-story-db
+```
 
-**构建设置**定义了构建过程。构建命令指定如何构建项目，对于本项目使用默认设置即可。构建输出目录指定构建产物的位置，本项目输出目录为根目录。根目录指定代码的根目录位置，如果代码在子目录中需要设置。
+#### 3.1.2 预期输出详解
 
-**环境变量**配置项目的运行参数。在项目设置中添加环境变量，变量名和值根据项目需要设置。敏感变量如API密钥需要加密存储。不同环境可以设置不同的环境变量。
+```
+✅ Successfully created DB 'lego-story-db'!
 
-**分支配置**定义不同分支的部署行为。生产分支部署到生产环境，使用正式域名访问。预览分支部署到预览环境，使用预览URL访问。可以配置特定分支跳过部署。
+[[d1_databases]]
+binding = "DB"
+database_name = "lego-story-db"
+database_id = "649c105f-87c8-4f75-82df-c9222ae0afcb"
+```
 
-### 3.2 构建配置
+**输出说明**：
+- `binding`：代码中访问数据库的变量名，固定为 "DB"
+- `database_name`：数据库名称，用于命令行操作
+- `database_id`：数据库唯一标识，用于配置文件
 
-构建配置决定了代码如何转换为可部署的产物。
+#### 3.1.3 查看已有数据库
 
-**构建命令**指定构建过程执行的命令。本项目使用Cloudflare Pages的默认构建行为，无需额外构建步骤。如果需要构建，可以在package.json中定义构建脚本。
+```bash
+npx wrangler d1 list
+```
 
-**输出目录**指定构建产物的位置。本项目的静态资源直接放在根目录，输出目录设置为根目录。如果构建产物在子目录中，需要指定正确的输出目录。
+**预期输出**：
+```
+┌─────────────────┬──────────────────────────────────────┐
+│ Name            │ Database ID                          │
+├─────────────────┼──────────────────────────────────────┤
+│ lego-story-db   │ 649c105f-87c8-4f75-82df-c9222ae0afcb │
+└─────────────────┴──────────────────────────────────────┘
+```
 
-**Node.js版本**指定构建环境使用的Node.js版本。可以在项目设置中指定Node.js版本，或通过.nvmrc文件指定。建议使用LTS版本，确保稳定性。
+### 3.2 数据库表结构
 
-**构建缓存**加速构建过程。Cloudflare Pages会缓存依赖安装结果，减少构建时间。如果依赖没有变化，会使用缓存的依赖。可以在项目设置中清除缓存。
+本项目包含以下数据表：
 
-### 3.3 部署步骤
+#### 3.2.1 users 表（用户表）
 
-部署步骤详细描述了从代码提交到服务上线的完整过程。
+| 字段名 | 类型 | 说明 |
+|--------|------|------|
+| user_id | TEXT | 用户ID（主键） |
+| username | TEXT | 用户名 |
+| email | TEXT | 邮箱（可选） |
+| avatar | TEXT | 头像（可选） |
+| parent_id | TEXT | 家长ID（可选） |
+| daily_time_limit | INTEGER | 每日时间限制（分钟） |
+| time_used_today | INTEGER | 今日已用时间（分钟） |
+| created_at | DATETIME | 创建时间 |
+| updated_at | DATETIME | 更新时间 |
 
-**第一步：代码准备**。在本地完成代码开发和测试，确保代码质量。运行本地测试，验证功能正确性。检查代码规范，确保符合项目标准。
+#### 3.2.2 characters 表（人仔表）
 
-**第二步：代码提交**。将代码提交到本地Git仓库，提交信息清晰描述变更内容。将代码推送到GitHub远程仓库，触发自动部署流程。
+| 字段名 | 类型 | 说明 |
+|--------|------|------|
+| character_id | TEXT | 人仔ID（主键） |
+| name | TEXT | 人仔名称 |
+| image_base64 | TEXT | 人仔图片（Base64） |
+| description | TEXT | 描述 |
+| personality | TEXT | 性格特点 |
+| speaking_style | TEXT | 说话方式 |
+| creator_id | TEXT | 创建者ID（system为系统预设） |
+| created_at | DATETIME | 创建时间 |
+| updated_at | DATETIME | 更新时间 |
 
-**第三步：自动构建**。Cloudflare Pages检测到代码推送，自动开始构建过程。拉取代码到构建服务器，安装项目依赖。执行构建命令，生成部署产物。
+#### 3.2.3 books 表（书籍表）
 
-**第四步：自动测试**。构建完成后自动运行测试，验证代码质量。如果测试失败，部署流程终止，需要修复问题后重新提交。
+| 字段名 | 类型 | 说明 |
+|--------|------|------|
+| book_id | TEXT | 书籍ID（主键） |
+| user_id | TEXT | 用户ID（外键） |
+| title | TEXT | 书籍标题 |
+| chapter_count | INTEGER | 章节数量 |
+| status | TEXT | 状态（active/archived） |
+| created_at | DATETIME | 创建时间 |
+| updated_at | DATETIME | 更新时间 |
 
-**第五步：预览部署**。测试通过后创建预览环境，生成预览URL。开发者可以通过预览URL查看变更效果。预览环境保留一段时间后自动清理。
+#### 3.2.4 chapters 表（章节表）
 
-**第六步：生产部署**。对于主分支的代码，自动部署到生产环境。部署完成后更新生产环境的资源。用户访问时获取最新版本的资源。
+| 字段名 | 类型 | 说明 |
+|--------|------|------|
+| chapter_id | TEXT | 章节ID（主键） |
+| book_id | TEXT | 书籍ID（外键） |
+| chapter_number | INTEGER | 章节序号 |
+| title | TEXT | 章节标题 |
+| content | TEXT | 章节内容 |
+| has_puzzle | INTEGER | 是否有谜题（0/1） |
+| created_at | DATETIME | 创建时间 |
 
-### 3.4 域名配置
+#### 3.2.5 puzzles 表（谜题表）
 
-域名配置允许用户使用自定义域名访问服务。
+| 字段名 | 类型 | 说明 |
+|--------|------|------|
+| puzzle_id | TEXT | 谜题ID（主键） |
+| chapter_id | TEXT | 章节ID（外键） |
+| question | TEXT | 谜题问题 |
+| options | TEXT | 选项（JSON数组） |
+| answer | TEXT | 正确答案（A/B/C/D） |
+| hint | TEXT | 提示（可选） |
+| puzzle_type | TEXT | 谜题类型 |
+| created_at | DATETIME | 创建时间 |
 
-**添加域名**是域名配置的第一步。在Cloudflare Pages项目设置中添加自定义域名。输入域名后，Cloudflare会验证域名所有权。如果域名不在Cloudflare上，需要添加DNS记录。
+#### 3.2.6 其他表
 
-**DNS配置**将域名指向Cloudflare服务器。在域名服务商处添加CNAME记录，指向Cloudflare提供的地址。DNS生效需要一定时间，通常几分钟到几小时不等。
+- **book_characters**：书籍角色关联表
+- **puzzle_records**：答题记录表
+- **shares**：分享表
 
-**SSL证书**由Cloudflare自动配置。Cloudflare为自定义域名自动签发SSL证书，启用HTTPS访问。证书自动续期，无需手动管理。建议启用始终使用HTTPS选项，强制HTTPS访问。
+### 3.3 数据库迁移
 
-**域名验证**确保域名配置正确。在浏览器中访问自定义域名，验证是否正常显示。检查SSL证书是否有效，确保HTTPS正常工作。测试各项功能是否正常，确保部署成功。
+#### 3.3.1 迁移文件说明
 
-### 3.5 HTTPS配置
+项目 `migrations` 目录包含以下迁移文件：
 
-HTTPS配置确保数据传输安全，是生产环境的必要配置。
+| 文件名 | 执行顺序 | 说明 |
+|--------|----------|------|
+| 0001_initial_schema.sql | 第1个 | 创建所有基础表结构 |
+| 0002_seed_data.sql | 第2个 | 导入系统预设人份数据 |
+| 0002_add_plot_selection.sql | 第3个 | 添加情节选择功能 |
+| 0004_reset_database.sql | 可选 | 重置数据库（谨慎使用） |
 
-**自动HTTPS**由Cloudflare自动提供。Cloudflare为所有域名自动配置SSL证书，包括pages.dev子域名和自定义域名。证书由受信任的证书颁发机构签发，浏览器信任。
+#### 3.3.2 执行本地迁移
 
-**HTTPS重定向**强制使用HTTPS访问。在Cloudflare的SSL设置中启用始终使用HTTPS选项。用户访问HTTP地址时自动重定向到HTTPS地址。确保所有请求都使用加密传输。
+```bash
+# 执行所有本地迁移
+npx wrangler d1 migrations apply lego-story-db --local
+```
 
-**HSTS配置**增强HTTPS安全性。启用HTTP严格传输安全策略，告诉浏览器始终使用HTTPS。设置合适的max-age值，建议至少六个月。启用includeSubDomains选项，包含所有子域名。
+**预期输出**：
+```
+Migrations to be applied:
+  0001_initial_schema.sql
+  0002_seed_data.sql
+  0002_add_plot_selection.sql
 
-**证书监控**确保证书有效性。Cloudflare自动监控证书状态，在证书即将过期时自动续期。如果证书出现问题，Cloudflare会发送通知。建议定期检查证书状态，确保安全。
+🌀 Executing on local database:
+🚣 Executed 3 migrations in XXXms.
+```
+
+#### 3.3.3 执行远程迁移
+
+```bash
+# 执行所有远程迁移
+npx wrangler d1 migrations apply lego-story-db
+```
+
+**预期输出**：
+```
+Migrations to be applied:
+  0001_initial_schema.sql
+  0002_seed_data.sql
+  0002_add_plot_selection.sql
+
+🌀 Executing on remote database:
+🚣 Executed 3 migrations in XXXms.
+```
+
+#### 3.3.4 验证迁移结果
+
+```bash
+# 查看本地数据库表
+npx wrangler d1 execute lego-story-db --local --command "SELECT name FROM sqlite_master WHERE type='table';"
+
+# 查看远程数据库表
+npx wrangler d1 execute lego-story-db --command "SELECT name FROM sqlite_master WHERE type='table';"
+```
+
+**预期输出**：
+```
+┌────────────────────┐
+│ name               │
+├────────────────────┤
+│ users              │
+│ characters         │
+│ books              │
+│ chapters           │
+│ book_characters    │
+│ puzzles            │
+│ puzzle_records     │
+│ shares             │
+│ _cf_KV             │
+└────────────────────┘
+```
+
+### 3.4 数据库备份与恢复
+
+#### 3.4.1 导出数据库
+
+```bash
+# 导出远程数据库
+npx wrangler d1 export lego-story-db --output backup.sql
+```
+
+#### 3.4.2 导入数据库
+
+```bash
+# 导入到远程数据库
+npx wrangler d1 execute lego-story-db --file backup.sql
+```
 
 ---
 
-## 四、D1数据库配置
+## 四、环境变量配置详解
 
-### 4.1 数据库创建
+### 4.1 环境变量列表
 
-数据库创建是使用D1服务的第一步，需要正确创建和配置数据库。
+本项目需要配置以下环境变量：
 
-**创建数据库**使用Wrangler命令行工具。执行创建数据库命令，指定数据库名称。创建成功后会显示数据库ID，需要记录下来用于后续配置。数据库名称需要唯一，建议使用项目名称加环境名称的方式命名。
+| 变量名 | 必需 | 用途 | 默认值 |
+|--------|------|------|--------|
+| DOUBAO_API_KEY | 是 | 豆包大语言模型API密钥，用于故事生成 | 无 |
+| SEEDREAM_API_KEY | 是 | 火山引擎图片生成API密钥 | 无 |
+| SILICONFLOW_API_KEY | 是 | SiliconFlow语音识别API密钥 | 无 |
+| ENVIRONMENT | 否 | 环境标识 | development |
 
-**查看数据库**可以列出账户下的所有数据库。执行列表命令，显示数据库名称、ID、创建时间等信息。可以查看特定数据库的详细信息，包括数据库大小、表数量等。
+### 4.2 DOUBAO_API_KEY 配置
 
-**数据库配置**将数据库绑定到Pages项目。在Wrangler配置文件中添加数据库绑定，指定绑定名称和数据库ID。绑定名称用于在代码中访问数据库。配置完成后需要重新部署项目。
+#### 4.2.1 用途说明
 
-**权限管理**控制数据库的访问权限。D1数据库默认只能通过绑定的Pages项目访问。不建议直接暴露数据库访问接口，保持数据安全。
+豆包大语言模型API用于：
+- 生成故事内容
+- 生成章节标题
+- 生成谜题问题
 
-### 4.2 数据库迁移
+#### 4.2.2 获取方式
 
-数据库迁移用于管理数据库结构的变更，确保数据库结构的一致性。
+1. 访问火山引擎控制台：https://console.volcengine.com/ark
+2. 点击左侧菜单 "API Key管理"
+3. 点击 "创建新的API Key"
+4. 复制生成的API Key
 
-**迁移文件**定义数据库结构的变更。迁移文件使用SQL语法编写，包含创建表、修改表、插入数据等语句。迁移文件放在migrations目录下，文件名包含版本号和描述。
+#### 4.2.3 配置步骤
 
-**执行迁移**使用Wrangler命令行工具。执行迁移命令，指定数据库名称。Wrangler会按顺序执行未执行的迁移文件。执行成功后会记录迁移历史，避免重复执行。
+**Cloudflare Pages 配置**：
+1. 登录 Cloudflare Dashboard
+2. 进入 Workers & Pages > lego-story-book
+3. 点击 Settings > Environment variables
+4. 点击 Add variable
+5. 输入变量名：`DOUBAO_API_KEY`
+6. 输入变量值：您的API Key
+7. 选择环境：Production 和 Preview
+8. 点击 Save
 
-**迁移历史**记录已执行的迁移。Wrangler维护一个迁移历史表，记录已执行的迁移文件。每次执行迁移前会检查历史，只执行新的迁移文件。
+### 4.3 SEEDREAM_API_KEY 配置
 
-**回滚迁移**在迁移出现问题时恢复数据库。D1目前不支持自动回滚，需要手动编写回滚脚本。建议在执行迁移前备份数据库，便于恢复。
+#### 4.3.1 用途说明
 
-### 4.3 数据库备份
+火山引擎图片生成API用于：
+- 生成人仔头像图片
+- 生成故事配图
 
-数据库备份是数据安全的重要保障，需要定期执行备份操作。
+#### 4.3.2 获取方式
 
-**手动备份**使用Wrangler命令行工具。执行导出命令，将数据库内容导出为SQL文件。SQL文件包含创建表和插入数据的语句，可以用于恢复数据库。建议在重要变更前执行手动备份。
+与 DOUBAO_API_KEY 相同，使用同一个火山引擎API Key。
 
-**自动备份**需要配置定时任务。Cloudflare目前不提供自动备份功能，需要使用外部工具实现。可以编写脚本定期执行备份命令，将备份文件存储到云存储服务。
+#### 4.3.3 配置步骤
 
-**备份存储**需要安全可靠的位置。备份文件包含完整的数据，需要妥善保管。建议使用加密存储，防止数据泄露。保留多个历史备份，便于恢复到不同时间点。
+同 DOUBAO_API_KEY 配置步骤，变量名为 `SEEDREAM_API_KEY`。
 
-**备份验证**确保备份文件可用。定期验证备份文件的完整性，尝试在测试环境恢复。确保备份文件可以成功恢复，避免在需要时发现问题。
+### 4.4 SILICONFLOW_API_KEY 配置
 
-### 4.4 数据库监控
+#### 4.4.1 用途说明
 
-数据库监控帮助了解数据库的运行状态，及时发现和解决问题。
+SiliconFlow语音识别API用于：
+- 语音输入识别
+- 语音转文字
 
-**存储监控**跟踪数据库的存储使用情况。D1数据库有存储容量限制，需要监控使用量。可以在Cloudflare控制台查看数据库大小。如果接近限制，需要清理数据或升级套餐。
+#### 4.4.2 获取方式
 
-**查询监控**跟踪数据库的查询性能。可以在Cloudflare控制台查看查询次数和响应时间。如果查询性能下降，需要优化查询语句或添加索引。
+1. 访问 SiliconFlow 控制台：https://cloud.siliconflow.cn/
+2. 点击左侧菜单 "API密钥"
+3. 点击 "创建新密钥"
+4. 复制生成的API Key
 
-**错误监控**跟踪数据库的错误情况。可以在Cloudflare控制台查看错误日志。如果错误频繁发生，需要检查代码逻辑或数据库状态。
+#### 4.4.3 配置步骤
 
-**告警配置**在异常时发送通知。可以配置Cloudflare的通知规则，在数据库异常时发送邮件通知。建议配置存储空间告警和错误率告警。
+同 DOUBAO_API_KEY 配置步骤，变量名为 `SILICONFLOW_API_KEY`。
 
----
+### 4.5 本地开发环境变量配置
 
-## 五、环境变量配置
+#### 4.5.1 创建本地配置文件
 
-### 5.1 变量说明
+在项目根目录创建 `.dev.vars` 文件：
 
-环境变量用于存储配置参数和敏感信息，不同环境使用不同的变量值。
+```bash
+# 创建 .dev.vars 文件
+cat > .dev.vars << EOF
+DOUBAO_API_KEY=您的豆包API密钥
+SEEDREAM_API_KEY=您的火山引擎API密钥
+SILICONFLOW_API_KEY=您的SiliconFlow API密钥
+EOF
+```
 
-**API密钥变量**存储第三方服务的访问密钥。包括AI服务的API密钥、语音服务的API密钥等。这些密钥是敏感信息，不能暴露在代码中。必须通过环境变量配置，确保安全。
+#### 4.5.2 验证配置
 
-**数据库变量**存储数据库的连接信息。包括数据库ID、绑定名称等。这些信息用于代码中访问数据库。不同环境使用不同的数据库，需要配置不同的变量值。
+启动本地开发服务器后，检查日志确认环境变量已加载：
 
-**功能开关变量**控制功能的开启和关闭。包括是否启用某功能、功能参数等。通过环境变量控制功能，便于灵活配置。可以在不修改代码的情况下调整功能行为。
-
-**环境标识变量**标识当前运行环境。包括环境名称、环境类型等。代码可以根据环境标识执行不同的逻辑。例如，开发环境可以启用调试模式。
-
-### 5.2 配置方法
-
-环境变量的配置方法根据环境类型有所不同。
-
-**Cloudflare Pages配置**在项目设置中添加。进入项目设置页面，找到环境变量部分。添加变量名和变量值，选择应用的环境（生产或预览）。敏感变量可以设置为加密变量，值在控制台不显示。
-
-**本地开发配置**使用开发环境文件。在项目根目录创建.env文件，添加环境变量。Wrangler会自动读取.env文件中的变量。.env文件不应提交到代码仓库，需要添加到忽略列表。
-
-**命令行配置**在执行命令时传递。可以在Wrangler命令中通过参数传递环境变量。这种方式适用于临时测试，不建议长期使用。
-
-**配置验证**确保环境变量配置正确。在代码中打印环境变量值（仅开发环境），验证是否正确读取。在生产环境中通过功能测试验证配置是否生效。
-
-### 5.3 安全管理
-
-环境变量的安全管理至关重要，需要采取多种措施保护敏感信息。
-
-**加密存储**保护敏感变量的值。Cloudflare Pages支持加密变量，值在控制台不显示。加密变量只能通过代码访问，无法在控制台查看。建议所有敏感变量都设置为加密变量。
-
-**访问控制**限制环境变量的访问权限。只有项目管理员可以查看和修改环境变量。普通成员无法访问敏感信息。定期审查访问权限，确保安全。
-
-**变量轮换**定期更换敏感变量的值。API密钥等敏感信息应该定期更换，降低泄露风险。更换后需要同步更新所有使用该变量的地方。
-
-**审计日志**记录环境变量的变更历史。Cloudflare Pages记录变量的创建、修改、删除操作。定期检查审计日志，发现异常操作。
-
-### 5.4 敏感信息处理
-
-敏感信息的处理需要特别谨慎，遵循安全最佳实践。
-
-**不提交敏感信息**是首要原则。敏感信息不应出现在代码仓库中。使用环境变量存储敏感信息。在代码中使用变量名引用，而不是硬编码值。
-
-**使用占位符**在示例文件中展示。提供.env.example文件，列出需要配置的变量名。变量值使用占位符，不包含真实值。开发者复制示例文件后填入真实值。
-
-**文档说明**指导开发者配置。在项目文档中说明需要配置的环境变量。说明变量的用途和获取方式。提供配置示例，便于理解。
-
-**定期检查**确保没有泄露。定期检查代码仓库，确保没有敏感信息。使用工具扫描代码，发现潜在的泄露。如果发现泄露，立即更换相关密钥。
+```bash
+npm run dev
+```
 
 ---
 
-## 六、监控与运维
+## 五、部署步骤详解
 
-### 6.1 日志管理
+### 5.1 通过 Wrangler CLI 部署
 
-日志管理帮助了解系统的运行状态，便于问题排查和分析。
+#### 5.1.1 登录 Cloudflare
 
-**访问日志**记录用户请求的信息。Cloudflare Pages自动记录所有请求的访问日志。日志包含请求时间、请求路径、响应状态、响应时间等信息。可以在Cloudflare控制台查看访问日志。
+```bash
+npx wrangler login
+```
 
-**错误日志**记录系统错误的信息。当请求处理失败时，系统会记录错误日志。日志包含错误时间、错误类型、错误堆栈等信息。错误日志对于问题排查非常重要。
+浏览器会自动打开授权页面，点击 "Allow" 完成授权。
 
-**日志查询**支持按条件筛选日志。可以在Cloudflare控制台使用查询语法筛选日志。支持按时间、路径、状态码等条件筛选。日志查询帮助快速定位问题。
+#### 5.1.2 部署项目
 
-**日志保留**定义日志的保留时间。Cloudflare默认保留一定时间的日志。如果需要长期保存日志，可以导出到外部存储。建议定期导出重要日志，便于历史分析。
+```bash
+# 部署到 Cloudflare Pages
+npx wrangler pages deploy .
+```
 
-### 6.2 性能监控
+**预期输出**：
+```
+✨ Success! Uploaded XXX files and Deployed!
+✨ Deployment URL: https://xxxxxx.lego-story-book.pages.dev
+```
 
-性能监控帮助了解系统的性能状况，及时发现性能问题。
+### 5.2 通过 GitHub 自动部署
 
-**响应时间监控**跟踪请求的响应时间。Cloudflare Analytics提供响应时间的统计数据。可以查看平均响应时间、P95响应时间等指标。如果响应时间过长，需要优化代码或配置。
+#### 5.2.1 连接 GitHub 仓库
 
-**流量监控**跟踪请求的流量情况。Cloudflare Analytics提供请求次数、带宽使用等统计数据。可以查看流量趋势、峰值流量等信息。流量监控帮助规划资源需求。
+1. 登录 Cloudflare Dashboard
+2. 进入 Workers & Pages
+3. 点击 "Create application" > "Pages" > "Connect to Git"
+4. 选择 GitHub 并授权
+5. 选择 `lego-story-book` 仓库
+6. 点击 "Begin setup"
 
-**缓存命中率**监控CDN缓存的效果。Cloudflare Analytics提供缓存命中率的统计数据。高缓存命中率表示缓存配置合理。低缓存命中率需要优化缓存策略。
+#### 5.2.2 配置构建设置
 
-**性能优化**根据监控数据改进系统。分析慢请求的原因，优化代码逻辑。优化数据库查询，添加必要的索引。调整缓存策略，提高缓存命中率。
+| 设置项 | 值 |
+|--------|-----|
+| Production branch | main |
+| Build command | 留空 |
+| Build output directory | / |
+| Root directory | 留空 |
 
-### 6.3 告警配置
+#### 5.2.3 配置环境变量
 
-告警配置在系统异常时及时通知相关人员，确保问题得到及时处理。
+在项目设置中添加环境变量（参考第四章）。
 
-**可用性告警**监控服务的可用性。当服务不可用或响应异常时发送告警。可以配置Cloudflare的可用性监控功能。告警方式包括邮件、短信、Webhook等。
+#### 5.2.4 触发部署
 
-**性能告警**监控服务的性能指标。当响应时间超过阈值时发送告警。当错误率超过阈值时发送告警。告警阈值需要根据实际情况设置。
+每次推送到 main 分支，Cloudflare Pages 会自动触发部署。
 
-**资源告警**监控资源的使用情况。当数据库存储接近限制时发送告警。当带宽使用接近限制时发送告警。提前告警可以避免服务中断。
+### 5.3 部署状态检查
 
-**告警处理**确保告警得到及时响应。配置告警接收人员，确保有人处理。建立告警处理流程，明确责任分工。记录告警处理结果，便于后续分析。
+#### 5.3.1 查看部署列表
 
-### 6.4 故障处理
+```bash
+npx wrangler pages deployment list
+```
 
-故障处理流程确保故障得到及时有效的处理。
+#### 5.3.2 查看部署日志
 
-**故障发现**通过监控或用户反馈发现故障。监控告警是主要的发现渠道。用户反馈是补充的发现渠道。需要建立快速响应机制。
-
-**故障定位**分析故障的原因和影响范围。查看错误日志，分析错误信息。检查最近的变更，排查变更影响。评估故障影响范围，确定处理优先级。
-
-**故障处理**采取措施恢复服务。如果是代码问题，回滚到上一个稳定版本。如果是配置问题，修正配置并重新部署。如果是外部服务问题，联系服务提供商或启用备用方案。
-
-**故障复盘**总结故障原因和改进措施。记录故障的详细信息，包括时间、现象、原因、处理过程等。分析根本原因，制定预防措施。更新文档和流程，避免类似问题再次发生。
-
----
-
-## 七、备份与恢复
-
-### 7.1 数据备份策略
-
-数据备份策略定义了备份的频率、方式和保留策略。
-
-**备份频率**根据数据重要性和变更频率确定。用户数据是核心数据，建议每日备份。配置数据变更较少，可以每周备份。备份频率需要在安全性和成本之间平衡。
-
-**备份方式**选择合适的备份方法。数据库导出是最直接的备份方式，将数据导出为SQL文件。增量备份只备份变更的数据，减少备份时间和存储空间。建议结合使用全量备份和增量备份。
-
-**备份保留**定义备份文件的保留时间。短期备份保留最近几天的备份，用于快速恢复。长期备份保留重要时间点的备份，用于历史恢复。保留策略需要在存储成本和恢复需求之间平衡。
-
-**备份验证**确保备份文件可用。定期验证备份文件的完整性和可恢复性。在测试环境中尝试恢复备份，验证恢复流程。备份验证是备份策略的重要组成部分。
-
-### 7.2 数据恢复步骤
-
-数据恢复步骤定义了从备份中恢复数据的完整流程。
-
-**第一步：评估恢复需求**。确定需要恢复的数据范围和时间点。评估恢复对业务的影响。选择合适的备份文件进行恢复。
-
-**第二步：准备恢复环境**。如果是生产环境恢复，需要通知相关人员。如果是测试环境恢复，确保环境配置正确。停止相关服务，避免数据冲突。
-
-**第三步：执行恢复操作**。使用备份文件恢复数据库。验证恢复结果是否正确。如果恢复失败，尝试使用其他备份文件。
-
-**第四步：验证恢复结果**。检查数据是否完整恢复。验证应用功能是否正常。确认用户可以正常访问。
-
-**第五步：恢复服务**。重新启动相关服务。通知相关人员恢复完成。记录恢复过程和结果。
-
-### 7.3 灾难恢复方案
-
-灾难恢复方案定义了应对重大故障的完整流程。
-
-**灾难定义**明确什么情况属于灾难。服务完全不可用、数据大量丢失、安全事件等都属于灾难。灾难恢复方案针对这些情况制定。
-
-**恢复目标**定义恢复的时间目标。恢复时间目标定义了服务恢复的最长时间。恢复点目标定义了数据恢复的时间点。这些目标需要在成本和业务需求之间平衡。
-
-**恢复步骤**详细描述灾难恢复的操作流程。包括故障确认、团队通知、问题诊断、恢复操作、验证确认等步骤。每个步骤需要明确责任人和操作方法。
-
-**演练计划**定期演练灾难恢复方案。演练可以验证方案的有效性。演练可以发现方案的问题并改进。建议至少每年进行一次演练。
+```bash
+npx wrangler pages deployment tail
+```
 
 ---
 
-## 八、常见问题与解决
+## 六、部署验证
 
-### 8.1 部署失败问题
+### 6.1 页面访问验证
 
-部署失败是最常见的问题之一，需要了解常见原因和解决方法。
+#### 6.1.1 首页验证
 
-**构建失败**通常由代码错误或依赖问题导致。检查构建日志，定位具体错误。如果是代码错误，修复后重新提交。如果是依赖问题，检查package.json配置。
+访问部署URL，检查：
+- [ ] 页面正常加载
+- [ ] 样式正确显示
+- [ ] 图片正常加载
+- [ ] 无控制台错误
 
-**测试失败**表示代码质量不符合要求。检查测试日志，定位失败的测试用例。修复代码使测试通过。如果是测试用例问题，更新测试用例。
+#### 6.1.2 登录页面验证
 
-**环境变量缺失**导致应用无法正常启动。检查环境变量配置，确保所有必需变量都已配置。检查变量名是否正确，注意大小写。
+访问登录页面，检查：
+- [ ] 登录表单正常显示
+- [ ] 输入用户名后可以登录
+- [ ] 登录后跳转到书架页面
 
-**资源限制**导致部署失败。检查是否超出Cloudflare的限制。如果是存储限制，清理不必要的资源。如果是执行时间限制，优化代码效率。
+### 6.2 功能验证
 
-### 8.2 数据库连接问题
+#### 6.2.1 用户登录验证
 
-数据库连接问题会导致应用无法正常访问数据。
+```bash
+# 使用 curl 测试登录API
+curl -X POST https://您的域名/api/users \
+  -H "Content-Type: application/json" \
+  -d '{"username":"test_user"}'
+```
 
-**数据库未绑定**是最常见的原因。检查Wrangler配置文件，确保数据库绑定正确。检查绑定名称是否与代码中使用的名称一致。
+**预期响应**：
+```json
+{
+  "success": true,
+  "data": {
+    "user_id": "id_xxx",
+    "username": "test_user"
+  }
+}
+```
 
-**数据库不存在**表示数据库未创建或已删除。检查数据库列表，确认数据库存在。如果数据库不存在，需要重新创建。
+#### 6.2.2 创建书籍验证
 
-**权限不足**表示应用没有访问数据库的权限。检查数据库的访问权限配置。确保Pages项目有访问数据库的权限。
+```bash
+# 使用 curl 测试创建书籍API
+curl -X POST https://您的域名/api/books \
+  -H "Content-Type: application/json" \
+  -d '{"user_id":"您的用户ID","title":"测试书籍"}'
+```
 
-**查询超时**表示查询执行时间过长。优化查询语句，减少查询时间。添加必要的索引，提高查询效率。如果是数据量过大，考虑分页查询。
+**预期响应**：
+```json
+{
+  "success": true,
+  "data": {
+    "book_id": "id_xxx",
+    "title": "测试书籍"
+  }
+}
+```
 
-### 8.3 性能问题
+#### 6.2.3 故事生成验证
 
-性能问题会影响用户体验，需要及时解决。
+1. 在书籍详情页点击"生成下一章"
+2. 选择角色后点击确认
+3. 等待故事生成完成
+4. 检查生成的故事内容
 
-**响应时间过长**可能由多种原因导致。检查网络延迟，确认CDN是否正常工作。检查代码逻辑，优化耗时操作。检查数据库查询，添加索引或优化查询。
+#### 6.2.4 谜题功能验证
 
-**资源加载慢**影响页面加载速度。检查静态资源是否正确缓存。优化资源大小，压缩图片和代码。使用懒加载技术，延迟加载非关键资源。
+1. 阅读章节后点击"去解谜"
+2. 检查谜题是否正确显示
+3. 选择答案并提交
+4. 检查答案验证结果
 
-**内存使用高**可能导致应用不稳定。检查代码中是否有内存泄漏。优化数据结构，减少内存占用。如果是无服务器函数限制，考虑拆分功能。
+### 6.3 API端点验证
+
+使用以下命令测试各API端点：
+
+```bash
+# 测试用户API
+curl https://您的域名/api/users
+
+# 测试书籍API
+curl https://您的域名/api/books?user_id=您的用户ID
+
+# 测试角色API
+curl https://您的域名/api/characters
+
+# 测试情节选项API
+curl https://您的域名/api/plot-options
+```
+
+---
+
+## 七、API端点列表
+
+### 7.1 用户相关API
+
+#### POST /api/users
+
+创建或获取用户
+
+**请求参数**：
+| 参数名 | 类型 | 必需 | 说明 |
+|--------|------|------|------|
+| username | string | 是 | 用户名 |
+
+**请求示例**：
+```json
+{
+  "username": "test_user"
+}
+```
+
+**响应示例**：
+```json
+{
+  "success": true,
+  "data": {
+    "user_id": "id_xxx",
+    "username": "test_user",
+    "daily_time_limit": 120,
+    "time_used_today": 0
+  }
+}
+```
+
+### 7.2 书籍相关API
+
+#### GET /api/books
+
+获取用户书籍列表
+
+**请求参数**：
+| 参数名 | 类型 | 必需 | 说明 |
+|--------|------|------|------|
+| user_id | string | 是 | 用户ID |
+
+#### POST /api/books
+
+创建新书籍
+
+**请求参数**：
+| 参数名 | 类型 | 必需 | 说明 |
+|--------|------|------|------|
+| user_id | string | 是 | 用户ID |
+| title | string | 是 | 书籍标题 |
+
+### 7.3 章节相关API
+
+#### GET /api/chapters
+
+获取章节列表
+
+**请求参数**：
+| 参数名 | 类型 | 必需 | 说明 |
+|--------|------|------|------|
+| book_id | string | 是 | 书籍ID |
+
+#### POST /api/chapters-generate
+
+生成新章节
+
+**请求参数**：
+| 参数名 | 类型 | 必需 | 说明 |
+|--------|------|------|------|
+| book_id | string | 是 | 书籍ID |
+| characters | array | 是 | 角色列表 |
+
+### 7.4 角色相关API
+
+#### GET /api/characters
+
+获取角色列表
+
+**请求参数**：
+| 参数名 | 类型 | 必需 | 说明 |
+|--------|------|------|------|
+| user_id | string | 否 | 用户ID（用于获取用户自定义角色） |
+
+#### POST /api/characters
+
+创建新角色
+
+**请求参数**：
+| 参数名 | 类型 | 必需 | 说明 |
+|--------|------|------|------|
+| name | string | 是 | 角色名称 |
+| personality | string | 否 | 性格特点 |
+| speaking_style | string | 否 | 说话方式 |
+
+### 7.5 谜题相关API
+
+#### POST /api/puzzle
+
+验证谜题答案
+
+**请求参数**：
+| 参数名 | 类型 | 必需 | 说明 |
+|--------|------|------|------|
+| puzzle_id | string | 是 | 谜题ID |
+| user_answer | string | 是 | 用户答案（A/B/C/D） |
+
+### 7.6 其他API
+
+| 端点 | 方法 | 功能 |
+|------|------|------|
+| /api/speech | POST | 语音识别 |
+| /api/generate | POST | 图片生成 |
+| /api/share | GET/POST | 分享管理 |
+| /api/plot-options | GET | 获取情节选项 |
+| /api/book-characters | GET/POST | 书籍角色管理 |
+| /api/chapters-complete | POST | 标记章节完成 |
+
+---
+
+## 八、常见问题排查
+
+### 8.1 环境变量问题
+
+#### 问题：API调用返回401错误
+
+**症状**：
+```json
+{
+  "success": false,
+  "error": "API认证失败"
+}
+```
+
+**原因**：环境变量未正确配置
+
+**解决方案**：
+1. 检查 Cloudflare Pages 项目设置中的环境变量
+2. 确认变量名拼写正确（区分大小写）
+3. 确认变量值正确（无多余空格）
+4. 重新部署项目使环境变量生效
+
+#### 问题：本地开发时API调用失败
+
+**原因**：本地环境变量未配置
+
+**解决方案**：
+1. 创建 `.dev.vars` 文件
+2. 添加所有必需的环境变量
+3. 重启开发服务器
+
+### 8.2 数据库问题
+
+#### 问题：查询返回空结果
+
+**症状**：
+```json
+{
+  "success": true,
+  "data": []
+}
+```
+
+**原因**：数据库迁移未执行或数据未导入
+
+**解决方案**：
+```bash
+# 检查迁移状态
+npx wrangler d1 migrations apply lego-story-db --local
+
+# 检查表是否存在
+npx wrangler d1 execute lego-story-db --local --command "SELECT name FROM sqlite_master WHERE type='table';"
+```
+
+#### 问题：数据库绑定错误
+
+**症状**：
+```
+Error: D1 database not found
+```
+
+**原因**：wrangler.toml 配置错误
+
+**解决方案**：
+1. 检查 wrangler.toml 中的 database_id
+2. 确认数据库已创建
+3. 确认 binding 名称正确（应为 "DB"）
+
+### 8.3 部署问题
+
+#### 问题：部署超时
+
+**症状**：
+```
+Error: Deployment timed out
+```
+
+**原因**：文件过多或网络问题
+
+**解决方案**：
+1. 检查项目文件大小
+2. 确认网络连接正常
+3. 重试部署命令
+
+#### 问题：构建失败
+
+**症状**：
+```
+Error: Build failed
+```
+
+**原因**：依赖安装失败或配置错误
+
+**解决方案**：
+1. 检查 package.json 配置
+2. 确认 Node.js 版本兼容
+3. 查看详细错误日志
+
+### 8.4 功能问题
+
+#### 问题：故事生成失败
+
+**症状**：点击"生成下一章"后无响应或报错
+
+**原因**：豆包API调用失败
+
+**解决方案**：
+1. 检查 DOUBAO_API_KEY 配置
+2. 检查 API 余额是否充足
+3. 查看 Cloudflare 日志确认错误详情
+
+#### 问题：谜题不显示
+
+**症状**：章节阅读后谜题区域为空
+
+**原因**：谜题数据未正确生成或显示
+
+**解决方案**：
+1. 检查章节的 has_puzzle 字段
+2. 检查 puzzles 表中是否有对应记录
+3. 查看浏览器控制台错误
 
 ---
 
 ## 附录
 
-### 附录A：常用命令列表
+### 附录A：常用命令速查表
 
 | 命令 | 说明 |
 |------|------|
-| npx wrangler pages dev . | 本地开发服务器 |
-| npx wrangler pages deploy . | 部署到生产环境 |
-| npx wrangler d1 create <name> | 创建数据库 |
-| npx wrangler d1 migrations apply <db> | 执行数据库迁移 |
+| `npm run dev` | 启动本地开发服务器 |
+| `npm run deploy` | 部署到生产环境 |
+| `npx wrangler login` | 登录 Cloudflare |
+| `npx wrangler d1 create <name>` | 创建数据库 |
+| `npx wrangler d1 list` | 列出所有数据库 |
+| `npx wrangler d1 migrations apply <db>` | 执行迁移 |
+| `npx wrangler d1 execute <db> --command "SQL"` | 执行SQL |
+| `npx wrangler d1 export <db>` | 导出数据库 |
+| `npx wrangler pages deploy .` | 部署Pages项目 |
 
-### 附录B：配置文件示例
+### 附录B：配置文件模板
 
-Wrangler配置文件包含项目的基本配置信息，包括名称、兼容性标志、数据库绑定等。配置文件使用TOML格式编写。
+#### wrangler.toml
+
+```toml
+name = "lego-story-book"
+compatibility_date = "2024-01-01"
+pages_build_output_dir = "."
+
+[[d1_databases]]
+binding = "DB"
+database_name = "lego-story-db"
+database_id = "您的数据库ID"
+
+[vars]
+ENVIRONMENT = "development"
+
+[env.production]
+name = "lego-story-book"
+
+[[env.production.d1_databases]]
+binding = "DB"
+database_name = "lego-story-db"
+database_id = "您的数据库ID"
+
+[env.production.vars]
+ENVIRONMENT = "production"
+```
+
+#### .dev.vars
+
+```
+DOUBAO_API_KEY=您的豆包API密钥
+SEEDREAM_API_KEY=您的火山引擎API密钥
+SILICONFLOW_API_KEY=您的SiliconFlow API密钥
+```
 
 ### 附录C：修订历史
 
 | 版本 | 日期 | 修订内容 | 作者 |
 |------|------|----------|------|
 | V1.0 | 2026-02-25 | 初始版本 | 项目团队 |
+| V2.0 | 2026-02-26 | 优化文档，添加详细配置步骤和验证方法 | 项目团队 |
 
 ---
 
