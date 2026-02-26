@@ -97,6 +97,10 @@ const LoginScreen = () => {
     >
       <ParticleBackground />
       
+      <View style={styles.debugLabel}>
+        <Text style={styles.debugLabelText}>📱 当前页面: LoginScreen (登录页)</Text>
+      </View>
+      
       <ScrollView
         contentContainerStyle={styles.scrollContent}
         keyboardShouldPersistTaps="handled"
@@ -220,6 +224,18 @@ const styles = StyleSheet.create({
   container: {
     flex: 1,
     backgroundColor: COLORS.background,
+  },
+  debugLabel: {
+    backgroundColor: '#8B5CF6',
+    paddingHorizontal: 12,
+    paddingVertical: 6,
+    alignItems: 'center',
+    zIndex: 10,
+  },
+  debugLabelText: {
+    color: '#FFFFFF',
+    fontSize: 12,
+    fontWeight: 'bold',
   },
   scrollContent: {
     flexGrow: 1,

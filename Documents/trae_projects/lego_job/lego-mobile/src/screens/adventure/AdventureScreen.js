@@ -64,6 +64,9 @@ const AdventureScreen = ({ navigation }) => {
 
   return (
     <View style={styles.container}>
+      <View style={styles.debugLabel}>
+        <Text style={styles.debugLabelText}>📱 当前页面: AdventureScreen (冒险模式页)</Text>
+      </View>
       <View style={styles.header}>
         <Text style={styles.title}>🗺️ 冒险模式</Text>
       </View>
@@ -107,6 +110,18 @@ const styles = StyleSheet.create({
   container: {
     flex: 1,
     backgroundColor: COLORS.background,
+  },
+  debugLabel: {
+    backgroundColor: '#8B5CF6',
+    paddingHorizontal: 12,
+    paddingVertical: 6,
+    marginTop: 50,
+    alignItems: 'center',
+  },
+  debugLabelText: {
+    color: '#FFFFFF',
+    fontSize: 12,
+    fontWeight: 'bold',
   },
   header: {
     padding: 20,

@@ -169,6 +169,9 @@ const StoryCreateScreen = ({ navigation }) => {
 
   return (
     <View style={styles.container}>
+      <View style={styles.debugLabel}>
+        <Text style={styles.debugLabelText}>📱 当前页面: StoryCreateScreen (创建故事页)</Text>
+      </View>
       <View style={styles.header}>
         <Text style={styles.title}>✨ 创建新故事</Text>
       </View>
@@ -350,6 +353,18 @@ const styles = StyleSheet.create({
   container: {
     flex: 1,
     backgroundColor: COLORS.background,
+  },
+  debugLabel: {
+    backgroundColor: '#8B5CF6',
+    paddingHorizontal: 12,
+    paddingVertical: 6,
+    marginTop: 50,
+    alignItems: 'center',
+  },
+  debugLabelText: {
+    color: '#FFFFFF',
+    fontSize: 12,
+    fontWeight: 'bold',
   },
   header: {
     padding: 20,

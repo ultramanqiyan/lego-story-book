@@ -65,6 +65,9 @@ const BookshelfScreen = ({ navigation }) => {
 
   return (
     <View style={styles.container}>
+      <View style={styles.debugLabel}>
+        <Text style={styles.debugLabelText}>📱 当前页面: BookshelfScreen (书架页)</Text>
+      </View>
       <View style={styles.header}>
         <Text style={styles.title}>📚 我的书架</Text>
         <Button
@@ -107,6 +110,20 @@ const styles = StyleSheet.create({
   container: {
     flex: 1,
     backgroundColor: COLORS.background,
+  },
+  debugLabel: {
+    backgroundColor: '#8B5CF6',
+    paddingHorizontal: 12,
+    paddingVertical: 6,
+    marginHorizontal: 16,
+    marginTop: 50,
+    borderRadius: 8,
+    alignItems: 'center',
+  },
+  debugLabelText: {
+    color: '#FFFFFF',
+    fontSize: 12,
+    fontWeight: 'bold',
   },
   header: {
     flexDirection: 'row',

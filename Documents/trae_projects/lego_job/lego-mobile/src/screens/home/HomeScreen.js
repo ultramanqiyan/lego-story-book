@@ -198,6 +198,10 @@ const HomeScreen = ({ navigation }) => {
     <View style={styles.container}>
       <GlowOrbBackground />
       
+      <View style={styles.debugLabel}>
+        <Text style={styles.debugLabelText}>📱 当前页面: HomeScreen (首页)</Text>
+      </View>
+      
       <ScrollView
         style={styles.scrollView}
         refreshControl={
@@ -340,6 +344,19 @@ const styles = StyleSheet.create({
   container: {
     flex: 1,
     backgroundColor: COLORS.background,
+  },
+  debugLabel: {
+    backgroundColor: '#8B5CF6',
+    paddingHorizontal: 12,
+    paddingVertical: 6,
+    marginTop: 50,
+    alignItems: 'center',
+    zIndex: 10,
+  },
+  debugLabelText: {
+    color: '#FFFFFF',
+    fontSize: 12,
+    fontWeight: 'bold',
   },
   scrollView: {
     flex: 1,

@@ -32,11 +32,11 @@ export const bookCharactersAPI = {
     });
   },
 
-  async update(id, customName, roleType) {
+  async update(id, data) {
     return apiClient.put('/book-characters', {
       id,
-      customName,
-      roleType,
+      customName: data.custom_name,
+      roleType: data.role_type,
     });
   },
 

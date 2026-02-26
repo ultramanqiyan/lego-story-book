@@ -31,9 +31,6 @@ const CharactersScreen = ({ navigation }) => {
 
   const titleAnim = useRef(new Animated.Value(0)).current;
   const cardAnims = useRef([]).current;
-  const modalAnim = useRef(new Animated.Value(0)).current;
-  const revealAnim = useRef(new Animated.Value(0)).current;
-  const celebrationAnims = useRef([...Array(6)].map(() => new Animated.Value(0))).current;
 
   useEffect(() => {
     loadCharacters();
@@ -94,6 +91,7 @@ const CharactersScreen = ({ navigation }) => {
     try {
       await charactersAPI.delete(character.character_id, user?.userId);
       toast.success('删除成功');
+      setDetailVisible(false);
       loadCharacters();
     } catch (error) {
       toast.error('删除失败');
@@ -108,7 +106,6 @@ const CharactersScreen = ({ navigation }) => {
       } else {
         await charactersAPI.create(user?.userId, characterData);
         toast.success('创建成功');
-        triggerCelebration();
       }
       setFormVisible(false);
       loadCharacters();
@@ -117,34 +114,10 @@ const CharactersScreen = ({ navigation }) => {
     }
   };
 
-  const triggerCelebration = () => {
-    revealAnim.setValue(0);
-    Animated.parallel([
-      Animated.spring(revealAnim, {
-        toValue: 1,
-        tension: 100,
-        friction: 8,
-        useNativeDriver: true,
-      }),
-      ...celebrationAnims.map((anim, index) =>
-        Animated.timing(anim, {
-          toValue: 1,
-          duration: 800,
-          delay: index * 100,
-          easing: BOUNCE_EASING,
-          useNativeDriver: true,
-        })
-      ),
-    ]).start();
-  };
-
   const openDetail = (character) => {
     setSelectedCharacter(character);
     setDetailVisible(true);
   };
-
-  const presetCharacters = characters.filter((c) => c.creator_id === 'system');
-  const userCharacters = characters.filter((c) => c.creator_id !== 'system');
 
   if (isLoading) {
     return <Loading fullScreen message="加载角色..." />;
@@ -181,6 +154,15 @@ const CharactersScreen = ({ navigation }) => {
           <Text style={styles.cardDesc} numberOfLines={2}>
             {item.description || '神秘角色'}
           </Text>
+          
+          {item.personality && (
+            <View style={styles.tagContainer}>
+              <View style={styles.personalityTag}>
+                <Text style={styles.tagText}>✨ {item.personality}</Text>
+              </View>
+            </View>
+          )}
+          
           {!isPreset && (
             <View style={styles.cardActions}>
               <TouchableOpacity
@@ -205,6 +187,10 @@ const CharactersScreen = ({ navigation }) => {
   return (
     <View style={styles.container}>
       <GlowOrbBackground />
+      
+      <View style={styles.debugLabel}>
+        <Text style={styles.debugLabelText}>📱 当前页面: CharactersScreen (角色页)</Text>
+      </View>
       
       <Header
         title="🎭 角色收集"
@@ -283,12 +269,24 @@ const CharactersScreen = ({ navigation }) => {
               {selectedCharacter.description || '这个角色充满了神秘感...'}
             </Text>
             
-            {selectedCharacter.traits && (
-              <View style={styles.traitsContainer}>
-                <Text style={styles.traitsTitle}>✨ 特点</Text>
-                <Text style={styles.traitsText}>{selectedCharacter.traits}</Text>
-              </View>
-            )}
+            <View style={styles.attributesContainer}>
+              {selectedCharacter.personality && (
+                <View style={styles.attributeRow}>
+                  <Text style={styles.attributeLabel}>✨ 性格</Text>
+                  <View style={styles.attributeValue}>
+                    <Text style={styles.attributeValueText}>{selectedCharacter.personality}</Text>
+                  </View>
+                </View>
+              )}
+              {selectedCharacter.speaking_style && (
+                <View style={styles.attributeRow}>
+                  <Text style={styles.attributeLabel}>💬 说话风格</Text>
+                  <View style={styles.attributeValue}>
+                    <Text style={styles.attributeValueText}>{selectedCharacter.speaking_style}</Text>
+                  </View>
+                </View>
+              )}
+            </View>
             
             <View style={styles.detailActions}>
               {selectedCharacter.creator_id !== 'system' && (
@@ -305,10 +303,7 @@ const CharactersScreen = ({ navigation }) => {
                   <Button
                     title="🗑️ 删除"
                     variant="danger"
-                    onPress={() => {
-                      setDetailVisible(false);
-                      handleDelete(selectedCharacter);
-                    }}
+                    onPress={() => handleDelete(selectedCharacter)}
                     style={styles.detailBtn}
                   />
                 </>
@@ -325,6 +320,19 @@ const styles = StyleSheet.create({
   container: {
     flex: 1,
     backgroundColor: COLORS.background,
+  },
+  debugLabel: {
+    backgroundColor: '#8B5CF6',
+    paddingHorizontal: 12,
+    paddingVertical: 6,
+    marginTop: 50,
+    alignItems: 'center',
+    zIndex: 10,
+  },
+  debugLabelText: {
+    color: '#FFFFFF',
+    fontSize: 12,
+    fontWeight: 'bold',
   },
   listContent: {
     padding: 16,
@@ -344,7 +352,7 @@ const styles = StyleSheet.create({
     borderRadius: 16,
     padding: 16,
     alignItems: 'center',
-    minHeight: 160,
+    minHeight: 180,
     shadowColor: COLORS.legoYellow,
     shadowOffset: { width: 0, height: 4 },
     shadowOpacity: 0.15,
@@ -383,11 +391,26 @@ const styles = StyleSheet.create({
     fontSize: 12,
     color: COLORS.textLight,
     textAlign: 'center',
-    flex: 1,
+    marginBottom: 8,
+  },
+  tagContainer: {
+    flexDirection: 'row',
+    marginBottom: 8,
+  },
+  personalityTag: {
+    backgroundColor: COLORS.legoYellow + '30',
+    paddingHorizontal: 8,
+    paddingVertical: 4,
+    borderRadius: 12,
+  },
+  tagText: {
+    fontSize: 11,
+    color: COLORS.text,
+    fontWeight: '600',
   },
   cardActions: {
     flexDirection: 'row',
-    marginTop: 8,
+    marginTop: 'auto',
     gap: 8,
   },
   actionBtn: {
@@ -419,29 +442,42 @@ const styles = StyleSheet.create({
     fontSize: 16,
     color: COLORS.textLight,
     textAlign: 'center',
-    marginBottom: 16,
+    marginBottom: 20,
   },
-  traitsContainer: {
+  attributesContainer: {
     width: '100%',
     backgroundColor: COLORS.background,
     borderRadius: 12,
     padding: 16,
-    marginBottom: 16,
+    marginBottom: 20,
   },
-  traitsTitle: {
+  attributeRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    marginBottom: 12,
+  },
+  attributeLabel: {
     fontSize: 14,
-    fontWeight: 'bold',
+    fontWeight: '600',
     color: COLORS.text,
-    marginBottom: 8,
+    width: 100,
   },
-  traitsText: {
+  attributeValue: {
+    flex: 1,
+    backgroundColor: COLORS.legoYellow + '30',
+    paddingHorizontal: 12,
+    paddingVertical: 6,
+    borderRadius: 8,
+  },
+  attributeValueText: {
     fontSize: 14,
-    color: COLORS.textLight,
-    lineHeight: 22,
+    color: COLORS.text,
+    fontWeight: '500',
   },
   detailActions: {
     flexDirection: 'row',
     gap: 12,
+    width: '100%',
   },
   detailBtn: {
     flex: 1,

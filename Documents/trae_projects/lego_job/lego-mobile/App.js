@@ -496,6 +496,9 @@ function LoginScreen({ navigation }) {
   return (
     <View style={styles.container}>
       <EnhancedParticleBackground />
+      <View style={styles.debugLabel}>
+        <Text style={styles.debugLabelText}>📱 当前页面: LoginScreen (登录页)</Text>
+      </View>
       <KeyboardAvoidingView style={styles.keyboardView} behavior={Platform.OS === 'ios' ? 'padding' : 'height'}>
         <ScrollView contentContainerStyle={styles.scrollContent} keyboardShouldPersistTaps="handled">
           <View style={styles.loginHeader}>
@@ -696,6 +699,9 @@ function HomeScreen({ navigation }) {
   return (
     <View style={styles.container}>
       <GlowOrbBackground />
+      <View style={styles.debugLabel}>
+        <Text style={styles.debugLabelText}>📱 当前页面: HomeScreen (首页)</Text>
+      </View>
       <ScrollView
         style={styles.scrollView}
         refreshControl={<RefreshControl refreshing={false} onRefresh={loadData} tintColor={COLORS.gold} />}
@@ -864,6 +870,9 @@ function BookshelfScreen({ navigation }) {
   return (
     <View style={styles.container}>
       <GlowOrbBackground />
+      <View style={styles.debugLabel}>
+        <Text style={styles.debugLabelText}>📱 当前页面: BookshelfScreen (书架页)</Text>
+      </View>
       <Animated.View style={[styles.pageHeader, { opacity: titleAnim, transform: [{ translateX: titleAnim.interpolate({ inputRange: [0, 1], outputRange: [-20, 0] }) }] }]}>
         <Text style={styles.pageTitle}>📚 我的故事书架</Text>
       </Animated.View>
@@ -951,6 +960,9 @@ function CharactersScreen({ navigation }) {
   return (
     <View style={styles.container}>
       <GlowOrbBackground />
+      <View style={styles.debugLabel}>
+        <Text style={styles.debugLabelText}>📱 当前页面: CharactersScreen (角色页)</Text>
+      </View>
       <Animated.View style={[styles.pageHeader, { opacity: titleAnim, transform: [{ translateX: titleAnim.interpolate({ inputRange: [0, 1], outputRange: [-20, 0] }) }] }]}>
         <Text style={styles.pageTitle}>🎭 角色列表</Text>
       </Animated.View>
@@ -993,6 +1005,9 @@ function SettingsScreen({ navigation }) {
   return (
     <View style={styles.container}>
       <GlowOrbBackground />
+      <View style={styles.debugLabel}>
+        <Text style={styles.debugLabelText}>📱 当前页面: SettingsScreen (设置页)</Text>
+      </View>
       <Animated.View style={[styles.pageHeader, { opacity: titleAnim, transform: [{ translateX: titleAnim.interpolate({ inputRange: [0, 1], outputRange: [-20, 0] }) }] }]}>
         <Text style={styles.pageTitle}>⚙️ 设置</Text>
       </Animated.View>
@@ -1145,6 +1160,9 @@ function StoryCreateScreen({ navigation, route }) {
   return (
     <View style={styles.container}>
       <EnhancedParticleBackground />
+      <View style={styles.debugLabel}>
+        <Text style={styles.debugLabelText}>📱 当前页面: StoryCreateScreen (创建故事页)</Text>
+      </View>
       <View style={styles.createHeader}>
         <TouchableOpacity onPress={() => step > 1 ? setStep(step - 1) : navigation.goBack()}>
           <Text style={styles.backButton}>← 返回</Text>
@@ -1261,8 +1279,19 @@ function BookDetailScreen({ navigation, route }) {
   const { user } = useAuth();
   const [book, setBook] = useState(null);
   const [chapters, setChapters] = useState([]);
+  const [characters, setCharacters] = useState([]);
+  const [allCharacters, setAllCharacters] = useState([]);
   const [isLoading, setIsLoading] = useState(true);
   const [isGenerating, setIsGenerating] = useState(false);
+  const [activeTab, setActiveTab] = useState('chapters');
+  const [addModalVisible, setAddModalVisible] = useState(false);
+  const [editModalVisible, setEditModalVisible] = useState(false);
+  const [editBookModalVisible, setEditBookModalVisible] = useState(false);
+  const [promptModalVisible, setPromptModalVisible] = useState(false);
+  const [editingCharacter, setEditingCharacter] = useState(null);
+  const [newCharacter, setNewCharacter] = useState({ characterId: null, customName: '', roleType: 'supporting' });
+  const [editBookTitle, setEditBookTitle] = useState('');
+  const [totalWordCount, setTotalWordCount] = useState(0);
 
   const titleAnim = useRef(new Animated.Value(0)).current;
   const chapterAnims = useRef([]).current;
@@ -1299,11 +1328,184 @@ function BookDetailScreen({ navigation, route }) {
       bookData.chapters?.forEach((_, i) => {
         if (!chapterAnims[i]) chapterAnims[i] = new Animated.Value(0);
       });
+      
+      const wordCount = (bookData.chapters || []).reduce((total, ch) => total + (ch.content?.length || 0), 0);
+      setTotalWordCount(wordCount);
+
+      const bookCharsData = await apiRequest(`/book-characters?bookId=${bookId}`);
+      setCharacters(bookCharsData.characters || []);
+
+      const allCharsData = await apiRequest('/characters');
+      setAllCharacters(allCharsData.characters || []);
     } catch (error) {
       console.error('Load book error:', error);
     } finally {
       setIsLoading(false);
     }
+  };
+
+  const handleAddCharacter = async () => {
+    if (!newCharacter.characterId) {
+      Alert.alert('提示', '请选择一个人仔');
+      return;
+    }
+    if (!newCharacter.customName.trim()) {
+      Alert.alert('提示', '请填写角色名称');
+      return;
+    }
+    try {
+      await apiRequest('/book-characters', {
+        method: 'POST',
+        body: {
+          bookId: bookId,
+          characterId: newCharacter.characterId,
+          customName: newCharacter.customName.trim(),
+          roleType: newCharacter.roleType
+        }
+      });
+      setAddModalVisible(false);
+      setNewCharacter({ characterId: null, customName: '', roleType: 'supporting' });
+      loadBookData();
+      Alert.alert('成功', '角色添加成功！');
+    } catch (error) {
+      Alert.alert('添加失败', error.message);
+    }
+  };
+
+  const handleEditCharacter = async () => {
+    if (!editingCharacter.custom_name?.trim()) {
+      Alert.alert('提示', '请填写角色名称');
+      return;
+    }
+    try {
+      await apiRequest('/book-characters', {
+        method: 'PUT',
+        body: {
+          id: editingCharacter.id,
+          customName: editingCharacter.custom_name.trim(),
+          roleType: editingCharacter.role_type
+        }
+      });
+      setEditModalVisible(false);
+      setEditingCharacter(null);
+      loadBookData();
+      Alert.alert('成功', '角色更新成功！');
+    } catch (error) {
+      Alert.alert('更新失败', error.message);
+    }
+  };
+
+  const handleDeleteCharacter = async (id) => {
+    Alert.alert(
+      '确认删除',
+      '确定要删除这个角色吗？',
+      [
+        { text: '取消', style: 'cancel' },
+        {
+          text: '删除',
+          style: 'destructive',
+          onPress: async () => {
+            try {
+              await apiRequest(`/book-characters?id=${id}`, { method: 'DELETE' });
+              loadBookData();
+              Alert.alert('成功', '角色已删除');
+            } catch (error) {
+              Alert.alert('删除失败', error.message);
+            }
+          }
+        }
+      ]
+    );
+  };
+
+  const openEditCharacter = (character) => {
+    setEditingCharacter({ ...character });
+    setEditModalVisible(true);
+  };
+
+  const getRoleLabel = (roleType) => {
+    const roleMap = {
+      'protagonist': '👑 主角',
+      'antagonist': '😈 反派',
+      'supporting': '⭐ 配角',
+      'extra': '👤 路人'
+    };
+    return roleMap[roleType] || '⭐ 配角';
+  };
+
+  const handleViewPrompt = () => {
+    setPromptModalVisible(true);
+  };
+
+  const handleShare = async () => {
+    try {
+      const shareContent = `📖 ${book?.title}\n\n共 ${chapters.length} 章 · ${characters.length} 个角色\n\n来自 LEGO 故事创作`;
+      
+      if (Platform.OS === 'web') {
+        if (navigator.share) {
+          await navigator.share({
+            title: book?.title,
+            text: shareContent,
+          });
+        } else {
+          await navigator.clipboard.writeText(shareContent);
+          Alert.alert('成功', '故事信息已复制到剪贴板！');
+        }
+      } else {
+        Alert.alert('分享', shareContent);
+      }
+    } catch (error) {
+      console.log('Share error:', error);
+    }
+  };
+
+  const handleEditBook = async () => {
+    if (!editBookTitle.trim()) {
+      Alert.alert('提示', '请输入书籍名称');
+      return;
+    }
+    try {
+      await apiRequest('/books', {
+        method: 'PUT',
+        body: {
+          bookId: bookId,
+          title: editBookTitle.trim()
+        }
+      });
+      setEditBookModalVisible(false);
+      loadBookData();
+      Alert.alert('成功', '书籍信息已更新！');
+    } catch (error) {
+      Alert.alert('更新失败', error.message);
+    }
+  };
+
+  const handleDeleteBook = () => {
+    Alert.alert(
+      '确认删除',
+      '确定要删除这本书吗？此操作不可恢复！',
+      [
+        { text: '取消', style: 'cancel' },
+        {
+          text: '删除',
+          style: 'destructive',
+          onPress: async () => {
+            try {
+              await apiRequest(`/books?bookId=${bookId}`, { method: 'DELETE' });
+              Alert.alert('成功', '书籍已删除');
+              navigation.goBack();
+            } catch (error) {
+              Alert.alert('删除失败', error.message);
+            }
+          }
+        }
+      ]
+    );
+  };
+
+  const openEditBook = () => {
+    setEditBookTitle(book?.title || '');
+    setEditBookModalVisible(true);
   };
 
   const handleGenerateChapter = async () => {
@@ -1362,72 +1564,325 @@ function BookDetailScreen({ navigation, route }) {
   return (
     <View style={styles.container}>
       <EnhancedParticleBackground />
+      <View style={styles.debugLabel}>
+        <Text style={styles.debugLabelText}>📱 当前页面: BookDetailScreen (书籍详情页)</Text>
+      </View>
       <View style={styles.createHeader}>
         <TouchableOpacity onPress={() => navigation.goBack()}>
           <Text style={styles.backButton}>← 返回</Text>
         </TouchableOpacity>
         <Text style={styles.createTitle} numberOfLines={1}>{book?.title || '故事详情'}</Text>
-        <View style={{ width: 60 }} />
+        <View style={styles.headerButtons}>
+          <TouchableOpacity style={styles.headerBtn} onPress={handleShare}>
+            <Text style={styles.headerBtnText}>📤</Text>
+          </TouchableOpacity>
+          <TouchableOpacity style={styles.headerBtn} onPress={openEditBook}>
+            <Text style={styles.headerBtnText}>⚙️</Text>
+          </TouchableOpacity>
+        </View>
       </View>
 
       <ScrollView style={styles.createContent}>
         <Animated.View style={[styles.bookInfoCard, { opacity: titleAnim, transform: [{ scale: titleAnim.interpolate({ inputRange: [0, 1], outputRange: [0.9, 1] }) }] }]}>
           <Text style={styles.bookInfoTitle}>{book?.title}</Text>
-          <Text style={styles.bookInfoMeta}>共 {chapters.length} 章</Text>
+          <View style={styles.statsRow}>
+            <View style={styles.statItem}>
+              <Text style={styles.statValue}>{chapters.length}</Text>
+              <Text style={styles.statLabel}>章节</Text>
+            </View>
+            <View style={styles.statDivider} />
+            <View style={styles.statItem}>
+              <Text style={styles.statValue}>{characters.length}</Text>
+              <Text style={styles.statLabel}>角色</Text>
+            </View>
+            <View style={styles.statDivider} />
+            <View style={styles.statItem}>
+              <Text style={styles.statValue}>{totalWordCount}</Text>
+              <Text style={styles.statLabel}>字数</Text>
+            </View>
+          </View>
         </Animated.View>
 
-        <View style={styles.sectionHeader}>
-          <Text style={styles.sectionIcon}>📖</Text>
-          <Text style={styles.sectionTitle}>章节列表</Text>
+        <View style={styles.actionButtonsRow}>
+          <TouchableOpacity style={styles.actionBtn} onPress={handleViewPrompt}>
+            <Text style={styles.actionBtnIcon}>📝</Text>
+            <Text style={styles.actionBtnText}>查看提示词</Text>
+          </TouchableOpacity>
+          <TouchableOpacity style={styles.actionBtn} onPress={handleShare}>
+            <Text style={styles.actionBtnIcon}>📤</Text>
+            <Text style={styles.actionBtnText}>分享故事</Text>
+          </TouchableOpacity>
         </View>
-        {chapters.map((chapter, index) => {
-          const anim = chapterAnims[index] || new Animated.Value(1);
-          return (
-            <Animated.View key={chapter.chapter_id} style={{ opacity: anim, transform: [{ translateX: anim.interpolate({ inputRange: [0, 1], outputRange: [30, 0] }) }] }}>
-              <TouchableOpacity
-                style={styles.chapterItem}
-                onPress={() => navigation.navigate('ChapterRead', { chapter, bookTitle: book?.title })}
-              >
-                <View style={styles.chapterNumber}>
-                  <Text style={styles.chapterNumberText}>{index + 1}</Text>
-                </View>
-                <View style={styles.chapterInfo}>
-                  <Text style={styles.chapterTitle}>{chapter.title}</Text>
-                  {chapter.puzzle && <Text style={styles.puzzleBadge}>有谜题</Text>}
-                </View>
-                <Text style={styles.chapterArrow}>→</Text>
-              </TouchableOpacity>
-            </Animated.View>
-          );
-        })}
 
-        <GoldButton
-          title="生成下一章"
-          icon="✨"
-          onPress={handleGenerateChapter}
-          disabled={isGenerating}
-          loading={isGenerating}
-        />
-        
-        <View style={{ height: 16 }} />
-        
-        <TouchableOpacity 
-          style={styles.directorButton}
-          onPress={() => navigation.navigate('StoryDirector', { bookId })}
-        >
-          <Text style={styles.directorButtonText}>🎬 故事导演台</Text>
-          <Text style={styles.directorButtonDesc}>选择角色、地形、天气来创作新章节</Text>
-        </TouchableOpacity>
+        <View style={styles.tabBar}>
+          <TouchableOpacity
+            style={[styles.tab, activeTab === 'chapters' && styles.tabActive]}
+            onPress={() => setActiveTab('chapters')}
+          >
+            <Text style={styles.tabIcon}>📖</Text>
+            <Text style={[styles.tabText, activeTab === 'chapters' && styles.tabTextActive]}>章节</Text>
+          </TouchableOpacity>
+          <TouchableOpacity
+            style={[styles.tab, activeTab === 'characters' && styles.tabActive]}
+            onPress={() => setActiveTab('characters')}
+          >
+            <Text style={styles.tabIcon}>🎭</Text>
+            <Text style={[styles.tabText, activeTab === 'characters' && styles.tabTextActive]}>角色</Text>
+          </TouchableOpacity>
+        </View>
+
+        {activeTab === 'chapters' ? (
+          <>
+            <View style={styles.sectionHeader}>
+              <Text style={styles.sectionIcon}>📖</Text>
+              <Text style={styles.sectionTitle}>章节列表</Text>
+            </View>
+            {chapters.map((chapter, index) => {
+              const anim = chapterAnims[index] || new Animated.Value(1);
+              return (
+                <Animated.View key={chapter.chapter_id} style={{ opacity: anim, transform: [{ translateX: anim.interpolate({ inputRange: [0, 1], outputRange: [30, 0] }) }] }}>
+                  <TouchableOpacity
+                    style={styles.chapterItem}
+                    onPress={() => navigation.navigate('ChapterRead', { chapter, bookTitle: book?.title })}
+                  >
+                    <View style={styles.chapterNumber}>
+                      <Text style={styles.chapterNumberText}>{index + 1}</Text>
+                    </View>
+                    <View style={styles.chapterInfo}>
+                      <Text style={styles.chapterTitle}>{chapter.title}</Text>
+                      {chapter.puzzle && <Text style={styles.puzzleBadge}>有谜题</Text>}
+                    </View>
+                    <Text style={styles.chapterArrow}>→</Text>
+                  </TouchableOpacity>
+                </Animated.View>
+              );
+            })}
+
+            <GoldButton
+              title="生成下一章"
+              icon="✨"
+              onPress={handleGenerateChapter}
+              disabled={isGenerating}
+              loading={isGenerating}
+            />
+            
+            <View style={{ height: 16 }} />
+            
+            <TouchableOpacity 
+              style={styles.directorButton}
+              onPress={() => navigation.navigate('StoryDirector', { bookId })}
+            >
+              <Text style={styles.directorButtonText}>🎬 故事导演台</Text>
+              <Text style={styles.directorButtonDesc}>选择角色、地形、天气来创作新章节</Text>
+            </TouchableOpacity>
+          </>
+        ) : (
+          <>
+            <View style={styles.sectionHeader}>
+              <Text style={styles.sectionIcon}>🎭</Text>
+              <Text style={styles.sectionTitle}>角色列表</Text>
+            </View>
+            {characters.length === 0 ? (
+              <View style={styles.emptyState}>
+                <Text style={styles.emptyIcon}>🎭</Text>
+                <Text style={styles.emptyText}>还没有添加角色</Text>
+                <Text style={styles.emptySubtext}>点击下方按钮添加故事角色</Text>
+              </View>
+            ) : (
+              characters.map((character, index) => (
+                <View key={character.id} style={styles.characterItem}>
+                  <View style={styles.characterAvatar}>
+                    <Text style={styles.characterAvatarText}>{character.custom_name?.[0] || character.original_name?.[0] || '?'}</Text>
+                  </View>
+                  <View style={styles.characterInfo}>
+                    <Text style={styles.characterName}>{character.custom_name || character.original_name}</Text>
+                    <Text style={styles.characterOriginalName}>原名: {character.original_name}</Text>
+                    <View style={styles.characterRoleBadge}>
+                      <Text style={styles.characterRoleText}>{getRoleLabel(character.role_type)}</Text>
+                    </View>
+                  </View>
+                  <View style={styles.characterActions}>
+                    <TouchableOpacity style={styles.characterActionBtn} onPress={() => openEditCharacter(character)}>
+                      <Text style={styles.characterActionIcon}>✏️</Text>
+                    </TouchableOpacity>
+                    <TouchableOpacity style={styles.characterActionBtn} onPress={() => handleDeleteCharacter(character.id)}>
+                      <Text style={styles.characterActionIcon}>🗑️</Text>
+                    </TouchableOpacity>
+                  </View>
+                </View>
+              ))
+            )}
+
+            <TouchableOpacity 
+              style={styles.addCharacterButton}
+              onPress={() => setAddModalVisible(true)}
+            >
+              <Text style={styles.addCharacterIcon}>➕</Text>
+              <Text style={styles.addCharacterText}>添加角色</Text>
+            </TouchableOpacity>
+          </>
+        )}
       </ScrollView>
+
+      <Modal visible={addModalVisible} transparent animationType="fade">
+        <View style={styles.modalOverlay}>
+          <View style={styles.modalContent}>
+            <Text style={styles.modalTitle}>添加角色</Text>
+            
+            <Text style={styles.modalLabel}>选择人仔</Text>
+            <ScrollView style={styles.characterPicker} horizontal showsHorizontalScrollIndicator={false}>
+              {allCharacters.map(char => (
+                <TouchableOpacity
+                  key={char.character_id}
+                  style={[styles.characterPickerItem, newCharacter.characterId === char.character_id && styles.characterPickerItemActive]}
+                  onPress={() => setNewCharacter({ ...newCharacter, characterId: char.character_id, customName: char.name })}
+                >
+                  <Text style={styles.characterPickerEmoji}>{char.emoji || '🧑'}</Text>
+                  <Text style={styles.characterPickerName}>{char.name}</Text>
+                </TouchableOpacity>
+              ))}
+            </ScrollView>
+
+            <Text style={styles.modalLabel}>角色名称</Text>
+            <TextInput
+              style={styles.modalInput}
+              value={newCharacter.customName}
+              onChangeText={(text) => setNewCharacter({ ...newCharacter, customName: text })}
+              placeholder="输入角色名称"
+              placeholderTextColor={COLORS.textMuted}
+            />
+
+            <Text style={styles.modalLabel}>角色类型</Text>
+            <View style={styles.roleTypePicker}>
+              {['protagonist', 'antagonist', 'supporting', 'extra'].map(type => (
+                <TouchableOpacity
+                  key={type}
+                  style={[styles.roleTypeBtn, newCharacter.roleType === type && styles.roleTypeBtnActive]}
+                  onPress={() => setNewCharacter({ ...newCharacter, roleType: type })}
+                >
+                  <Text style={[styles.roleTypeText, newCharacter.roleType === type && styles.roleTypeTextActive]}>{getRoleLabel(type)}</Text>
+                </TouchableOpacity>
+              ))}
+            </View>
+
+            <View style={styles.modalButtons}>
+              <TouchableOpacity style={styles.modalCancelBtn} onPress={() => { setAddModalVisible(false); setNewCharacter({ characterId: null, customName: '', roleType: 'supporting' }); }}>
+                <Text style={styles.modalCancelText}>取消</Text>
+              </TouchableOpacity>
+              <TouchableOpacity style={styles.modalConfirmBtn} onPress={handleAddCharacter}>
+                <Text style={styles.modalConfirmText}>添加</Text>
+              </TouchableOpacity>
+            </View>
+          </View>
+        </View>
+      </Modal>
+
+      <Modal visible={editModalVisible} transparent animationType="fade">
+        <View style={styles.modalOverlay}>
+          <View style={styles.modalContent}>
+            <Text style={styles.modalTitle}>编辑角色</Text>
+            
+            <Text style={styles.modalLabel}>角色名称</Text>
+            <TextInput
+              style={styles.modalInput}
+              value={editingCharacter?.custom_name || ''}
+              onChangeText={(text) => setEditingCharacter({ ...editingCharacter, custom_name: text })}
+              placeholder="输入角色名称"
+              placeholderTextColor={COLORS.textMuted}
+            />
+
+            <Text style={styles.modalLabel}>角色类型</Text>
+            <View style={styles.roleTypePicker}>
+              {['protagonist', 'antagonist', 'supporting', 'extra'].map(type => (
+                <TouchableOpacity
+                  key={type}
+                  style={[styles.roleTypeBtn, editingCharacter?.role_type === type && styles.roleTypeBtnActive]}
+                  onPress={() => setEditingCharacter({ ...editingCharacter, role_type: type })}
+                >
+                  <Text style={[styles.roleTypeText, editingCharacter?.role_type === type && styles.roleTypeTextActive]}>{getRoleLabel(type)}</Text>
+                </TouchableOpacity>
+              ))}
+            </View>
+
+            <View style={styles.modalButtons}>
+              <TouchableOpacity style={styles.modalCancelBtn} onPress={() => { setEditModalVisible(false); setEditingCharacter(null); }}>
+                <Text style={styles.modalCancelText}>取消</Text>
+              </TouchableOpacity>
+              <TouchableOpacity style={styles.modalConfirmBtn} onPress={handleEditCharacter}>
+                <Text style={styles.modalConfirmText}>保存</Text>
+              </TouchableOpacity>
+            </View>
+          </View>
+        </View>
+      </Modal>
+
+      <Modal visible={editBookModalVisible} transparent animationType="fade">
+        <View style={styles.modalOverlay}>
+          <View style={styles.modalContent}>
+            <Text style={styles.modalTitle}>编辑书籍</Text>
+            
+            <Text style={styles.modalLabel}>书籍名称</Text>
+            <TextInput
+              style={styles.modalInput}
+              value={editBookTitle}
+              onChangeText={setEditBookTitle}
+              placeholder="输入书籍名称"
+              placeholderTextColor={COLORS.textMuted}
+            />
+
+            <View style={styles.modalButtons}>
+              <TouchableOpacity style={styles.modalCancelBtn} onPress={() => setEditBookModalVisible(false)}>
+                <Text style={styles.modalCancelText}>取消</Text>
+              </TouchableOpacity>
+              <TouchableOpacity style={styles.modalConfirmBtn} onPress={handleEditBook}>
+                <Text style={styles.modalConfirmText}>保存</Text>
+              </TouchableOpacity>
+            </View>
+
+            <TouchableOpacity style={styles.deleteBookBtn} onPress={handleDeleteBook}>
+              <Text style={styles.deleteBookBtnText}>🗑️ 删除这本书</Text>
+            </TouchableOpacity>
+          </View>
+        </View>
+      </Modal>
+
+      <Modal visible={promptModalVisible} transparent animationType="fade">
+        <View style={styles.modalOverlay}>
+          <View style={[styles.modalContent, { maxHeight: '80%' }]}>
+            <Text style={styles.modalTitle}>📝 故事提示词</Text>
+            
+            <ScrollView style={styles.promptContent}>
+              <Text style={styles.promptSectionTitle}>故事背景</Text>
+              <Text style={styles.promptText}>{book?.background || '暂无背景信息'}</Text>
+              
+              <Text style={styles.promptSectionTitle}>角色信息</Text>
+              {characters.map((char, idx) => (
+                <View key={idx} style={styles.promptCharacterItem}>
+                  <Text style={styles.promptCharacterName}>• {char.custom_name || char.original_name}</Text>
+                  <Text style={styles.promptCharacterRole}>{getRoleLabel(char.role_type)}</Text>
+                </View>
+              ))}
+              
+              <Text style={styles.promptSectionTitle}>故事风格</Text>
+              <Text style={styles.promptText}>{book?.style || '冒险故事'}</Text>
+            </ScrollView>
+
+            <TouchableOpacity style={styles.modalConfirmBtn} onPress={() => setPromptModalVisible(false)}>
+              <Text style={styles.modalConfirmText}>关闭</Text>
+            </TouchableOpacity>
+          </View>
+        </View>
+      </Modal>
     </View>
   );
 }
 
 function ChapterReadScreen({ navigation, route }) {
-  const { chapter, bookTitle } = route.params || {};
+  const { chapter, bookTitle, previousChapter } = route.params || {};
   const [selectedAnswer, setSelectedAnswer] = useState(null);
   const [showResult, setShowResult] = useState(false);
   const [isCorrect, setIsCorrect] = useState(false);
+  const [showPreviousSummary, setShowPreviousSummary] = useState(false);
 
   const titleAnim = useRef(new Animated.Value(0)).current;
   const titleY = useRef(new Animated.Value(-40)).current;
@@ -1437,6 +1892,7 @@ function ChapterReadScreen({ navigation, route }) {
   const resultAnim = useRef(new Animated.Value(0)).current;
   const shakeAnim = useRef(new Animated.Value(0)).current;
   const celebrationAnims = useRef([...Array(8)].map(() => new Animated.Value(0))).current;
+  const summaryAnim = useRef(new Animated.Value(0)).current;
 
   useEffect(() => {
     Animated.parallel([
@@ -1514,9 +1970,24 @@ function ChapterReadScreen({ navigation, route }) {
     outputRange: [-8, 0, 8],
   });
 
+  const togglePreviousSummary = () => {
+    setShowPreviousSummary(!showPreviousSummary);
+    Animated.spring(summaryAnim, {
+      toValue: showPreviousSummary ? 0 : 1,
+      tension: 80,
+      friction: 7,
+      useNativeDriver: true,
+    }).start();
+  };
+
+  const previousSummary = previousChapter?.content?.substring(0, 300) || chapter?.previous_summary || null;
+
   return (
     <View style={styles.container}>
       <EnhancedParticleBackground />
+      <View style={styles.debugLabel}>
+        <Text style={styles.debugLabelText}>📱 当前页面: ChapterReadScreen (章节阅读页)</Text>
+      </View>
       <View style={styles.createHeader}>
         <TouchableOpacity onPress={() => navigation.goBack()}>
           <Text style={styles.backButton}>← 返回</Text>
@@ -1526,6 +1997,36 @@ function ChapterReadScreen({ navigation, route }) {
       </View>
 
       <ScrollView style={styles.readContent}>
+        {previousSummary && (
+          <TouchableOpacity style={styles.summaryToggle} onPress={togglePreviousSummary}>
+            <Text style={styles.summaryToggleIcon}>📖</Text>
+            <Text style={styles.summaryToggleText}>
+              {showPreviousSummary ? '隐藏前情提要' : '查看前情提要'}
+            </Text>
+            <Text style={styles.summaryToggleArrow}>{showPreviousSummary ? '▲' : '▼'}</Text>
+          </TouchableOpacity>
+        )}
+
+        {previousSummary && showPreviousSummary && (
+          <Animated.View 
+            style={[
+              styles.previousSummaryCard,
+              {
+                opacity: summaryAnim,
+                transform: [{
+                  translateY: summaryAnim.interpolate({
+                    inputRange: [0, 1],
+                    outputRange: [-20, 0],
+                  }),
+                }],
+              }
+            ]}
+          >
+            <Text style={styles.previousSummaryTitle}>📜 前情提要</Text>
+            <Text style={styles.previousSummaryText}>{previousSummary}...</Text>
+          </Animated.View>
+        )}
+
         <View style={styles.titleContainer}>
           <Animated.Text 
             style={[
@@ -1642,13 +2143,68 @@ function ChapterReadScreen({ navigation, route }) {
 }
 
 function WeatherEffect({ weather }) {
-  if (!weather) return null;
+  const pulseAnim = useRef(new Animated.Value(0)).current;
+  const rotateAnim = useRef(new Animated.Value(0)).current;
+  const shimmerAnim = useRef(new Animated.Value(0)).current;
+  const sparkleAnims = useRef([...Array(20)].map(() => new Animated.Value(0))).current;
+  const [flash, setFlash] = useState(false);
 
-  if (weather === 'sunny') {
-    const pulseAnim = useRef(new Animated.Value(0)).current;
-    const rotateAnim = useRef(new Animated.Value(0)).current;
+  const drops = useRef([...Array(60)].map(() => ({
+    x: Math.random() * SCREEN_WIDTH,
+    delay: Math.random() * 1500,
+    duration: 350 + Math.random() * 350,
+    opacity: 0.3 + Math.random() * 0.5,
+  }))).current;
 
-    useEffect(() => {
+  const flakes = useRef([...Array(40)].map(() => ({
+    x: Math.random() * SCREEN_WIDTH,
+    delay: Math.random() * 4000,
+    duration: 3500 + Math.random() * 4000,
+    size: 10 + Math.random() * 16,
+    opacity: 0.5 + Math.random() * 0.5,
+  }))).current;
+
+  const fogLayers = useRef([...Array(5)].map((_, i) => ({
+    y: 100 + i * 150,
+    duration: 15000 + i * 3000,
+    delay: i * 2000,
+    opacity: 0.15 + i * 0.08,
+  }))).current;
+
+  const windLines = useRef([...Array(25)].map(() => ({
+    y: Math.random() * SCREEN_HEIGHT,
+    duration: 600 + Math.random() * 400,
+    delay: Math.random() * 2000,
+    length: 80 + Math.random() * 120,
+    opacity: 0.2 + Math.random() * 0.3,
+  }))).current;
+
+  const leaves = useRef([...Array(15)].map(() => ({
+    x: -30,
+    y: Math.random() * SCREEN_HEIGHT,
+    duration: 2000 + Math.random() * 1500,
+    delay: Math.random() * 3000,
+    rotation: Math.random() * 360,
+    size: 12 + Math.random() * 8,
+  }))).current;
+
+  const stars = useRef([...Array(80)].map(() => ({
+    x: Math.random() * SCREEN_WIDTH,
+    y: Math.random() * SCREEN_HEIGHT * 0.6,
+    size: 2 + Math.random() * 4,
+    twinkleDuration: 1000 + Math.random() * 2000,
+    delay: Math.random() * 2000,
+  }))).current;
+
+  const shootingStars = useRef([...Array(3)].map(() => ({
+    startX: Math.random() * SCREEN_WIDTH,
+    startY: Math.random() * 200,
+    duration: 800,
+    delay: 5000 + Math.random() * 10000,
+  }))).current;
+
+  useEffect(() => {
+    if (weather === 'sunny') {
       Animated.loop(
         Animated.sequence([
           Animated.timing(pulseAnim, { toValue: 1, duration: 2500, easing: Easing.inOut(Easing.sin), useNativeDriver: true }),
@@ -1659,8 +2215,41 @@ function WeatherEffect({ weather }) {
       Animated.loop(
         Animated.timing(rotateAnim, { toValue: 1, duration: 25000, easing: Easing.linear, useNativeDriver: true })
       ).start();
-    }, []);
+    }
 
+    if (weather === 'rainbow') {
+      Animated.loop(
+        Animated.sequence([
+          Animated.timing(shimmerAnim, { toValue: 1, duration: 3000, easing: Easing.inOut(Easing.sin), useNativeDriver: false }),
+          Animated.timing(shimmerAnim, { toValue: 0, duration: 3000, easing: Easing.inOut(Easing.sin), useNativeDriver: false }),
+        ])
+      ).start();
+
+      sparkleAnims.forEach((anim, i) => {
+        Animated.loop(
+          Animated.sequence([
+            Animated.delay(i * 200 + Math.random() * 1000),
+            Animated.timing(anim, { toValue: 1, duration: 800, useNativeDriver: true }),
+            Animated.timing(anim, { toValue: 0, duration: 800, useNativeDriver: true }),
+          ])
+        ).start();
+      });
+    }
+
+    if (weather === 'thunder') {
+      const interval = setInterval(() => {
+        if (Math.random() > 0.65) {
+          setFlash(true);
+          setTimeout(() => setFlash(false), 120);
+        }
+      }, 2500);
+      return () => clearInterval(interval);
+    }
+  }, [weather]);
+
+  if (!weather) return null;
+
+  if (weather === 'sunny') {
     const scale = pulseAnim.interpolate({ inputRange: [0, 1], outputRange: [1, 1.12] });
     const rotate = rotateAnim.interpolate({ inputRange: [0, 1], outputRange: ['0deg', '360deg'] });
 
@@ -1679,27 +2268,6 @@ function WeatherEffect({ weather }) {
   }
 
   if (weather === 'rainy' || weather === 'thunder') {
-    const drops = useRef([...Array(60)].map(() => ({
-      x: Math.random() * SCREEN_WIDTH,
-      delay: Math.random() * 1500,
-      duration: 350 + Math.random() * 350,
-      opacity: 0.3 + Math.random() * 0.5,
-    }))).current;
-
-    const [flash, setFlash] = useState(false);
-
-    useEffect(() => {
-      if (weather === 'thunder') {
-        const interval = setInterval(() => {
-          if (Math.random() > 0.65) {
-            setFlash(true);
-            setTimeout(() => setFlash(false), 120);
-          }
-        }, 2500);
-        return () => clearInterval(interval);
-      }
-    }, [weather]);
-
     return (
       <View style={styles.weatherContainer} pointerEvents="none">
         {drops.map((drop, i) => (
@@ -1711,14 +2279,6 @@ function WeatherEffect({ weather }) {
   }
 
   if (weather === 'snow') {
-    const flakes = useRef([...Array(40)].map(() => ({
-      x: Math.random() * SCREEN_WIDTH,
-      delay: Math.random() * 4000,
-      duration: 3500 + Math.random() * 4000,
-      size: 10 + Math.random() * 16,
-      opacity: 0.5 + Math.random() * 0.5,
-    }))).current;
-
     return (
       <View style={styles.weatherContainer} pointerEvents="none">
         {flakes.map((flake, i) => (
@@ -1730,13 +2290,6 @@ function WeatherEffect({ weather }) {
   }
 
   if (weather === 'fog') {
-    const fogLayers = useRef([...Array(5)].map((_, i) => ({
-      y: 100 + i * 150,
-      duration: 15000 + i * 3000,
-      delay: i * 2000,
-      opacity: 0.15 + i * 0.08,
-    }))).current;
-
     return (
       <View style={styles.weatherContainer} pointerEvents="none">
         {fogLayers.map((layer, i) => (
@@ -1748,23 +2301,6 @@ function WeatherEffect({ weather }) {
   }
 
   if (weather === 'wind') {
-    const windLines = useRef([...Array(25)].map(() => ({
-      y: Math.random() * SCREEN_HEIGHT,
-      duration: 600 + Math.random() * 400,
-      delay: Math.random() * 2000,
-      length: 80 + Math.random() * 120,
-      opacity: 0.2 + Math.random() * 0.3,
-    }))).current;
-
-    const leaves = useRef([...Array(15)].map(() => ({
-      x: -30,
-      y: Math.random() * SCREEN_HEIGHT,
-      duration: 2000 + Math.random() * 1500,
-      delay: Math.random() * 3000,
-      rotation: Math.random() * 360,
-      size: 12 + Math.random() * 8,
-    }))).current;
-
     return (
       <View style={styles.weatherContainer} pointerEvents="none">
         {windLines.map((line, i) => (
@@ -1778,28 +2314,6 @@ function WeatherEffect({ weather }) {
   }
 
   if (weather === 'rainbow') {
-    const shimmerAnim = useRef(new Animated.Value(0)).current;
-    const sparkleAnims = useRef([...Array(20)].map(() => new Animated.Value(0))).current;
-
-    useEffect(() => {
-      Animated.loop(
-        Animated.sequence([
-          Animated.timing(shimmerAnim, { toValue: 1, duration: 3000, easing: Easing.inOut(Easing.sin), useNativeDriver: false }),
-          Animated.timing(shimmerAnim, { toValue: 0, duration: 3000, easing: Easing.inOut(Easing.sin), useNativeDriver: false }),
-        ])
-      ).start();
-
-      sparkleAnims.forEach((anim, i) => {
-        Animated.loop(
-          Animated.sequence([
-            Animated.delay(i * 200 + Math.random() * 1000),
-            Animated.timing(anim, { toValue: 1, duration: 800, useNativeDriver: true }),
-            Animated.timing(anim, { toValue: 0, duration: 800, useNativeDriver: true }),
-          ])
-        ).start();
-      });
-    }, []);
-
     const opacity = shimmerAnim.interpolate({ inputRange: [0, 1], outputRange: [0.5, 0.8] });
 
     return (
@@ -1831,21 +2345,6 @@ function WeatherEffect({ weather }) {
   }
 
   if (weather === 'starry') {
-    const stars = useRef([...Array(80)].map(() => ({
-      x: Math.random() * SCREEN_WIDTH,
-      y: Math.random() * SCREEN_HEIGHT * 0.6,
-      size: 2 + Math.random() * 4,
-      twinkleDuration: 1000 + Math.random() * 2000,
-      delay: Math.random() * 2000,
-    }))).current;
-
-    const shootingStars = useRef([...Array(3)].map(() => ({
-      startX: Math.random() * SCREEN_WIDTH,
-      startY: Math.random() * 200,
-      duration: 800,
-      delay: 5000 + Math.random() * 10000,
-    }))).current;
-
     return (
       <View style={styles.weatherContainer} pointerEvents="none">
         <View style={styles.nightSkyOverlay} />
@@ -2282,6 +2781,9 @@ function StoryDirectorScreen({ navigation, route }) {
     <View style={styles.container}>
       <GlowOrbBackground />
       <WeatherEffect weather={weatherId} />
+      <View style={styles.debugLabel}>
+        <Text style={styles.debugLabelText}>📱 当前页面: StoryDirectorScreen (故事导演台)</Text>
+      </View>
       <View style={styles.createHeader}>
         <TouchableOpacity onPress={() => navigation.goBack()}>
           <Text style={styles.backButton}>← 返回</Text>
@@ -2555,6 +3057,18 @@ const styles = StyleSheet.create({
   container: {
     flex: 1,
     backgroundColor: COLORS.bgDark,
+  },
+  debugLabel: {
+    backgroundColor: '#8B5CF6',
+    paddingHorizontal: 12,
+    paddingVertical: 6,
+    alignItems: 'center',
+    zIndex: 999,
+  },
+  debugLabelText: {
+    color: '#FFFFFF',
+    fontSize: 12,
+    fontWeight: 'bold',
   },
   centerContainer: {
     flex: 1,
@@ -3583,6 +4097,388 @@ const styles = StyleSheet.create({
   directorButtonDesc: {
     fontSize: 12,
     color: COLORS.textSecondary,
+  },
+  tabBar: {
+    flexDirection: 'row',
+    paddingHorizontal: 16,
+    marginTop: 12,
+    backgroundColor: 'rgba(255,255,255,0.1)',
+    borderRadius: 16,
+    marginHorizontal: 0,
+    padding: 4,
+  },
+  tab: {
+    flex: 1,
+    paddingVertical: 12,
+    alignItems: 'center',
+    borderRadius: 12,
+    flexDirection: 'row',
+    justifyContent: 'center',
+  },
+  tabActive: {
+    backgroundColor: COLORS.gold,
+  },
+  tabIcon: {
+    fontSize: 18,
+    marginRight: 6,
+  },
+  tabText: {
+    fontSize: 14,
+    color: COLORS.textSecondary,
+    fontWeight: '500',
+  },
+  tabTextActive: {
+    color: COLORS.bgDark,
+    fontWeight: 'bold',
+  },
+  emptyState: {
+    alignItems: 'center',
+    paddingVertical: 40,
+  },
+  emptyIcon: {
+    fontSize: 48,
+    marginBottom: 12,
+  },
+  emptyText: {
+    fontSize: 16,
+    color: COLORS.textSecondary,
+    marginBottom: 4,
+  },
+  emptySubtext: {
+    fontSize: 12,
+    color: COLORS.textMuted,
+  },
+  characterItem: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    backgroundColor: 'rgba(255,255,255,0.05)',
+    borderRadius: 12,
+    padding: 12,
+    marginBottom: 8,
+  },
+  characterAvatar: {
+    width: 48,
+    height: 48,
+    borderRadius: 24,
+    backgroundColor: COLORS.gold,
+    alignItems: 'center',
+    justifyContent: 'center',
+    marginRight: 12,
+  },
+  characterAvatarText: {
+    fontSize: 20,
+    fontWeight: 'bold',
+    color: COLORS.bgDark,
+  },
+  characterInfo: {
+    flex: 1,
+  },
+  characterName: {
+    fontSize: 16,
+    fontWeight: 'bold',
+    color: COLORS.text,
+    marginBottom: 2,
+  },
+  characterOriginalName: {
+    fontSize: 12,
+    color: COLORS.textMuted,
+    marginBottom: 4,
+  },
+  characterRoleBadge: {
+    alignSelf: 'flex-start',
+  },
+  characterRoleText: {
+    fontSize: 12,
+    color: COLORS.textSecondary,
+  },
+  characterActions: {
+    flexDirection: 'row',
+    gap: 8,
+  },
+  characterActionBtn: {
+    padding: 8,
+  },
+  characterActionIcon: {
+    fontSize: 18,
+  },
+  addCharacterButton: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'center',
+    backgroundColor: 'rgba(255,209,0,0.2)',
+    borderRadius: 12,
+    padding: 16,
+    borderWidth: 1,
+    borderColor: COLORS.gold,
+    borderStyle: 'dashed',
+    marginTop: 8,
+  },
+  addCharacterIcon: {
+    fontSize: 20,
+    marginRight: 8,
+  },
+  addCharacterText: {
+    fontSize: 16,
+    color: COLORS.gold,
+    fontWeight: '600',
+  },
+  modalOverlay: {
+    flex: 1,
+    backgroundColor: 'rgba(0,0,0,0.8)',
+    justifyContent: 'center',
+    alignItems: 'center',
+    padding: 20,
+  },
+  modalContent: {
+    backgroundColor: COLORS.bgCard,
+    borderRadius: 20,
+    padding: 24,
+    width: '100%',
+    maxWidth: 400,
+  },
+  modalTitle: {
+    fontSize: 20,
+    fontWeight: 'bold',
+    color: COLORS.text,
+    marginBottom: 20,
+    textAlign: 'center',
+  },
+  modalLabel: {
+    fontSize: 14,
+    color: COLORS.textSecondary,
+    marginBottom: 8,
+    marginTop: 12,
+  },
+  modalInput: {
+    backgroundColor: 'rgba(255,255,255,0.1)',
+    borderRadius: 12,
+    padding: 14,
+    fontSize: 16,
+    color: COLORS.text,
+    borderWidth: 1,
+    borderColor: 'rgba(255,255,255,0.2)',
+  },
+  characterPicker: {
+    flexDirection: 'row',
+    marginBottom: 8,
+  },
+  characterPickerItem: {
+    alignItems: 'center',
+    padding: 12,
+    marginRight: 8,
+    borderRadius: 12,
+    backgroundColor: 'rgba(255,255,255,0.05)',
+    borderWidth: 2,
+    borderColor: 'transparent',
+    minWidth: 70,
+  },
+  characterPickerItemActive: {
+    borderColor: COLORS.gold,
+    backgroundColor: 'rgba(255,209,0,0.2)',
+  },
+  characterPickerEmoji: {
+    fontSize: 28,
+    marginBottom: 4,
+  },
+  characterPickerName: {
+    fontSize: 12,
+    color: COLORS.textSecondary,
+  },
+  roleTypePicker: {
+    flexDirection: 'row',
+    flexWrap: 'wrap',
+    gap: 8,
+  },
+  roleTypeBtn: {
+    paddingVertical: 8,
+    paddingHorizontal: 12,
+    borderRadius: 8,
+    backgroundColor: 'rgba(255,255,255,0.1)',
+    borderWidth: 1,
+    borderColor: 'rgba(255,255,255,0.2)',
+  },
+  roleTypeBtnActive: {
+    backgroundColor: COLORS.gold,
+    borderColor: COLORS.gold,
+  },
+  roleTypeText: {
+    fontSize: 12,
+    color: COLORS.textSecondary,
+  },
+  roleTypeTextActive: {
+    color: COLORS.bgDark,
+    fontWeight: 'bold',
+  },
+  modalButtons: {
+    flexDirection: 'row',
+    gap: 12,
+    marginTop: 24,
+  },
+  modalCancelBtn: {
+    flex: 1,
+    padding: 14,
+    borderRadius: 12,
+    backgroundColor: 'rgba(255,255,255,0.1)',
+    alignItems: 'center',
+  },
+  modalCancelText: {
+    fontSize: 16,
+    color: COLORS.textSecondary,
+  },
+  modalConfirmBtn: {
+    flex: 1,
+    padding: 14,
+    borderRadius: 12,
+    backgroundColor: COLORS.gold,
+    alignItems: 'center',
+  },
+  modalConfirmText: {
+    fontSize: 16,
+    color: COLORS.bgDark,
+    fontWeight: 'bold',
+  },
+  headerButtons: {
+    flexDirection: 'row',
+    gap: 8,
+  },
+  headerBtn: {
+    padding: 8,
+  },
+  headerBtnText: {
+    fontSize: 18,
+  },
+  statsRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'center',
+    marginTop: 12,
+  },
+  statItem: {
+    alignItems: 'center',
+    paddingHorizontal: 16,
+  },
+  statValue: {
+    fontSize: 24,
+    fontWeight: 'bold',
+    color: COLORS.gold,
+  },
+  statLabel: {
+    fontSize: 12,
+    color: COLORS.textSecondary,
+    marginTop: 2,
+  },
+  statDivider: {
+    width: 1,
+    height: 30,
+    backgroundColor: 'rgba(255,255,255,0.2)',
+  },
+  actionButtonsRow: {
+    flexDirection: 'row',
+    gap: 12,
+    marginTop: 12,
+  },
+  actionBtn: {
+    flex: 1,
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'center',
+    backgroundColor: 'rgba(255,255,255,0.1)',
+    borderRadius: 12,
+    padding: 12,
+    gap: 8,
+  },
+  actionBtnIcon: {
+    fontSize: 16,
+  },
+  actionBtnText: {
+    fontSize: 14,
+    color: COLORS.text,
+    fontWeight: '500',
+  },
+  deleteBookBtn: {
+    marginTop: 20,
+    padding: 14,
+    borderRadius: 12,
+    backgroundColor: 'rgba(239,68,68,0.2)',
+    alignItems: 'center',
+    borderWidth: 1,
+    borderColor: '#EF4444',
+  },
+  deleteBookBtnText: {
+    fontSize: 14,
+    color: '#EF4444',
+    fontWeight: '600',
+  },
+  promptContent: {
+    maxHeight: 300,
+    marginBottom: 16,
+  },
+  promptSectionTitle: {
+    fontSize: 14,
+    fontWeight: 'bold',
+    color: COLORS.gold,
+    marginTop: 12,
+    marginBottom: 6,
+  },
+  promptText: {
+    fontSize: 14,
+    color: COLORS.textSecondary,
+    lineHeight: 20,
+  },
+  promptCharacterItem: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'space-between',
+    paddingVertical: 4,
+  },
+  promptCharacterName: {
+    fontSize: 14,
+    color: COLORS.text,
+  },
+  promptCharacterRole: {
+    fontSize: 12,
+    color: COLORS.textSecondary,
+  },
+  summaryToggle: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    backgroundColor: 'rgba(255,209,0,0.1)',
+    borderRadius: 12,
+    padding: 12,
+    marginBottom: 12,
+    gap: 8,
+  },
+  summaryToggleIcon: {
+    fontSize: 16,
+  },
+  summaryToggleText: {
+    flex: 1,
+    fontSize: 14,
+    color: COLORS.gold,
+    fontWeight: '500',
+  },
+  summaryToggleArrow: {
+    fontSize: 12,
+    color: COLORS.gold,
+  },
+  previousSummaryCard: {
+    backgroundColor: 'rgba(255,255,255,0.05)',
+    borderRadius: 12,
+    padding: 16,
+    marginBottom: 16,
+    borderWidth: 1,
+    borderColor: 'rgba(255,209,0,0.3)',
+  },
+  previousSummaryTitle: {
+    fontSize: 16,
+    fontWeight: 'bold',
+    color: COLORS.gold,
+    marginBottom: 8,
+  },
+  previousSummaryText: {
+    fontSize: 14,
+    color: COLORS.textSecondary,
+    lineHeight: 22,
   },
   weatherContainer: {
     position: 'absolute',

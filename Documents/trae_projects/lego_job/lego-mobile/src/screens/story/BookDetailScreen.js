@@ -6,13 +6,16 @@ import {
   ScrollView,
   FlatList,
   TouchableOpacity,
+  TextInput,
+  Alert,
+  Share,
 } from 'react-native';
 import { useAuth } from '../../context/AuthContext';
 import { useToast } from '../../context/ToastContext';
-import { booksAPI, bookCharactersAPI, chaptersAPI, charactersAPI, storyAPI, plotOptionsAPI } from '../../api';
-import { Card, Button, Loading, EmptyState, Modal, Header } from '../../components/common';
-import { COLORS, CHARACTER_EMOJIS, ROLE_TYPES, PLOT_ICONS } from '../../utils/constants';
-import { getRoleLabel, getPlotNameDisplay } from '../../utils/helpers';
+import { booksAPI, bookCharactersAPI, chaptersAPI, charactersAPI, plotOptionsAPI, shareAPI } from '../../api';
+import { Card, Button, Loading, EmptyState, Modal, Header, GlowOrbBackground } from '../../components/common';
+import { COLORS, CHARACTER_EMOJIS, ROLE_TYPES } from '../../utils/constants';
+import { getRoleLabel } from '../../utils/helpers';
 
 const BookDetailScreen = ({ route, navigation }) => {
   const { bookId } = route.params;
@@ -26,14 +29,12 @@ const BookDetailScreen = ({ route, navigation }) => {
   const [isLoading, setIsLoading] = useState(true);
   const [activeTab, setActiveTab] = useState('chapters');
   const [addModalVisible, setAddModalVisible] = useState(false);
-  const [plotModalVisible, setPlotModalVisible] = useState(false);
-  const [plotOptions, setPlotOptions] = useState(null);
-  const [selectedPlot, setSelectedPlot] = useState({
-    weather: null,
-    adventureType: null,
-    terrain: null,
-    equipment: null,
-  });
+  const [editModalVisible, setEditModalVisible] = useState(false);
+  const [editBookModalVisible, setEditBookModalVisible] = useState(false);
+  const [promptModalVisible, setPromptModalVisible] = useState(false);
+  const [promptContent, setPromptContent] = useState('');
+  const [editingCharacter, setEditingCharacter] = useState(null);
+  const [editBookTitle, setEditBookTitle] = useState('');
   const [newCharacter, setNewCharacter] = useState({
     characterId: null,
     customName: '',
@@ -66,9 +67,27 @@ const BookDetailScreen = ({ route, navigation }) => {
     (c) => !characters.some((bc) => bc.character_id === c.character_id)
   );
 
+  const stats = {
+    chapterCount: chapters.length,
+    characterCount: characters.length,
+    totalWords: chapters.reduce((sum, ch) => sum + (ch.word_count || 0), 0),
+  };
+
   const handleAddCharacter = async () => {
-    if (!newCharacter.characterId || !newCharacter.customName.trim()) {
-      toast.error('请填写完整信息');
+    if (!newCharacter.characterId) {
+      toast.error('请选择一个人仔');
+      return;
+    }
+    if (!newCharacter.customName.trim()) {
+      toast.error('请填写角色名称');
+      return;
+    }
+
+    const duplicateName = characters.find(
+      (c) => c.custom_name === newCharacter.customName.trim()
+    );
+    if (duplicateName) {
+      toast.error('角色名称已存在，请使用不同的名称');
       return;
     }
 
@@ -88,41 +107,129 @@ const BookDetailScreen = ({ route, navigation }) => {
     }
   };
 
-  const handleDeleteCharacter = async (id) => {
-    try {
-      await bookCharactersAPI.delete(id);
-      toast.success('角色删除成功！');
-      loadData();
-    } catch (error) {
-      toast.error(`删除失败：${error.message}`);
-    }
-  };
-
-  const openPlotModal = async () => {
-    if (!plotOptions) {
-      try {
-        const data = await plotOptionsAPI.get();
-        setPlotOptions(data.plotOptions);
-      } catch (error) {
-        console.error('Failed to load plot options');
-      }
-    }
-    setPlotModalVisible(true);
-  };
-
-  const handleGenerateChapter = async () => {
-    if (!selectedPlot.weather || !selectedPlot.adventureType || !selectedPlot.terrain || !selectedPlot.equipment) {
-      toast.error('请选择所有情节选项');
+  const handleEditCharacter = async () => {
+    if (!editingCharacter.customName.trim()) {
+      toast.error('请填写角色名称');
       return;
     }
 
-    setPlotModalVisible(false);
+    const duplicateName = characters.find(
+      (c) => c.custom_name === editingCharacter.customName.trim() && c.id !== editingCharacter.id
+    );
+    if (duplicateName) {
+      toast.error('角色名称已存在，请使用不同的名称');
+      return;
+    }
+
     try {
-      await chaptersAPI.generate(bookId, user?.userId, selectedPlot);
-      toast.success('章节生成成功！');
+      await bookCharactersAPI.update(editingCharacter.id, {
+        custom_name: editingCharacter.customName.trim(),
+        role_type: editingCharacter.role_type,
+      });
+      toast.success('角色更新成功！');
+      setEditModalVisible(false);
+      setEditingCharacter(null);
       loadData();
     } catch (error) {
-      toast.error(`生成失败：${error.message}`);
+      toast.error(`更新失败：${error.message}`);
+    }
+  };
+
+  const handleDeleteCharacter = async (id) => {
+    Alert.alert(
+      '确认删除',
+      '确定要从本书中移除这个角色吗？',
+      [
+        { text: '取消', style: 'cancel' },
+        {
+          text: '删除',
+          style: 'destructive',
+          onPress: async () => {
+            try {
+              await bookCharactersAPI.delete(id);
+              toast.success('角色删除成功！');
+              loadData();
+            } catch (error) {
+              toast.error(`删除失败：${error.message}`);
+            }
+          },
+        },
+      ]
+    );
+  };
+
+  const openEditCharacter = (character) => {
+    setEditingCharacter({
+      id: character.id,
+      customName: character.custom_name,
+      role_type: character.role_type,
+    });
+    setEditModalVisible(true);
+  };
+
+  const handleEditBook = async () => {
+    if (!editBookTitle.trim()) {
+      toast.error('请输入书名');
+      return;
+    }
+
+    try {
+      await booksAPI.update(bookId, { title: editBookTitle.trim() });
+      toast.success('书名更新成功！');
+      setEditBookModalVisible(false);
+      loadData();
+    } catch (error) {
+      toast.error(`更新失败：${error.message}`);
+    }
+  };
+
+  const handleDeleteBook = async () => {
+    Alert.alert(
+      '确认删除',
+      '确定要删除这本书吗？此操作不可恢复！',
+      [
+        { text: '取消', style: 'cancel' },
+        {
+          text: '删除',
+          style: 'destructive',
+          onPress: async () => {
+            try {
+              await booksAPI.delete(bookId);
+              toast.success('书籍删除成功！');
+              navigation.goBack();
+            } catch (error) {
+              toast.error(`删除失败：${error.message}`);
+            }
+          },
+        },
+      ]
+    );
+  };
+
+  const openEditBook = () => {
+    setEditBookTitle(book?.title || '');
+    setEditBookModalVisible(true);
+  };
+
+  const handleViewPrompt = async () => {
+    try {
+      const data = await chaptersAPI.getPrompt(bookId);
+      setPromptContent(data.prompt || '暂无提示词信息');
+      setPromptModalVisible(true);
+    } catch (error) {
+      toast.error('获取提示词失败');
+    }
+  };
+
+  const handleShare = async () => {
+    try {
+      const shareData = await shareAPI.generateBookShare(bookId);
+      await Share.share({
+        message: `📖 ${book?.title}\n\n${shareData.summary || '一个精彩的乐高故事！'}\n\n🔗 ${shareData.url || '分享链接'}`,
+        title: book?.title,
+      });
+    } catch (error) {
+      toast.error('分享失败，请稍后重试');
     }
   };
 
@@ -149,15 +256,38 @@ const BookDetailScreen = ({ route, navigation }) => {
         {CHARACTER_EMOJIS[index % CHARACTER_EMOJIS.length]}
       </Text>
       <Text style={styles.characterName}>{item.custom_name}</Text>
-      <Text style={styles.characterRole}>{getRoleLabel(item.role_type)}</Text>
-      <TouchableOpacity
-        style={styles.deleteBtn}
-        onPress={() => handleDeleteCharacter(item.id)}
-      >
-        <Text style={styles.deleteText}>🗑️</Text>
-      </TouchableOpacity>
+      <View style={[styles.roleBadge, getRoleBadgeStyle(item.role_type)]}>
+        <Text style={styles.roleBadgeText}>{getRoleLabel(item.role_type)}</Text>
+      </View>
+      <View style={styles.characterActions}>
+        <TouchableOpacity
+          style={styles.actionBtn}
+          onPress={() => openEditCharacter(item)}
+        >
+          <Text style={styles.actionBtnText}>✏️</Text>
+        </TouchableOpacity>
+        <TouchableOpacity
+          style={styles.actionBtn}
+          onPress={() => handleDeleteCharacter(item.id)}
+        >
+          <Text style={styles.actionBtnText}>🗑️</Text>
+        </TouchableOpacity>
+      </View>
     </Card>
   );
+
+  const getRoleBadgeStyle = (roleType) => {
+    switch (roleType) {
+      case 'protagonist':
+        return { backgroundColor: COLORS.legoYellow };
+      case 'antagonist':
+        return { backgroundColor: COLORS.legoRed };
+      case 'supporting':
+        return { backgroundColor: COLORS.legoBlue };
+      default:
+        return { backgroundColor: COLORS.textLight };
+    }
+  };
 
   if (isLoading) {
     return <Loading fullScreen message="加载书籍..." />;
@@ -165,27 +295,73 @@ const BookDetailScreen = ({ route, navigation }) => {
 
   return (
     <View style={styles.container}>
+      <GlowOrbBackground />
+      
       <Header
         title={book?.title || '故事详情'}
         leftButton={<Header.BackButton onPress={() => navigation.goBack()} />}
+        rightButton={
+          <View style={styles.headerButtons}>
+            <TouchableOpacity style={styles.headerBtn} onPress={handleShare}>
+              <Text style={styles.headerBtnText}>📤</Text>
+            </TouchableOpacity>
+            <TouchableOpacity style={styles.headerBtn} onPress={openEditBook}>
+              <Text style={styles.headerBtnText}>⚙️</Text>
+            </TouchableOpacity>
+          </View>
+        }
       />
+
+      <View style={styles.debugLabel}>
+        <Text style={styles.debugLabelText}>📱 当前页面: BookDetailScreen (书籍详情页)</Text>
+      </View>
+
+      <View style={styles.statsContainer}>
+        <View style={styles.statItem}>
+          <Text style={styles.statValue}>{stats.chapterCount}</Text>
+          <Text style={styles.statLabel}>章节</Text>
+        </View>
+        <View style={styles.statDivider} />
+        <View style={styles.statItem}>
+          <Text style={styles.statValue}>{stats.characterCount}</Text>
+          <Text style={styles.statLabel}>角色</Text>
+        </View>
+        <View style={styles.statDivider} />
+        <View style={styles.statItem}>
+          <Text style={styles.statValue}>{stats.totalWords}</Text>
+          <Text style={styles.statLabel}>字数</Text>
+        </View>
+      </View>
+
+      <View style={styles.actionButtons}>
+        <TouchableOpacity style={styles.actionBtn} onPress={handleViewPrompt}>
+          <Text style={styles.actionBtnIcon}>📝</Text>
+          <Text style={styles.actionBtnLabel}>查看提示词</Text>
+        </TouchableOpacity>
+      </View>
 
       <View style={styles.tabBar}>
         <TouchableOpacity
           style={[styles.tab, activeTab === 'chapters' && styles.tabActive]}
           onPress={() => setActiveTab('chapters')}
+          activeOpacity={0.7}
         >
+          <Text style={styles.tabIcon}>📚</Text>
           <Text style={[styles.tabText, activeTab === 'chapters' && styles.tabTextActive]}>
-            📚 章节
+            章节
           </Text>
+          {activeTab === 'chapters' && <View style={styles.tabIndicator} />}
         </TouchableOpacity>
         <TouchableOpacity
           style={[styles.tab, activeTab === 'characters' && styles.tabActive]}
           onPress={() => setActiveTab('characters')}
+          activeOpacity={0.7}
         >
+          <Text style={styles.tabIcon}>🎭</Text>
           <Text style={[styles.tabText, activeTab === 'characters' && styles.tabTextActive]}>
-            🎭 角色
+            角色
           </Text>
+          {activeTab === 'characters' && <View style={styles.tabIndicator} />}
         </TouchableOpacity>
       </View>
 
@@ -244,117 +420,286 @@ const BookDetailScreen = ({ route, navigation }) => {
         onClose={() => setAddModalVisible(false)}
         title="➕ 添加角色"
       >
-        <View style={styles.modalForm}>
-          <Text style={styles.label}>选择人仔</Text>
-          <View style={styles.characterSelector}>
-            {availableCharacters.map((char) => (
-              <TouchableOpacity
-                key={char.character_id}
-                style={[
-                  styles.characterOption,
-                  newCharacter.characterId === char.character_id && styles.characterOptionActive,
-                ]}
-                onPress={() => setNewCharacter({ ...newCharacter, characterId: char.character_id })}
-              >
-                <Text style={styles.characterOptionText}>{char.name}</Text>
-              </TouchableOpacity>
-            ))}
+        <ScrollView style={styles.modalScroll}>
+          <View style={styles.modalForm}>
+            <Text style={styles.label}>选择人仔 *</Text>
+            {availableCharacters.length > 0 ? (
+              <View style={styles.characterSelector}>
+                {availableCharacters.map((char) => (
+                  <TouchableOpacity
+                    key={char.character_id}
+                    style={[
+                      styles.characterOption,
+                      newCharacter.characterId === char.character_id && styles.characterOptionActive,
+                    ]}
+                    onPress={() => setNewCharacter({ ...newCharacter, characterId: char.character_id })}
+                  >
+                    <Text style={styles.characterOptionText}>{char.name}</Text>
+                  </TouchableOpacity>
+                ))}
+              </View>
+            ) : (
+              <View style={styles.emptyCharacters}>
+                <Text style={styles.emptyText}>所有角色都已添加</Text>
+                <Button
+                  title="创建新角色"
+                  variant="outline"
+                  size="sm"
+                  onPress={() => {
+                    setAddModalVisible(false);
+                    navigation.navigate('Characters');
+                  }}
+                />
+              </View>
+            )}
+            
+            {availableCharacters.length > 0 && (
+              <>
+                <Text style={styles.label}>自定义名称 *</Text>
+                <TextInput
+                  style={styles.input}
+                  placeholder="为角色取个名字"
+                  placeholderTextColor={COLORS.textMuted}
+                  value={newCharacter.customName}
+                  onChangeText={(text) => setNewCharacter({ ...newCharacter, customName: text })}
+                  maxLength={20}
+                />
+                <Text style={styles.hint}>{newCharacter.customName.length}/20</Text>
+                
+                <Text style={styles.label}>角色类型</Text>
+                <View style={styles.roleSelector}>
+                  {ROLE_TYPES.map((role) => (
+                    <TouchableOpacity
+                      key={role.value}
+                      style={[
+                        styles.roleOption,
+                        newCharacter.roleType === role.value && styles.roleOptionActive,
+                      ]}
+                      onPress={() => setNewCharacter({ ...newCharacter, roleType: role.value })}
+                    >
+                      <Text style={styles.roleOptionText}>{role.icon} {role.label}</Text>
+                    </TouchableOpacity>
+                  ))}
+                </View>
+                
+                <Button title="✅ 保存" onPress={handleAddCharacter} size="lg" />
+              </>
+            )}
           </View>
-          <Text style={styles.label}>自定义名称</Text>
+        </ScrollView>
+      </Modal>
+
+      <Modal
+        visible={editModalVisible}
+        onClose={() => {
+          setEditModalVisible(false);
+          setEditingCharacter(null);
+        }}
+        title="✏️ 编辑角色"
+      >
+        {editingCharacter && (
+          <View style={styles.modalForm}>
+            <Text style={styles.label}>角色名称 *</Text>
+            <TextInput
+              style={styles.input}
+              placeholder="角色名称"
+              placeholderTextColor={COLORS.textMuted}
+              value={editingCharacter.customName}
+              onChangeText={(text) => setEditingCharacter({ ...editingCharacter, customName: text })}
+              maxLength={20}
+            />
+            <Text style={styles.hint}>{editingCharacter.customName.length}/20</Text>
+            <Text style={styles.label}>角色类型</Text>
+            <View style={styles.roleSelector}>
+              {ROLE_TYPES.map((role) => (
+                <TouchableOpacity
+                  key={role.value}
+                  style={[
+                    styles.roleOption,
+                    editingCharacter.role_type === role.value && styles.roleOptionActive,
+                  ]}
+                  onPress={() => setEditingCharacter({ ...editingCharacter, role_type: role.value })}
+                >
+                  <Text style={styles.roleOptionText}>{role.icon} {role.label}</Text>
+                </TouchableOpacity>
+              ))}
+            </View>
+            <Button title="✅ 保存修改" onPress={handleEditCharacter} size="lg" />
+          </View>
+        )}
+      </Modal>
+
+      <Modal
+        visible={editBookModalVisible}
+        onClose={() => setEditBookModalVisible(false)}
+        title="⚙️ 书籍设置"
+      >
+        <View style={styles.modalForm}>
+          <Text style={styles.label}>书名</Text>
           <TextInput
             style={styles.input}
-            placeholder="为角色取个名字"
+            placeholder="输入新书名"
             placeholderTextColor={COLORS.textMuted}
-            value={newCharacter.customName}
-            onChangeText={(text) => setNewCharacter({ ...newCharacter, customName: text })}
-            maxLength={20}
+            value={editBookTitle}
+            onChangeText={setEditBookTitle}
+            maxLength={50}
           />
-          <Text style={styles.label}>角色类型</Text>
-          <View style={styles.roleSelector}>
-            {ROLE_TYPES.map((role) => (
-              <TouchableOpacity
-                key={role.value}
-                style={[
-                  styles.roleOption,
-                  newCharacter.roleType === role.value && styles.roleOptionActive,
-                ]}
-                onPress={() => setNewCharacter({ ...newCharacter, roleType: role.value })}
-              >
-                <Text style={styles.roleOptionText}>{role.label}</Text>
-              </TouchableOpacity>
-            ))}
-          </View>
-          <Button title="✅ 保存" onPress={handleAddCharacter} size="lg" />
+          <Text style={styles.hint}>{editBookTitle.length}/50</Text>
+          
+          <Button title="✅ 保存书名" onPress={handleEditBook} size="lg" style={styles.modalButton} />
+          
+          <TouchableOpacity style={styles.deleteBookBtn} onPress={handleDeleteBook}>
+            <Text style={styles.deleteBookText}>🗑️ 删除这本书</Text>
+          </TouchableOpacity>
         </View>
       </Modal>
 
       <Modal
-        visible={plotModalVisible}
-        onClose={() => setPlotModalVisible(false)}
-        title="🎭 选择故事情节"
+        visible={promptModalVisible}
+        onClose={() => setPromptModalVisible(false)}
+        title="📝 AI提示词"
       >
-        <ScrollView style={styles.plotModalContent}>
-          {plotOptions && Object.entries(plotOptions).map(([category, options]) => (
-            <View key={category} style={styles.plotSection}>
-              <Text style={styles.plotSectionTitle}>
-                {category === 'weather' && '☀️ 天气'}
-                {category === 'adventureType' && '🗺️ 冒险类型'}
-                {category === 'terrain' && '🌲 地形'}
-                {category === 'equipment' && '🪄 装备与道具'}
-              </Text>
-              <View style={styles.plotOptions}>
-                {options.map((option) => (
-                  <TouchableOpacity
-                    key={option.id}
-                    style={[
-                      styles.plotOption,
-                      selectedPlot[category] === option.id && styles.plotOptionActive,
-                    ]}
-                    onPress={() => setSelectedPlot({ ...selectedPlot, [category]: option.id })}
-                  >
-                    <Text style={styles.plotOptionIcon}>{option.icon}</Text>
-                    <Text style={styles.plotOptionName}>{option.name}</Text>
-                  </TouchableOpacity>
-                ))}
-              </View>
-            </View>
-          ))}
-          <Button title="✨ 确认生成" onPress={handleGenerateChapter} size="lg" />
+        <ScrollView style={styles.promptScroll}>
+          <Text style={styles.promptContent}>{promptContent}</Text>
         </ScrollView>
       </Modal>
     </View>
   );
 };
 
-import { TextInput } from 'react-native';
-
 const styles = StyleSheet.create({
   container: {
     flex: 1,
     backgroundColor: COLORS.background,
   },
+  headerButtons: {
+    flexDirection: 'row',
+    gap: 8,
+  },
+  headerBtn: {
+    padding: 8,
+  },
+  headerBtnText: {
+    fontSize: 20,
+  },
+  debugLabel: {
+    backgroundColor: COLORS.legoPurple,
+    paddingHorizontal: 12,
+    paddingVertical: 6,
+    marginHorizontal: 16,
+    marginTop: 8,
+    borderRadius: 8,
+    alignItems: 'center',
+  },
+  debugLabelText: {
+    color: COLORS.white,
+    fontSize: 12,
+    fontWeight: 'bold',
+  },
+  statsContainer: {
+    flexDirection: 'row',
+    backgroundColor: COLORS.white,
+    marginHorizontal: 16,
+    marginTop: 12,
+    borderRadius: 16,
+    padding: 16,
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.1,
+    shadowRadius: 4,
+    elevation: 3,
+  },
+  statItem: {
+    flex: 1,
+    alignItems: 'center',
+  },
+  statValue: {
+    fontSize: 24,
+    fontWeight: 'bold',
+    color: COLORS.legoBlue,
+  },
+  statLabel: {
+    fontSize: 12,
+    color: COLORS.textLight,
+    marginTop: 4,
+  },
+  statDivider: {
+    width: 1,
+    backgroundColor: COLORS.border,
+    marginVertical: 4,
+  },
+  actionButtons: {
+    flexDirection: 'row',
+    paddingHorizontal: 16,
+    marginTop: 12,
+    gap: 12,
+  },
+  actionBtn: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    backgroundColor: COLORS.white,
+    paddingHorizontal: 16,
+    paddingVertical: 10,
+    borderRadius: 12,
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 1 },
+    shadowOpacity: 0.05,
+    shadowRadius: 2,
+    elevation: 1,
+  },
+  actionBtnIcon: {
+    fontSize: 16,
+    marginRight: 6,
+  },
+  actionBtnLabel: {
+    fontSize: 14,
+    color: COLORS.text,
+    fontWeight: '500',
+  },
   tabBar: {
     flexDirection: 'row',
     paddingHorizontal: 20,
-    borderBottomWidth: 1,
-    borderBottomColor: COLORS.border,
+    marginTop: 12,
+    backgroundColor: COLORS.white,
+    borderRadius: 16,
+    marginHorizontal: 16,
+    padding: 4,
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.1,
+    shadowRadius: 4,
+    elevation: 3,
   },
   tab: {
     flex: 1,
-    paddingVertical: 16,
+    paddingVertical: 14,
     alignItems: 'center',
+    borderRadius: 12,
+    position: 'relative',
   },
   tabActive: {
-    borderBottomWidth: 3,
-    borderBottomColor: COLORS.legoYellow,
+    backgroundColor: COLORS.legoYellow,
+  },
+  tabIcon: {
+    fontSize: 24,
+    marginBottom: 4,
   },
   tabText: {
-    fontSize: 16,
+    fontSize: 14,
     color: COLORS.textLight,
+    fontWeight: '500',
   },
   tabTextActive: {
     color: COLORS.text,
     fontWeight: 'bold',
+  },
+  tabIndicator: {
+    position: 'absolute',
+    bottom: 2,
+    width: 6,
+    height: 6,
+    borderRadius: 3,
+    backgroundColor: COLORS.legoOrange,
   },
   listContent: {
     padding: 20,
@@ -398,18 +743,32 @@ const styles = StyleSheet.create({
     fontWeight: 'bold',
     color: COLORS.text,
   },
-  characterRole: {
-    fontSize: 12,
-    color: COLORS.textLight,
-    marginTop: 4,
+  roleBadge: {
+    paddingHorizontal: 10,
+    paddingVertical: 4,
+    borderRadius: 12,
+    marginTop: 6,
   },
-  deleteBtn: {
-    position: 'absolute',
-    top: 8,
-    right: 8,
+  roleBadgeText: {
+    fontSize: 11,
+    color: COLORS.white,
+    fontWeight: 'bold',
   },
-  deleteText: {
-    fontSize: 20,
+  characterActions: {
+    flexDirection: 'row',
+    marginTop: 10,
+    gap: 8,
+  },
+  actionBtn: {
+    width: 32,
+    height: 32,
+    borderRadius: 16,
+    backgroundColor: COLORS.background,
+    justifyContent: 'center',
+    alignItems: 'center',
+  },
+  actionBtnText: {
+    fontSize: 14,
   },
   bottomBar: {
     padding: 20,
@@ -421,19 +780,39 @@ const styles = StyleSheet.create({
   bottomButton: {
     width: '100%',
   },
+  modalScroll: {
+    maxHeight: 400,
+  },
   modalForm: {
-    gap: 16,
+    gap: 12,
   },
   label: {
     fontSize: 14,
     fontWeight: '600',
     color: COLORS.text,
-    marginBottom: 8,
+    marginBottom: 4,
+  },
+  hint: {
+    fontSize: 11,
+    color: COLORS.textLight,
+    textAlign: 'right',
+    marginTop: -8,
   },
   characterSelector: {
     flexDirection: 'row',
     flexWrap: 'wrap',
     gap: 8,
+  },
+  emptyCharacters: {
+    alignItems: 'center',
+    padding: 20,
+    backgroundColor: COLORS.background,
+    borderRadius: 12,
+  },
+  emptyText: {
+    fontSize: 14,
+    color: COLORS.textLight,
+    marginBottom: 12,
   },
   characterOption: {
     paddingHorizontal: 12,
@@ -462,6 +841,7 @@ const styles = StyleSheet.create({
   },
   roleSelector: {
     flexDirection: 'row',
+    flexWrap: 'wrap',
     gap: 8,
   },
   roleOption: {
@@ -480,44 +860,29 @@ const styles = StyleSheet.create({
     fontSize: 12,
     color: COLORS.text,
   },
-  plotModalContent: {
-    maxHeight: 400,
+  modalButton: {
+    marginTop: 8,
   },
-  plotSection: {
-    marginBottom: 20,
-  },
-  plotSectionTitle: {
-    fontSize: 16,
-    fontWeight: 'bold',
-    color: COLORS.text,
-    marginBottom: 12,
-  },
-  plotOptions: {
-    flexDirection: 'row',
-    flexWrap: 'wrap',
-    gap: 8,
-  },
-  plotOption: {
-    width: '23%',
+  deleteBookBtn: {
     alignItems: 'center',
-    padding: 8,
-    backgroundColor: COLORS.background,
-    borderRadius: 8,
-    borderWidth: 2,
-    borderColor: COLORS.border,
+    paddingVertical: 16,
+    marginTop: 16,
+    borderTopWidth: 1,
+    borderTopColor: COLORS.border,
   },
-  plotOptionActive: {
-    backgroundColor: COLORS.legoYellow,
-    borderColor: COLORS.legoOrange,
+  deleteBookText: {
+    fontSize: 16,
+    color: COLORS.legoRed,
+    fontWeight: '600',
   },
-  plotOptionIcon: {
-    fontSize: 24,
-    marginBottom: 4,
+  promptScroll: {
+    maxHeight: 400,
+    padding: 16,
   },
-  plotOptionName: {
-    fontSize: 10,
+  promptContent: {
+    fontSize: 14,
     color: COLORS.text,
-    textAlign: 'center',
+    lineHeight: 22,
   },
 });
 

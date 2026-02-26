@@ -12,12 +12,20 @@ import { useAuth } from '../../context/AuthContext';
 import { useToast } from '../../context/ToastContext';
 import { charactersAPI, chaptersAPI, plotOptionsAPI } from '../../api';
 import { Card, Button, Loading, Header, Modal, GlowOrbBackground } from '../../components/common';
-import CardDeck from '../../components/story/CardDeck';
 import StagePreview from '../../components/story/StagePreview';
-import WeatherEffect from '../../components/story/WeatherEffect';
+import { CardDeck3D } from '../../components/card3d';
+import { WeatherEffectV2 } from '../../components/weather';
+import { MagicParticles } from '../../components/particles';
 import { COLORS, CHARACTER_EMOJIS } from '../../utils/constants';
 
 const BOUNCE_EASING = Easing.bezier(0.68, -0.55, 0.265, 1.55);
+
+const ROLE_TYPES = [
+  { value: 'protagonist', label: '主角', icon: '👑', color: COLORS.legoYellow },
+  { value: 'antagonist', label: '反派', icon: '😈', color: COLORS.legoRed },
+  { value: 'supporting', label: '配角', icon: '⭐', color: COLORS.legoBlue },
+  { value: 'extra', label: '路人', icon: '👤', color: COLORS.textLight },
+];
 
 const StoryDirectorScreen = ({ route, navigation }) => {
   const { bookId } = route.params;
@@ -39,7 +47,6 @@ const StoryDirectorScreen = ({ route, navigation }) => {
 
   const titleAnim = useRef(new Animated.Value(0)).current;
   const charCardAnims = useRef([]).current;
-  const slotAnims = useRef({}).current;
   const buttonPulse = useRef(new Animated.Value(1)).current;
 
   useEffect(() => {
@@ -93,11 +100,16 @@ const StoryDirectorScreen = ({ route, navigation }) => {
     }
   };
 
+  const getRoleCount = (roleType) => {
+    return selectedCharacters.filter(c => c.roleType === roleType).length;
+  };
+
   const toggleCharacter = (character) => {
-    const isSelected = selectedCharacters.some(
+    const existingIndex = selectedCharacters.findIndex(
       (c) => c.character_id === character.character_id
     );
-    if (isSelected) {
+    
+    if (existingIndex !== -1) {
       setSelectedCharacters(
         selectedCharacters.filter((c) => c.character_id !== character.character_id)
       );
@@ -106,13 +118,55 @@ const StoryDirectorScreen = ({ route, navigation }) => {
         toast.warning('最多选择5个角色');
         return;
       }
-      setSelectedCharacters([...selectedCharacters, character]);
+      
+      const hasProtagonist = getRoleCount('protagonist') > 0;
+      const newCharacter = {
+        ...character,
+        roleType: hasProtagonist ? 'supporting' : 'protagonist',
+      };
+      setSelectedCharacters([...selectedCharacters, newCharacter]);
     }
+  };
+
+  const updateCharacterRole = (characterId, newRoleType) => {
+    if (newRoleType === 'protagonist') {
+      const currentProtagonist = selectedCharacters.find(c => c.roleType === 'protagonist');
+      if (currentProtagonist && currentProtagonist.character_id !== characterId) {
+        setSelectedCharacters(selectedCharacters.map(c => {
+          if (c.character_id === characterId) {
+            return { ...c, roleType: newRoleType };
+          }
+          if (c.roleType === 'protagonist') {
+            return { ...c, roleType: 'supporting' };
+          }
+          return c;
+        }));
+        return;
+      }
+    }
+
+    if (newRoleType === 'supporting' && getRoleCount('supporting') >= 2) {
+      const currentChar = selectedCharacters.find(c => c.character_id === characterId);
+      if (currentChar && currentChar.roleType !== 'supporting') {
+        toast.warning('配角最多只能选2个');
+        return;
+      }
+    }
+
+    setSelectedCharacters(selectedCharacters.map(c => 
+      c.character_id === characterId ? { ...c, roleType: newRoleType } : c
+    ));
   };
 
   const handleGenerate = async () => {
     if (selectedCharacters.length === 0) {
       toast.error('请至少选择一个角色');
+      return;
+    }
+
+    const hasProtagonist = getRoleCount('protagonist') > 0;
+    if (!hasProtagonist) {
+      toast.error('请至少选择一个主角');
       return;
     }
 
@@ -124,8 +178,12 @@ const StoryDirectorScreen = ({ route, navigation }) => {
 
     setIsGenerating(true);
     try {
-      const characterIds = selectedCharacters.map((c) => c.character_id);
-      await chaptersAPI.generate(bookId, user?.userId, plotSelection, characterIds);
+      const charactersData = selectedCharacters.map(c => ({
+        character_id: c.character_id,
+        role_type: c.roleType,
+        custom_name: c.name,
+      }));
+      await chaptersAPI.generate(bookId, user?.userId, plotSelection, charactersData);
       toast.success('章节生成成功！🎬');
       navigation.goBack();
     } catch (error) {
@@ -150,7 +208,12 @@ const StoryDirectorScreen = ({ route, navigation }) => {
     toast.success('🎲 随机选择完成！');
   };
 
+  const getRoleInfo = (roleType) => {
+    return ROLE_TYPES.find(r => r.value === roleType) || ROLE_TYPES[2];
+  };
+
   const isReady = selectedCharacters.length > 0 && 
+    getRoleCount('protagonist') > 0 &&
     plotSelection.weather && 
     plotSelection.adventureType && 
     plotSelection.terrain && 
@@ -163,7 +226,12 @@ const StoryDirectorScreen = ({ route, navigation }) => {
   return (
     <View style={styles.container}>
       <GlowOrbBackground />
-      <WeatherEffect weather={plotSelection.weather} />
+      <MagicParticles count={15} enabled={true} />
+      <WeatherEffectV2 weather={plotSelection.weather} />
+      
+      <View style={styles.debugLabel}>
+        <Text style={styles.debugLabelText}>📱 当前页面: StoryDirectorScreen (故事导演台)</Text>
+      </View>
       
       <Header
         title="🎬 故事导演台"
@@ -194,12 +262,12 @@ const StoryDirectorScreen = ({ route, navigation }) => {
           <ScrollView horizontal showsHorizontalScrollIndicator={false}>
             <View style={styles.characterGrid}>
               {characters.map((char, index) => {
-                const isSelected = selectedCharacters.some(
+                const selectedChar = selectedCharacters.find(
                   (c) => c.character_id === char.character_id
                 );
+                const isSelected = !!selectedChar;
                 const anim = charCardAnims[index] || new Animated.Value(1);
-                const scale = isSelected ? 1.08 : 1;
-                const translateY = isSelected ? -8 : 0;
+                const roleInfo = selectedChar ? getRoleInfo(selectedChar.roleType) : null;
                 
                 return (
                   <Animated.View
@@ -213,21 +281,22 @@ const StoryDirectorScreen = ({ route, navigation }) => {
                       style={[
                         styles.characterCard,
                         isSelected && styles.characterCardSelected,
+                        isSelected && roleInfo && { borderColor: roleInfo.color, backgroundColor: roleInfo.color + '20' },
                       ]}
                       onPress={() => toggleCharacter(char)}
                       activeOpacity={0.85}
                     >
+                      {isSelected && roleInfo && (
+                        <View style={[styles.roleBadge, { backgroundColor: roleInfo.color }]}>
+                          <Text style={styles.roleBadgeIcon}>{roleInfo.icon}</Text>
+                        </View>
+                      )}
                       <Text style={styles.characterEmoji}>
                         {CHARACTER_EMOJIS[index % CHARACTER_EMOJIS.length]}
                       </Text>
                       <Text style={styles.characterName} numberOfLines={1}>
                         {char.name}
                       </Text>
-                      {isSelected && (
-                        <View style={styles.checkMark}>
-                          <Text style={styles.checkText}>✓</Text>
-                        </View>
-                      )}
                     </TouchableOpacity>
                   </Animated.View>
                 );
@@ -236,9 +305,64 @@ const StoryDirectorScreen = ({ route, navigation }) => {
           </ScrollView>
         </View>
 
+        {selectedCharacters.length > 0 && (
+          <View style={styles.section}>
+            <Text style={styles.sectionTitle}>🎭 设置角色类型</Text>
+            <Text style={styles.sectionHint}>主角只能1个，配角最多2个</Text>
+            
+            {selectedCharacters.map((char, index) => {
+              const roleInfo = getRoleInfo(char.roleType);
+              return (
+                <View key={char.character_id} style={styles.roleSettingCard}>
+                  <View style={styles.roleSettingHeader}>
+                    <Text style={styles.roleSettingEmoji}>
+                      {CHARACTER_EMOJIS[characters.findIndex(c => c.character_id === char.character_id) % CHARACTER_EMOJIS.length]}
+                    </Text>
+                    <Text style={styles.roleSettingName}>{char.name}</Text>
+                    <View style={[styles.currentRoleBadge, { backgroundColor: roleInfo.color }]}>
+                      <Text style={styles.currentRoleText}>{roleInfo.icon} {roleInfo.label}</Text>
+                    </View>
+                  </View>
+                  <View style={styles.roleSelector}>
+                    {ROLE_TYPES.map((role) => {
+                      const isSelected = char.roleType === role.value;
+                      const isDisabled = role.value === 'protagonist' && 
+                        getRoleCount('protagonist') > 0 && 
+                        char.roleType !== 'protagonist';
+                      const isSupportingDisabled = role.value === 'supporting' && 
+                        getRoleCount('supporting') >= 2 && 
+                        char.roleType !== 'supporting';
+                      
+                      return (
+                        <TouchableOpacity
+                          key={role.value}
+                          style={[
+                            styles.roleOption,
+                            isSelected && { backgroundColor: role.color, borderColor: role.color },
+                            (isDisabled || isSupportingDisabled) && styles.roleOptionDisabled,
+                          ]}
+                          onPress={() => !isDisabled && !isSupportingDisabled && updateCharacterRole(char.character_id, role.value)}
+                          disabled={isDisabled || isSupportingDisabled}
+                        >
+                          <Text style={[styles.roleOptionText, isSelected && styles.roleOptionTextSelected]}>
+                            {role.icon}
+                          </Text>
+                          <Text style={[styles.roleOptionLabel, isSelected && styles.roleOptionTextSelected]}>
+                            {role.label}
+                          </Text>
+                        </TouchableOpacity>
+                      );
+                    })}
+                  </View>
+                </View>
+              );
+            })}
+          </View>
+        )}
+
         {plotOptions && (
           <>
-            <CardDeck
+            <CardDeck3D
               title="☀️ 选择天气"
               items={plotOptions.weather}
               selectedId={plotSelection.weather}
@@ -247,7 +371,7 @@ const StoryDirectorScreen = ({ route, navigation }) => {
               }
             />
 
-            <CardDeck
+            <CardDeck3D
               title="🗺️ 选择冒险类型"
               items={plotOptions.adventureType}
               selectedId={plotSelection.adventureType}
@@ -256,7 +380,7 @@ const StoryDirectorScreen = ({ route, navigation }) => {
               }
             />
 
-            <CardDeck
+            <CardDeck3D
               title="🌲 选择地形"
               items={plotOptions.terrain}
               selectedId={plotSelection.terrain}
@@ -265,7 +389,7 @@ const StoryDirectorScreen = ({ route, navigation }) => {
               }
             />
 
-            <CardDeck
+            <CardDeck3D
               title="🪄 选择装备"
               items={plotOptions.equipment}
               selectedId={plotSelection.equipment}
@@ -298,6 +422,19 @@ const styles = StyleSheet.create({
     flex: 1,
     backgroundColor: COLORS.background,
   },
+  debugLabel: {
+    backgroundColor: '#8B5CF6',
+    paddingHorizontal: 12,
+    paddingVertical: 6,
+    marginTop: 50,
+    alignItems: 'center',
+    zIndex: 10,
+  },
+  debugLabelText: {
+    color: '#FFFFFF',
+    fontSize: 12,
+    fontWeight: 'bold',
+  },
   randomBtn: {
     fontSize: 16,
     color: COLORS.legoBlue,
@@ -316,6 +453,11 @@ const styles = StyleSheet.create({
     fontSize: 16,
     fontWeight: 'bold',
     color: COLORS.text,
+    marginBottom: 4,
+  },
+  sectionHint: {
+    fontSize: 12,
+    color: COLORS.textLight,
     marginBottom: 12,
   },
   characterGrid: {
@@ -332,16 +474,27 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
     borderWidth: 2,
     borderColor: COLORS.border,
+    position: 'relative',
   },
   characterCardSelected: {
-    borderColor: COLORS.legoYellow,
     borderWidth: 3,
-    backgroundColor: COLORS.legoYellow,
-    shadowColor: COLORS.legoYellow,
     shadowOffset: { width: 0, height: 0 },
     shadowOpacity: 0.5,
     shadowRadius: 15,
     elevation: 10,
+  },
+  roleBadge: {
+    position: 'absolute',
+    top: 4,
+    right: 4,
+    width: 22,
+    height: 22,
+    borderRadius: 11,
+    justifyContent: 'center',
+    alignItems: 'center',
+  },
+  roleBadgeIcon: {
+    fontSize: 12,
   },
   characterEmoji: {
     fontSize: 36,
@@ -352,21 +505,69 @@ const styles = StyleSheet.create({
     fontWeight: 'bold',
     color: COLORS.text,
   },
-  checkMark: {
-    position: 'absolute',
-    top: 4,
-    right: 4,
-    width: 20,
-    height: 20,
-    borderRadius: 10,
-    backgroundColor: COLORS.legoGreen,
-    justifyContent: 'center',
-    alignItems: 'center',
+  roleSettingCard: {
+    backgroundColor: COLORS.white,
+    borderRadius: 16,
+    padding: 12,
+    marginBottom: 12,
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.1,
+    shadowRadius: 4,
+    elevation: 3,
   },
-  checkText: {
+  roleSettingHeader: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    marginBottom: 12,
+  },
+  roleSettingEmoji: {
+    fontSize: 28,
+    marginRight: 8,
+  },
+  roleSettingName: {
+    flex: 1,
+    fontSize: 16,
+    fontWeight: 'bold',
+    color: COLORS.text,
+  },
+  currentRoleBadge: {
+    paddingHorizontal: 8,
+    paddingVertical: 4,
+    borderRadius: 8,
+  },
+  currentRoleText: {
     fontSize: 12,
     color: COLORS.white,
     fontWeight: 'bold',
+  },
+  roleSelector: {
+    flexDirection: 'row',
+    gap: 8,
+  },
+  roleOption: {
+    flex: 1,
+    paddingVertical: 8,
+    paddingHorizontal: 4,
+    borderRadius: 12,
+    backgroundColor: COLORS.background,
+    borderWidth: 2,
+    borderColor: COLORS.border,
+    alignItems: 'center',
+  },
+  roleOptionDisabled: {
+    opacity: 0.4,
+  },
+  roleOptionText: {
+    fontSize: 18,
+    marginBottom: 2,
+  },
+  roleOptionLabel: {
+    fontSize: 10,
+    color: COLORS.textLight,
+  },
+  roleOptionTextSelected: {
+    color: COLORS.white,
   },
   generateButton: {
     margin: 20,

@@ -10,8 +10,9 @@ import {
 } from 'react-native';
 import { useAuth } from '../../context/AuthContext';
 import { useToast } from '../../context/ToastContext';
-import { chaptersAPI, puzzleAPI, plotOptionsAPI } from '../../api';
+import { chaptersAPI, puzzleAPI, plotOptionsAPI, booksAPI } from '../../api';
 import { Card, Button, Loading, Modal, Header, ParticleBackground } from '../../components/common';
+import KeywordHighlight from '../../components/chapter/KeywordHighlight';
 import { COLORS } from '../../utils/constants';
 
 const BOUNCE_EASING = Easing.bezier(0.68, -0.55, 0.265, 1.55);
@@ -35,6 +36,9 @@ const ChapterScreen = ({ route, navigation }) => {
     terrain: null,
     equipment: null,
   });
+  const [bookCharacters, setBookCharacters] = useState([]);
+  const [navigationInfo, setNavigationInfo] = useState({ prev: null, next: null, total: 0, current: 1 });
+  const [hintVisible, setHintVisible] = useState(false);
 
   const titleAnim = useRef(new Animated.Value(0)).current;
   const titleY = useRef(new Animated.Value(-40)).current;
@@ -96,6 +100,25 @@ const ChapterScreen = ({ route, navigation }) => {
         setPuzzle(data.puzzle);
         if (data.puzzleRecord) {
           setIsCorrect(data.puzzleRecord.is_correct === 1);
+        }
+      }
+
+      if (data.bookCharacters) {
+        setBookCharacters(data.bookCharacters);
+      }
+
+      if (data.navigation) {
+        setNavigationInfo(data.navigation);
+      }
+
+      if (bookId) {
+        try {
+          const bookData = await booksAPI.getDetail(bookId, user?.userId);
+          if (bookData.characters) {
+            setBookCharacters(bookData.characters);
+          }
+        } catch (e) {
+          // ignore
         }
       }
     } catch (error) {
@@ -183,6 +206,12 @@ const ChapterScreen = ({ route, navigation }) => {
     }
   };
 
+  const goToChapter = (targetChapterId) => {
+    if (targetChapterId) {
+      navigation.push('Chapter', { chapterId: targetChapterId, bookId });
+    }
+  };
+
   if (isLoading) {
     return <Loading fullScreen message="加载章节..." />;
   }
@@ -200,6 +229,10 @@ const ChapterScreen = ({ route, navigation }) => {
   return (
     <View style={styles.container}>
       <ParticleBackground />
+      
+      <View style={styles.debugLabel}>
+        <Text style={styles.debugLabelText}>📱 当前页面: ChapterScreen (章节阅读页)</Text>
+      </View>
       
       <Header
         title={`第${chapter?.chapter_number}章`}
@@ -223,26 +256,47 @@ const ChapterScreen = ({ route, navigation }) => {
           <Animated.View style={[styles.titleUnderline, { width: underlineWidth }]} />
         </View>
 
+        <TouchableOpacity 
+          style={styles.hintToggle}
+          onPress={() => setHintVisible(!hintVisible)}
+        >
+          <Text style={styles.hintToggleText}>
+            {hintVisible ? '▼ 收起创作提示' : '▶ 展开创作提示'}
+          </Text>
+        </TouchableOpacity>
+
+        {hintVisible && (
+          <Card style={styles.hintCard}>
+            <Text style={styles.hintTitle}>📖 故事背景</Text>
+            <Text style={styles.hintContent}>
+              {chapter?.story_context || '这是一个充满冒险的故事...'}
+            </Text>
+            {bookCharacters.length > 0 && (
+              <>
+                <Text style={styles.hintTitle}>👥 登场角色</Text>
+                <View style={styles.charactersList}>
+                  {bookCharacters.map((char, index) => (
+                    <View key={index} style={styles.characterChip}>
+                      <Text style={styles.characterName}>{char.custom_name || char.name}</Text>
+                      <Text style={styles.characterRole}>
+                        {char.role_type === 'protagonist' && '👑'}
+                        {char.role_type === 'antagonist' && '😈'}
+                        {char.role_type === 'supporting' && '⭐'}
+                        {char.role_type === 'extra' && '👤'}
+                      </Text>
+                    </View>
+                  ))}
+                </View>
+              </>
+            )}
+          </Card>
+        )}
+
         <Card style={styles.storyCard}>
-          {chapter?.content?.split('\n\n').map((para, index) => (
-            <Animated.Text
-              key={index}
-              style={[
-                styles.storyContent, 
-                { 
-                  opacity: paragraphAnims[index] || 1,
-                  transform: [{ 
-                    translateY: (paragraphAnims[index] || new Animated.Value(1)).interpolate({ 
-                      inputRange: [0, 1], 
-                      outputRange: [15, 0] 
-                    }) 
-                  }],
-                }
-              ]}
-            >
-              {para}
-            </Animated.Text>
-          ))}
+          <KeywordHighlight 
+            content={chapter?.content} 
+            characters={bookCharacters} 
+          />
         </Card>
 
         {puzzle && !isCorrect && (
@@ -334,6 +388,32 @@ const ChapterScreen = ({ route, navigation }) => {
           </Animated.View>
         )}
 
+        <View style={styles.navigationContainer}>
+          <TouchableOpacity
+            style={[styles.navButton, !navigationInfo.prev && styles.navButtonDisabled]}
+            onPress={() => goToChapter(navigationInfo.prev)}
+            disabled={!navigationInfo.prev}
+          >
+            <Text style={styles.navButtonIcon}>◀</Text>
+            <Text style={styles.navButtonText}>上一章</Text>
+          </TouchableOpacity>
+          
+          <View style={styles.navIndicator}>
+            <Text style={styles.navIndicatorText}>
+              {navigationInfo.current} / {navigationInfo.total}
+            </Text>
+          </View>
+          
+          <TouchableOpacity
+            style={[styles.navButton, !navigationInfo.next && styles.navButtonDisabled]}
+            onPress={() => goToChapter(navigationInfo.next)}
+            disabled={!navigationInfo.next}
+          >
+            <Text style={styles.navButtonText}>下一章</Text>
+            <Text style={styles.navButtonIcon}>▶</Text>
+          </TouchableOpacity>
+        </View>
+
         {(isCorrect || !puzzle) && (
           <Button
             title="✨ 继续生成故事"
@@ -387,6 +467,19 @@ const styles = StyleSheet.create({
     flex: 1,
     backgroundColor: COLORS.background,
   },
+  debugLabel: {
+    backgroundColor: '#8B5CF6',
+    paddingHorizontal: 12,
+    paddingVertical: 6,
+    marginTop: 50,
+    alignItems: 'center',
+    zIndex: 10,
+  },
+  debugLabelText: {
+    color: '#FFFFFF',
+    fontSize: 12,
+    fontWeight: 'bold',
+  },
   content: {
     flex: 1,
     padding: 20,
@@ -408,15 +501,57 @@ const styles = StyleSheet.create({
     marginTop: 8,
     borderRadius: 2,
   },
+  hintToggle: {
+    paddingVertical: 8,
+    marginBottom: 12,
+  },
+  hintToggleText: {
+    fontSize: 14,
+    color: COLORS.legoBlue,
+    fontWeight: '600',
+  },
+  hintCard: {
+    marginBottom: 16,
+    padding: 16,
+    backgroundColor: COLORS.white,
+  },
+  hintTitle: {
+    fontSize: 16,
+    fontWeight: 'bold',
+    color: COLORS.text,
+    marginBottom: 8,
+  },
+  hintContent: {
+    fontSize: 14,
+    color: COLORS.textLight,
+    lineHeight: 22,
+    marginBottom: 12,
+  },
+  charactersList: {
+    flexDirection: 'row',
+    flexWrap: 'wrap',
+    gap: 8,
+  },
+  characterChip: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    backgroundColor: COLORS.legoYellow + '30',
+    paddingHorizontal: 10,
+    paddingVertical: 4,
+    borderRadius: 12,
+  },
+  characterName: {
+    fontSize: 12,
+    fontWeight: '600',
+    color: COLORS.text,
+    marginRight: 4,
+  },
+  characterRole: {
+    fontSize: 12,
+  },
   storyCard: {
     marginBottom: 20,
     padding: 20,
-  },
-  storyContent: {
-    fontSize: 18,
-    lineHeight: 32,
-    color: COLORS.text,
-    marginBottom: 16,
   },
   puzzleWrapper: {
     marginBottom: 20,
@@ -494,6 +629,50 @@ const styles = StyleSheet.create({
     fontSize: 16,
     color: COLORS.white,
     textAlign: 'center',
+  },
+  navigationContainer: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'space-between',
+    marginBottom: 20,
+    paddingHorizontal: 8,
+  },
+  navButton: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    paddingVertical: 10,
+    paddingHorizontal: 16,
+    backgroundColor: COLORS.white,
+    borderRadius: 20,
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.1,
+    shadowRadius: 4,
+    elevation: 3,
+  },
+  navButtonDisabled: {
+    opacity: 0.4,
+  },
+  navButtonIcon: {
+    fontSize: 14,
+    color: COLORS.legoBlue,
+    marginHorizontal: 4,
+  },
+  navButtonText: {
+    fontSize: 14,
+    color: COLORS.legoBlue,
+    fontWeight: '600',
+  },
+  navIndicator: {
+    backgroundColor: COLORS.legoYellow,
+    paddingHorizontal: 16,
+    paddingVertical: 8,
+    borderRadius: 16,
+  },
+  navIndicatorText: {
+    fontSize: 14,
+    fontWeight: 'bold',
+    color: COLORS.text,
   },
   continueButton: {
     marginBottom: 40,
