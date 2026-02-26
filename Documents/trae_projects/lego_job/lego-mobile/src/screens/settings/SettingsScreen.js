@@ -91,6 +91,13 @@ const SettingsScreen = ({ navigation }) => {
 
       <Card style={styles.section}>
         <Text style={styles.sectionTitle}>🎨 主题风格</Text>
+        <TouchableOpacity 
+          style={styles.settingItem}
+          onPress={() => navigation.navigate('ThemeSettings')}
+        >
+          <Text style={styles.settingLabel}>🎭 卡牌、特效、天气风格设置</Text>
+          <Text style={styles.settingArrow}>→</Text>
+        </TouchableOpacity>
         <View style={styles.themeGrid}>
           {themes.map((t) => (
             <TouchableOpacity

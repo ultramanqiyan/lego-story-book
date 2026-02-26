@@ -46,7 +46,7 @@ const ParentControlScreen = ({ navigation }) => {
         });
       }
     } catch (error) {
-      console.error('Load data failed:', error);
+      toast.error('加载数据失败');
     }
   };
 
@@ -55,7 +55,7 @@ const ParentControlScreen = ({ navigation }) => {
     
     setTimeLimit(newLimit);
     try {
-      await usersAPI.updateTimeLimit(user?.userId, newLimit);
+      await usersAPI.updateUser(user?.userId, { dailyTimeLimit: newLimit });
       toast.success('时间限制已更新');
     } catch (error) {
       toast.error('更新失败');

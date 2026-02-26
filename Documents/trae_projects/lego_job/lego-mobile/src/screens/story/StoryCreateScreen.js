@@ -108,13 +108,23 @@ const StoryCreateScreen = ({ navigation }) => {
   };
 
   const handleCreate = async () => {
+    if (!selectedBook) {
+      toast.error('请选择书籍');
+      return;
+    }
+
+    if (!selectedPlot) {
+      toast.error('请选择故事类型');
+      return;
+    }
+
     const hasProtagonist = selectedCharacters.some((c) => c.roleType === 'protagonist');
     if (!hasProtagonist) {
       toast.error('请至少选择一个主角');
       return;
     }
 
-    const hasEmptyName = selectedCharacters.some((c) => !c.customName.trim());
+    const hasEmptyName = selectedCharacters.some((c) => !c.customName?.trim());
     if (hasEmptyName) {
       toast.error('请为所有角色填写名称');
       return;

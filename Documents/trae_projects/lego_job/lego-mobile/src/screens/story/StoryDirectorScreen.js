@@ -28,7 +28,7 @@ const ROLE_TYPES = [
 ];
 
 const StoryDirectorScreen = ({ route, navigation }) => {
-  const { bookId } = route.params;
+  const { bookId } = route.params || {};
   const { user } = useAuth();
   const toast = useToast();
 
@@ -50,8 +50,13 @@ const StoryDirectorScreen = ({ route, navigation }) => {
   const buttonPulse = useRef(new Animated.Value(1)).current;
 
   useEffect(() => {
+    if (!bookId) {
+      toast.error('书籍ID无效');
+      navigation.goBack();
+      return;
+    }
     loadData();
-  }, []);
+  }, [bookId]);
 
   useEffect(() => {
     if (!isLoading) {

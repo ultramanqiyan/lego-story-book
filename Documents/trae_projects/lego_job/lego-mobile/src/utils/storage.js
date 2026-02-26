@@ -5,6 +5,10 @@ const STORAGE_KEYS = {
   USERNAME: 'username',
   THEME: 'theme',
   FONT_SIZE: 'fontSize',
+  CARD_2D_STYLE: 'card2DStyle',
+  CARD_3D_STYLE: 'card3DStyle',
+  PARTICLE_EFFECT: 'particleEffect',
+  WEATHER_EFFECT: 'weatherEffect',
 };
 
 export const storage = {
@@ -39,6 +43,26 @@ export const storage = {
 
   async setFontSize(size) {
     return AsyncStorage.setItem(STORAGE_KEYS.FONT_SIZE, size.toString());
+  },
+
+  async get(key) {
+    return AsyncStorage.getItem(key);
+  },
+
+  async set(key, value) {
+    return AsyncStorage.setItem(key, value);
+  },
+
+  async remove(key) {
+    return AsyncStorage.removeItem(key);
+  },
+
+  async getMultiple(keys) {
+    return AsyncStorage.multiGet(keys);
+  },
+
+  async setMultiple(keyValuePairs) {
+    return AsyncStorage.multiSet(keyValuePairs);
   },
 
   async clearUserData() {

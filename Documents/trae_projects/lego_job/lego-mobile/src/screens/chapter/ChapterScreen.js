@@ -18,7 +18,7 @@ import { COLORS } from '../../utils/constants';
 const BOUNCE_EASING = Easing.bezier(0.68, -0.55, 0.265, 1.55);
 
 const ChapterScreen = ({ route, navigation }) => {
-  const { chapterId, bookId } = route.params;
+  const { chapterId, bookId } = route.params || {};
   const { user } = useAuth();
   const toast = useToast();
   
@@ -50,6 +50,11 @@ const ChapterScreen = ({ route, navigation }) => {
   const celebrationAnims = useRef([...Array(8)].map(() => new Animated.Value(0))).current;
 
   useEffect(() => {
+    if (!chapterId) {
+      toast.error('章节ID无效');
+      navigation.goBack();
+      return;
+    }
     loadChapter();
   }, [chapterId]);
 
@@ -129,7 +134,7 @@ const ChapterScreen = ({ route, navigation }) => {
   };
 
   const handleAnswer = async (answer) => {
-    if (selectedAnswer || isCorrect) return;
+    if (selectedAnswer || isCorrect || !puzzle) return;
 
     setSelectedAnswer(answer);
     try {
@@ -139,7 +144,9 @@ const ChapterScreen = ({ route, navigation }) => {
       if (result.isCorrect) {
         setIsCorrect(true);
         toast.success('🎉 回答正确！');
-        await chaptersAPI.complete(bookId, chapterId, user?.userId);
+        if (bookId) {
+          await chaptersAPI.complete(bookId, chapterId, user?.userId);
+        }
         
         Animated.spring(resultAnim, {
           toValue: 1,
@@ -317,22 +324,30 @@ const ChapterScreen = ({ route, navigation }) => {
               <Text style={styles.puzzleQuestion}>{puzzle.question}</Text>
               
               <View style={styles.optionsGrid}>
-                {JSON.parse(puzzle.options).map((option, index) => (
-                  <TouchableOpacity
-                    key={index}
-                    style={[
-                      styles.optionButton,
-                      selectedAnswer === option.charAt(0) && styles.optionButtonSelected,
-                    ]}
-                    onPress={() => handleAnswer(option.charAt(0))}
-                    disabled={selectedAnswer !== null}
-                    activeOpacity={0.8}
-                  >
-                    <Text style={styles.optionText}>
-                      {String.fromCharCode(65 + index)}. {option}
-                    </Text>
-                  </TouchableOpacity>
-                ))}
+                {(() => {
+                  try {
+                    const options = puzzle?.options ? JSON.parse(puzzle.options) : [];
+                    if (!Array.isArray(options)) return null;
+                    return options.map((option, index) => (
+                      <TouchableOpacity
+                        key={index}
+                        style={[
+                          styles.optionButton,
+                          selectedAnswer === option?.charAt(0) && styles.optionButtonSelected,
+                        ]}
+                        onPress={() => handleAnswer(option?.charAt(0))}
+                        disabled={selectedAnswer !== null}
+                        activeOpacity={0.8}
+                      >
+                        <Text style={styles.optionText}>
+                          {String.fromCharCode(65 + index)}. {option}
+                        </Text>
+                      </TouchableOpacity>
+                    ));
+                  } catch (e) {
+                    return null;
+                  }
+                })()}
               </View>
 
               <Text style={styles.attemptsText}>

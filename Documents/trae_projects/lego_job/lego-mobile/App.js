@@ -905,8 +905,15 @@ function BookshelfScreen({ navigation }) {
 }
 
 function CharactersScreen({ navigation }) {
+  const { user } = useAuth();
   const [characters, setCharacters] = useState([]);
+  const [presetCharacters, setPresetCharacters] = useState([]);
+  const [customCharacters, setCustomCharacters] = useState([]);
   const [isLoading, setIsLoading] = useState(true);
+  const [addModalVisible, setAddModalVisible] = useState(false);
+  const [editModalVisible, setEditModalVisible] = useState(false);
+  const [editingCharacter, setEditingCharacter] = useState(null);
+  const [newCharacter, setNewCharacter] = useState({ name: '', emoji: '🎭', personality: '', speakingStyle: '' });
   const titleAnim = useRef(new Animated.Value(0)).current;
   const cardAnims = useRef([]).current;
 
@@ -937,9 +944,16 @@ function CharactersScreen({ navigation }) {
 
   const loadCharacters = async () => {
     try {
-      const data = await apiRequest('/characters');
-      setCharacters(data.characters || []);
-      data.characters?.forEach((_, i) => {
+      const data = await apiRequest(`/characters?userId=${user?.userId || ''}`);
+      const allCharacters = data.characters || [];
+      setCharacters(allCharacters);
+      
+      const preset = allCharacters.filter(c => c.creator_id === 'system');
+      const custom = allCharacters.filter(c => c.creator_id !== 'system' && c.creator_id === user?.userId);
+      setPresetCharacters(preset);
+      setCustomCharacters(custom);
+      
+      allCharacters.forEach((_, i) => {
         if (!cardAnims[i]) cardAnims[i] = new Animated.Value(0);
       });
     } catch (error) {
@@ -947,6 +961,125 @@ function CharactersScreen({ navigation }) {
     } finally {
       setIsLoading(false);
     }
+  };
+
+  const handleAddCharacter = async () => {
+    if (!newCharacter.name.trim()) {
+      Alert.alert('提示', '请输入角色名称');
+      return;
+    }
+    try {
+      await apiRequest('/characters', {
+        method: 'POST',
+        body: {
+          creatorId: user?.userId,
+          name: newCharacter.name.trim(),
+          emoji: newCharacter.emoji || '🎭',
+          personality: newCharacter.personality,
+          speakingStyle: newCharacter.speakingStyle
+        }
+      });
+      setAddModalVisible(false);
+      setNewCharacter({ name: '', emoji: '🎭', personality: '', speakingStyle: '' });
+      loadCharacters();
+      Alert.alert('成功', '角色创建成功！');
+    } catch (error) {
+      Alert.alert('创建失败', error.message);
+    }
+  };
+
+  const handleEditCharacter = async () => {
+    if (!editingCharacter?.name?.trim()) {
+      Alert.alert('提示', '请输入角色名称');
+      return;
+    }
+    try {
+      await apiRequest('/characters', {
+        method: 'PUT',
+        body: {
+          characterId: editingCharacter.character_id,
+          name: editingCharacter.name.trim(),
+          emoji: editingCharacter.emoji || '🎭',
+          personality: editingCharacter.personality,
+          speakingStyle: editingCharacter.speakingStyle
+        }
+      });
+      setEditModalVisible(false);
+      setEditingCharacter(null);
+      loadCharacters();
+      Alert.alert('成功', '角色更新成功！');
+    } catch (error) {
+      Alert.alert('更新失败', error.message);
+    }
+  };
+
+  const handleDeleteCharacter = (character) => {
+    Alert.alert(
+      '确认删除',
+      `确定要删除角色"${character.name || character.character_name}"吗？`,
+      [
+        { text: '取消', style: 'cancel' },
+        {
+          text: '删除',
+          style: 'destructive',
+          onPress: async () => {
+            try {
+              await apiRequest(`/characters?characterId=${character.character_id}`, { method: 'DELETE' });
+              loadCharacters();
+              Alert.alert('成功', '角色已删除');
+            } catch (error) {
+              Alert.alert('删除失败', error.message);
+            }
+          }
+        }
+      ]
+    );
+  };
+
+  const openEditModal = (character) => {
+    if (character.creator_id === 'system') {
+      Alert.alert('提示', '预设人仔不能编辑');
+      return;
+    }
+    setEditingCharacter({
+      ...character,
+      name: character.name || character.character_name,
+      emoji: character.emoji || '🎭'
+    });
+    setEditModalVisible(true);
+  };
+
+  const renderCharacterCard = (item, index, isPreset = false) => {
+    const anim = cardAnims[index] || new Animated.Value(1);
+    return (
+      <Animated.View key={item.character_id} style={{ opacity: anim, transform: [{ scale: anim.interpolate({ inputRange: [0, 1], outputRange: [0.5, 1] }) }] }}>
+        <TouchableOpacity 
+          style={[styles.charCard, isPreset && styles.charCardPreset]}
+          onPress={() => navigation.navigate('StoryCreate', { selectedCharacter: item })}
+        >
+          <Text style={styles.charCardEmoji}>{item.emoji || '🎭'}</Text>
+          <Text style={styles.charCardName}>{item.name || item.character_name}</Text>
+          <Text style={styles.charCardHint}>{isPreset ? '预设人仔' : '点击创建故事'}</Text>
+          {!isPreset && (
+            <>
+              <TouchableOpacity 
+                style={styles.charCardEdit}
+                onPress={() => openEditModal(item)}
+              >
+                <Text style={styles.charCardEditIcon}>✏️</Text>
+              </TouchableOpacity>
+              <TouchableOpacity 
+                style={styles.charCardDelete}
+                onPress={() => handleDeleteCharacter(item)}
+              >
+                <Text style={styles.charCardDeleteIcon}>🗑️</Text>
+              </TouchableOpacity>
+            </>
+          )}
+          {isPreset && <View style={styles.charCardPresetBadge}><Text style={styles.charCardPresetBadgeText}>预设</Text></View>}
+        </TouchableOpacity>
+      </Animated.View>
+    );
   };
 
   if (isLoading) {
@@ -965,26 +1098,134 @@ function CharactersScreen({ navigation }) {
       </View>
       <Animated.View style={[styles.pageHeader, { opacity: titleAnim, transform: [{ translateX: titleAnim.interpolate({ inputRange: [0, 1], outputRange: [-20, 0] }) }] }]}>
         <Text style={styles.pageTitle}>🎭 角色列表</Text>
+        <TouchableOpacity style={styles.addCharButton} onPress={() => setAddModalVisible(true)}>
+          <Text style={styles.addCharButtonText}>+ 创建角色</Text>
+        </TouchableOpacity>
       </Animated.View>
-      <FlatList
-        data={characters}
-        keyExtractor={(item) => item.character_id}
-        numColumns={2}
-        contentContainerStyle={styles.gridContent}
-        renderItem={({ item, index }) => {
-          const anim = cardAnims[index] || new Animated.Value(1);
-          return (
-            <Animated.View style={{ opacity: anim, transform: [{ scale: anim.interpolate({ inputRange: [0, 1], outputRange: [0.5, 1] }) }] }}>
-              <HSCard
-                character={item}
-                index={index}
-                onPress={() => navigation.navigate('StoryCreate', { selectedCharacter: item })}
-              />
-            </Animated.View>
-          );
-        }}
-        ListEmptyComponent={<Text style={styles.emptyText}>暂无角色</Text>}
-      />
+      
+      <ScrollView style={styles.charScrollView}>
+        {customCharacters.length > 0 && (
+          <View style={styles.charSection}>
+            <Text style={styles.charSectionTitle}>👤 我的角色</Text>
+            <View style={styles.charGrid}>
+              {customCharacters.map((item, index) => renderCharacterCard(item, index, false))}
+            </View>
+          </View>
+        )}
+        
+        {presetCharacters.length > 0 && (
+          <View style={styles.charSection}>
+            <Text style={styles.charSectionTitle}>🎭 预设人仔</Text>
+            <View style={styles.charGrid}>
+              {presetCharacters.map((item, index) => renderCharacterCard(item, customCharacters.length + index, true))}
+            </View>
+          </View>
+        )}
+        
+        {customCharacters.length === 0 && presetCharacters.length === 0 && (
+          <View style={styles.emptyState}>
+            <Text style={styles.emptyIcon}>🎭</Text>
+            <Text style={styles.emptyText}>还没有角色</Text>
+            <Text style={styles.emptySubtext}>点击上方按钮创建你的第一个角色</Text>
+          </View>
+        )}
+      </ScrollView>
+
+      <Modal visible={addModalVisible} transparent animationType="fade">
+        <View style={styles.modalOverlay}>
+          <View style={styles.modalContent}>
+            <Text style={styles.modalTitle}>🎭 创建新角色</Text>
+            
+            <Text style={styles.modalLabel}>角色名称</Text>
+            <TextInput
+              style={styles.modalInput}
+              value={newCharacter.name}
+              onChangeText={(text) => setNewCharacter({ ...newCharacter, name: text })}
+              placeholder="输入角色名称"
+              placeholderTextColor={COLORS.textMuted}
+            />
+
+            <Text style={styles.modalLabel}>表情图标</Text>
+            <ScrollView horizontal showsHorizontalScrollIndicator={false} style={styles.emojiPicker}>
+              {['🎭', '🧙', '🧝', '🧛', '🧟', '🦸', '🦹', '👸', '🤴', '🧑‍🎤', '🧑‍🎨', '🧑‍🔬'].map(emoji => (
+                <TouchableOpacity
+                  key={emoji}
+                  style={[styles.emojiOption, newCharacter.emoji === emoji && styles.emojiOptionSelected]}
+                  onPress={() => setNewCharacter({ ...newCharacter, emoji })}
+                >
+                  <Text style={styles.emojiText}>{emoji}</Text>
+                </TouchableOpacity>
+              ))}
+            </ScrollView>
+
+            <Text style={styles.modalLabel}>性格特点 (可选)</Text>
+            <TextInput
+              style={styles.modalInput}
+              value={newCharacter.personality}
+              onChangeText={(text) => setNewCharacter({ ...newCharacter, personality: text })}
+              placeholder="如：勇敢、善良、聪明"
+              placeholderTextColor={COLORS.textMuted}
+            />
+
+            <View style={styles.modalButtons}>
+              <TouchableOpacity style={styles.modalCancelBtn} onPress={() => { setAddModalVisible(false); setNewCharacter({ name: '', emoji: '🎭', personality: '', speakingStyle: '' }); }}>
+                <Text style={styles.modalCancelText}>取消</Text>
+              </TouchableOpacity>
+              <TouchableOpacity style={styles.modalConfirmBtn} onPress={handleAddCharacter}>
+                <Text style={styles.modalConfirmText}>创建</Text>
+              </TouchableOpacity>
+            </View>
+          </View>
+        </View>
+      </Modal>
+
+      <Modal visible={editModalVisible} transparent animationType="fade">
+        <View style={styles.modalOverlay}>
+          <View style={styles.modalContent}>
+            <Text style={styles.modalTitle}>✏️ 编辑角色</Text>
+            
+            <Text style={styles.modalLabel}>角色名称</Text>
+            <TextInput
+              style={styles.modalInput}
+              value={editingCharacter?.name || ''}
+              onChangeText={(text) => setEditingCharacter({ ...editingCharacter, name: text })}
+              placeholder="输入角色名称"
+              placeholderTextColor={COLORS.textMuted}
+            />
+
+            <Text style={styles.modalLabel}>表情图标</Text>
+            <ScrollView horizontal showsHorizontalScrollIndicator={false} style={styles.emojiPicker}>
+              {['🎭', '🧙', '🧝', '🧛', '🧟', '🦸', '🦹', '👸', '🤴', '🧑‍🎤', '🧑‍🎨', '🧑‍🔬'].map(emoji => (
+                <TouchableOpacity
+                  key={emoji}
+                  style={[styles.emojiOption, editingCharacter?.emoji === emoji && styles.emojiOptionSelected]}
+                  onPress={() => setEditingCharacter({ ...editingCharacter, emoji })}
+                >
+                  <Text style={styles.emojiText}>{emoji}</Text>
+                </TouchableOpacity>
+              ))}
+            </ScrollView>
+
+            <Text style={styles.modalLabel}>性格特点</Text>
+            <TextInput
+              style={styles.modalInput}
+              value={editingCharacter?.personality || ''}
+              onChangeText={(text) => setEditingCharacter({ ...editingCharacter, personality: text })}
+              placeholder="如：勇敢、善良、聪明"
+              placeholderTextColor={COLORS.textMuted}
+            />
+
+            <View style={styles.modalButtons}>
+              <TouchableOpacity style={styles.modalCancelBtn} onPress={() => { setEditModalVisible(false); setEditingCharacter(null); }}>
+                <Text style={styles.modalCancelText}>取消</Text>
+              </TouchableOpacity>
+              <TouchableOpacity style={styles.modalConfirmBtn} onPress={handleEditCharacter}>
+                <Text style={styles.modalConfirmText}>保存</Text>
+              </TouchableOpacity>
+            </View>
+          </View>
+        </View>
+      </Modal>
     </View>
   );
 }
@@ -1018,6 +1259,30 @@ function SettingsScreen({ navigation }) {
         </View>
         
         <TouchableOpacity 
+          style={styles.themeEntryButton}
+          onPress={() => navigation.navigate('ThemeSettings')}
+        >
+          <Text style={styles.themeEntryIcon}>🎨</Text>
+          <View style={styles.themeEntryInfo}>
+            <Text style={styles.themeEntryTitle}>主题风格设置</Text>
+            <Text style={styles.themeEntryDesc}>卡牌、特效、天气风格切换</Text>
+          </View>
+          <Text style={styles.themeEntryArrow}>→</Text>
+        </TouchableOpacity>
+        
+        <TouchableOpacity 
+          style={styles.parentEntryButton}
+          onPress={() => navigation.navigate('ParentControl')}
+        >
+          <Text style={styles.parentEntryIcon}>👨‍👩‍👧</Text>
+          <View style={styles.parentEntryInfo}>
+            <Text style={styles.parentEntryTitle}>家长控制</Text>
+            <Text style={styles.parentEntryDesc}>时间限制、阅读统计</Text>
+          </View>
+          <Text style={styles.parentEntryArrow}>→</Text>
+        </TouchableOpacity>
+        
+        <TouchableOpacity 
           style={styles.demoEntryButton}
           onPress={() => navigation.navigate('DemoHub')}
         >
@@ -1033,6 +1298,385 @@ function SettingsScreen({ navigation }) {
           <Text style={styles.logoutText}>退出登录</Text>
         </TouchableOpacity>
       </View>
+    </View>
+  );
+}
+
+function AdventureScreen({ navigation }) {
+  const { user } = useAuth();
+  const [books, setBooks] = useState([]);
+  const [timeUsed, setTimeUsed] = useState(0);
+  const [timeLimit, setTimeLimit] = useState(120);
+  const [isLoading, setIsLoading] = useState(true);
+  const titleAnim = useRef(new Animated.Value(0)).current;
+
+  useEffect(() => {
+    loadData();
+    Animated.timing(titleAnim, {
+      toValue: 1,
+      duration: 500,
+      easing: BOUNCE_EASING,
+      useNativeDriver: true,
+    }).start();
+  }, []);
+
+  const loadData = async () => {
+    try {
+      const [booksData, userData] = await Promise.all([
+        apiRequest(`/books?userId=${user?.userId}`),
+        apiRequest(`/users?userId=${user?.userId}`),
+      ]);
+      setBooks(booksData.books || []);
+      setTimeUsed(userData?.user?.time_used_today || 0);
+      setTimeLimit(userData?.user?.daily_time_limit || 120);
+    } catch (error) {
+      console.error('Load adventure data failed:', error);
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
+  const progress = Math.min((timeUsed / timeLimit) * 100, 100);
+
+  if (isLoading) {
+    return (
+      <View style={styles.centerContainer}>
+        <ActivityIndicator size="large" color={COLORS.gold} />
+        <Text style={styles.loadingText}>加载冒险...</Text>
+      </View>
+    );
+  }
+
+  return (
+    <View style={styles.container}>
+      <GlowOrbBackground />
+      <View style={styles.debugLabel}>
+        <Text style={styles.debugLabelText}>📱 当前页面: AdventureScreen (冒险模式页)</Text>
+      </View>
+      <Animated.View style={[styles.pageHeader, { opacity: titleAnim, transform: [{ translateX: titleAnim.interpolate({ inputRange: [0, 1], outputRange: [-20, 0] }) }] }]}>
+        <Text style={styles.pageTitle}>🗺️ 冒险模式</Text>
+      </Animated.View>
+
+      <View style={styles.adventureContent}>
+        <View style={styles.timeCard}>
+          <Text style={styles.timeLabel}>⏰ 今日阅读时间</Text>
+          <Text style={styles.timeValue}>{Math.floor(timeUsed / 60)}分钟</Text>
+          <View style={styles.progressBar}>
+            <View style={[styles.progressFill, { width: `${progress}%` }]} />
+          </View>
+          <Text style={styles.timeLimit}>每日限额：{Math.floor(timeLimit / 60)}分钟</Text>
+        </View>
+
+        <Text style={styles.sectionTitle}>选择一个故事开始冒险</Text>
+
+        <ScrollView style={styles.booksList}>
+          {books.length > 0 ? (
+            books.map((item) => (
+              <TouchableOpacity
+                key={item.book_id}
+                style={styles.bookCard}
+                onPress={() => navigation.navigate('BookDetail', { bookId: item.book_id })}
+              >
+                <Text style={styles.bookIcon}>📖</Text>
+                <View style={styles.bookInfo}>
+                  <Text style={styles.bookTitle}>{item.title}</Text>
+                  <Text style={styles.bookChapters}>📚 {item.chapter_count || 0}章</Text>
+                </View>
+                <Text style={styles.bookArrow}>→</Text>
+              </TouchableOpacity>
+            ))
+          ) : (
+            <View style={styles.emptyState}>
+              <Text style={styles.emptyIcon}>🗺️</Text>
+              <Text style={styles.emptyText}>还没有故事</Text>
+              <Text style={styles.emptySubtext}>创建你的第一个冒险故事吧</Text>
+            </View>
+          )}
+        </ScrollView>
+      </View>
+    </View>
+  );
+}
+
+function ParentControlScreen({ navigation }) {
+  const { user } = useAuth();
+  const [timeLimit, setTimeLimit] = useState(120);
+  const [timeUsed, setTimeUsed] = useState(0);
+  const [isLoading, setIsLoading] = useState(true);
+  const titleAnim = useRef(new Animated.Value(0)).current;
+
+  useEffect(() => {
+    loadData();
+    Animated.timing(titleAnim, {
+      toValue: 1,
+      duration: 500,
+      easing: BOUNCE_EASING,
+      useNativeDriver: true,
+    }).start();
+  }, []);
+
+  const loadData = async () => {
+    try {
+      const data = await apiRequest(`/users?userId=${user?.userId}`);
+      if (data?.user) {
+        setTimeLimit(data.user.daily_time_limit || 120);
+        setTimeUsed(data.user.time_used_today || 0);
+      }
+    } catch (error) {
+      console.error('Load parent data failed:', error);
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
+  const handleSaveTimeLimit = async (minutes) => {
+    try {
+      await apiRequest('/users/time-limit', {
+        method: 'POST',
+        body: { userId: user?.userId, minutes },
+      });
+      setTimeLimit(minutes);
+      Alert.alert('成功', '时间限制已更新');
+    } catch (error) {
+      Alert.alert('错误', '保存失败');
+    }
+  };
+
+  if (isLoading) {
+    return (
+      <View style={styles.centerContainer}>
+        <ActivityIndicator size="large" color={COLORS.gold} />
+      </View>
+    );
+  }
+
+  return (
+    <View style={styles.container}>
+      <GlowOrbBackground />
+      <View style={styles.debugLabel}>
+        <Text style={styles.debugLabelText}>📱 当前页面: ParentControlScreen (家长控制页)</Text>
+      </View>
+      <View style={styles.createHeader}>
+        <TouchableOpacity onPress={() => navigation.goBack()}>
+          <Text style={styles.backButton}>← 返回</Text>
+        </TouchableOpacity>
+        <Text style={styles.createTitle}>👨‍👩‍👧 家长控制</Text>
+        <View style={{ width: 60 }} />
+      </View>
+
+      <ScrollView style={styles.parentContent}>
+        <View style={styles.parentCard}>
+          <Text style={styles.parentCardTitle}>⏰ 每日时间限制</Text>
+          <Text style={styles.parentCardValue}>{Math.floor(timeLimit / 60)} 分钟</Text>
+          <View style={styles.timeButtons}>
+            {[30, 60, 90, 120, 180].map((mins) => (
+              <TouchableOpacity
+                key={mins}
+                style={[styles.timeBtn, timeLimit === mins * 60 && styles.timeBtnActive]}
+                onPress={() => handleSaveTimeLimit(mins * 60)}
+              >
+                <Text style={[styles.timeBtnText, timeLimit === mins * 60 && styles.timeBtnTextActive]}>
+                  {mins}分钟
+                </Text>
+              </TouchableOpacity>
+            ))}
+          </View>
+        </View>
+
+        <View style={styles.parentCard}>
+          <Text style={styles.parentCardTitle}>📊 今日使用统计</Text>
+          <Text style={styles.parentCardValue}>{Math.floor(timeUsed / 60)} 分钟</Text>
+          <View style={styles.progressBar}>
+            <View style={[styles.progressFill, { width: `${Math.min((timeUsed / timeLimit) * 100, 100)}%` }]} />
+          </View>
+          <Text style={styles.parentCardHint}>
+            剩余 {Math.max(0, Math.floor((timeLimit - timeUsed) / 60))} 分钟
+          </Text>
+        </View>
+
+        <View style={styles.parentCard}>
+          <Text style={styles.parentCardTitle}>📖 阅读记录</Text>
+          <Text style={styles.parentCardHint}>暂无阅读记录</Text>
+        </View>
+      </ScrollView>
+    </View>
+  );
+}
+
+const THEME_STYLES = {
+  card2D: [
+    { id: 'classicFlat', name: '经典扁平', icon: '🃏', desc: '简洁现代，适合儿童用户' },
+    { id: 'neonCyber', name: '霓虹赛博', icon: '💠', desc: '科技感强，炫酷视觉效果' },
+    { id: 'watercolorArt', name: '水彩艺术', icon: '🎨', desc: '柔和艺术感，温馨治愈' },
+    { id: 'retroPixel', name: '复古像素', icon: '👾', desc: '8-bit游戏风格，怀旧感' },
+    { id: 'minimalLine', name: '极简线条', icon: '◻️', desc: '极简主义，优雅精致' },
+  ],
+  card3D: [
+    { id: 'realFlip', name: '真实翻转', icon: '🔄', desc: '180度完整3D翻转' },
+    { id: 'stack', name: '卡片堆叠', icon: '📚', desc: '层叠展开效果' },
+    { id: 'carousel', name: '旋转木马', icon: '🎠', desc: '圆形排列旋转浏览' },
+    { id: 'floating', name: '悬浮卡片', icon: '🎈', desc: '悬浮倾斜跟随效果' },
+    { id: 'cube', name: '魔方效果', icon: '🎲', desc: '立方体旋转切换' },
+  ],
+  particle: [
+    { id: 'magicParticles', name: '魔法粒子', icon: '✨', desc: '漂浮的魔法光点' },
+    { id: 'fireworks', name: '烟花爆炸', icon: '🎆', desc: '绚丽的烟花效果' },
+    { id: 'aurora', name: '极光流动', icon: '🌌', desc: '北极光般的流动效果' },
+    { id: 'heartsFall', name: '心形飘落', icon: '💕', desc: '爱心飘落效果' },
+    { id: 'starrySky', name: '星空闪烁', icon: '⭐', desc: '星空背景效果' },
+  ],
+  weather: [
+    { id: 'sunny', name: '晴天', icon: '☀️', desc: '阳光明媚' },
+    { id: 'rainy', name: '雨天', icon: '🌧️', desc: '细雨绵绵' },
+    { id: 'snow', name: '雪天', icon: '❄️', desc: '雪花飘落' },
+    { id: 'fog', name: '雾天', icon: '🌫️', desc: '雾气弥漫' },
+    { id: 'starryNight', name: '星夜', icon: '🌙', desc: '星空月夜' },
+  ],
+};
+
+function ThemeSettingsScreen({ navigation }) {
+  const [activeTab, setActiveTab] = useState('card2D');
+  const [selectedStyles, setSelectedStyles] = useState({
+    card2D: 'classicFlat',
+    card3D: 'realFlip',
+    particle: 'magicParticles',
+    weather: 'sunny',
+  });
+  const [hasChanges, setHasChanges] = useState(false);
+  const titleAnim = useRef(new Animated.Value(0)).current;
+
+  useEffect(() => {
+    loadSavedStyles();
+    Animated.timing(titleAnim, {
+      toValue: 1,
+      duration: 500,
+      easing: Easing.out(Easing.cubic),
+      useNativeDriver: true,
+    }).start();
+  }, []);
+
+  const loadSavedStyles = async () => {
+    try {
+      const saved = await AsyncStorage.getItem('themeStyles');
+      if (saved) {
+        setSelectedStyles(JSON.parse(saved));
+      }
+    } catch (error) {
+      console.error('Load theme styles failed:', error);
+    }
+  };
+
+  const handleSelect = (type, styleId) => {
+    setSelectedStyles(prev => ({ ...prev, [type]: styleId }));
+    setHasChanges(true);
+  };
+
+  const handleSave = async () => {
+    try {
+      await AsyncStorage.setItem('themeStyles', JSON.stringify(selectedStyles));
+      setHasChanges(false);
+      Alert.alert('成功', '主题风格已保存！', [
+        { text: '确定', onPress: () => navigation.goBack() }
+      ]);
+    } catch (error) {
+      Alert.alert('保存失败', error.message);
+    }
+  };
+
+  const handleBack = () => {
+    if (hasChanges) {
+      Alert.alert(
+        '提示',
+        '有未保存的更改，是否保存？',
+        [
+          { text: '不保存', style: 'destructive', onPress: () => navigation.goBack() },
+          { text: '保存', onPress: async () => { await handleSave(); navigation.goBack(); } },
+        ]
+      );
+    } else {
+      navigation.goBack();
+    }
+  };
+
+  const renderStyleCard = (type, style) => {
+    const isSelected = selectedStyles[type] === style.id;
+    return (
+      <TouchableOpacity
+        key={style.id}
+        style={[
+          styles.themeStyleCard,
+          isSelected && styles.themeStyleCardSelected,
+        ]}
+        onPress={() => handleSelect(type, style.id)}
+        activeOpacity={0.7}
+      >
+        <Text style={styles.themeStyleIcon}>{style.icon}</Text>
+        <Text style={styles.themeStyleName}>{style.name}</Text>
+        <Text style={styles.themeStyleDesc}>{style.desc}</Text>
+        {isSelected && (
+          <View style={styles.themeStyleCheck}>
+            <Text style={styles.themeStyleCheckText}>✓</Text>
+          </View>
+        )}
+      </TouchableOpacity>
+    );
+  };
+
+  const tabs = [
+    { id: 'card2D', label: '2D卡牌', icon: '🃏' },
+    { id: 'card3D', label: '3D卡牌', icon: '🎴' },
+    { id: 'particle', label: '粒子特效', icon: '✨' },
+    { id: 'weather', label: '天气效果', icon: '🌤️' },
+  ];
+
+  return (
+    <View style={styles.container}>
+      <GlowOrbBackground />
+      <View style={styles.debugLabel}>
+        <Text style={styles.debugLabelText}>📱 当前页面: ThemeSettingsScreen (主题设置页)</Text>
+      </View>
+      <View style={styles.createHeader}>
+        <TouchableOpacity onPress={handleBack}>
+          <Text style={styles.backButton}>← 返回</Text>
+        </TouchableOpacity>
+        <Text style={styles.createTitle}>🎨 主题风格设置</Text>
+        <TouchableOpacity onPress={handleSave} disabled={!hasChanges}>
+          <Text style={[styles.saveButton, !hasChanges && styles.saveButtonDisabled]}>保存</Text>
+        </TouchableOpacity>
+      </View>
+
+      <View style={styles.themeTabBar}>
+        {tabs.map(tab => (
+          <TouchableOpacity
+            key={tab.id}
+            style={[styles.themeTab, activeTab === tab.id && styles.themeTabActive]}
+            onPress={() => setActiveTab(tab.id)}
+          >
+            <Text style={styles.themeTabIcon}>{tab.icon}</Text>
+            <Text style={[styles.themeTabText, activeTab === tab.id && styles.themeTabTextActive]}>
+              {tab.label}
+            </Text>
+          </TouchableOpacity>
+        ))}
+      </View>
+
+      <ScrollView style={styles.themeContent}>
+        <Text style={styles.themeSectionTitle}>
+          {tabs.find(t => t.id === activeTab)?.label}风格
+        </Text>
+        <View style={styles.themeStylesGrid}>
+          {THEME_STYLES[activeTab].map(style => renderStyleCard(activeTab, style))}
+        </View>
+
+        <View style={styles.themeHintSection}>
+          <Text style={styles.themeHintTitle}>💡 使用提示</Text>
+          <Text style={styles.themeHintText}>
+            • 点击卡片切换风格{'\n'}
+            • 设置会自动保存{'\n'}
+            • 不同页面可应用不同风格
+          </Text>
+        </View>
+      </ScrollView>
     </View>
   );
 }
@@ -1658,22 +2302,26 @@ function BookDetailScreen({ navigation, route }) {
               );
             })}
 
-            <GoldButton
-              title="生成下一章"
-              icon="✨"
-              onPress={handleGenerateChapter}
-              disabled={isGenerating}
-              loading={isGenerating}
-            />
-            
+            {chapters.length === 0 && (
+              <View style={styles.emptyState}>
+                <Text style={styles.emptyIcon}>📖</Text>
+                <Text style={styles.emptyText}>还没有章节</Text>
+                <Text style={styles.emptySubtext}>点击下方按钮创作第一章</Text>
+              </View>
+            )}
+
             <View style={{ height: 16 }} />
             
             <TouchableOpacity 
-              style={styles.directorButton}
+              style={styles.directorButtonPrimary}
               onPress={() => navigation.navigate('StoryDirector', { bookId })}
             >
-              <Text style={styles.directorButtonText}>🎬 故事导演台</Text>
-              <Text style={styles.directorButtonDesc}>选择角色、地形、天气来创作新章节</Text>
+              <Text style={styles.directorButtonIcon}>🎬</Text>
+              <View style={styles.directorButtonContent}>
+                <Text style={styles.directorButtonTitle}>故事导演台</Text>
+                <Text style={styles.directorButtonDesc}>选择角色、地形、天气来创作新章节</Text>
+              </View>
+              <Text style={styles.directorButtonArrow}>→</Text>
             </TouchableOpacity>
           </>
         ) : (
@@ -2737,9 +3385,18 @@ function StoryDirectorScreen({ navigation, route }) {
         }
       });
 
-      Alert.alert('成功', '章节生成成功！', [
-        { text: '确定', onPress: () => navigation.replace('BookDetail', { bookId }) }
-      ]);
+      const promptInfo = {
+        weather: selections.weather?.name,
+        adventure: selections.adventure?.name,
+        terrain: selections.terrain?.name,
+        characters: [selections.protagonist?.name, ...selections.supporting.map(c => c.name), selections.antagonist?.name].filter(Boolean)
+      };
+
+      navigation.replace('BookDetail', { 
+        bookId, 
+        newChapter: result.chapter,
+        promptInfo
+      });
     } catch (error) {
       Alert.alert('生成失败', error.message);
     } finally {
@@ -2990,7 +3647,7 @@ function MainNavigator() {
         headerShown: false,
         tabBarStyle: styles.tabBar,
         tabBarIcon: ({ focused, color }) => {
-          const icons = { Home: '🏠', Bookshelf: '📚', Characters: '🎭', Settings: '⚙️' };
+          const icons = { Home: '🏠', Bookshelf: '📚', Characters: '🎭', Adventure: '🗺️', Settings: '⚙️' };
           return <Text style={[styles.tabIcon, focused && styles.tabIconActive]}>{icons[route.name]}</Text>;
         },
         tabBarActiveTintColor: COLORS.gold,
@@ -3001,6 +3658,7 @@ function MainNavigator() {
       <Tab.Screen name="Home" component={HomeScreen} options={{ tabBarLabel: '首页' }} />
       <Tab.Screen name="Bookshelf" component={BookshelfScreen} options={{ tabBarLabel: '书架' }} />
       <Tab.Screen name="Characters" component={CharactersScreen} options={{ tabBarLabel: '角色' }} />
+      <Tab.Screen name="Adventure" component={AdventureScreen} options={{ tabBarLabel: '冒险' }} />
       <Tab.Screen name="Settings" component={SettingsScreen} options={{ tabBarLabel: '设置' }} />
     </Tab.Navigator>
   );
@@ -3034,6 +3692,8 @@ function AppNavigator() {
             <Stack.Screen name="Demo3" component={Demo3Director} />
             <Stack.Screen name="Demo4" component={Demo4Reader} />
             <Stack.Screen name="Demo5" component={Demo5Collection} />
+            <Stack.Screen name="ThemeSettings" component={ThemeSettingsScreen} />
+            <Stack.Screen name="ParentControl" component={ParentControlScreen} />
           </>
         ) : (
           <Stack.Screen name="Login" component={LoginScreen} />
@@ -3518,6 +4178,316 @@ const styles = StyleSheet.create({
     fontWeight: 'bold',
     color: COLORS.textPrimary,
   },
+  themeEntryButton: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    backgroundColor: 'rgba(255,209,0,0.15)',
+    borderRadius: 12,
+    padding: 16,
+    marginTop: 16,
+    borderWidth: 1,
+    borderColor: COLORS.gold,
+  },
+  themeEntryIcon: {
+    fontSize: 32,
+    marginRight: 16,
+  },
+  themeEntryInfo: {
+    flex: 1,
+  },
+  themeEntryTitle: {
+    fontSize: 16,
+    fontWeight: 'bold',
+    color: COLORS.gold,
+    marginBottom: 4,
+  },
+  themeEntryDesc: {
+    fontSize: 12,
+    color: COLORS.textSecondary,
+  },
+  themeEntryArrow: {
+    fontSize: 18,
+    color: COLORS.gold,
+  },
+  themeTabBar: {
+    flexDirection: 'row',
+    paddingHorizontal: 16,
+    marginTop: 12,
+    gap: 8,
+  },
+  themeTab: {
+    flex: 1,
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'center',
+    paddingVertical: 12,
+    borderRadius: 12,
+    backgroundColor: 'rgba(255,255,255,0.05)',
+    gap: 6,
+  },
+  themeTabActive: {
+    backgroundColor: COLORS.gold,
+  },
+  themeTabIcon: {
+    fontSize: 16,
+  },
+  themeTabText: {
+    fontSize: 12,
+    color: COLORS.textSecondary,
+    fontWeight: '600',
+  },
+  themeTabTextActive: {
+    color: COLORS.bgDark,
+  },
+  themeContent: {
+    flex: 1,
+    paddingHorizontal: 16,
+    marginTop: 16,
+  },
+  themeSectionTitle: {
+    fontSize: 16,
+    fontWeight: 'bold',
+    color: COLORS.textPrimary,
+    marginBottom: 12,
+  },
+  themeStylesGrid: {
+    flexDirection: 'row',
+    flexWrap: 'wrap',
+    gap: 12,
+  },
+  themeStyleCard: {
+    width: (SCREEN_WIDTH - 56) / 2,
+    padding: 16,
+    borderRadius: 16,
+    backgroundColor: 'rgba(255,255,255,0.05)',
+    borderWidth: 2,
+    borderColor: 'rgba(255,255,255,0.1)',
+    alignItems: 'center',
+  },
+  themeStyleCardSelected: {
+    borderColor: COLORS.gold,
+    backgroundColor: 'rgba(255,209,0,0.1)',
+  },
+  themeStyleIcon: {
+    fontSize: 36,
+    marginBottom: 8,
+  },
+  themeStyleName: {
+    fontSize: 14,
+    fontWeight: 'bold',
+    color: COLORS.textPrimary,
+    marginBottom: 4,
+  },
+  themeStyleDesc: {
+    fontSize: 11,
+    color: COLORS.textSecondary,
+    textAlign: 'center',
+  },
+  themeStyleCheck: {
+    position: 'absolute',
+    top: 8,
+    right: 8,
+    width: 20,
+    height: 20,
+    borderRadius: 10,
+    backgroundColor: COLORS.gold,
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  themeStyleCheckText: {
+    fontSize: 12,
+    fontWeight: 'bold',
+    color: COLORS.bgDark,
+  },
+  themeHintSection: {
+    marginTop: 24,
+    padding: 16,
+    borderRadius: 12,
+    backgroundColor: 'rgba(255,255,255,0.05)',
+    marginBottom: 24,
+  },
+  themeHintTitle: {
+    fontSize: 14,
+    fontWeight: 'bold',
+    color: COLORS.gold,
+    marginBottom: 8,
+  },
+  themeHintText: {
+    fontSize: 12,
+    color: COLORS.textSecondary,
+    lineHeight: 20,
+  },
+  parentEntryButton: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    backgroundColor: 'rgba(34,197,94,0.15)',
+    borderRadius: 12,
+    padding: 16,
+    marginTop: 16,
+    borderWidth: 1,
+    borderColor: COLORS.green,
+  },
+  parentEntryIcon: {
+    fontSize: 32,
+    marginRight: 16,
+  },
+  parentEntryInfo: {
+    flex: 1,
+  },
+  parentEntryTitle: {
+    fontSize: 16,
+    fontWeight: 'bold',
+    color: COLORS.green,
+    marginBottom: 4,
+  },
+  parentEntryDesc: {
+    fontSize: 12,
+    color: COLORS.textSecondary,
+  },
+  parentEntryArrow: {
+    fontSize: 18,
+    color: COLORS.green,
+  },
+  adventureContent: {
+    flex: 1,
+    paddingHorizontal: 16,
+  },
+  timeCard: {
+    backgroundColor: 'rgba(255,255,255,0.05)',
+    borderRadius: 16,
+    padding: 20,
+    alignItems: 'center',
+    marginBottom: 20,
+  },
+  timeLabel: {
+    fontSize: 14,
+    color: COLORS.textSecondary,
+    marginBottom: 8,
+  },
+  timeValue: {
+    fontSize: 32,
+    fontWeight: 'bold',
+    color: COLORS.gold,
+    marginBottom: 16,
+  },
+  progressBar: {
+    width: '100%',
+    height: 8,
+    backgroundColor: 'rgba(255,255,255,0.1)',
+    borderRadius: 4,
+    overflow: 'hidden',
+    marginBottom: 8,
+  },
+  progressFill: {
+    height: '100%',
+    backgroundColor: COLORS.green,
+    borderRadius: 4,
+  },
+  timeLimit: {
+    fontSize: 12,
+    color: COLORS.textMuted,
+  },
+  booksList: {
+    flex: 1,
+  },
+  bookCard: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    backgroundColor: 'rgba(255,255,255,0.05)',
+    borderRadius: 12,
+    padding: 16,
+    marginBottom: 12,
+  },
+  bookIcon: {
+    fontSize: 32,
+    marginRight: 12,
+  },
+  bookInfo: {
+    flex: 1,
+  },
+  bookTitle: {
+    fontSize: 16,
+    fontWeight: 'bold',
+    color: COLORS.textPrimary,
+  },
+  bookChapters: {
+    fontSize: 12,
+    color: COLORS.textSecondary,
+    marginTop: 4,
+  },
+  bookArrow: {
+    fontSize: 24,
+    color: COLORS.textMuted,
+  },
+  emptyState: {
+    alignItems: 'center',
+    paddingVertical: 40,
+  },
+  emptyIcon: {
+    fontSize: 48,
+    marginBottom: 12,
+  },
+  emptyText: {
+    fontSize: 16,
+    color: COLORS.textSecondary,
+    marginBottom: 4,
+  },
+  emptySubtext: {
+    fontSize: 12,
+    color: COLORS.textMuted,
+  },
+  parentContent: {
+    flex: 1,
+    paddingHorizontal: 16,
+  },
+  parentCard: {
+    backgroundColor: 'rgba(255,255,255,0.05)',
+    borderRadius: 16,
+    padding: 20,
+    marginBottom: 16,
+  },
+  parentCardTitle: {
+    fontSize: 16,
+    fontWeight: 'bold',
+    color: COLORS.textPrimary,
+    marginBottom: 12,
+  },
+  parentCardValue: {
+    fontSize: 28,
+    fontWeight: 'bold',
+    color: COLORS.gold,
+    marginBottom: 16,
+  },
+  parentCardHint: {
+    fontSize: 12,
+    color: COLORS.textMuted,
+    marginTop: 8,
+  },
+  timeButtons: {
+    flexDirection: 'row',
+    flexWrap: 'wrap',
+    gap: 8,
+  },
+  timeBtn: {
+    paddingVertical: 10,
+    paddingHorizontal: 16,
+    borderRadius: 8,
+    backgroundColor: 'rgba(255,255,255,0.1)',
+    borderWidth: 1,
+    borderColor: 'rgba(255,255,255,0.2)',
+  },
+  timeBtnActive: {
+    backgroundColor: COLORS.gold,
+    borderColor: COLORS.gold,
+  },
+  timeBtnText: {
+    fontSize: 14,
+    color: COLORS.textSecondary,
+  },
+  timeBtnTextActive: {
+    color: COLORS.bgDark,
+    fontWeight: 'bold',
+  },
   demoEntryButton: {
     flexDirection: 'row',
     alignItems: 'center',
@@ -3781,14 +4751,20 @@ const styles = StyleSheet.create({
   chapterContentTitle: {
     fontSize: 26,
     fontWeight: 'bold',
-    color: COLORS.textPrimary,
+    color: '#FFD700',
     textAlign: 'center',
+    textShadowColor: 'rgba(255,215,0,0.5)',
+    textShadowOffset: { width: 0, height: 0 },
+    textShadowRadius: 10,
   },
   chapterContentText: {
     fontSize: 18,
-    color: COLORS.textPrimary,
+    color: '#FFFFFF',
     lineHeight: 32,
     marginBottom: 16,
+    textShadowColor: 'rgba(255,215,0,0.3)',
+    textShadowOffset: { width: 0, height: 0 },
+    textShadowRadius: 8,
   },
   puzzleCard: {
     backgroundColor: COLORS.cardBg,
@@ -4097,6 +5073,153 @@ const styles = StyleSheet.create({
   directorButtonDesc: {
     fontSize: 12,
     color: COLORS.textSecondary,
+  },
+  directorButtonPrimary: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    backgroundColor: 'rgba(255,209,0,0.15)',
+    borderRadius: 16,
+    padding: 20,
+    borderWidth: 2,
+    borderColor: COLORS.gold,
+  },
+  directorButtonIcon: {
+    fontSize: 36,
+    marginRight: 16,
+  },
+  directorButtonContent: {
+    flex: 1,
+  },
+  directorButtonTitle: {
+    fontSize: 18,
+    fontWeight: 'bold',
+    color: COLORS.gold,
+    marginBottom: 4,
+  },
+  directorButtonArrow: {
+    fontSize: 24,
+    color: COLORS.gold,
+  },
+  saveButton: {
+    fontSize: 16,
+    fontWeight: 'bold',
+    color: COLORS.gold,
+  },
+  saveButtonDisabled: {
+    color: COLORS.textMuted,
+  },
+  addCharButton: {
+    backgroundColor: COLORS.gold,
+    paddingHorizontal: 16,
+    paddingVertical: 8,
+    borderRadius: 20,
+  },
+  addCharButtonText: {
+    fontSize: 14,
+    fontWeight: 'bold',
+    color: COLORS.bgDark,
+  },
+  charCard: {
+    width: (SCREEN_WIDTH - 48) / 2,
+    backgroundColor: 'rgba(255,255,255,0.05)',
+    borderRadius: 16,
+    padding: 16,
+    alignItems: 'center',
+    margin: 6,
+    borderWidth: 1,
+    borderColor: 'rgba(255,255,255,0.1)',
+  },
+  charCardEmoji: {
+    fontSize: 48,
+    marginBottom: 8,
+  },
+  charCardName: {
+    fontSize: 16,
+    fontWeight: 'bold',
+    color: COLORS.textPrimary,
+    marginBottom: 4,
+  },
+  charCardHint: {
+    fontSize: 11,
+    color: COLORS.textMuted,
+  },
+  charCardEdit: {
+    position: 'absolute',
+    top: 8,
+    right: 8,
+    padding: 4,
+  },
+  charCardEditIcon: {
+    fontSize: 16,
+  },
+  charCardDelete: {
+    position: 'absolute',
+    bottom: 8,
+    right: 8,
+    padding: 4,
+  },
+  charCardDeleteIcon: {
+    fontSize: 16,
+  },
+  emojiPicker: {
+    marginVertical: 8,
+  },
+  emojiOption: {
+    width: 44,
+    height: 44,
+    borderRadius: 22,
+    backgroundColor: 'rgba(255,255,255,0.1)',
+    alignItems: 'center',
+    justifyContent: 'center',
+    marginRight: 8,
+  },
+  emojiOptionSelected: {
+    backgroundColor: COLORS.gold,
+  },
+  emojiText: {
+    fontSize: 24,
+  },
+  charScrollView: {
+    flex: 1,
+    paddingHorizontal: 16,
+  },
+  charSection: {
+    marginTop: 16,
+    marginBottom: 8,
+  },
+  charSectionTitle: {
+    fontSize: 16,
+    fontWeight: 'bold',
+    color: COLORS.textPrimary,
+    marginBottom: 12,
+  },
+  charGrid: {
+    flexDirection: 'row',
+    flexWrap: 'wrap',
+    gap: 12,
+  },
+  charCardPreset: {
+    backgroundColor: 'rgba(100,100,255,0.1)',
+    borderColor: 'rgba(100,100,255,0.3)',
+  },
+  charCardPresetBadge: {
+    position: 'absolute',
+    top: 8,
+    left: 8,
+    backgroundColor: 'rgba(100,100,255,0.3)',
+    paddingHorizontal: 6,
+    paddingVertical: 2,
+    borderRadius: 4,
+  },
+  charCardPresetBadgeText: {
+    fontSize: 10,
+    color: '#8888FF',
+    fontWeight: 'bold',
+  },
+  emptySubtext: {
+    fontSize: 12,
+    color: COLORS.textMuted,
+    marginTop: 4,
   },
   tabBar: {
     flexDirection: 'row',

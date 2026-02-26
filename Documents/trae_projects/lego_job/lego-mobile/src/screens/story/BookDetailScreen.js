@@ -18,7 +18,7 @@ import { COLORS, CHARACTER_EMOJIS, ROLE_TYPES } from '../../utils/constants';
 import { getRoleLabel } from '../../utils/helpers';
 
 const BookDetailScreen = ({ route, navigation }) => {
-  const { bookId } = route.params;
+  const { bookId } = route.params || {};
   const { user } = useAuth();
   const toast = useToast();
   
@@ -42,6 +42,11 @@ const BookDetailScreen = ({ route, navigation }) => {
   });
 
   useEffect(() => {
+    if (!bookId) {
+      toast.error('书籍ID无效');
+      navigation.goBack();
+      return;
+    }
     loadData();
   }, [bookId]);
 
@@ -212,20 +217,15 @@ const BookDetailScreen = ({ route, navigation }) => {
   };
 
   const handleViewPrompt = async () => {
-    try {
-      const data = await chaptersAPI.getPrompt(bookId);
-      setPromptContent(data.prompt || '暂无提示词信息');
-      setPromptModalVisible(true);
-    } catch (error) {
-      toast.error('获取提示词失败');
-    }
+    setPromptContent(book?.prompt || '提示词信息在章节生成时创建');
+    setPromptModalVisible(true);
   };
 
   const handleShare = async () => {
     try {
-      const shareData = await shareAPI.generateBookShare(bookId);
+      const shareData = await shareAPI.create(bookId, user?.userId);
       await Share.share({
-        message: `📖 ${book?.title}\n\n${shareData.summary || '一个精彩的乐高故事！'}\n\n🔗 ${shareData.url || '分享链接'}`,
+        message: `📖 ${book?.title}\n\n一个精彩的乐高故事！\n\n🔗 分享码: ${shareData.shareCode}`,
         title: book?.title,
       });
     } catch (error) {

@@ -88,8 +88,12 @@ const CharactersScreen = ({ navigation }) => {
   };
 
   const handleDelete = async (character) => {
+    if (!character?.character_id) {
+      toast.error('角色信息无效');
+      return;
+    }
     try {
-      await charactersAPI.delete(character.character_id, user?.userId);
+      await charactersAPI.delete(character.character_id);
       toast.success('删除成功');
       setDetailVisible(false);
       loadCharacters();
@@ -100,11 +104,11 @@ const CharactersScreen = ({ navigation }) => {
 
   const handleFormSubmit = async (characterData) => {
     try {
-      if (editingCharacter) {
-        await charactersAPI.update(editingCharacter.character_id, user?.userId, characterData);
+      if (editingCharacter?.character_id) {
+        await charactersAPI.update(editingCharacter.character_id, characterData);
         toast.success('更新成功');
       } else {
-        await charactersAPI.create(user?.userId, characterData);
+        await charactersAPI.create({ ...characterData, creatorId: user?.userId });
         toast.success('创建成功');
       }
       setFormVisible(false);
