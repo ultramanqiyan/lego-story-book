@@ -1,174 +1,84 @@
-# 乐高故事书项目接口文档（优化版）
+# 乐高故事书项目接口文档
 
-## 文档信息
+## 文档说明
 
-| 项目名称 | 乐高故事书 |
-|----------|------------|
-| 文档版本 | V2.0 |
-| 编写日期 | 2026年2月26日 |
-| 文档状态 | 正式发布 |
-| 优化说明 | 基于苏格拉底式提问深度反思，结合项目实际API代码实现 |
+本文档详细描述了乐高故事书项目的所有API接口。阅读本文档后，您将了解：
+- 系统提供了哪些接口
+- 每个接口的业务用途
+- 如何调用这些接口
+- 接口之间的关联关系
 
 ---
 
-## 一、苏格拉底式提问与回答（30问）
+## 第一部分：接口概览
 
-### 1.1 关于API设计（10问）
+### 1.1 接口分类
 
-**Q1：实际存在哪些API端点？**
+系统接口按业务模块分为以下几类：
 
-**回答**：项目实际存在以下API端点：
+| 模块 | 接口数量 | 主要用途 |
+|------|----------|----------|
+| 用户管理 | 3个 | 登录、查询用户信息、更新用户信息 |
+| 书籍管理 | 4个 | 创建书籍、查询书籍、删除书籍、分享书籍 |
+| 章节管理 | 3个 | 生成章节、查询章节列表、查询章节详情 |
+| 角色管理 | 4个 | 创建角色、查询角色、更新角色、删除角色 |
+| 谜题管理 | 2个 | 查询谜题、验证答案 |
+| 其他功能 | 3个 | 语音识别、图片生成、情节选项 |
 
-| 端点 | 文件 | 功能 |
-|------|------|------|
-| /api/users | users.js | 用户管理 |
-| /api/books | books.js | 书籍管理 |
-| /api/chapters | chapters.js | 章节管理 |
-| /api/chapters-generate | chapters-generate.js | 章节生成 |
-| /api/chapters-complete | chapters-complete.js | 章节完成 |
-| /api/characters | characters.js | 角色管理 |
-| /api/book-characters | book-characters.js | 书籍角色管理 |
-| /api/puzzle | puzzle.js | 谜题验证 |
-| /api/speech | speech.js | 语音识别 |
-| /api/generate | generate.js | 图片生成 |
-| /api/share | share.js | 分享管理 |
-| /api/plot-options | plot-options.js | 情节选项 |
-| /api/story | story.js | 故事相关 |
+### 1.2 接口调用基础信息
 
-**Q2：每个API的请求方法是什么？**
+| 项目 | 说明 |
+|------|------|
+| 基础URL | https://your-domain.pages.dev |
+| 数据格式 | JSON |
+| 字符编码 | UTF-8 |
+| 认证方式 | 通过请求参数传递用户ID |
 
-**回答**：每个API支持的方法如下：
-
-| 端点 | GET | POST | PUT | DELETE |
-|------|-----|------|-----|--------|
-| /api/users | ✅ | ✅ | ✅ | ❌ |
-| /api/books | ✅ | ✅ | ✅ | ✅ |
-| /api/chapters | ✅ | ❌ | ❌ | ❌ |
-| /api/chapters-generate | ❌ | ✅ | ❌ | ❌ |
-| /api/characters | ✅ | ✅ | ✅ | ✅ |
-| /api/puzzle | ✅ | ✅ | ❌ | ❌ |
-
-**Q3：请求参数的实际格式是什么？**
-
-**回答**：请求参数格式：
-- GET请求：参数通过URL查询字符串传递
-- POST/PUT请求：参数通过JSON格式的请求体传递
-
-**代码依据**：
-```javascript
-// GET请求获取参数
-const url = new URL(context.request.url);
-const userId = url.searchParams.get('userId');
-
-// POST请求获取参数
-const body = await context.request.json();
-const { username, email } = body;
-```
-
-**Q4：响应数据的实际格式是什么？**
-
-**回答**：响应数据统一使用JSON格式：
+### 1.3 通用响应格式
 
 **成功响应**：
-```json
+```
 {
   "success": true,
-  "data": { ... }
+  "data": { ... 具体数据 ... }
 }
 ```
 
-**错误响应**：
-```json
+**失败响应**：
+```
 {
   "success": false,
-  "error": "错误信息"
+  "error": "错误原因描述"
 }
 ```
-
-**代码依据**：
-```javascript
-// utils.js
-export function createSuccessResponse(data) {
-  return createResponse({ success: true, ...data });
-}
-
-export function createErrorResponse(message, status = 500) {
-  return createResponse({ success: false, error: message }, status);
-}
-```
-
-**Q5：错误响应的格式是什么？**
-
-**回答**：错误响应格式：
-
-| HTTP状态码 | 说明 | 示例 |
-|------------|------|------|
-| 400 | 参数错误 | {"success":false,"error":"用户ID不能为空"} |
-| 404 | 资源不存在 | {"success":false,"error":"书籍不存在"} |
-| 500 | 服务器错误 | {"success":false,"error":"获取书籍失败"} |
-
-**Q6：API是否有版本控制？**
-
-**回答**：当前API没有版本控制。所有API直接位于/api路径下，没有v1/v2等版本前缀。如果未来需要升级API，建议：
-1. 添加版本前缀（如/api/v1/）
-2. 保持向后兼容
-3. 提供版本迁移指南
-
-**Q7：API是否有速率限制？**
-
-**回答**：当前API没有实现速率限制。Cloudflare Pages Functions默认有一定的请求限制，但应用层没有额外的速率限制。建议：
-1. 对AI生成接口添加速率限制
-2. 防止单用户过度调用
-3. 保护第三方API配额
-
-**Q8：API如何处理跨域请求？**
-
-**回答**：API通过CORS头处理跨域请求：
-
-**代码依据**：
-```javascript
-// utils.js
-export function handleCORS() {
-  return new Response(null, {
-    status: 204,
-    headers: {
-      'Access-Control-Allow-Origin': '*',
-      'Access-Control-Allow-Methods': 'GET, POST, PUT, DELETE, OPTIONS',
-      'Access-Control-Allow-Headers': 'Content-Type'
-    }
-  });
-}
-```
-
-每个API都实现了onRequestOptions方法处理预检请求。
-
-**Q9：API是否有认证机制？**
-
-**回答**：当前API使用简单的用户ID认证：
-1. 用户登录后获得用户ID
-2. 用户ID存储在浏览器localStorage
-3. 每次请求时携带用户ID参数
-4. 服务端验证用户ID是否存在
-
-这是一种简化的认证机制，适合儿童用户场景。
-
-**Q10：API请求超时时间是多少？**
-
-**回答**：API请求超时时间：
-- 普通API：Cloudflare Pages Functions默认限制
-- AI生成API：取决于豆包API响应时间（通常5-15秒）
-- 前端建议设置30秒超时
 
 ---
 
-### 1.2 关于用户API（5问）
+## 第二部分：用户管理接口
 
-**Q11：用户创建API的实际请求体是什么？**
+### 2.1 用户登录/注册接口
 
-**回答**：
+**接口名称**：用户登录或创建新用户
 
-**请求**：
-```bash
+**业务场景**：
+- 用户在登录页面输入用户名后点击"开始冒险"时调用
+- 如果用户名已存在，则登录成功
+- 如果用户名不存在，则自动创建新用户
+
+**请求方式**：POST
+
+**请求路径**：/api/users
+
+**请求参数**：
+
+| 参数名 | 类型 | 必填 | 说明 |
+|--------|------|------|------|
+| username | 字符串 | 是 | 用户名，最多20个字符 |
+| email | 字符串 | 否 | 邮箱地址，目前未使用 |
+| parentId | 字符串 | 否 | 家长账号ID，目前未使用 |
+
+**请求示例**：
+```
 POST /api/users
 Content-Type: application/json
 
@@ -177,18 +87,17 @@ Content-Type: application/json
 }
 ```
 
-**代码依据**：
-```javascript
-// users.js
-const { username, email, parentId } = body;
+**响应参数**：
+
+| 参数名 | 类型 | 说明 |
+|--------|------|------|
+| success | 布尔 | 是否成功 |
+| userId | 字符串 | 用户唯一标识，格式为"id_xxx_xxx" |
+| message | 字符串 | 提示信息 |
+| isNewUser | 布尔 | 是否是新创建的用户 |
+
+**响应示例（新用户）**：
 ```
-
-**Q12：用户创建API的实际响应体是什么？**
-
-**回答**：
-
-**新用户响应**：
-```json
 {
   "success": true,
   "userId": "id_mm1s9h2e_oujn2xo9g",
@@ -197,8 +106,8 @@ const { username, email, parentId } = body;
 }
 ```
 
-**已存在用户响应**：
-```json
+**响应示例（已存在用户）**：
+```
 {
   "success": true,
   "userId": "id_mm1s9h2e_oujn2xo9g",
@@ -207,17 +116,52 @@ const { username, email, parentId } = body;
 }
 ```
 
-**Q13：用户查询API需要哪些参数？**
+**业务规则**：
+1. 用户名不能为空，否则返回错误
+2. 用户名不能超过20个字符
+3. 同一用户名只能创建一个账号
+4. 用户ID由系统自动生成，格式为"id_时间戳_随机字符串"
 
-**回答**：
+---
 
-**请求**：
-```bash
+### 2.2 查询用户信息接口
+
+**接口名称**：获取用户详细信息
+
+**业务场景**：
+- 用户进入设置页面时调用
+- 需要显示用户信息时调用
+
+**请求方式**：GET
+
+**请求路径**：/api/users
+
+**请求参数**：
+
+| 参数名 | 类型 | 必填 | 说明 |
+|--------|------|------|------|
+| userId | 字符串 | 是 | 用户ID |
+
+**请求示例**：
+```
 GET /api/users?userId=id_mm1s9h2e_oujn2xo9g
 ```
 
-**响应**：
-```json
+**响应参数**：
+
+| 参数名 | 类型 | 说明 |
+|--------|------|------|
+| success | 布尔 | 是否成功 |
+| user | 对象 | 用户信息对象 |
+| user.user_id | 字符串 | 用户ID |
+| user.username | 字符串 | 用户名 |
+| user.email | 字符串 | 邮箱（可能为空） |
+| user.avatar | 字符串 | 头像（目前为空） |
+| user.daily_time_limit | 数字 | 每日时间限制（分钟），默认120 |
+| user.time_used_today | 数字 | 今日已用时间（分钟），默认0 |
+
+**响应示例**：
+```
 {
   "success": true,
   "user": {
@@ -225,48 +169,78 @@ GET /api/users?userId=id_mm1s9h2e_oujn2xo9g
     "username": "小明",
     "email": null,
     "avatar": null,
-    "parent_id": null,
     "daily_time_limit": 120,
     "time_used_today": 0,
-    "created_at": "2026-02-26T10:00:00Z",
-    "updated_at": "2026-02-26T10:00:00Z"
+    "created_at": "2026-02-26T10:00:00Z"
   }
 }
 ```
 
-**Q14：用户更新API可以更新哪些字段？**
+---
 
-**回答**：可以更新以下字段：
-- username：用户名
-- email：邮箱
-- avatar：头像
-- dailyTimeLimit：每日时间限制
+### 2.3 更新用户信息接口
 
-**请求**：
-```bash
+**接口名称**：修改用户信息
+
+**业务场景**：
+- 用户在设置页面修改自己的信息时调用
+
+**请求方式**：PUT
+
+**请求路径**：/api/users
+
+**请求参数**：
+
+| 参数名 | 类型 | 必填 | 说明 |
+|--------|------|------|------|
+| userId | 字符串 | 是 | 用户ID |
+| username | 字符串 | 否 | 新用户名 |
+| email | 字符串 | 否 | 新邮箱 |
+
+**请求示例**：
+```
 PUT /api/users
 Content-Type: application/json
 
 {
   "userId": "id_mm1s9h2e_oujn2xo9g",
-  "username": "新名字"
+  "username": "小明同学"
 }
 ```
 
-**Q15：用户删除API是否存在？**
-
-**回答**：不存在。用户API没有实现删除功能。用户数据会永久保留在数据库中。
+**响应示例**：
+```
+{
+  "success": true,
+  "message": "用户信息更新成功"
+}
+```
 
 ---
 
-### 1.3 关于书籍API（5问）
+## 第三部分：书籍管理接口
 
-**Q16：书籍创建API需要哪些参数？**
+### 3.1 创建书籍接口
 
-**回答**：
+**接口名称**：创建新的故事书籍
 
-**请求**：
-```bash
+**业务场景**：
+- 用户在"创建故事"流程的第一步调用
+- 用户输入书名后点击创建
+
+**请求方式**：POST
+
+**请求路径**：/api/books
+
+**请求参数**：
+
+| 参数名 | 类型 | 必填 | 说明 |
+|--------|------|------|------|
+| userId | 字符串 | 是 | 用户ID |
+| title | 字符串 | 是 | 书籍标题，最多50个字符 |
+
+**请求示例**：
+```
 POST /api/books
 Content-Type: application/json
 
@@ -276,8 +250,16 @@ Content-Type: application/json
 }
 ```
 
-**响应**：
-```json
+**响应参数**：
+
+| 参数名 | 类型 | 说明 |
+|--------|------|------|
+| success | 布尔 | 是否成功 |
+| bookId | 字符串 | 新创建的书籍ID |
+| message | 字符串 | 提示信息 |
+
+**响应示例**：
+```
 {
   "success": true,
   "bookId": "id_book001",
@@ -285,89 +267,677 @@ Content-Type: application/json
 }
 ```
 
-**限制**：
-- 标题不能为空
-- 标题最多50个字符
-- 每用户最多创建20本书籍
+**业务规则**：
+1. 书名不能为空
+2. 书名不能超过50个字符
+3. 每个用户最多创建20本书籍
+4. 超过限制时返回错误："每用户最多创建20本书籍"
 
-**代码依据**：
-```javascript
-if (!title || title.trim() === '') return createErrorResponse('书籍名称不能为空', 400);
-if (title.length > 50) return createErrorResponse('书籍名称不能超过50个字符', 400);
-const bookCount = await getBookCount(DB, userId);
-if (bookCount.count >= 20) return createErrorResponse('每用户最多创建20本书籍', 400);
+---
+
+### 3.2 查询书籍列表接口
+
+**接口名称**：获取用户的所有书籍
+
+**业务场景**：
+- 用户进入"我的书架"页面时调用
+- 显示用户创建的所有书籍
+
+**请求方式**：GET
+
+**请求路径**：/api/books
+
+**请求参数**：
+
+| 参数名 | 类型 | 必填 | 说明 |
+|--------|------|------|------|
+| userId | 字符串 | 是 | 用户ID |
+
+**请求示例**：
 ```
-
-**Q17：书籍列表API如何分页？**
-
-**回答**：当前书籍列表API没有实现分页，返回用户的所有书籍。
-
-**请求**：
-```bash
 GET /api/books?userId=id_mm1s9h2e_oujn2xo9g
 ```
 
-**响应**：
-```json
+**响应参数**：
+
+| 参数名 | 类型 | 说明 |
+|--------|------|------|
+| success | 布尔 | 是否成功 |
+| books | 数组 | 书籍列表 |
+| books[].book_id | 字符串 | 书籍ID |
+| books[].title | 字符串 | 书籍标题 |
+| books[].chapter_count | 数字 | 章节数量 |
+| books[].status | 字符串 | 状态：active（正常）/ archived（已归档） |
+| books[].created_at | 字符串 | 创建时间 |
+
+**响应示例**：
+```
 {
   "success": true,
   "books": [
     {
       "book_id": "id_book001",
-      "user_id": "id_mm1s9h2e_oujn2xo9g",
       "title": "我的冒险故事",
       "chapter_count": 5,
       "status": "active",
       "created_at": "2026-02-26T10:00:00Z"
+    },
+    {
+      "book_id": "id_book002",
+      "title": "魔法奇遇记",
+      "chapter_count": 3,
+      "status": "active",
+      "created_at": "2026-02-25T15:30:00Z"
     }
   ]
 }
 ```
 
-**Q18：书籍删除API如何处理关联数据？**
+---
 
-**回答**：书籍删除API采用软删除方式，将status设置为'archived'，不实际删除数据。
+### 3.3 查询书籍详情接口
 
-**请求**：
-```bash
+**接口名称**：获取单本书籍的详细信息
+
+**业务场景**：
+- 用户点击书架中的某本书时调用
+- 显示书籍的详细信息和章节列表
+
+**请求方式**：GET
+
+**请求路径**：/api/books
+
+**请求参数**：
+
+| 参数名 | 类型 | 必填 | 说明 |
+|--------|------|------|------|
+| bookId | 字符串 | 是 | 书籍ID |
+
+**请求示例**：
+```
+GET /api/books?bookId=id_book001
+```
+
+**响应示例**：
+```
+{
+  "success": true,
+  "book": {
+    "book_id": "id_book001",
+    "user_id": "id_mm1s9h2e_oujn2xo9g",
+    "title": "我的冒险故事",
+    "chapter_count": 5,
+    "status": "active",
+    "created_at": "2026-02-26T10:00:00Z"
+  }
+}
+```
+
+---
+
+### 3.4 删除书籍接口
+
+**接口名称**：归档书籍（软删除）
+
+**业务场景**：
+- 用户在书架页面点击删除按钮时调用
+- 注意：这是软删除，书籍状态变为"archived"，数据仍保留
+
+**请求方式**：DELETE
+
+**请求路径**：/api/books
+
+**请求参数**：
+
+| 参数名 | 类型 | 必填 | 说明 |
+|--------|------|------|------|
+| id | 字符串 | 是 | 书籍ID |
+
+**请求示例**：
+```
 DELETE /api/books?id=id_book001
 ```
 
-**响应**：
-```json
+**响应示例**：
+```
 {
   "success": true,
   "message": "书籍已归档"
 }
 ```
 
-**代码依据**：
-```javascript
-await DB.prepare('UPDATE books SET status = ?, updated_at = ? WHERE book_id = ?')
-  .bind('archived', now, bookId).run();
+---
+
+## 第四部分：章节管理接口
+
+### 4.1 生成章节接口
+
+**接口名称**：AI生成新的故事章节
+
+**业务场景**：
+- 用户在创建故事的最后一步调用（生成第一章）
+- 用户在书籍详情页点击"生成下一章"时调用
+- 这是系统最核心的接口，调用AI生成故事
+
+**请求方式**：POST
+
+**请求路径**：/api/chapters-generate
+
+**请求参数**：
+
+| 参数名 | 类型 | 必填 | 说明 |
+|--------|------|------|------|
+| bookId | 字符串 | 是（URL参数） | 书籍ID |
+| userId | 字符串 | 是（请求体） | 用户ID |
+| characterIds | 数组 | 否 | 参与本章的角色ID列表 |
+| plotSelection | 对象 | 否 | 用户选择的情节要素 |
+
+**请求示例**：
 ```
-
-**Q19：书籍归档功能是否实现？**
-
-**回答**：是的，书籍归档功能已实现。删除操作实际上是将书籍状态设置为'archived'，查询时会过滤掉已归档的书籍。
-
-**Q20：书籍分享API如何工作？**
-
-**回答**：书籍分享通过/api/share端点实现：
-
-**创建分享**：
-```bash
-POST /api/share
+POST /api/chapters-generate?bookId=id_book001
 Content-Type: application/json
 
 {
-  "bookId": "id_book001",
-  "userId": "id_mm1s9h2e_oujn2xo9g"
+  "userId": "id_mm1s9h2e_oujn2xo9g",
+  "characterIds": ["id_char001", "id_char002"],
+  "plotSelection": {
+    "weather": "晴天",
+    "terrain": "森林",
+    "adventureType": "探险",
+    "equipment": "指南针"
+  }
 }
 ```
 
-**响应**：
-```json
+**响应参数**：
+
+| 参数名 | 类型 | 说明 |
+|--------|------|------|
+| success | 布尔 | 是否成功 |
+| chapterId | 字符串 | 新章节的ID |
+| chapterNumber | 数字 | 章节序号 |
+| title | 字符串 | 章节标题 |
+| hasPuzzle | 布尔 | 是否有谜题 |
+| message | 字符串 | 提示信息 |
+
+**响应示例**：
+```
+{
+  "success": true,
+  "chapterId": "id_chapter001",
+  "chapterNumber": 1,
+  "title": "神秘的开始",
+  "hasPuzzle": true,
+  "message": "章节生成成功"
+}
+```
+
+**业务规则**：
+1. 书籍必须至少有一个角色才能生成章节
+2. 每本书最多100章
+3. 生成时间约5-15秒（取决于AI服务响应）
+4. AI会根据前一章内容和用户选择生成连贯的故事
+
+**AI生成过程说明**：
+
+| 步骤 | 说明 |
+|------|------|
+| 1. 收集上下文 | 获取书籍角色、前一章内容、前一章谜题结果 |
+| 2. 构建提示词 | 组装角色信息、故事要求、谜题类型 |
+| 3. 调用AI服务 | 发送请求到豆包大语言模型 |
+| 4. 解析响应 | 提取标题、内容、谜题信息 |
+| 5. 保存数据 | 存储章节和谜题到数据库 |
+
+---
+
+### 4.2 查询章节列表接口
+
+**接口名称**：获取书籍的所有章节
+
+**业务场景**：
+- 用户进入书籍详情页时调用
+- 显示左侧的章节列表
+
+**请求方式**：GET
+
+**请求路径**：/api/chapters
+
+**请求参数**：
+
+| 参数名 | 类型 | 必填 | 说明 |
+|--------|------|------|------|
+| book_id | 字符串 | 是 | 书籍ID |
+
+**请求示例**：
+```
+GET /api/chapters?book_id=id_book001
+```
+
+**响应示例**：
+```
+{
+  "success": true,
+  "chapters": [
+    {
+      "chapter_id": "id_chapter001",
+      "chapter_number": 1,
+      "title": "神秘的开始",
+      "has_puzzle": 1,
+      "created_at": "2026-02-26T10:00:00Z"
+    },
+    {
+      "chapter_id": "id_chapter002",
+      "chapter_number": 2,
+      "title": "森林探险",
+      "has_puzzle": 1,
+      "created_at": "2026-02-26T10:05:00Z"
+    }
+  ]
+}
+```
+
+---
+
+### 4.3 查询章节详情接口
+
+**接口名称**：获取单个章节的完整内容
+
+**业务场景**：
+- 用户点击章节列表中的某章时调用
+- 显示章节内容和谜题
+
+**请求方式**：GET
+
+**请求路径**：/api/chapters
+
+**请求参数**：
+
+| 参数名 | 类型 | 必填 | 说明 |
+|--------|------|------|------|
+| chapterId | 字符串 | 是 | 章节ID |
+
+**请求示例**：
+```
+GET /api/chapters?chapterId=id_chapter001
+```
+
+**响应示例**：
+```
+{
+  "success": true,
+  "chapter": {
+    "chapter_id": "id_chapter001",
+    "book_id": "id_book001",
+    "chapter_number": 1,
+    "title": "神秘的开始",
+    "content": "在一个阳光明媚的早晨，勇敢的骑士小明踏上了他的冒险之旅...",
+    "has_puzzle": 1,
+    "created_at": "2026-02-26T10:00:00Z"
+  }
+}
+```
+
+---
+
+## 第五部分：角色管理接口
+
+### 5.1 查询角色列表接口
+
+**接口名称**：获取所有可用角色
+
+**业务场景**：
+- 用户进入"人仔角色"页面时调用
+- 用户在创建故事选择角色时调用
+
+**请求方式**：GET
+
+**请求路径**：/api/characters
+
+**请求参数**：
+
+| 参数名 | 类型 | 必填 | 说明 |
+|--------|------|------|------|
+| userId | 字符串 | 是 | 用户ID |
+
+**请求示例**：
+```
+GET /api/characters?userId=id_mm1s9h2e_oujn2xo9g
+```
+
+**响应示例**：
+```
+{
+  "success": true,
+  "characters": [
+    {
+      "character_id": "id_char_system_001",
+      "name": "勇敢骑士",
+      "description": "一位勇敢的骑士，保护弱小",
+      "personality": "勇敢、正义",
+      "speaking_style": "正式、有礼貌",
+      "creator_id": "system"
+    },
+    {
+      "character_id": "id_char_user_001",
+      "name": "我的角色",
+      "description": "我自己创建的角色",
+      "personality": "聪明、机智",
+      "speaking_style": "幽默",
+      "creator_id": "id_mm1s9h2e_oujn2xo9g"
+    }
+  ]
+}
+```
+
+**业务规则**：
+- 返回系统预设角色（creator_id为"system"）
+- 返回用户自己创建的角色（creator_id为用户ID）
+- 预设角色不可编辑删除
+- 用户角色可编辑删除
+
+---
+
+### 5.2 创建角色接口
+
+**接口名称**：创建自定义角色
+
+**业务场景**：
+- 用户在"人仔角色"页面点击"创建新人仔"时调用
+
+**请求方式**：POST
+
+**请求路径**：/api/characters
+
+**请求参数**：
+
+| 参数名 | 类型 | 必填 | 说明 |
+|--------|------|------|------|
+| name | 字符串 | 是 | 角色名称，最多20字符 |
+| description | 字符串 | 否 | 角色描述，最多200字符 |
+| personality | 字符串 | 否 | 性格特点，最多100字符 |
+| speaking_style | 字符串 | 否 | 说话风格，最多100字符 |
+| creator_id | 字符串 | 是 | 创建者用户ID |
+
+**请求示例**：
+```
+POST /api/characters
+Content-Type: application/json
+
+{
+  "name": "超级英雄",
+  "description": "一个拥有超能力的英雄",
+  "personality": "勇敢、善良、正义",
+  "speaking_style": "自信、有力",
+  "creator_id": "id_mm1s9h2e_oujn2xo9g"
+}
+```
+
+**响应示例**：
+```
+{
+  "success": true,
+  "characterId": "id_char_user_002",
+  "message": "角色创建成功"
+}
+```
+
+---
+
+### 5.3 更新角色接口
+
+**接口名称**：修改自定义角色
+
+**业务场景**：
+- 用户在"人仔角色"页面编辑自己创建的角色时调用
+
+**请求方式**：PUT
+
+**请求路径**：/api/characters
+
+**请求参数**：
+
+| 参数名 | 类型 | 必填 | 说明 |
+|--------|------|------|------|
+| characterId | 字符串 | 是 | 角色ID |
+| name | 字符串 | 否 | 新名称 |
+| description | 字符串 | 否 | 新描述 |
+| personality | 字符串 | 否 | 新性格 |
+| speaking_style | 字符串 | 否 | 新说话风格 |
+
+**请求示例**：
+```
+PUT /api/characters
+Content-Type: application/json
+
+{
+  "characterId": "id_char_user_001",
+  "name": "超级英雄改版",
+  "personality": "更加勇敢"
+}
+```
+
+**业务规则**：
+- 只能修改自己创建的角色
+- 不能修改系统预设角色
+
+---
+
+### 5.4 删除角色接口
+
+**接口名称**：删除自定义角色
+
+**业务场景**：
+- 用户在"人仔角色"页面删除自己创建的角色时调用
+
+**请求方式**：DELETE
+
+**请求路径**：/api/characters
+
+**请求参数**：
+
+| 参数名 | 类型 | 必填 | 说明 |
+|--------|------|------|------|
+| id | 字符串 | 是 | 角色ID |
+
+**请求示例**：
+```
+DELETE /api/characters?id=id_char_user_001
+```
+
+**业务规则**：
+- 只能删除自己创建的角色
+- 不能删除系统预设角色
+- 删除前应检查角色是否在故事中使用
+
+---
+
+## 第六部分：谜题管理接口
+
+### 6.1 查询谜题接口
+
+**接口名称**：获取章节的谜题
+
+**业务场景**：
+- 用户阅读完章节后点击"去解谜"时调用
+- 显示谜题供用户解答
+
+**请求方式**：GET
+
+**请求路径**：/api/puzzle
+
+**请求参数**：
+
+| 参数名 | 类型 | 必填 | 说明 |
+|--------|------|------|------|
+| puzzleId | 字符串 | 是 | 谜题ID |
+| chapterId | 字符串 | 否 | 章节ID（可选，用于查询章节谜题） |
+
+**请求示例**：
+```
+GET /api/puzzle?puzzleId=id_puzzle001
+```
+
+**响应参数**：
+
+| 参数名 | 类型 | 说明 |
+|--------|------|------|
+| success | 布尔 | 是否成功 |
+| puzzle | 对象 | 谜题信息 |
+| puzzle.puzzle_id | 字符串 | 谜题ID |
+| puzzle.question | 字符串 | 谜题问题 |
+| puzzle.options | 数组 | 四个选项 |
+| puzzle.hint | 字符串 | 提示（可能为空） |
+| puzzle.puzzle_type | 字符串 | 谜题类型 |
+
+**响应示例**：
+```
+{
+  "success": true,
+  "puzzle": {
+    "puzzle_id": "id_puzzle001",
+    "question": "下一个数字是什么？1, 2, 4, 7, 11, ?",
+    "options": ["15", "16", "17", "18"],
+    "hint": "观察相邻数字的差值变化",
+    "puzzle_type": "pattern"
+  }
+}
+```
+
+**注意**：响应中不包含正确答案，防止泄露。
+
+---
+
+### 6.2 验证答案接口
+
+**接口名称**：验证用户提交的谜题答案
+
+**业务场景**：
+- 用户在解谜界面选择答案后点击提交时调用
+
+**请求方式**：POST
+
+**请求路径**：/api/puzzle
+
+**请求参数**：
+
+| 参数名 | 类型 | 必填 | 说明 |
+|--------|------|------|------|
+| puzzleId | 字符串 | 是 | 谜题ID |
+| userId | 字符串 | 是 | 用户ID |
+| userAnswer | 字符串 | 是 | 用户答案（A/B/C/D） |
+
+**请求示例**：
+```
+POST /api/puzzle
+Content-Type: application/json
+
+{
+  "puzzleId": "id_puzzle001",
+  "userId": "id_mm1s9h2e_oujn2xo9g",
+  "userAnswer": "B"
+}
+```
+
+**响应参数**：
+
+| 参数名 | 类型 | 说明 |
+|--------|------|------|
+| success | 布尔 | 是否成功 |
+| isCorrect | 布尔 | 答案是否正确 |
+| attempts | 数字 | 已尝试次数 |
+| attemptsRemaining | 数字 | 剩余尝试次数 |
+| hint | 字符串 | 提示（第2次错误后返回） |
+| message | 字符串 | 提示信息 |
+
+**响应示例（正确）**：
+```
+{
+  "success": true,
+  "isCorrect": true,
+  "attempts": 1,
+  "attemptsRemaining": 2,
+  "hint": null,
+  "message": "答对了！你真聪明！"
+}
+```
+
+**响应示例（错误，第1次）**：
+```
+{
+  "success": true,
+  "isCorrect": false,
+  "attempts": 1,
+  "attemptsRemaining": 2,
+  "hint": null,
+  "message": "答案错误，再想想看"
+}
+```
+
+**响应示例（错误，第2次）**：
+```
+{
+  "success": true,
+  "isCorrect": false,
+  "attempts": 2,
+  "attemptsRemaining": 1,
+  "hint": "观察相邻数字的差值变化",
+  "message": "答案错误，给你一个提示吧"
+}
+```
+
+**业务规则**：
+1. 每道谜题最多尝试3次
+2. 第2次错误后显示提示
+3. 3次全错后显示正确答案
+4. 答题记录保存在数据库中
+
+---
+
+## 第七部分：其他功能接口
+
+### 7.1 书籍角色关联接口
+
+**接口名称**：将角色添加到书籍中
+
+**业务场景**：
+- 用户在创建故事选择角色后调用
+- 将选中的角色与书籍关联
+
+**请求方式**：POST
+
+**请求路径**：/api/book-characters
+
+**请求参数**：
+
+| 参数名 | 类型 | 必填 | 说明 |
+|--------|------|------|------|
+| bookId | 字符串 | 是 | 书籍ID |
+| characterId | 字符串 | 是 | 角色ID |
+| customName | 字符串 | 否 | 角色在故事中的自定义名称 |
+| roleType | 字符串 | 否 | 角色类型：protagonist（主角）/supporting（配角）/antagonist（反派）/npc（路人） |
+
+---
+
+### 7.2 分享接口
+
+**接口名称**：创建书籍分享链接
+
+**业务场景**：
+- 用户想要分享自己的故事给朋友时调用
+
+**请求方式**：POST
+
+**请求路径**：/api/share
+
+**请求参数**：
+
+| 参数名 | 类型 | 必填 | 说明 |
+|--------|------|------|------|
+| bookId | 字符串 | 是 | 书籍ID |
+| userId | 字符串 | 是 | 用户ID |
+
+**响应示例**：
+```
 {
   "success": true,
   "shareCode": "abc123",
@@ -377,378 +947,86 @@ Content-Type: application/json
 
 ---
 
-### 1.4 关于章节API（5问）
+### 7.3 情节选项接口
 
-**Q21：章节生成API的实际流程是什么？**
+**接口名称**：获取可用的情节选项
 
-**回答**：章节生成API流程：
+**业务场景**：
+- 用户在生成新章节前选择情节要素时调用
+- 提供天气、地形、冒险类型等选项
 
-1. 验证书籍ID
-2. 检查章节数量限制（最多100章）
-3. 获取书籍关联的角色
-4. 获取前一章内容（如果有）
-5. 构建AI提示词
-6. 调用豆包API生成故事
-7. 解析AI返回的JSON
-8. 保存章节到数据库
-9. 保存谜题到数据库（如果有）
-10. 返回章节ID
+**请求方式**：GET
 
-**Q22：章节生成需要多长时间？**
+**请求路径**：/api/plot-options
 
-**回答**：章节生成时间取决于：
-- 豆包API响应时间：3-10秒
-- 网络延迟：1-3秒
-- 数据库写入：<1秒
-- 总计：通常5-15秒
-
-**Q23：章节内容如何存储？**
-
-**回答**：章节内容存储在chapters表中：
-
-| 字段 | 类型 | 说明 |
-|------|------|------|
-| chapter_id | TEXT | 章节ID |
-| book_id | TEXT | 书籍ID |
-| chapter_number | INTEGER | 章节序号 |
-| title | TEXT | 章节标题 |
-| content | TEXT | 故事内容 |
-| has_puzzle | INTEGER | 是否有谜题 |
-| created_at | DATETIME | 创建时间 |
-
-**Q24：章节可以编辑吗？**
-
-**回答**：不可以。章节一旦生成就不能编辑。这是设计决策，保持故事的连贯性和AI生成的原始性。
-
-**Q25：章节删除如何处理？**
-
-**回答**：当前没有实现章节删除功能。如果需要删除章节，需要删除整本书籍。
-
----
-
-### 1.5 关于其他API（5问）
-
-**Q26：角色创建API支持哪些字段？**
-
-**回答**：
-
-**请求**：
-```bash
-POST /api/characters
-Content-Type: application/json
-
-{
-  "name": "勇敢骑士",
-  "description": "一位勇敢的骑士",
-  "personality": "勇敢、正义",
-  "speaking_style": "正式、有礼貌",
-  "creator_id": "id_mm1s9h2e_oujn2xo9g"
-}
+**响应示例**：
 ```
-
-**Q27：谜题验证API如何判断答案正确？**
-
-**回答**：谜题验证API通过字符串比较判断答案：
-
-**代码依据**：
-```javascript
-// puzzle.js
-const isCorrect = puzzle.answer === userAnswer;
-```
-
-答案格式为字母（A/B/C/D），区分大小写。
-
-**Q28：语音识别API使用什么服务？**
-
-**回答**：语音识别使用SiliconFlow服务，模型为FunAudioLLM/SenseVoiceSmall。
-
-**Q29：图片生成API使用什么模型？**
-
-**回答**：图片生成使用Seedream模型，具体为doubao-seedream-4-0-250828。
-
-**Q30：分享API生成的链接有效期是多久？**
-
-**回答**：分享链接没有设置有效期，永久有效。分享码存储在shares表中，没有过期时间字段。
-
----
-
-## 二、API端点详细文档
-
-### 2.1 用户API
-
-#### POST /api/users
-
-创建或登录用户
-
-**请求体**：
-```json
-{
-  "username": "小明"
-}
-```
-
-**curl示例**：
-```bash
-curl -X POST https://your-domain/api/users \
-  -H "Content-Type: application/json" \
-  -d '{"username":"小明"}'
-```
-
-**成功响应**：
-```json
 {
   "success": true,
-  "userId": "id_mm1s9h2e_oujn2xo9g",
-  "message": "用户创建成功",
-  "isNewUser": true
-}
-```
-
-#### GET /api/users
-
-获取用户信息
-
-**请求参数**：
-- userId（必需）：用户ID
-
-**curl示例**：
-```bash
-curl "https://your-domain/api/users?userId=id_mm1s9h2e_oujn2xo9g"
-```
-
-#### PUT /api/users
-
-更新用户信息
-
-**请求体**：
-```json
-{
-  "userId": "id_mm1s9h2e_oujn2xo9g",
-  "username": "新名字"
-}
-```
-
----
-
-### 2.2 书籍API
-
-#### POST /api/books
-
-创建新书籍
-
-**请求体**：
-```json
-{
-  "userId": "id_mm1s9h2e_oujn2xo9g",
-  "title": "我的冒险故事"
-}
-```
-
-**curl示例**：
-```bash
-curl -X POST https://your-domain/api/books \
-  -H "Content-Type: application/json" \
-  -d '{"userId":"id_xxx","title":"我的冒险故事"}'
-```
-
-#### GET /api/books
-
-获取书籍列表或书籍详情
-
-**请求参数**：
-- userId：用户ID（获取列表时必需）
-- bookId：书籍ID（获取详情时使用）
-
-**curl示例**：
-```bash
-# 获取书籍列表
-curl "https://your-domain/api/books?userId=id_xxx"
-
-# 获取书籍详情
-curl "https://your-domain/api/books?bookId=id_book001"
-```
-
-#### DELETE /api/books
-
-归档书籍
-
-**请求参数**：
-- id：书籍ID
-
-**curl示例**：
-```bash
-curl -X DELETE "https://your-domain/api/books?id=id_book001"
-```
-
----
-
-### 2.3 章节API
-
-#### POST /api/chapters-generate
-
-生成新章节
-
-**请求参数**：
-- bookId（URL参数）：书籍ID
-
-**请求体**：
-```json
-{
-  "userId": "id_mm1s9h2e_oujn2xo9g",
-  "characterIds": ["id_char001", "id_char002"],
-  "plotSelection": null
-}
-```
-
-**curl示例**：
-```bash
-curl -X POST "https://your-domain/api/chapters-generate?bookId=id_book001" \
-  -H "Content-Type: application/json" \
-  -d '{"userId":"id_xxx"}'
-```
-
-**成功响应**：
-```json
-{
-  "success": true,
-  "chapterId": "id_chapter001",
-  "chapterNumber": 1,
-  "title": "神秘的开始",
-  "hasPuzzle": 1,
-  "message": "章节生成成功"
-}
-```
-
-#### GET /api/chapters
-
-获取章节列表
-
-**请求参数**：
-- book_id：书籍ID
-
----
-
-### 2.4 谜题API
-
-#### POST /api/puzzle
-
-验证谜题答案
-
-**请求体**：
-```json
-{
-  "puzzleId": "id_puzzle001",
-  "userId": "id_mm1s9h2e_oujn2xo9g",
-  "userAnswer": "A"
-}
-```
-
-**curl示例**：
-```bash
-curl -X POST https://your-domain/api/puzzle \
-  -H "Content-Type: application/json" \
-  -d '{"puzzleId":"id_puzzle001","userId":"id_xxx","userAnswer":"A"}'
-```
-
-**成功响应（正确）**：
-```json
-{
-  "success": true,
-  "isCorrect": true,
-  "attempts": 1,
-  "attemptsRemaining": 2,
-  "hint": null,
-  "message": "答对了！"
-}
-```
-
-**成功响应（错误）**：
-```json
-{
-  "success": true,
-  "isCorrect": false,
-  "attempts": 2,
-  "attemptsRemaining": 1,
-  "hint": "仔细观察规律",
-  "message": "答案错误，请再试一次"
-}
-```
-
----
-
-## 三、错误码参考
-
-| HTTP状态码 | 错误信息 | 原因 |
-|------------|----------|------|
-| 400 | 用户ID不能为空 | 未提供userId参数 |
-| 400 | 用户名不能为空 | 未提供username参数 |
-| 400 | 用户名不能超过20个字符 | username长度超限 |
-| 400 | 书籍名称不能为空 | 未提供title参数 |
-| 400 | 书籍名称不能超过50个字符 | title长度超限 |
-| 400 | 每用户最多创建20本书籍 | 达到书籍数量上限 |
-| 400 | 单本书籍最多100章 | 达到章节数量上限 |
-| 400 | 请先添加角色 | 书籍没有关联角色 |
-| 400 | 参数不完整 | 缺少必需参数 |
-| 404 | 用户不存在 | userId无效 |
-| 404 | 书籍不存在 | bookId无效 |
-| 404 | 谜题不存在 | puzzleId无效 |
-| 500 | AI服务暂时不可用 | 豆包API调用失败 |
-| 500 | AI返回格式错误 | AI返回数据解析失败 |
-
----
-
-## 四、API调用最佳实践
-
-### 4.1 错误处理
-
-```javascript
-async function apiCall(url, options) {
-  try {
-    const response = await fetch(url, options);
-    const data = await response.json();
-    
-    if (!data.success) {
-      console.error('API Error:', data.error);
-      return { error: data.error };
-    }
-    
-    return data;
-  } catch (error) {
-    console.error('Network Error:', error);
-    return { error: '网络错误，请稍后重试' };
-  }
-}
-```
-
-### 4.2 超时处理
-
-```javascript
-async function apiCallWithTimeout(url, options, timeout = 30000) {
-  const controller = new AbortController();
-  const timeoutId = setTimeout(() => controller.abort(), timeout);
-  
-  try {
-    const response = await fetch(url, {
-      ...options,
-      signal: controller.signal
-    });
-    clearTimeout(timeoutId);
-    return await response.json();
-  } catch (error) {
-    clearTimeout(timeoutId);
-    if (error.name === 'AbortError') {
-      return { error: '请求超时' };
-    }
-    throw error;
+  "options": {
+    "weather": ["晴天", "阴天", "雨天", "雪天", "雾天"],
+    "terrain": ["森林", "沙漠", "海洋", "山脉", "城市"],
+    "adventureType": ["探险", "解谜", "战斗", "社交", "收集"],
+    "equipment": ["指南针", "地图", "宝剑", "魔法棒", "盾牌"]
   }
 }
 ```
 
 ---
 
-## 附录：修订历史
+## 第八部分：错误码说明
 
-| 版本 | 日期 | 修订内容 | 作者 |
-|------|------|----------|------|
-| V1.0 | 2026-02-25 | 初始版本 | 项目团队 |
-| V2.0 | 2026-02-26 | 基于苏格拉底式提问深度优化，添加curl示例和代码依据 | 项目团队 |
+| HTTP状态码 | 错误信息 | 原因 | 解决方法 |
+|------------|----------|------|----------|
+| 400 | 用户ID不能为空 | 未提供userId参数 | 确保请求包含userId |
+| 400 | 用户名不能为空 | 未提供username参数 | 确保请求包含username |
+| 400 | 用户名不能超过20个字符 | username长度超限 | 限制用户名长度 |
+| 400 | 书籍名称不能为空 | 未提供title参数 | 确保请求包含title |
+| 400 | 书籍名称不能超过50个字符 | title长度超限 | 限制书名长度 |
+| 400 | 每用户最多创建20本书籍 | 达到书籍数量上限 | 删除不需要的书籍 |
+| 400 | 单本书籍最多100章 | 达到章节数量上限 | 创建新书籍 |
+| 400 | 请先添加角色 | 书籍没有关联角色 | 先添加角色再生成章节 |
+| 404 | 用户不存在 | userId无效 | 使用正确的userId |
+| 404 | 书籍不存在 | bookId无效 | 使用正确的bookId |
+| 404 | 谜题不存在 | puzzleId无效 | 使用正确的puzzleId |
+| 500 | AI服务暂时不可用 | 豆包API调用失败 | 稍后重试 |
+| 500 | AI返回格式错误 | AI返回数据解析失败 | 稍后重试 |
+
+---
+
+## 附录：接口调用流程示例
+
+### 完整创建故事流程
+
+```
+1. 用户登录
+   POST /api/users {username: "小明"}
+   响应: {userId: "id_xxx"}
+
+2. 创建书籍
+   POST /api/books {userId: "id_xxx", title: "我的冒险"}
+   响应: {bookId: "id_book001"}
+
+3. 查询角色
+   GET /api/characters?userId=id_xxx
+   响应: {characters: [...]}
+
+4. 关联角色到书籍
+   POST /api/book-characters {bookId: "id_book001", characterId: "id_char001"}
+
+5. 生成第一章
+   POST /api/chapters-generate?bookId=id_book001 {userId: "id_xxx"}
+   响应: {chapterId: "id_chapter001"}
+
+6. 查询章节内容
+   GET /api/chapters?chapterId=id_chapter001
+   响应: {chapter: {...}}
+
+7. 查询谜题
+   GET /api/puzzle?puzzleId=id_puzzle001
+   响应: {puzzle: {...}}
+
+8. 验证答案
+   POST /api/puzzle {puzzleId: "id_puzzle001", userId: "id_xxx", userAnswer: "A"}
+   响应: {isCorrect: true}
+```

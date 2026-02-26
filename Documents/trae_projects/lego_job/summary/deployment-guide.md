@@ -1,1091 +1,450 @@
 # 乐高故事书项目部署文档
 
-## 文档信息
+## 文档说明
 
-| 项目名称 | 乐高故事书 |
-|----------|------------|
-| 文档版本 | V2.0 |
-| 编写日期 | 2026年2月26日 |
-| 文档状态 | 正式发布 |
+本文档面向需要部署本项目的运维人员、开发人员或项目管理者。即使您没有深厚的技术背景，按照本文档的步骤操作，也能成功将项目部署上线。
 
----
-
-## 一、快速开始（5分钟部署）
-
-本章节提供最简化的部署步骤，帮助您快速完成项目部署。详细说明请参考后续章节。
-
-### 1.1 前置条件检查
-
-在开始部署前，请确保您已具备以下条件：
-
-**必需条件**：
-- Node.js 18.0.0 或更高版本
-- npm 包管理器
-- Git 版本控制工具
-- Cloudflare 账户（免费账户即可）
-- GitHub 账户（用于代码托管）
-
-**验证命令**：
-```bash
-# 检查 Node.js 版本
-node --version
-# 预期输出：v18.x.x 或更高
-
-# 检查 npm 版本
-npm --version
-# 预期输出：9.x.x 或更高
-
-# 检查 Git 版本
-git --version
-# 预期输出：git version 2.x.x
-```
-
-### 1.2 克隆项目代码
-
-```bash
-# 克隆项目仓库
-git clone https://github.com/ultramanqiyan/lego-story-book.git
-
-# 进入项目目录
-cd lego-story-book
-
-# 安装依赖
-npm install
-```
-
-### 1.3 登录 Cloudflare
-
-```bash
-# 安装 Wrangler CLI（如果未安装）
-npm install -g wrangler
-
-# 登录 Cloudflare 账户
-npx wrangler login
-```
-
-执行登录命令后，浏览器会自动打开 Cloudflare 登录页面，请完成授权。
-
-### 1.4 创建数据库
-
-```bash
-# 创建 D1 数据库
-npx wrangler d1 create lego-story-db
-```
-
-**预期输出**：
-```
-✅ Successfully created DB 'lego-story-db'!
-
-[[d1_databases]]
-binding = "DB"
-database_name = "lego-story-db"
-database_id = "xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx"
-```
-
-**重要**：请记录输出的 `database_id`，后续配置需要使用。
-
-### 1.5 配置 wrangler.toml
-
-打开项目根目录的 `wrangler.toml` 文件，将 `database_id` 替换为您刚才创建的数据库ID：
-
-```toml
-name = "lego-story-book"
-compatibility_date = "2024-01-01"
-pages_build_output_dir = "."
-
-[[d1_databases]]
-binding = "DB"
-database_name = "lego-story-db"
-database_id = "您的数据库ID"  # 替换这里
-
-[vars]
-ENVIRONMENT = "development"
-
-[env.production]
-name = "lego-story-book"
-
-[[env.production.d1_databases]]
-binding = "DB"
-database_name = "lego-story-db"
-database_id = "您的数据库ID"  # 替换这里
-
-[env.production.vars]
-ENVIRONMENT = "production"
-```
-
-### 1.6 执行数据库迁移
-
-```bash
-# 执行本地数据库迁移（用于本地开发测试）
-npx wrangler d1 migrations apply lego-story-db --local
-
-# 执行远程数据库迁移（用于生产环境）
-npx wrangler d1 migrations apply lego-story-db
-```
-
-**预期输出**：
-```
-🌀 Executing on local database:
-🚣 Executed 3 migrations in XXXms.
-```
-
-### 1.7 配置环境变量
-
-在 Cloudflare Pages 项目设置中配置以下环境变量：
-
-| 变量名 | 值 | 说明 |
-|--------|-----|------|
-| DOUBAO_API_KEY | 您的API密钥 | 豆包大语言模型API |
-| SEEDREAM_API_KEY | 您的API密钥 | 火山引擎图片生成API |
-| SILICONFLOW_API_KEY | 您的API密钥 | SiliconFlow语音识别API |
-
-**配置步骤**：
-1. 登录 Cloudflare Dashboard
-2. 进入 Workers & Pages > lego-story-book
-3. 点击 Settings > Environment variables
-4. 点击 Add variable，逐个添加上述变量
-5. 分别配置 Production 和 Preview 环境
-
-### 1.8 部署项目
-
-```bash
-# 部署到 Cloudflare Pages
-npx wrangler pages deploy .
-```
-
-**预期输出**：
-```
-✨ Success! Uploaded 1 files and Deployed!
-✨ Deployment URL: https://lego-story-book.pages.dev
-```
-
-### 1.9 验证部署
-
-访问部署URL，检查以下功能：
-
-1. **首页访问**：打开 `https://您的项目名.pages.dev`
-2. **用户登录**：输入用户名测试登录功能
-3. **创建书籍**：测试创建新书籍功能
-4. **生成故事**：测试AI故事生成功能
+阅读本文档后，您将了解：
+- 部署前需要准备什么
+- 每一步操作的具体目的和预期结果
+- 如何验证部署是否成功
+- 遇到问题如何排查
 
 ---
 
-## 二、环境准备
+## 第一部分：部署概述
 
-### 2.1 开发环境配置
+### 1.1 项目部署架构
 
-#### 2.1.1 Node.js 安装
+在开始部署前，先了解项目的整体架构：
 
-**Windows 系统**：
-1. 访问 https://nodejs.org/
-2. 下载 LTS 版本安装包
-3. 运行安装程序，按提示完成安装
-4. 打开命令提示符，验证安装
+**项目由三大部分组成**：
 
-**macOS 系统**：
-```bash
-# 使用 Homebrew 安装
-brew install node
+| 组成部分 | 说明 | 部署位置 |
+|----------|------|----------|
+| 前端页面 | 用户看到的网页界面 | Cloudflare Pages（全球CDN） |
+| 后端API | 处理业务逻辑的服务 | Cloudflare Pages Functions |
+| 数据库 | 存储用户数据、故事内容 | Cloudflare D1（边缘数据库） |
 
-# 或使用 nvm 安装（推荐）
-curl -o- https://raw.githubusercontent.com/nvm-sh/nvm/v0.39.0/install.sh | bash
-nvm install 18
-nvm use 18
+**为什么选择这种架构**：
+
+| 优势 | 具体说明 |
+|------|----------|
+| 零运维 | 不需要购买、配置、维护服务器 |
+| 低成本 | 免费套餐足够小型项目使用 |
+| 高性能 | 全球CDN加速，用户访问快 |
+| 自动扩展 | 访问量增加时自动扩展，无需手动干预 |
+
+### 1.2 部署流程总览
+
+整个部署过程分为以下几个阶段：
+
+```
+第一阶段：准备工作（约30分钟）
+├── 注册必要的服务账户
+├── 安装必要的软件工具
+└── 获取项目代码
+
+第二阶段：配置服务（约20分钟）
+├── 创建数据库
+├── 配置API密钥
+└── 设置环境变量
+
+第三阶段：部署上线（约10分钟）
+├── 执行数据库初始化
+├── 部署前端和后端
+└── 验证部署结果
+
+第四阶段：功能验证（约10分钟）
+├── 测试用户登录
+├── 测试故事生成
+└── 测试谜题功能
 ```
 
-**Linux 系统**：
-```bash
-# Ubuntu/Debian
-curl -fsSL https://deb.nodesource.com/setup_18.x | sudo -E bash -
-sudo apt-get install -y nodejs
+---
 
-# CentOS/RHEL
-curl -fsSL https://rpm.nodesource.com/setup_18.x | sudo bash -
-sudo yum install -y nodejs
-```
+## 第二部分：准备工作
 
-#### 2.1.2 Wrangler CLI 安装
+### 2.1 需要注册的账户
 
-```bash
-# 全局安装 Wrangler
-npm install -g wrangler
+在开始部署前，您需要注册以下账户：
 
-# 验证安装
-npx wrangler --version
-# 预期输出：⛅️ wrangler 3.x.x
-```
+#### 2.1.1 Cloudflare账户
 
-#### 2.1.3 本地开发环境启动
-
-```bash
-# 进入项目目录
-cd lego-story-book
-
-# 安装项目依赖
-npm install
-
-# 启动本地开发服务器
-npm run dev
-```
-
-**预期输出**：
-```
-Ready on http://localhost:8788
-```
-
-访问 `http://localhost:8788` 即可看到项目首页。
-
-### 2.2 Cloudflare 账户准备
-
-#### 2.2.1 注册 Cloudflare 账户
-
-1. 访问 https://dash.cloudflare.com/sign-up
-2. 输入邮箱和密码
-3. 验证邮箱地址
-4. 完成账户注册
-
-#### 2.2.2 开通 Pages 服务
-
-1. 登录 Cloudflare Dashboard
-2. 点击左侧菜单 "Workers & Pages"
-3. 点击 "Create application"
-4. 选择 "Pages" 标签
-5. 点击 "Connect to Git"
-
-#### 2.2.3 开通 D1 数据库服务
-
-1. 在 Cloudflare Dashboard 中
-2. 点击左侧菜单 "Workers & Pages" > "D1 SQL Database"
-3. 点击 "Create database"
-4. 输入数据库名称并创建
-
-### 2.3 第三方服务账户准备
-
-本项目使用以下第三方服务，需要分别注册并获取API密钥。
-
-#### 2.3.1 火山引擎（豆包API + Seedream API）
+**用途**：托管项目的前端、后端和数据库
 
 **注册步骤**：
-1. 访问 https://www.volcengine.com/
-2. 点击右上角 "登录/注册"
-3. 完成账户注册和实名认证
+1. 打开浏览器，访问 Cloudflare 官网
+2. 点击右上角"注册"按钮
+3. 输入您的邮箱地址和密码
+4. 到邮箱中点击验证链接
+5. 完成账户注册
 
-**获取 API 密钥**：
+**注意事项**：
+- 免费账户即可满足项目需求
+- 建议使用常用邮箱，方便接收通知
+- 记住您的登录邮箱和密码
+
+#### 2.1.2 火山引擎账户
+
+**用途**：获取AI故事生成服务
+
+**注册步骤**：
+1. 打开浏览器，访问火山引擎官网
+2. 点击右上角"登录/注册"
+3. 选择手机号或邮箱注册
+4. 完成手机验证码验证
+5. 完成实名认证（需要上传身份证）
+
+**注意事项**：
+- 新用户有免费额度，可以先体验
+- 实名认证后才能使用API服务
+- 记住您的登录信息
+
+#### 2.1.3 SiliconFlow账户
+
+**用途**：获取语音识别服务
+
+**注册步骤**：
+1. 打开浏览器，访问 SiliconFlow 官网
+2. 点击"注册/登录"按钮
+3. 使用手机号或微信注册
+4. 完成账户验证
+
+**注意事项**：
+- 新用户有免费额度
+- 本项目的语音功能为可选功能
+
+#### 2.1.4 GitHub账户
+
+**用途**：托管项目代码，实现自动部署
+
+**注册步骤**：
+1. 打开浏览器，访问 GitHub 官网
+2. 点击"Sign up"注册
+3. 输入邮箱、密码和用户名
+4. 完成邮箱验证
+
+### 2.2 需要安装的软件
+
+#### 2.2.1 Node.js
+
+**用途**：运行项目代码的基础环境
+
+**什么是Node.js**：Node.js是一个让JavaScript在服务器端运行的环境。简单来说，我们的项目代码需要Node.js才能运行。
+
+**安装步骤（Windows系统）**：
+1. 打开浏览器，访问 Node.js 官网
+2. 下载"LTS"版本（长期支持版，更稳定）
+3. 双击下载的安装文件
+4. 一路点击"下一步"完成安装
+5. 打开命令提示符（按Win+R，输入cmd，回车）
+6. 输入命令验证安装：node --version
+7. 如果显示版本号（如v18.17.0），说明安装成功
+
+**安装步骤（Mac系统）**：
+1. 打开浏览器，访问 Node.js 官网
+2. 下载macOS版本的安装包
+3. 双击安装包，按提示完成安装
+4. 打开终端（在"应用程序"-"实用工具"中）
+5. 输入命令验证安装：node --version
+
+#### 2.2.2 Git
+
+**用途**：下载项目代码和版本管理
+
+**什么是Git**：Git是一个代码版本控制工具，可以理解为"代码的时光机器"，能够记录每次代码的修改，也可以从网上下载代码。
+
+**安装步骤（Windows系统）**：
+1. 打开浏览器，访问 Git 官网
+2. 下载Windows版本安装包
+3. 双击安装文件，使用默认选项安装
+4. 安装完成后，在命令提示符输入：git --version
+5. 如果显示版本号，说明安装成功
+
+**安装步骤（Mac系统）**：
+Mac系统通常已预装Git，打开终端输入git --version验证即可。
+
+### 2.3 获取项目代码
+
+**操作步骤**：
+
+1. **打开命令提示符/终端**
+
+2. **进入您想存放项目的目录**
+   - 例如：想放在D盘的projects文件夹
+   - 输入命令：D:（切换到D盘）
+   - 输入命令：cd projects（进入projects文件夹）
+
+3. **下载项目代码**
+   - 输入命令：git clone 项目地址
+   - 等待下载完成
+
+4. **进入项目目录**
+   - 输入命令：cd lego-story-book
+
+5. **安装项目依赖**
+   - 输入命令：npm install
+   - 这个过程需要几分钟，会下载项目需要的所有依赖包
+   - 等待出现完成提示
+
+---
+
+## 第三部分：配置服务
+
+### 3.1 创建Cloudflare数据库
+
+**为什么要创建数据库**：数据库就像一个电子表格，用来存储用户信息、故事内容、谜题等所有数据。
+
+**操作步骤**：
+
+1. **登录Cloudflare**
+   - 在命令提示符中输入：npx wrangler login
+   - 浏览器会自动打开Cloudflare授权页面
+   - 点击"Allow"允许授权
+   - 看到授权成功提示后，关闭浏览器
+
+2. **创建数据库**
+   - 在命令提示符中输入：npx wrangler d1 create lego-story-db
+   - 等待创建完成
+   - 创建成功后会显示数据库信息
+
+3. **记录数据库ID**
+   - 创建成功后，会显示类似以下信息：
+     - database_name: lego-story-db
+     - database_id: 一串字母数字组合
+   - **重要**：将database_id复制保存，后面配置需要用到
+
+### 3.2 配置项目文件
+
+**为什么要配置**：需要告诉项目使用哪个数据库，以及各种API服务的密钥。
+
+**操作步骤**：
+
+1. **打开项目配置文件**
+   - 使用文本编辑器（如记事本、VS Code）打开项目目录下的wrangler.toml文件
+
+2. **修改数据库ID**
+   - 找到database_id这一行
+   - 将后面的值替换为您刚才创建的数据库ID
+   - 保存文件
+
+### 3.3 获取API密钥
+
+#### 3.3.1 获取火山引擎API密钥
+
+**用途**：用于调用AI生成故事内容
+
+**操作步骤**：
+
 1. 登录火山引擎控制台
-2. 访问 https://console.volcengine.com/ark
-3. 点击左侧菜单 "API Key管理"
-4. 点击 "创建新的API Key"
-5. 复制并保存API Key
+2. 在左侧菜单找到"API Key管理"
+3. 点击"创建新的API Key"
+4. 复制生成的API Key（一串字母数字组合）
+5. **重要**：妥善保管API Key，不要泄露给他人
 
-**豆包大语言模型配置**：
-1. 在 ARK 控制台中
-2. 点击 "模型推理" > "推理"
-3. 创建接入点，选择模型 `doubao-1-5-pro-32k-250115`
-4. 记录接入点ID
+#### 3.3.2 获取SiliconFlow API密钥
 
-**Seedream 图片生成配置**：
-- Seedream 使用相同的火山引擎API Key
-- 模型名称：`doubao-seedream-4-0-250828`
+**用途**：用于语音识别功能
 
-#### 2.3.2 SiliconFlow（语音识别）
+**操作步骤**：
 
-**注册步骤**：
-1. 访问 https://cloud.siliconflow.cn/
-2. 点击 "注册/登录"
-3. 完成账户注册
-
-**获取 API 密钥**：
-1. 登录 SiliconFlow 控制台
-2. 点击左侧菜单 "API密钥"
-3. 点击 "创建新密钥"
-4. 复制并保存API Key
-
-**语音识别模型**：
-- 模型名称：`FunAudioLLM/SenseVoiceSmall`
-
----
-
-## 三、数据库配置详解
-
-### 3.1 数据库创建
-
-#### 3.1.1 创建命令
-
-```bash
-npx wrangler d1 create lego-story-db
-```
-
-#### 3.1.2 预期输出详解
-
-```
-✅ Successfully created DB 'lego-story-db'!
-
-[[d1_databases]]
-binding = "DB"
-database_name = "lego-story-db"
-database_id = "649c105f-87c8-4f75-82df-c9222ae0afcb"
-```
-
-**输出说明**：
-- `binding`：代码中访问数据库的变量名，固定为 "DB"
-- `database_name`：数据库名称，用于命令行操作
-- `database_id`：数据库唯一标识，用于配置文件
-
-#### 3.1.3 查看已有数据库
-
-```bash
-npx wrangler d1 list
-```
-
-**预期输出**：
-```
-┌─────────────────┬──────────────────────────────────────┐
-│ Name            │ Database ID                          │
-├─────────────────┼──────────────────────────────────────┤
-│ lego-story-db   │ 649c105f-87c8-4f75-82df-c9222ae0afcb │
-└─────────────────┴──────────────────────────────────────┘
-```
-
-### 3.2 数据库表结构
-
-本项目包含以下数据表：
-
-#### 3.2.1 users 表（用户表）
-
-| 字段名 | 类型 | 说明 |
-|--------|------|------|
-| user_id | TEXT | 用户ID（主键） |
-| username | TEXT | 用户名 |
-| email | TEXT | 邮箱（可选） |
-| avatar | TEXT | 头像（可选） |
-| parent_id | TEXT | 家长ID（可选） |
-| daily_time_limit | INTEGER | 每日时间限制（分钟） |
-| time_used_today | INTEGER | 今日已用时间（分钟） |
-| created_at | DATETIME | 创建时间 |
-| updated_at | DATETIME | 更新时间 |
-
-#### 3.2.2 characters 表（人仔表）
-
-| 字段名 | 类型 | 说明 |
-|--------|------|------|
-| character_id | TEXT | 人仔ID（主键） |
-| name | TEXT | 人仔名称 |
-| image_base64 | TEXT | 人仔图片（Base64） |
-| description | TEXT | 描述 |
-| personality | TEXT | 性格特点 |
-| speaking_style | TEXT | 说话方式 |
-| creator_id | TEXT | 创建者ID（system为系统预设） |
-| created_at | DATETIME | 创建时间 |
-| updated_at | DATETIME | 更新时间 |
-
-#### 3.2.3 books 表（书籍表）
-
-| 字段名 | 类型 | 说明 |
-|--------|------|------|
-| book_id | TEXT | 书籍ID（主键） |
-| user_id | TEXT | 用户ID（外键） |
-| title | TEXT | 书籍标题 |
-| chapter_count | INTEGER | 章节数量 |
-| status | TEXT | 状态（active/archived） |
-| created_at | DATETIME | 创建时间 |
-| updated_at | DATETIME | 更新时间 |
-
-#### 3.2.4 chapters 表（章节表）
-
-| 字段名 | 类型 | 说明 |
-|--------|------|------|
-| chapter_id | TEXT | 章节ID（主键） |
-| book_id | TEXT | 书籍ID（外键） |
-| chapter_number | INTEGER | 章节序号 |
-| title | TEXT | 章节标题 |
-| content | TEXT | 章节内容 |
-| has_puzzle | INTEGER | 是否有谜题（0/1） |
-| created_at | DATETIME | 创建时间 |
-
-#### 3.2.5 puzzles 表（谜题表）
-
-| 字段名 | 类型 | 说明 |
-|--------|------|------|
-| puzzle_id | TEXT | 谜题ID（主键） |
-| chapter_id | TEXT | 章节ID（外键） |
-| question | TEXT | 谜题问题 |
-| options | TEXT | 选项（JSON数组） |
-| answer | TEXT | 正确答案（A/B/C/D） |
-| hint | TEXT | 提示（可选） |
-| puzzle_type | TEXT | 谜题类型 |
-| created_at | DATETIME | 创建时间 |
-
-#### 3.2.6 其他表
-
-- **book_characters**：书籍角色关联表
-- **puzzle_records**：答题记录表
-- **shares**：分享表
-
-### 3.3 数据库迁移
-
-#### 3.3.1 迁移文件说明
-
-项目 `migrations` 目录包含以下迁移文件：
-
-| 文件名 | 执行顺序 | 说明 |
-|--------|----------|------|
-| 0001_initial_schema.sql | 第1个 | 创建所有基础表结构 |
-| 0002_seed_data.sql | 第2个 | 导入系统预设人份数据 |
-| 0002_add_plot_selection.sql | 第3个 | 添加情节选择功能 |
-| 0004_reset_database.sql | 可选 | 重置数据库（谨慎使用） |
-
-#### 3.3.2 执行本地迁移
-
-```bash
-# 执行所有本地迁移
-npx wrangler d1 migrations apply lego-story-db --local
-```
-
-**预期输出**：
-```
-Migrations to be applied:
-  0001_initial_schema.sql
-  0002_seed_data.sql
-  0002_add_plot_selection.sql
-
-🌀 Executing on local database:
-🚣 Executed 3 migrations in XXXms.
-```
-
-#### 3.3.3 执行远程迁移
-
-```bash
-# 执行所有远程迁移
-npx wrangler d1 migrations apply lego-story-db
-```
-
-**预期输出**：
-```
-Migrations to be applied:
-  0001_initial_schema.sql
-  0002_seed_data.sql
-  0002_add_plot_selection.sql
-
-🌀 Executing on remote database:
-🚣 Executed 3 migrations in XXXms.
-```
-
-#### 3.3.4 验证迁移结果
-
-```bash
-# 查看本地数据库表
-npx wrangler d1 execute lego-story-db --local --command "SELECT name FROM sqlite_master WHERE type='table';"
-
-# 查看远程数据库表
-npx wrangler d1 execute lego-story-db --command "SELECT name FROM sqlite_master WHERE type='table';"
-```
-
-**预期输出**：
-```
-┌────────────────────┐
-│ name               │
-├────────────────────┤
-│ users              │
-│ characters         │
-│ books              │
-│ chapters           │
-│ book_characters    │
-│ puzzles            │
-│ puzzle_records     │
-│ shares             │
-│ _cf_KV             │
-└────────────────────┘
-```
-
-### 3.4 数据库备份与恢复
-
-#### 3.4.1 导出数据库
-
-```bash
-# 导出远程数据库
-npx wrangler d1 export lego-story-db --output backup.sql
-```
-
-#### 3.4.2 导入数据库
-
-```bash
-# 导入到远程数据库
-npx wrangler d1 execute lego-story-db --file backup.sql
-```
-
----
-
-## 四、环境变量配置详解
-
-### 4.1 环境变量列表
-
-本项目需要配置以下环境变量：
-
-| 变量名 | 必需 | 用途 | 默认值 |
-|--------|------|------|--------|
-| DOUBAO_API_KEY | 是 | 豆包大语言模型API密钥，用于故事生成 | 无 |
-| SEEDREAM_API_KEY | 是 | 火山引擎图片生成API密钥 | 无 |
-| SILICONFLOW_API_KEY | 是 | SiliconFlow语音识别API密钥 | 无 |
-| ENVIRONMENT | 否 | 环境标识 | development |
-
-### 4.2 DOUBAO_API_KEY 配置
-
-#### 4.2.1 用途说明
-
-豆包大语言模型API用于：
-- 生成故事内容
-- 生成章节标题
-- 生成谜题问题
-
-#### 4.2.2 获取方式
-
-1. 访问火山引擎控制台：https://console.volcengine.com/ark
-2. 点击左侧菜单 "API Key管理"
-3. 点击 "创建新的API Key"
+1. 登录SiliconFlow控制台
+2. 在左侧菜单找到"API密钥"
+3. 点击"创建新密钥"
 4. 复制生成的API Key
 
-#### 4.2.3 配置步骤
+### 3.4 配置环境变量
 
-**Cloudflare Pages 配置**：
-1. 登录 Cloudflare Dashboard
-2. 进入 Workers & Pages > lego-story-book
-3. 点击 Settings > Environment variables
-4. 点击 Add variable
-5. 输入变量名：`DOUBAO_API_KEY`
-6. 输入变量值：您的API Key
-7. 选择环境：Production 和 Preview
-8. 点击 Save
+**什么是环境变量**：环境变量就像是给程序设置的"密码本"，程序运行时会从这里读取API密钥等敏感信息。
 
-### 4.3 SEEDREAM_API_KEY 配置
+**操作步骤**：
 
-#### 4.3.1 用途说明
+1. **登录Cloudflare Dashboard**
+   - 打开浏览器，访问Cloudflare官网
+   - 登录您的账户
 
-火山引擎图片生成API用于：
-- 生成人仔头像图片
-- 生成故事配图
+2. **进入项目设置**
+   - 点击左侧菜单"Workers & Pages"
+   - 找到您的项目，点击进入
+   - 点击"Settings"（设置）
+   - 点击"Environment variables"（环境变量）
 
-#### 4.3.2 获取方式
+3. **添加环境变量**
+   - 点击"Add variable"（添加变量）
+   - 添加以下变量：
 
-与 DOUBAO_API_KEY 相同，使用同一个火山引擎API Key。
+   | 变量名 | 变量值 | 说明 |
+   |--------|--------|------|
+   | DOUBAO_API_KEY | 您的火山引擎API Key | 用于故事生成 |
+   | SEEDREAM_API_KEY | 您的火山引擎API Key | 用于图片生成 |
+   | SILICONFLOW_API_KEY | 您的SiliconFlow API Key | 用于语音识别 |
 
-#### 4.3.3 配置步骤
-
-同 DOUBAO_API_KEY 配置步骤，变量名为 `SEEDREAM_API_KEY`。
-
-### 4.4 SILICONFLOW_API_KEY 配置
-
-#### 4.4.1 用途说明
-
-SiliconFlow语音识别API用于：
-- 语音输入识别
-- 语音转文字
-
-#### 4.4.2 获取方式
-
-1. 访问 SiliconFlow 控制台：https://cloud.siliconflow.cn/
-2. 点击左侧菜单 "API密钥"
-3. 点击 "创建新密钥"
-4. 复制生成的API Key
-
-#### 4.4.3 配置步骤
-
-同 DOUBAO_API_KEY 配置步骤，变量名为 `SILICONFLOW_API_KEY`。
-
-### 4.5 本地开发环境变量配置
-
-#### 4.5.1 创建本地配置文件
-
-在项目根目录创建 `.dev.vars` 文件：
-
-```bash
-# 创建 .dev.vars 文件
-cat > .dev.vars << EOF
-DOUBAO_API_KEY=您的豆包API密钥
-SEEDREAM_API_KEY=您的火山引擎API密钥
-SILICONFLOW_API_KEY=您的SiliconFlow API密钥
-EOF
-```
-
-#### 4.5.2 验证配置
-
-启动本地开发服务器后，检查日志确认环境变量已加载：
-
-```bash
-npm run dev
-```
+4. **选择环境**
+   - 勾选"Production"（生产环境）
+   - 勾选"Preview"（预览环境）
+   - 点击"Save"保存
 
 ---
 
-## 五、部署步骤详解
+## 第四部分：部署上线
 
-### 5.1 通过 Wrangler CLI 部署
+### 4.1 初始化数据库
 
-#### 5.1.1 登录 Cloudflare
+**为什么要初始化**：数据库刚创建时是空的，需要创建表结构和导入初始数据。
 
-```bash
-npx wrangler login
-```
+**操作步骤**：
 
-浏览器会自动打开授权页面，点击 "Allow" 完成授权。
+1. **执行本地数据库初始化**
+   - 在命令提示符中输入：npx wrangler d1 migrations apply lego-story-db --local
+   - 等待执行完成
+   - 看到"Executed X migrations"表示成功
 
-#### 5.1.2 部署项目
+2. **执行远程数据库初始化**
+   - 在命令提示符中输入：npx wrangler d1 migrations apply lego-story-db
+   - 等待执行完成
+   - 这一步会将表结构创建到线上数据库
 
-```bash
-# 部署到 Cloudflare Pages
-npx wrangler pages deploy .
-```
+**初始化做了什么**：
 
-**预期输出**：
-```
-✨ Success! Uploaded XXX files and Deployed!
-✨ Deployment URL: https://xxxxxx.lego-story-book.pages.dev
-```
-
-### 5.2 通过 GitHub 自动部署
-
-#### 5.2.1 连接 GitHub 仓库
-
-1. 登录 Cloudflare Dashboard
-2. 进入 Workers & Pages
-3. 点击 "Create application" > "Pages" > "Connect to Git"
-4. 选择 GitHub 并授权
-5. 选择 `lego-story-book` 仓库
-6. 点击 "Begin setup"
-
-#### 5.2.2 配置构建设置
-
-| 设置项 | 值 |
-|--------|-----|
-| Production branch | main |
-| Build command | 留空 |
-| Build output directory | / |
-| Root directory | 留空 |
-
-#### 5.2.3 配置环境变量
-
-在项目设置中添加环境变量（参考第四章）。
-
-#### 5.2.4 触发部署
-
-每次推送到 main 分支，Cloudflare Pages 会自动触发部署。
-
-### 5.3 部署状态检查
-
-#### 5.3.1 查看部署列表
-
-```bash
-npx wrangler pages deployment list
-```
-
-#### 5.3.2 查看部署日志
-
-```bash
-npx wrangler pages deployment tail
-```
-
----
-
-## 六、部署验证
-
-### 6.1 页面访问验证
-
-#### 6.1.1 首页验证
-
-访问部署URL，检查：
-- [ ] 页面正常加载
-- [ ] 样式正确显示
-- [ ] 图片正常加载
-- [ ] 无控制台错误
-
-#### 6.1.2 登录页面验证
-
-访问登录页面，检查：
-- [ ] 登录表单正常显示
-- [ ] 输入用户名后可以登录
-- [ ] 登录后跳转到书架页面
-
-### 6.2 功能验证
-
-#### 6.2.1 用户登录验证
-
-```bash
-# 使用 curl 测试登录API
-curl -X POST https://您的域名/api/users \
-  -H "Content-Type: application/json" \
-  -d '{"username":"test_user"}'
-```
-
-**预期响应**：
-```json
-{
-  "success": true,
-  "data": {
-    "user_id": "id_xxx",
-    "username": "test_user"
-  }
-}
-```
-
-#### 6.2.2 创建书籍验证
-
-```bash
-# 使用 curl 测试创建书籍API
-curl -X POST https://您的域名/api/books \
-  -H "Content-Type: application/json" \
-  -d '{"user_id":"您的用户ID","title":"测试书籍"}'
-```
-
-**预期响应**：
-```json
-{
-  "success": true,
-  "data": {
-    "book_id": "id_xxx",
-    "title": "测试书籍"
-  }
-}
-```
-
-#### 6.2.3 故事生成验证
-
-1. 在书籍详情页点击"生成下一章"
-2. 选择角色后点击确认
-3. 等待故事生成完成
-4. 检查生成的故事内容
-
-#### 6.2.4 谜题功能验证
-
-1. 阅读章节后点击"去解谜"
-2. 检查谜题是否正确显示
-3. 选择答案并提交
-4. 检查答案验证结果
-
-### 6.3 API端点验证
-
-使用以下命令测试各API端点：
-
-```bash
-# 测试用户API
-curl https://您的域名/api/users
-
-# 测试书籍API
-curl https://您的域名/api/books?user_id=您的用户ID
-
-# 测试角色API
-curl https://您的域名/api/characters
-
-# 测试情节选项API
-curl https://您的域名/api/plot-options
-```
-
----
-
-## 七、API端点列表
-
-### 7.1 用户相关API
-
-#### POST /api/users
-
-创建或获取用户
-
-**请求参数**：
-| 参数名 | 类型 | 必需 | 说明 |
-|--------|------|------|------|
-| username | string | 是 | 用户名 |
-
-**请求示例**：
-```json
-{
-  "username": "test_user"
-}
-```
-
-**响应示例**：
-```json
-{
-  "success": true,
-  "data": {
-    "user_id": "id_xxx",
-    "username": "test_user",
-    "daily_time_limit": 120,
-    "time_used_today": 0
-  }
-}
-```
-
-### 7.2 书籍相关API
-
-#### GET /api/books
-
-获取用户书籍列表
-
-**请求参数**：
-| 参数名 | 类型 | 必需 | 说明 |
-|--------|------|------|------|
-| user_id | string | 是 | 用户ID |
-
-#### POST /api/books
-
-创建新书籍
-
-**请求参数**：
-| 参数名 | 类型 | 必需 | 说明 |
-|--------|------|------|------|
-| user_id | string | 是 | 用户ID |
-| title | string | 是 | 书籍标题 |
-
-### 7.3 章节相关API
-
-#### GET /api/chapters
-
-获取章节列表
-
-**请求参数**：
-| 参数名 | 类型 | 必需 | 说明 |
-|--------|------|------|------|
-| book_id | string | 是 | 书籍ID |
-
-#### POST /api/chapters-generate
-
-生成新章节
-
-**请求参数**：
-| 参数名 | 类型 | 必需 | 说明 |
-|--------|------|------|------|
-| book_id | string | 是 | 书籍ID |
-| characters | array | 是 | 角色列表 |
-
-### 7.4 角色相关API
-
-#### GET /api/characters
-
-获取角色列表
-
-**请求参数**：
-| 参数名 | 类型 | 必需 | 说明 |
-|--------|------|------|------|
-| user_id | string | 否 | 用户ID（用于获取用户自定义角色） |
-
-#### POST /api/characters
-
-创建新角色
-
-**请求参数**：
-| 参数名 | 类型 | 必需 | 说明 |
-|--------|------|------|------|
-| name | string | 是 | 角色名称 |
-| personality | string | 否 | 性格特点 |
-| speaking_style | string | 否 | 说话方式 |
-
-### 7.5 谜题相关API
-
-#### POST /api/puzzle
-
-验证谜题答案
-
-**请求参数**：
-| 参数名 | 类型 | 必需 | 说明 |
-|--------|------|------|------|
-| puzzle_id | string | 是 | 谜题ID |
-| user_answer | string | 是 | 用户答案（A/B/C/D） |
-
-### 7.6 其他API
-
-| 端点 | 方法 | 功能 |
-|------|------|------|
-| /api/speech | POST | 语音识别 |
-| /api/generate | POST | 图片生成 |
-| /api/share | GET/POST | 分享管理 |
-| /api/plot-options | GET | 获取情节选项 |
-| /api/book-characters | GET/POST | 书籍角色管理 |
-| /api/chapters-complete | POST | 标记章节完成 |
-
----
-
-## 八、常见问题排查
-
-### 8.1 环境变量问题
-
-#### 问题：API调用返回401错误
-
-**症状**：
-```json
-{
-  "success": false,
-  "error": "API认证失败"
-}
-```
-
-**原因**：环境变量未正确配置
-
-**解决方案**：
-1. 检查 Cloudflare Pages 项目设置中的环境变量
-2. 确认变量名拼写正确（区分大小写）
-3. 确认变量值正确（无多余空格）
-4. 重新部署项目使环境变量生效
-
-#### 问题：本地开发时API调用失败
-
-**原因**：本地环境变量未配置
-
-**解决方案**：
-1. 创建 `.dev.vars` 文件
-2. 添加所有必需的环境变量
-3. 重启开发服务器
-
-### 8.2 数据库问题
-
-#### 问题：查询返回空结果
-
-**症状**：
-```json
-{
-  "success": true,
-  "data": []
-}
-```
-
-**原因**：数据库迁移未执行或数据未导入
-
-**解决方案**：
-```bash
-# 检查迁移状态
-npx wrangler d1 migrations apply lego-story-db --local
-
-# 检查表是否存在
-npx wrangler d1 execute lego-story-db --local --command "SELECT name FROM sqlite_master WHERE type='table';"
-```
-
-#### 问题：数据库绑定错误
-
-**症状**：
-```
-Error: D1 database not found
-```
-
-**原因**：wrangler.toml 配置错误
-
-**解决方案**：
-1. 检查 wrangler.toml 中的 database_id
-2. 确认数据库已创建
-3. 确认 binding 名称正确（应为 "DB"）
-
-### 8.3 部署问题
-
-#### 问题：部署超时
-
-**症状**：
-```
-Error: Deployment timed out
-```
-
-**原因**：文件过多或网络问题
-
-**解决方案**：
-1. 检查项目文件大小
-2. 确认网络连接正常
-3. 重试部署命令
-
-#### 问题：构建失败
-
-**症状**：
-```
-Error: Build failed
-```
-
-**原因**：依赖安装失败或配置错误
-
-**解决方案**：
-1. 检查 package.json 配置
-2. 确认 Node.js 版本兼容
-3. 查看详细错误日志
-
-### 8.4 功能问题
-
-#### 问题：故事生成失败
-
-**症状**：点击"生成下一章"后无响应或报错
-
-**原因**：豆包API调用失败
-
-**解决方案**：
-1. 检查 DOUBAO_API_KEY 配置
-2. 检查 API 余额是否充足
-3. 查看 Cloudflare 日志确认错误详情
-
-#### 问题：谜题不显示
-
-**症状**：章节阅读后谜题区域为空
-
-**原因**：谜题数据未正确生成或显示
-
-**解决方案**：
-1. 检查章节的 has_puzzle 字段
-2. 检查 puzzles 表中是否有对应记录
-3. 查看浏览器控制台错误
-
----
-
-## 附录
-
-### 附录A：常用命令速查表
-
-| 命令 | 说明 |
+| 操作 | 说明 |
 |------|------|
-| `npm run dev` | 启动本地开发服务器 |
-| `npm run deploy` | 部署到生产环境 |
-| `npx wrangler login` | 登录 Cloudflare |
-| `npx wrangler d1 create <name>` | 创建数据库 |
-| `npx wrangler d1 list` | 列出所有数据库 |
-| `npx wrangler d1 migrations apply <db>` | 执行迁移 |
-| `npx wrangler d1 execute <db> --command "SQL"` | 执行SQL |
-| `npx wrangler d1 export <db>` | 导出数据库 |
-| `npx wrangler pages deploy .` | 部署Pages项目 |
+| 创建用户表 | 存储用户账号信息 |
+| 创建角色表 | 存储人仔角色信息 |
+| 创建书籍表 | 存储用户创建的书籍 |
+| 创建章节表 | 存储故事章节内容 |
+| 创建谜题表 | 存储谜题信息 |
+| 导入预设角色 | 导入系统预设的人仔角色（骑士、巫师等） |
 
-### 附录B：配置文件模板
+### 4.2 部署项目
 
-#### wrangler.toml
+**操作步骤**：
 
-```toml
-name = "lego-story-book"
-compatibility_date = "2024-01-01"
-pages_build_output_dir = "."
+1. **确认在项目目录**
+   - 确保命令提示符当前路径是项目目录
 
-[[d1_databases]]
-binding = "DB"
-database_name = "lego-story-db"
-database_id = "您的数据库ID"
+2. **执行部署命令**
+   - 输入命令：npx wrangler pages deploy .
+   - 注意命令最后有一个点，表示当前目录
+   - 等待部署完成，通常需要1-3分钟
 
-[vars]
-ENVIRONMENT = "development"
+3. **记录部署地址**
+   - 部署成功后会显示：Deployment URL: https://xxx.pages.dev
+   - 这就是您的项目访问地址
+   - 复制保存这个地址
 
-[env.production]
-name = "lego-story-book"
+### 4.3 验证部署
 
-[[env.production.d1_databases]]
-binding = "DB"
-database_name = "lego-story-db"
-database_id = "您的数据库ID"
+**访问测试**：
 
-[env.production.vars]
-ENVIRONMENT = "production"
-```
+1. 打开浏览器，访问您的部署地址
+2. 检查页面是否正常显示
+3. 检查样式是否正确
+4. 检查图片是否正常加载
 
-#### .dev.vars
+**功能测试**：
 
-```
-DOUBAO_API_KEY=您的豆包API密钥
-SEEDREAM_API_KEY=您的火山引擎API密钥
-SILICONFLOW_API_KEY=您的SiliconFlow API密钥
-```
+1. **测试登录功能**
+   - 在登录页面输入一个用户名
+   - 点击"开始冒险"
+   - 如果成功跳转到书架页面，说明登录功能正常
 
-### 附录C：修订历史
+2. **测试创建书籍**
+   - 点击"创建书籍"
+   - 输入书名
+   - 选择故事类型和角色
+   - 如果成功创建并生成第一章，说明AI服务正常
 
-| 版本 | 日期 | 修订内容 | 作者 |
-|------|------|----------|------|
-| V1.0 | 2026-02-25 | 初始版本 | 项目团队 |
-| V2.0 | 2026-02-26 | 优化文档，添加详细配置步骤和验证方法 | 项目团队 |
+3. **测试谜题功能**
+   - 阅读章节后点击"去解谜"
+   - 选择答案提交
+   - 如果显示正确或错误反馈，说明谜题功能正常
 
 ---
 
-**文档结束**
+## 第五部分：常见问题排查
+
+### 5.1 页面无法访问
+
+**可能原因**：
+- 部署未完成
+- 域名配置错误
+
+**排查步骤**：
+1. 重新执行部署命令
+2. 等待部署完成后再访问
+3. 检查部署地址是否正确
+
+### 5.2 登录后无反应
+
+**可能原因**：
+- 数据库未初始化
+- 环境变量未配置
+
+**排查步骤**：
+1. 检查数据库是否执行了迁移
+2. 检查环境变量是否正确配置
+3. 查看浏览器控制台是否有错误
+
+### 5.3 故事生成失败
+
+**可能原因**：
+- API密钥配置错误
+- API余额不足
+
+**排查步骤**：
+1. 检查火山引擎API密钥是否正确
+2. 登录火山引擎控制台查看余额
+3. 检查环境变量是否生效
+
+### 5.4 样式显示异常
+
+**可能原因**：
+- 静态资源未正确部署
+- 浏览器缓存
+
+**排查步骤**：
+1. 清除浏览器缓存后重试
+2. 重新部署项目
+3. 使用无痕模式访问
+
+---
+
+## 第六部分：日常维护
+
+### 6.1 如何更新代码
+
+当项目有新版本发布时：
+
+1. 在项目目录打开命令提示符
+2. 输入命令：git pull（拉取最新代码）
+3. 输入命令：npm install（更新依赖）
+4. 输入命令：npx wrangler pages deploy .（重新部署）
+
+### 6.2 如何备份数据
+
+定期备份数据库：
+
+1. 在命令提示符输入：npx wrangler d1 export lego-story-db --output backup.sql
+2. 这会将数据库导出为backup.sql文件
+3. 将此文件保存到安全位置
+
+### 6.3 如何查看日志
+
+查看项目运行日志：
+
+1. 登录Cloudflare Dashboard
+2. 进入Workers & Pages > 您的项目
+3. 点击"Logs"查看实时日志
+
+---
+
+## 附录：术语解释
+
+| 术语 | 解释 |
+|------|------|
+| CDN | 内容分发网络，将内容缓存到全球各地的服务器，让用户访问更快 |
+| API | 应用程序接口，不同软件之间通信的桥梁 |
+| 数据库迁移 | 将数据库结构从一个版本升级到另一个版本的过程 |
+| 环境变量 | 程序运行时需要的配置信息，如API密钥、数据库地址等 |
+| 部署 | 将代码发布到服务器，让用户可以访问的过程 |
