@@ -1,0 +1,2872 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+  <title>桌游风格Demo展示 - 增强动画版</title>
+  <style>
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+      -webkit-tap-highlight-color: transparent;
+    }
+
+    :root {
+      --bg-dark: #0d0d14;
+      --bg-medium: #1a1a2e;
+      --bg-light: #252542;
+      --gold: #ffd700;
+      --purple: #a855f7;
+      --crimson: #dc2626;
+      --green: #22c55e;
+      --blue: #3b82f6;
+      --silver: #c0c0c0;
+      --text-primary: #f8fafc;
+      --text-secondary: #94a3b8;
+      --text-muted: #64748b;
+      --card-bg: #2d2d44;
+      --bounce-easing: cubic-bezier(0.68, -0.55, 0.265, 1.55);
+      --smooth-easing: cubic-bezier(0.4, 0, 0.2, 1);
+    }
+
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+      background: var(--bg-dark);
+      min-height: 100vh;
+      color: var(--text-primary);
+      overflow-x: hidden;
+    }
+
+    .phone-frame {
+      max-width: 390px;
+      margin: 0 auto;
+      min-height: 100vh;
+      position: relative;
+      background: var(--bg-dark);
+      overflow: hidden;
+    }
+
+    /* ========== 增强版粒子系统 ========== */
+    .particle-container {
+      position: fixed;
+      top: 0;
+      left: 0;
+      right: 0;
+      bottom: 0;
+      overflow: hidden;
+      pointer-events: none;
+      z-index: 0;
+    }
+
+    .particle {
+      position: absolute;
+      bottom: -20px;
+      animation: float-up-complex linear infinite;
+      opacity: 0;
+    }
+
+    .particle.star {
+      width: 0;
+      height: 0;
+      border-left: 4px solid transparent;
+      border-right: 4px solid transparent;
+      border-bottom: 8px solid var(--gold);
+      filter: drop-shadow(0 0 6px var(--gold));
+    }
+
+    .particle.diamond {
+      width: 6px;
+      height: 6px;
+      background: var(--purple);
+      transform: rotate(45deg);
+      filter: drop-shadow(0 0 4px var(--purple));
+    }
+
+    .particle.circle {
+      width: 4px;
+      height: 4px;
+      background: var(--blue);
+      border-radius: 50%;
+      filter: drop-shadow(0 0 4px var(--blue));
+    }
+
+    @keyframes float-up-complex {
+      0% {
+        transform: translateY(0) translateX(0) scale(0.3) rotate(0deg);
+        opacity: 0;
+      }
+      10% {
+        opacity: 0.8;
+      }
+      25% {
+        transform: translateY(-25vh) translateX(30px) scale(0.6) rotate(90deg);
+      }
+      50% {
+        transform: translateY(-50vh) translateX(-20px) scale(0.8) rotate(180deg);
+        opacity: 0.6;
+      }
+      75% {
+        transform: translateY(-75vh) translateX(25px) scale(1) rotate(270deg);
+      }
+      90% {
+        opacity: 0.4;
+      }
+      100% {
+        transform: translateY(-105vh) translateX(-15px) scale(1.2) rotate(360deg);
+        opacity: 0;
+      }
+    }
+
+    /* 粒子闪烁 */
+    @keyframes twinkle {
+      0%, 100% { filter: drop-shadow(0 0 4px currentColor) brightness(1); }
+      50% { filter: drop-shadow(0 0 12px currentColor) brightness(1.5); }
+    }
+
+    .particle.twinkle {
+      animation: float-up-complex linear infinite, twinkle 0.8s ease-in-out infinite;
+    }
+
+    /* ========== 背景光晕动画 ========== */
+    .glow-orb {
+      position: fixed;
+      border-radius: 50%;
+      filter: blur(60px);
+      opacity: 0.3;
+      pointer-events: none;
+      z-index: 0;
+    }
+
+    .glow-orb.gold {
+      width: 200px;
+      height: 200px;
+      background: radial-gradient(circle, var(--gold) 0%, transparent 70%);
+      animation: float-glow-gold 25s ease-in-out infinite;
+    }
+
+    .glow-orb.purple {
+      width: 250px;
+      height: 250px;
+      background: radial-gradient(circle, var(--purple) 0%, transparent 70%);
+      animation: float-glow-purple 30s ease-in-out infinite;
+    }
+
+    @keyframes float-glow-gold {
+      0%, 100% { transform: translate(10%, 20%); }
+      25% { transform: translate(60%, 10%); }
+      50% { transform: translate(80%, 60%); }
+      75% { transform: translate(30%, 80%); }
+    }
+
+    @keyframes float-glow-purple {
+      0%, 100% { transform: translate(80%, 70%); }
+      25% { transform: translate(20%, 80%); }
+      50% { transform: translate(10%, 30%); }
+      75% { transform: translate(70%, 20%); }
+    }
+
+    /* ========== 触摸涟漪效果 ========== */
+    .ripple-container {
+      position: fixed;
+      top: 0;
+      left: 0;
+      right: 0;
+      bottom: 0;
+      pointer-events: none;
+      z-index: 9999;
+      overflow: hidden;
+    }
+
+    .ripple {
+      position: absolute;
+      border-radius: 50%;
+      transform: scale(0);
+      animation: ripple-expand 0.6s ease-out forwards;
+      pointer-events: none;
+    }
+
+    @keyframes ripple-expand {
+      0% {
+        transform: scale(0);
+        opacity: 0.5;
+      }
+      100% {
+        transform: scale(4);
+        opacity: 0;
+      }
+    }
+
+    /* ========== 导航栏 ========== */
+    .nav-header {
+      position: sticky;
+      top: 0;
+      z-index: 100;
+      background: linear-gradient(180deg, var(--bg-medium) 0%, rgba(26,26,46,0.95) 100%);
+      border-bottom: 1px solid rgba(255,255,255,0.1);
+      padding: 12px 16px;
+      padding-top: 50px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      backdrop-filter: blur(10px);
+    }
+
+    .nav-back {
+      color: var(--gold);
+      font-size: 16px;
+      font-weight: 600;
+      cursor: pointer;
+      transition: transform 0.2s, opacity 0.2s;
+    }
+
+    .nav-back:active {
+      transform: scale(0.9);
+      opacity: 0.7;
+    }
+
+    .nav-title {
+      font-size: 18px;
+      font-weight: bold;
+      color: var(--text-primary);
+    }
+
+    .nav-placeholder {
+      width: 60px;
+    }
+
+    /* ========== Demo列表 ========== */
+    .demo-list {
+      padding: 16px;
+      padding-bottom: 100px;
+    }
+
+    .demo-card {
+      background: var(--card-bg);
+      border-radius: 16px;
+      padding: 20px;
+      margin-bottom: 16px;
+      border-left: 4px solid var(--gold);
+      display: flex;
+      align-items: center;
+      cursor: pointer;
+      opacity: 0;
+      transform: translateX(-30px);
+      animation: slide-in-left 0.5s var(--bounce-easing) forwards;
+      transition: transform 0.2s, box-shadow 0.2s;
+      position: relative;
+      overflow: hidden;
+    }
+
+    .demo-card::before {
+      content: '';
+      position: absolute;
+      top: 0;
+      left: -100%;
+      width: 100%;
+      height: 100%;
+      background: linear-gradient(90deg, transparent, rgba(255,255,255,0.1), transparent);
+      transition: left 0.5s;
+    }
+
+    .demo-card:hover::before {
+      left: 100%;
+    }
+
+    .demo-card:active {
+      transform: scale(0.97);
+    }
+
+    @keyframes slide-in-left {
+      to {
+        opacity: 1;
+        transform: translateX(0);
+      }
+    }
+
+    .demo-card-icon {
+      font-size: 36px;
+      margin-right: 16px;
+      animation: icon-bounce 2s ease-in-out infinite;
+    }
+
+    @keyframes icon-bounce {
+      0%, 100% { transform: translateY(0); }
+      50% { transform: translateY(-5px); }
+    }
+
+    .demo-card-info {
+      flex: 1;
+    }
+
+    .demo-card-title {
+      font-size: 18px;
+      font-weight: bold;
+      color: var(--text-primary);
+    }
+
+    .demo-card-subtitle {
+      font-size: 13px;
+      color: var(--text-secondary);
+      margin-top: 4px;
+    }
+
+    .demo-card-arrow {
+      font-size: 20px;
+      color: var(--text-muted);
+      transition: transform 0.3s;
+    }
+
+    .demo-card:hover .demo-card-arrow {
+      transform: translateX(5px);
+    }
+
+    .demo-content {
+      display: none;
+      min-height: 100vh;
+    }
+
+    .demo-content.active {
+      display: block;
+    }
+
+    /* ========== Demo 1: 登录页面 ========== */
+    .login-demo {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      min-height: calc(100vh - 100px);
+      padding: 20px;
+    }
+
+    /* 标题彩虹光泽 */
+    .login-title {
+      font-size: 36px;
+      font-weight: bold;
+      margin-bottom: 8px;
+      background: linear-gradient(90deg, #ff6b6b, #feca57, #48dbfb, #ff9ff3, #ff6b6b);
+      background-size: 400% 100%;
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+      background-clip: text;
+      animation: rainbow-flow 3s linear infinite, title-bounce-in 1s var(--bounce-easing);
+    }
+
+    @keyframes rainbow-flow {
+      0% { background-position: 0% 50%; }
+      100% { background-position: 400% 50%; }
+    }
+
+    @keyframes title-bounce-in {
+      0% {
+        opacity: 0;
+        transform: translateY(-50px) scale(0.5);
+      }
+      60% {
+        transform: translateY(10px) scale(1.1);
+      }
+      80% {
+        transform: translateY(-5px) scale(0.95);
+      }
+      100% {
+        opacity: 1;
+        transform: translateY(0) scale(1);
+      }
+    }
+
+    .login-subtitle {
+      font-size: 16px;
+      color: var(--text-secondary);
+      margin-bottom: 40px;
+      opacity: 0;
+      animation: fade-in-up 0.6s ease-out 0.3s forwards;
+    }
+
+    @keyframes fade-in-up {
+      from {
+        opacity: 0;
+        transform: translateY(20px);
+      }
+      to {
+        opacity: 1;
+        transform: translateY(0);
+      }
+    }
+
+    /* ========== 增强版扇形卡牌 ========== */
+    .fan-cards {
+      display: flex;
+      justify-content: center;
+      align-items: flex-end;
+      height: 220px;
+      margin-bottom: 40px;
+      perspective: 1200px;
+    }
+
+    .fan-card {
+      width: 110px;
+      height: 150px;
+      background: linear-gradient(180deg, var(--bg-light) 0%, var(--card-bg) 100%);
+      border-radius: 16px;
+      border: 3px solid rgba(255,255,255,0.2);
+      margin: 0 -18px;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      cursor: pointer;
+      position: relative;
+      box-shadow: 0 10px 30px rgba(0,0,0,0.4);
+      transform-style: preserve-3d;
+      opacity: 0;
+      animation: card-fly-in 0.8s var(--bounce-easing) forwards;
+    }
+
+    .fan-card:nth-child(1) {
+      animation-delay: 0.1s;
+    }
+    .fan-card:nth-child(2) {
+      animation-delay: 0.2s;
+    }
+    .fan-card:nth-child(3) {
+      animation-delay: 0.3s;
+    }
+
+    @keyframes card-fly-in {
+      0% {
+        opacity: 0;
+        transform: translateY(200px) rotateX(-45deg) scale(0.5);
+      }
+      60% {
+        transform: translateY(-20px) rotateX(10deg) scale(1.05);
+      }
+      100% {
+        opacity: 1;
+        transform: translateY(0) rotateX(0) scale(1);
+      }
+    }
+
+    .fan-card:nth-child(1) {
+      transform: rotate(-18deg) translateX(15px);
+      z-index: 1;
+    }
+
+    .fan-card:nth-child(2) {
+      z-index: 10;
+    }
+
+    .fan-card:nth-child(3) {
+      transform: rotate(18deg) translateX(-15px);
+      z-index: 1;
+    }
+
+    /* 卡牌浮动动画 */
+    .fan-card::after {
+      content: '';
+      position: absolute;
+      inset: -3px;
+      border-radius: 16px;
+      background: linear-gradient(45deg, transparent, transparent);
+      z-index: -1;
+      transition: background 0.3s;
+    }
+
+    .fan-card:hover {
+      animation: card-float 2s ease-in-out infinite;
+    }
+
+    @keyframes card-float {
+      0%, 100% { transform: translateY(0) rotate(var(--rotation, 0deg)); }
+      50% { transform: translateY(-8px) rotate(var(--rotation, 0deg)); }
+    }
+
+    .fan-card:nth-child(1):hover {
+      --rotation: -18deg;
+    }
+
+    .fan-card:nth-child(3):hover {
+      --rotation: 18deg;
+    }
+
+    /* 选中状态 - 3D翻转+发光 */
+    .fan-card.selected {
+      transform: translateY(-40px) scale(1.2) rotate(0deg) rotateY(10deg) !important;
+      border-color: var(--gold);
+      box-shadow: 
+        0 0 30px rgba(255, 215, 0, 0.6),
+        0 0 60px rgba(255, 215, 0, 0.3),
+        0 20px 40px rgba(0,0,0,0.4);
+      z-index: 20;
+      animation: selected-card-glow 1.5s ease-in-out infinite;
+    }
+
+    @keyframes selected-card-glow {
+      0%, 100% {
+        box-shadow: 
+          0 0 30px rgba(255, 215, 0, 0.6),
+          0 0 60px rgba(255, 215, 0, 0.3),
+          0 20px 40px rgba(0,0,0,0.4);
+      }
+      50% {
+        box-shadow: 
+          0 0 50px rgba(255, 215, 0, 0.8),
+          0 0 100px rgba(255, 215, 0, 0.5),
+          0 25px 50px rgba(0,0,0,0.5);
+      }
+    }
+
+    /* 角色标签 */
+    .role-tag {
+      position: absolute;
+      top: 6px;
+      left: 6px;
+      padding: 3px 8px;
+      border-radius: 6px;
+      font-size: 10px;
+      font-weight: 700;
+      color: #000;
+      box-shadow: 0 2px 8px rgba(0,0,0,0.3);
+      animation: tag-pulse 2s ease-in-out infinite;
+    }
+
+    @keyframes tag-pulse {
+      0%, 100% { transform: scale(1); }
+      50% { transform: scale(1.05); }
+    }
+
+    .role-protagonist { background: linear-gradient(135deg, #ffd700, #ffaa00); }
+    .role-antagonist { background: linear-gradient(135deg, #ff4444, #cc0000); }
+    .role-supporting { background: linear-gradient(135deg, #e0e0e0, #a0a0a0); }
+
+    /* 属性宝石 - 旋转发光 */
+    .card-stats {
+      position: absolute;
+      bottom: 10px;
+      left: 10px;
+      right: 10px;
+      display: flex;
+      justify-content: space-between;
+    }
+
+    .stat-gem {
+      width: 26px;
+      height: 26px;
+      border-radius: 50%;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 11px;
+      font-weight: 700;
+      color: #fff;
+      position: relative;
+      animation: gem-glow 2s ease-in-out infinite;
+    }
+
+    .stat-gem::before {
+      content: '';
+      position: absolute;
+      inset: -3px;
+      border-radius: 50%;
+      background: inherit;
+      opacity: 0.3;
+      animation: gem-pulse 1.5s ease-in-out infinite;
+    }
+
+    @keyframes gem-glow {
+      0%, 100% { 
+        filter: drop-shadow(0 0 4px currentColor);
+        transform: rotate(0deg);
+      }
+      50% { 
+        filter: drop-shadow(0 0 10px currentColor);
+        transform: rotate(180deg);
+      }
+    }
+
+    @keyframes gem-pulse {
+      0%, 100% { transform: scale(1); opacity: 0.3; }
+      50% { transform: scale(1.3); opacity: 0.1; }
+    }
+
+    .stat-attack { 
+      background: radial-gradient(circle, #ff9500, #ff5500);
+      color: #fff;
+    }
+    .stat-health { 
+      background: radial-gradient(circle, #ff4444, #cc0000);
+      color: #fff;
+    }
+
+    .fan-card-icon {
+      font-size: 52px;
+      margin-bottom: 4px;
+      animation: icon-idle 3s ease-in-out infinite;
+    }
+
+    @keyframes icon-idle {
+      0%, 100% { transform: scale(1) rotate(0deg); }
+      25% { transform: scale(1.05) rotate(-3deg); }
+      75% { transform: scale(1.05) rotate(3deg); }
+    }
+
+    .fan-card-name {
+      font-size: 15px;
+      font-weight: bold;
+      text-shadow: 0 2px 4px rgba(0,0,0,0.3);
+    }
+
+    /* ========== 增强版开始按钮 ========== */
+    .start-btn {
+      position: relative;
+      background: transparent;
+      border: none;
+      border-radius: 30px;
+      padding: 18px 56px;
+      font-size: 18px;
+      font-weight: bold;
+      cursor: pointer;
+      overflow: hidden;
+      opacity: 0;
+      animation: fade-in-up 0.6s ease-out 0.5s forwards;
+    }
+
+    .start-btn::before {
+      content: '';
+      position: absolute;
+      inset: 0;
+      background: linear-gradient(90deg, #ffd700, #ffaa00, #ffd700);
+      background-size: 200% 100%;
+      border-radius: 30px;
+      animation: gradient-flow 2s linear infinite;
+      z-index: -2;
+    }
+
+    @keyframes gradient-flow {
+      0% { background-position: 0% 50%; }
+      100% { background-position: 200% 50%; }
+    }
+
+    .start-btn::after {
+      content: '';
+      position: absolute;
+      inset: 2px;
+      background: var(--bg-dark);
+      border-radius: 28px;
+      z-index: -1;
+    }
+
+    .start-btn span {
+      position: relative;
+      z-index: 1;
+      color: var(--gold);
+    }
+
+    .start-btn.disabled {
+      opacity: 0.5;
+    }
+
+    .start-btn.disabled::before {
+      background: var(--text-muted);
+      animation: none;
+    }
+
+    .start-btn.disabled span {
+      color: var(--text-muted);
+    }
+
+    .start-btn:not(.disabled) {
+      animation: fade-in-up 0.6s ease-out 0.5s forwards, btn-float 2s ease-in-out infinite;
+    }
+
+    @keyframes btn-float {
+      0%, 100% { transform: translateY(0); }
+      50% { transform: translateY(-5px); }
+    }
+
+    .start-btn:not(.disabled)::before {
+      box-shadow: 0 0 30px rgba(255, 215, 0, 0.5);
+      animation: gradient-flow 2s linear infinite, btn-glow 1.5s ease-in-out infinite;
+    }
+
+    @keyframes btn-glow {
+      0%, 100% { box-shadow: 0 0 20px rgba(255, 215, 0, 0.4); }
+      50% { box-shadow: 0 0 40px rgba(255, 215, 0, 0.8); }
+    }
+
+    /* ========== Demo 2: 主页 ========== */
+    .home-demo {
+      padding-bottom: 100px;
+    }
+
+    .home-header {
+      padding: 20px;
+      padding-top: 60px;
+    }
+
+    .greeting {
+      font-size: 28px;
+      font-weight: bold;
+      color: var(--text-primary);
+      opacity: 0;
+      animation: slide-in-right 0.5s var(--bounce-easing) forwards;
+    }
+
+    @keyframes slide-in-right {
+      from {
+        opacity: 0;
+        transform: translateX(30px);
+      }
+      to {
+        opacity: 1;
+        transform: translateX(0);
+      }
+    }
+
+    .sub-greeting {
+      font-size: 16px;
+      color: var(--text-secondary);
+      margin-top: 4px;
+      opacity: 0;
+      animation: slide-in-right 0.5s var(--bounce-easing) 0.1s forwards;
+    }
+
+    .welcome-card {
+      background: var(--card-bg);
+      border-radius: 20px;
+      padding: 24px;
+      margin: 0 20px 20px;
+      border: 1px solid rgba(255,255,255,0.1);
+      opacity: 0;
+      transform: perspective(1000px) rotateX(-10deg);
+      animation: card-3d-flip-in 0.8s var(--bounce-easing) 0.2s forwards;
+      position: relative;
+      overflow: hidden;
+    }
+
+    @keyframes card-3d-flip-in {
+      from {
+        opacity: 0;
+        transform: perspective(1000px) rotateX(-90deg);
+      }
+      to {
+        opacity: 1;
+        transform: perspective(1000px) rotateX(0);
+      }
+    }
+
+    .welcome-card::before {
+      content: '';
+      position: absolute;
+      top: -50%;
+      left: -50%;
+      width: 200%;
+      height: 200%;
+      background: radial-gradient(circle, rgba(255,215,0,0.1) 0%, transparent 50%);
+      animation: rotate-slow 20s linear infinite;
+    }
+
+    @keyframes rotate-slow {
+      from { transform: rotate(0deg); }
+      to { transform: rotate(360deg); }
+    }
+
+    .welcome-title {
+      font-size: 22px;
+      font-weight: bold;
+      background: linear-gradient(90deg, #ffd700, #ffaa00);
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+      background-clip: text;
+      margin-bottom: 12px;
+      position: relative;
+    }
+
+    .feature-list {
+      margin-bottom: 20px;
+      position: relative;
+    }
+
+    .feature-item {
+      font-size: 15px;
+      color: var(--text-primary);
+      line-height: 28px;
+      opacity: 0;
+      animation: fade-in-left 0.4s ease-out forwards;
+    }
+
+    .feature-item:nth-child(1) { animation-delay: 0.4s; }
+    .feature-item:nth-child(2) { animation-delay: 0.5s; }
+    .feature-item:nth-child(3) { animation-delay: 0.6s; }
+    .feature-item:nth-child(4) { animation-delay: 0.7s; }
+
+    @keyframes fade-in-left {
+      from {
+        opacity: 0;
+        transform: translateX(-20px);
+      }
+      to {
+        opacity: 1;
+        transform: translateX(0);
+      }
+    }
+
+    .section {
+      margin-bottom: 20px;
+    }
+
+    .section-header {
+      display: flex;
+      align-items: center;
+      padding: 0 20px 12px;
+      border-bottom: 1px solid rgba(255,215,0,0.2);
+      margin-bottom: 16px;
+    }
+
+    .section-icon {
+      font-size: 20px;
+      margin-right: 8px;
+      animation: icon-bounce 2s ease-in-out infinite;
+    }
+
+    .section-title {
+      font-size: 18px;
+      font-weight: 600;
+      background: linear-gradient(90deg, var(--gold), #ffaa00);
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+      background-clip: text;
+    }
+
+    .card-scroll {
+      display: flex;
+      gap: 12px;
+      overflow-x: auto;
+      padding: 0 16px 12px;
+      scroll-snap-type: x mandatory;
+    }
+
+    .card-scroll::-webkit-scrollbar {
+      display: none;
+    }
+
+    .char-card {
+      min-width: 140px;
+      height: 180px;
+      background: var(--card-bg);
+      border-radius: 16px;
+      border: 3px solid;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      scroll-snap-align: start;
+      position: relative;
+      overflow: hidden;
+      opacity: 0;
+      transform: translateX(50px);
+      animation: slide-in-scroll 0.5s var(--bounce-easing) forwards;
+      transition: transform 0.3s, box-shadow 0.3s;
+    }
+
+    .char-card:nth-child(1) { animation-delay: 0.1s; }
+    .char-card:nth-child(2) { animation-delay: 0.2s; }
+    .char-card:nth-child(3) { animation-delay: 0.3s; }
+    .char-card:nth-child(4) { animation-delay: 0.4s; }
+
+    @keyframes slide-in-scroll {
+      to {
+        opacity: 1;
+        transform: translateX(0);
+      }
+    }
+
+    .char-card:hover {
+      transform: translateY(-10px) scale(1.05);
+      box-shadow: 0 15px 30px rgba(0,0,0,0.4);
+    }
+
+    .char-card-icon {
+      font-size: 48px;
+      margin-bottom: 8px;
+    }
+
+    .char-card-name {
+      font-size: 14px;
+      font-weight: 600;
+    }
+
+    .story-card {
+      background: var(--card-bg);
+      border-radius: 16px;
+      padding: 16px;
+      display: flex;
+      align-items: center;
+      margin: 0 20px 12px;
+      opacity: 0;
+      transform: translateY(20px);
+      animation: fade-in-up 0.5s ease-out forwards;
+      transition: transform 0.2s, box-shadow 0.2s;
+    }
+
+    .story-card:nth-child(1) { animation-delay: 0.1s; }
+    .story-card:nth-child(2) { animation-delay: 0.2s; }
+
+    .story-card:hover {
+      transform: translateX(5px);
+      box-shadow: 0 5px 20px rgba(0,0,0,0.3);
+    }
+
+    .story-card-icon {
+      font-size: 32px;
+      margin-right: 16px;
+    }
+
+    .story-card-info {
+      flex: 1;
+    }
+
+    .story-card-title {
+      font-size: 16px;
+      font-weight: 600;
+      margin-bottom: 6px;
+    }
+
+    .story-card-meta {
+      font-size: 13px;
+      color: var(--text-secondary);
+      display: flex;
+      align-items: center;
+      gap: 6px;
+    }
+
+    /* ========== Demo 3: 导演台 ========== */
+    .director-demo {
+      padding-bottom: 120px;
+    }
+
+    .stage-area {
+      background: rgba(0,0,0,0.4);
+      border-radius: 16px;
+      margin: 16px;
+      padding: 16px;
+      border: 1px solid rgba(255,215,0,0.15);
+      position: relative;
+      overflow: hidden;
+    }
+
+    .stage-title {
+      font-size: 14px;
+      font-weight: 600;
+      color: var(--gold);
+      text-align: center;
+      margin-bottom: 16px;
+      padding-bottom: 8px;
+      border-bottom: 1px solid rgba(255,255,255,0.1);
+    }
+
+    .stage-grid {
+      display: grid;
+      grid-template-columns: repeat(4, 1fr);
+      gap: 8px;
+    }
+
+    .stage-slot {
+      aspect-ratio: 0.75;
+      border: 2px dashed rgba(255,255,255,0.2);
+      border-radius: 10px;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      font-size: 11px;
+      color: var(--text-secondary);
+      transition: all 0.3s;
+      position: relative;
+      overflow: hidden;
+    }
+
+    .stage-slot::before {
+      content: '';
+      position: absolute;
+      inset: 0;
+      background: linear-gradient(90deg, transparent, rgba(255,255,255,0.1), transparent);
+      animation: border-flow 2s linear infinite;
+    }
+
+    @keyframes border-flow {
+      0% { transform: translateX(-100%); }
+      100% { transform: translateX(100%); }
+    }
+
+    .stage-slot.filled {
+      background: var(--card-bg);
+      border: 2px solid var(--gold);
+      border-style: solid;
+      animation: slot-fill 0.5s var(--bounce-easing);
+    }
+
+    @keyframes slot-fill {
+      0% { transform: scale(0.5); opacity: 0; }
+      50% { transform: scale(1.1); }
+      100% { transform: scale(1); opacity: 1; }
+    }
+
+    .stage-slot-icon {
+      font-size: 24px;
+      margin-bottom: 4px;
+    }
+
+    .story-preview {
+      background: rgba(255,255,255,0.03);
+      border-radius: 8px;
+      padding: 10px;
+      margin-top: 12px;
+    }
+
+    .preview-text {
+      font-size: 12px;
+      color: var(--text-secondary);
+      text-align: center;
+      font-style: italic;
+    }
+
+    .card-section {
+      margin-bottom: 16px;
+    }
+
+    .section-header-bar {
+      display: flex;
+      align-items: center;
+      padding: 10px 16px;
+      margin: 0 16px 12px;
+      border-radius: 10px;
+      border: 1px solid;
+    }
+
+    .section-header-text {
+      font-size: 14px;
+      font-weight: 600;
+    }
+
+    .select-card {
+      min-width: 90px;
+      height: 120px;
+      background: var(--card-bg);
+      border-radius: 14px;
+      border: 2px solid rgba(255,255,255,0.2);
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      margin-right: 12px;
+      scroll-snap-align: start;
+      position: relative;
+      opacity: 0;
+      transform: translateY(30px);
+      animation: fade-in-up 0.4s ease-out forwards;
+      transition: all 0.3s var(--bounce-easing);
+    }
+
+    .select-card:nth-child(1) { animation-delay: 0.05s; }
+    .select-card:nth-child(2) { animation-delay: 0.1s; }
+    .select-card:nth-child(3) { animation-delay: 0.15s; }
+
+    .select-card:hover {
+      transform: translateY(-8px);
+      box-shadow: 0 10px 25px rgba(0,0,0,0.3);
+    }
+
+    .select-card.selected {
+      border-color: var(--gold);
+      background: rgba(255, 215, 0, 0.1);
+      box-shadow: 0 0 25px rgba(255, 215, 0, 0.4);
+      transform: translateY(-12px);
+    }
+
+    .select-card-icon {
+      font-size: 36px;
+      margin-bottom: 8px;
+    }
+
+    .select-card-name {
+      font-size: 14px;
+      font-weight: 600;
+    }
+
+    .bottom-bar {
+      position: fixed;
+      bottom: 0;
+      left: 50%;
+      transform: translateX(-50%);
+      width: 100%;
+      max-width: 390px;
+      background: rgba(0,0,0,0.95);
+      padding: 12px 16px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      border-top: 1px solid rgba(255,255,255,0.1);
+      z-index: 100;
+      backdrop-filter: blur(10px);
+    }
+
+    .requirements {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 8px;
+    }
+
+    .req-item {
+      display: flex;
+      align-items: center;
+      gap: 4px;
+    }
+
+    .req-dot {
+      width: 16px;
+      height: 16px;
+      border-radius: 50%;
+      border: 2px solid var(--text-muted);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      transition: all 0.3s;
+    }
+
+    .req-dot.met {
+      background: var(--green);
+      border-color: var(--green);
+      animation: check-pop 0.4s var(--bounce-easing);
+    }
+
+    @keyframes check-pop {
+      0% { transform: scale(0); }
+      50% { transform: scale(1.3); }
+      100% { transform: scale(1); }
+    }
+
+    .req-text {
+      font-size: 12px;
+      color: var(--text-muted);
+      transition: color 0.3s;
+    }
+
+    .req-text.met {
+      color: var(--green);
+    }
+
+    .action-btn {
+      background: var(--text-muted);
+      color: #000;
+      border: none;
+      border-radius: 22px;
+      padding: 12px 32px;
+      font-weight: bold;
+      cursor: pointer;
+      transition: all 0.3s;
+    }
+
+    .action-btn.ready {
+      background: linear-gradient(90deg, #ffd700, #ffaa00);
+      animation: btn-pulse-ready 1.5s ease-in-out infinite;
+    }
+
+    @keyframes btn-pulse-ready {
+      0%, 100% { 
+        box-shadow: 0 0 10px rgba(255, 215, 0, 0.4);
+        transform: scale(1);
+      }
+      50% { 
+        box-shadow: 0 0 25px rgba(255, 215, 0, 0.7);
+        transform: scale(1.05);
+      }
+    }
+
+    /* ========== 增强版天气效果 ========== */
+    .weather-container {
+      position: fixed;
+      top: 0;
+      left: 0;
+      right: 0;
+      bottom: 0;
+      pointer-events: none;
+      z-index: 50;
+      overflow: hidden;
+    }
+
+    /* 晴天 - 太阳光芒 */
+    .sun-container {
+      position: absolute;
+      top: 80px;
+      right: 30px;
+    }
+
+    .sun-core {
+      width: 70px;
+      height: 70px;
+      background: radial-gradient(circle, #fff700 0%, #ffd700 50%, #ff8c00 100%);
+      border-radius: 50%;
+      box-shadow: 
+        0 0 60px #ffd700,
+        0 0 100px #ff8c00,
+        0 0 150px rgba(255, 140, 0, 0.5);
+      animation: sun-pulse 3s ease-in-out infinite;
+    }
+
+    @keyframes sun-pulse {
+      0%, 100% { 
+        transform: scale(1);
+        box-shadow: 0 0 60px #ffd700, 0 0 100px #ff8c00, 0 0 150px rgba(255, 140, 0, 0.5);
+      }
+      50% { 
+        transform: scale(1.1);
+        box-shadow: 0 0 80px #ffd700, 0 0 130px #ff8c00, 0 0 200px rgba(255, 140, 0, 0.6);
+      }
+    }
+
+    .sun-rays {
+      position: absolute;
+      top: 50%;
+      left: 50%;
+      width: 150px;
+      height: 150px;
+      transform: translate(-50%, -50%);
+      animation: sun-rotate 30s linear infinite;
+    }
+
+    @keyframes sun-rotate {
+      from { transform: translate(-50%, -50%) rotate(0deg); }
+      to { transform: translate(-50%, -50%) rotate(360deg); }
+    }
+
+    .sun-ray {
+      position: absolute;
+      top: 50%;
+      left: 50%;
+      width: 4px;
+      height: 40px;
+      background: linear-gradient(to top, transparent, #ffd700);
+      transform-origin: center bottom;
+      border-radius: 2px;
+    }
+
+    .sun-ray:nth-child(1) { transform: translate(-50%, -100%) rotate(0deg); }
+    .sun-ray:nth-child(2) { transform: translate(-50%, -100%) rotate(45deg); }
+    .sun-ray:nth-child(3) { transform: translate(-50%, -100%) rotate(90deg); }
+    .sun-ray:nth-child(4) { transform: translate(-50%, -100%) rotate(135deg); }
+    .sun-ray:nth-child(5) { transform: translate(-50%, -100%) rotate(180deg); }
+    .sun-ray:nth-child(6) { transform: translate(-50%, -100%) rotate(225deg); }
+    .sun-ray:nth-child(7) { transform: translate(-50%, -100%) rotate(270deg); }
+    .sun-ray:nth-child(8) { transform: translate(-50%, -100%) rotate(315deg); }
+
+    .light-beam {
+      position: absolute;
+      top: 80px;
+      right: 30px;
+      width: 70px;
+      height: 70px;
+      background: radial-gradient(circle, rgba(255, 215, 0, 0.3) 0%, transparent 70%);
+      border-radius: 50%;
+      animation: beam-expand 2s ease-out infinite;
+    }
+
+    @keyframes beam-expand {
+      0% {
+        transform: scale(1);
+        opacity: 0.8;
+      }
+      100% {
+        transform: scale(3);
+        opacity: 0;
+      }
+    }
+
+    /* 雨天 - 拖尾雨滴+闪电 */
+    .rain-drop {
+      position: absolute;
+      width: 3px;
+      height: 25px;
+      background: linear-gradient(to bottom, transparent, rgba(174, 194, 224, 0.8));
+      border-radius: 0 0 3px 3px;
+      animation: rain-fall linear infinite;
+      filter: drop-shadow(0 0 3px rgba(174, 194, 224, 0.5));
+    }
+
+    .rain-drop::after {
+      content: '';
+      position: absolute;
+      top: 100%;
+      left: 50%;
+      transform: translateX(-50%);
+      width: 6px;
+      height: 6px;
+      background: radial-gradient(circle, rgba(174, 194, 224, 0.6), transparent);
+      border-radius: 50%;
+      animation: ripple-small 0.5s ease-out infinite;
+    }
+
+    @keyframes ripple-small {
+      0% { transform: translateX(-50%) scale(0); opacity: 1; }
+      100% { transform: translateX(-50%) scale(3); opacity: 0; }
+    }
+
+    @keyframes rain-fall {
+      0% { 
+        transform: translateY(-30px) translateX(0); 
+        opacity: 0; 
+      }
+      10% { opacity: 1; }
+      90% { opacity: 1; }
+      100% { 
+        transform: translateY(100vh) translateX(-20px); 
+        opacity: 0; 
+      }
+    }
+
+    .lightning {
+      position: fixed;
+      top: 0;
+      left: 0;
+      right: 0;
+      bottom: 0;
+      background: rgba(255, 255, 255, 0);
+      pointer-events: none;
+      z-index: 60;
+    }
+
+    .lightning.flash {
+      animation: lightning-flash 0.15s ease-out;
+    }
+
+    @keyframes lightning-flash {
+      0% { background: rgba(255, 255, 255, 0.9); }
+      20% { background: rgba(255, 255, 255, 0); }
+      40% { background: rgba(255, 255, 255, 0.6); }
+      100% { background: rgba(255, 255, 255, 0); }
+    }
+
+    /* 雪天 - 旋转雪花 */
+    .snow-flake {
+      position: absolute;
+      color: #fff;
+      text-shadow: 0 0 5px rgba(255, 255, 255, 0.8);
+      animation: snow-fall linear infinite;
+      filter: drop-shadow(0 0 3px rgba(255, 255, 255, 0.5));
+    }
+
+    @keyframes snow-fall {
+      0% {
+        transform: translateY(-30px) translateX(0) rotate(0deg) scale(0.5);
+        opacity: 0;
+      }
+      10% {
+        opacity: 1;
+      }
+      50% {
+        transform: translateY(50vh) translateX(30px) rotate(180deg) scale(1);
+      }
+      90% {
+        opacity: 0.8;
+      }
+      100% {
+        transform: translateY(100vh) translateX(-20px) rotate(360deg) scale(0.8);
+        opacity: 0;
+      }
+    }
+
+    .frost-overlay {
+      position: fixed;
+      bottom: 0;
+      left: 0;
+      right: 0;
+      height: 100px;
+      background: linear-gradient(to top, rgba(200, 220, 255, 0.1), transparent);
+      pointer-events: none;
+    }
+
+    /* ========== Demo 4: 阅读 ========== */
+    .reader-demo {
+      padding: 20px;
+      padding-bottom: 100px;
+    }
+
+    .chapter-title {
+      font-size: 26px;
+      font-weight: bold;
+      color: var(--gold);
+      text-align: center;
+      margin-bottom: 24px;
+      opacity: 0;
+      animation: title-drop-in 0.8s var(--bounce-easing) forwards;
+      position: relative;
+    }
+
+    @keyframes title-drop-in {
+      0% {
+        opacity: 0;
+        transform: translateY(-40px);
+      }
+      60% {
+        transform: translateY(10px);
+      }
+      100% {
+        opacity: 1;
+        transform: translateY(0);
+      }
+    }
+
+    .chapter-title::after {
+      content: '';
+      position: absolute;
+      bottom: -8px;
+      left: 50%;
+      width: 0;
+      height: 2px;
+      background: linear-gradient(90deg, transparent, var(--gold), transparent);
+      animation: underline-expand 0.6s ease-out 0.5s forwards;
+    }
+
+    @keyframes underline-expand {
+      to {
+        width: 80%;
+        left: 10%;
+      }
+    }
+
+    .paragraph {
+      font-size: 18px;
+      line-height: 1.9;
+      margin-bottom: 20px;
+      opacity: 0;
+      animation: paragraph-fade-in 0.6s ease-out forwards;
+    }
+
+    .paragraph:nth-child(2) { animation-delay: 0.3s; }
+    .paragraph:nth-child(3) { animation-delay: 0.5s; }
+    .paragraph:nth-child(4) { animation-delay: 0.7s; }
+
+    @keyframes paragraph-fade-in {
+      from {
+        opacity: 0;
+        transform: translateY(15px);
+      }
+      to {
+        opacity: 1;
+        transform: translateY(0);
+      }
+    }
+
+    .keyword {
+      color: var(--gold);
+      font-weight: 600;
+      text-shadow: 0 0 10px rgba(255,215,0,0.5);
+      animation: keyword-glow 2s ease-in-out infinite;
+      cursor: pointer;
+      transition: transform 0.2s;
+    }
+
+    @keyframes keyword-glow {
+      0%, 100% { 
+        text-shadow: 0 0 10px rgba(255,215,0,0.5);
+        transform: translateY(0);
+      }
+      50% { 
+        text-shadow: 0 0 20px rgba(255,215,0,0.8), 0 0 30px rgba(255,215,0,0.4);
+        transform: translateY(-2px);
+      }
+    }
+
+    .keyword:hover {
+      transform: scale(1.1);
+    }
+
+    .puzzle-card {
+      background: var(--card-bg);
+      border-radius: 20px;
+      padding: 24px;
+      border: 2px solid var(--purple);
+      margin-top: 24px;
+      opacity: 0;
+      transform: perspective(1000px) rotateY(-10deg) translateX(50px);
+      animation: puzzle-slide-in 0.8s var(--bounce-easing) 0.9s forwards;
+      position: relative;
+      overflow: hidden;
+    }
+
+    @keyframes puzzle-slide-in {
+      to {
+        opacity: 1;
+        transform: perspective(1000px) rotateY(0) translateX(0);
+      }
+    }
+
+    .puzzle-card::before {
+      content: '';
+      position: absolute;
+      top: 0;
+      left: 0;
+      right: 0;
+      height: 3px;
+      background: linear-gradient(90deg, var(--purple), var(--gold), var(--purple));
+      background-size: 200% 100%;
+      animation: gradient-flow 2s linear infinite;
+    }
+
+    .puzzle-title {
+      font-size: 20px;
+      font-weight: bold;
+      color: var(--purple);
+      margin-bottom: 16px;
+    }
+
+    .puzzle-option {
+      background: var(--bg-medium);
+      border-radius: 14px;
+      padding: 16px;
+      margin-bottom: 12px;
+      border: 1px solid rgba(255,255,255,0.1);
+      cursor: pointer;
+      transition: all 0.3s;
+      position: relative;
+      overflow: hidden;
+    }
+
+    .puzzle-option:hover {
+      background: rgba(168, 85, 247, 0.2);
+      transform: translateY(-3px);
+      box-shadow: 0 5px 15px rgba(0,0,0,0.3);
+    }
+
+    .puzzle-option:active {
+      transform: scale(0.98);
+    }
+
+    .result-card {
+      border-radius: 20px;
+      padding: 24px;
+      margin-top: 24px;
+      text-align: center;
+      opacity: 0;
+      transform: scale(0.8);
+    }
+
+    .result-card.show {
+      animation: result-pop-in 0.6s var(--bounce-easing) forwards;
+    }
+
+    @keyframes result-pop-in {
+      to {
+        opacity: 1;
+        transform: scale(1);
+      }
+    }
+
+    .result-correct {
+      background: rgba(34,197,94,0.2);
+      border: 2px solid var(--green);
+      animation: result-pop-in 0.6s var(--bounce-easing) forwards, correct-glow 1s ease-in-out infinite;
+    }
+
+    @keyframes correct-glow {
+      0%, 100% { box-shadow: 0 0 20px rgba(34, 197, 94, 0.3); }
+      50% { box-shadow: 0 0 40px rgba(34, 197, 94, 0.6); }
+    }
+
+    .result-wrong {
+      background: rgba(239,68,68,0.2);
+      border: 2px solid var(--crimson);
+      animation: result-pop-in 0.6s var(--bounce-easing) forwards, wrong-shake 0.5s ease-in-out;
+    }
+
+    @keyframes wrong-shake {
+      0%, 100% { transform: translateX(0); }
+      20% { transform: translateX(-10px); }
+      40% { transform: translateX(10px); }
+      60% { transform: translateX(-5px); }
+      80% { transform: translateX(5px); }
+    }
+
+    .result-icon {
+      font-size: 56px;
+      margin-bottom: 12px;
+      animation: icon-bounce-in 0.6s var(--bounce-easing);
+    }
+
+    @keyframes icon-bounce-in {
+      0% { transform: scale(0) rotate(-180deg); }
+      60% { transform: scale(1.2) rotate(10deg); }
+      100% { transform: scale(1) rotate(0); }
+    }
+
+    .result-title {
+      font-size: 24px;
+      font-weight: bold;
+      margin-bottom: 8px;
+    }
+
+    /* 庆祝星星 */
+    .celebration-stars {
+      position: absolute;
+      top: 0;
+      left: 0;
+      right: 0;
+      bottom: 0;
+      pointer-events: none;
+      overflow: hidden;
+    }
+
+    .star-particle {
+      position: absolute;
+      font-size: 20px;
+      animation: star-burst 1s ease-out forwards;
+    }
+
+    @keyframes star-burst {
+      0% {
+        transform: translate(0, 0) scale(0) rotate(0deg);
+        opacity: 1;
+      }
+      100% {
+        transform: translate(var(--tx), var(--ty)) scale(1) rotate(360deg);
+        opacity: 0;
+      }
+    }
+
+    /* ========== Demo 5: 收集 ========== */
+    .collection-demo {
+      padding-bottom: 100px;
+    }
+
+    .collection-info {
+      text-align: center;
+      padding: 16px;
+      background: var(--bg-medium);
+      font-size: 16px;
+      color: var(--gold);
+      font-weight: 600;
+    }
+
+    .card-grid {
+      display: grid;
+      grid-template-columns: repeat(4, 1fr);
+      gap: 8px;
+      padding: 8px;
+    }
+
+    .collection-card {
+      aspect-ratio: 0.75;
+      background: var(--card-bg);
+      border-radius: 12px;
+      border: 2px solid;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      cursor: pointer;
+      position: relative;
+      opacity: 0;
+      transform: scale(0.5);
+      animation: card-grid-in 0.5s var(--bounce-easing) forwards;
+      transition: all 0.3s;
+    }
+
+    @keyframes card-grid-in {
+      to {
+        opacity: 1;
+        transform: scale(1);
+      }
+    }
+
+    .collection-card:hover {
+      transform: translateY(-8px) scale(1.08);
+      box-shadow: 0 10px 25px rgba(0,0,0,0.4);
+    }
+
+    .collection-card.selected {
+      transform: scale(1.15);
+      box-shadow: 0 0 30px currentColor;
+      animation: selected-card-pulse 1s ease-in-out infinite;
+    }
+
+    @keyframes selected-card-pulse {
+      0%, 100% { box-shadow: 0 0 20px currentColor; }
+      50% { box-shadow: 0 0 40px currentColor; }
+    }
+
+    .collection-card-icon {
+      font-size: 32px;
+      margin-bottom: 4px;
+    }
+
+    .collection-card-name {
+      font-size: 11px;
+      font-weight: 600;
+      text-align: center;
+    }
+
+    .collection-card-stars {
+      font-size: 8px;
+      animation: stars-twinkle 1.5s ease-in-out infinite;
+    }
+
+    @keyframes stars-twinkle {
+      0%, 100% { opacity: 1; transform: scale(1); }
+      50% { opacity: 0.7; transform: scale(1.1); }
+    }
+
+    .card-detail {
+      position: fixed;
+      bottom: 0;
+      left: 50%;
+      transform: translateX(-50%) translateY(100%);
+      width: 100%;
+      max-width: 390px;
+      background: var(--bg-medium);
+      border-top-left-radius: 28px;
+      border-top-right-radius: 28px;
+      padding: 28px;
+      text-align: center;
+      border: 1px solid rgba(255,255,255,0.1);
+      z-index: 90;
+      transition: transform 0.4s var(--bounce-easing);
+    }
+
+    .card-detail.show {
+      transform: translateX(-50%) translateY(0);
+    }
+
+    .card-detail-icon {
+      font-size: 72px;
+      margin-bottom: 12px;
+      animation: detail-icon-in 0.6s var(--bounce-easing);
+    }
+
+    @keyframes detail-icon-in {
+      0% { transform: scale(0) rotate(-180deg); }
+      60% { transform: scale(1.2) rotate(10deg); }
+      100% { transform: scale(1) rotate(0); }
+    }
+
+    .card-detail-name {
+      font-size: 26px;
+      font-weight: bold;
+      margin-bottom: 8px;
+      animation: fade-in-up 0.4s ease-out 0.1s backwards;
+    }
+
+    .card-detail-rarity {
+      font-size: 16px;
+      color: var(--gold);
+      margin-bottom: 20px;
+      animation: fade-in-up 0.4s ease-out 0.2s backwards;
+    }
+
+    .use-btn {
+      background: linear-gradient(90deg, #ffd700, #ffaa00);
+      color: #000;
+      border: none;
+      border-radius: 24px;
+      padding: 14px 40px;
+      font-size: 16px;
+      font-weight: bold;
+      cursor: pointer;
+      animation: fade-in-up 0.4s ease-out 0.3s backwards, btn-pulse-ready 2s ease-in-out infinite;
+      transition: transform 0.2s;
+    }
+
+    .use-btn:active {
+      transform: scale(0.95);
+    }
+
+    .reveal-btn {
+      position: fixed;
+      top: 60px;
+      right: 16px;
+      font-size: 28px;
+      z-index: 100;
+      background: var(--card-bg);
+      border-radius: 50%;
+      width: 50px;
+      height: 50px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      border: 2px solid var(--gold);
+      cursor: pointer;
+      animation: reveal-btn-pulse 2s ease-in-out infinite;
+      transition: transform 0.2s;
+    }
+
+    @keyframes reveal-btn-pulse {
+      0%, 100% { 
+        box-shadow: 0 0 10px rgba(255, 215, 0, 0.3);
+        transform: scale(1);
+      }
+      50% { 
+        box-shadow: 0 0 25px rgba(255, 215, 0, 0.6);
+        transform: scale(1.1);
+      }
+    }
+
+    .reveal-btn:active {
+      transform: scale(0.9);
+    }
+
+    /* ========== 增强版新卡牌获得弹窗 ========== */
+    .reveal-modal {
+      position: fixed;
+      top: 0;
+      left: 0;
+      right: 0;
+      bottom: 0;
+      background: rgba(0,0,0,0);
+      display: none;
+      align-items: center;
+      justify-content: center;
+      z-index: 200;
+      transition: background 0.3s;
+    }
+
+    .reveal-modal.active {
+      display: flex;
+      background: rgba(0,0,0,0.95);
+    }
+
+    .reveal-card {
+      width: 220px;
+      height: 300px;
+      background: linear-gradient(180deg, var(--bg-light) 0%, var(--card-bg) 100%);
+      border-radius: 20px;
+      border: 4px solid var(--gold);
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      position: relative;
+      overflow: hidden;
+      transform: translateY(100vh) rotate(-20deg) scale(0.5);
+      opacity: 0;
+    }
+
+    .reveal-modal.active .reveal-card {
+      animation: reveal-card-enter 1s var(--bounce-easing) 0.2s forwards;
+    }
+
+    @keyframes reveal-card-enter {
+      0% {
+        transform: translateY(100vh) rotate(-20deg) scale(0.5);
+        opacity: 0;
+      }
+      60% {
+        transform: translateY(-30px) rotate(5deg) scale(1.1);
+        opacity: 1;
+      }
+      80% {
+        transform: translateY(10px) rotate(-2deg) scale(0.95);
+      }
+      100% {
+        transform: translateY(0) rotate(0) scale(1);
+        opacity: 1;
+      }
+    }
+
+    /* 光芒爆发 */
+    .reveal-card::before {
+      content: '';
+      position: absolute;
+      top: 50%;
+      left: 50%;
+      width: 400px;
+      height: 400px;
+      background: radial-gradient(circle, rgba(255, 215, 0, 0.4) 0%, transparent 50%);
+      transform: translate(-50%, -50%) scale(0);
+      opacity: 0;
+    }
+
+    .reveal-modal.active .reveal-card::before {
+      animation: reveal-light-burst 1s ease-out 0.8s forwards;
+    }
+
+    @keyframes reveal-light-burst {
+      0% {
+        transform: translate(-50%, -50%) scale(0);
+        opacity: 1;
+      }
+      100% {
+        transform: translate(-50%, -50%) scale(2);
+        opacity: 0;
+      }
+    }
+
+    /* 闪光扫过 */
+    .reveal-shine {
+      position: absolute;
+      top: 0;
+      bottom: 0;
+      left: -100px;
+      width: 60px;
+      background: linear-gradient(90deg, transparent, rgba(255,255,255,0.4), transparent);
+      transform: skewX(-20deg);
+      opacity: 0;
+    }
+
+    .reveal-modal.active .reveal-shine {
+      animation: reveal-shine-sweep 1.5s ease-in-out 1s forwards;
+    }
+
+    @keyframes reveal-shine-sweep {
+      0% {
+        left: -100px;
+        opacity: 0;
+      }
+      20% {
+        opacity: 1;
+      }
+      80% {
+        opacity: 1;
+      }
+      100% {
+        left: 300px;
+        opacity: 0;
+      }
+    }
+
+    /* 持续发光边框 */
+    .reveal-card::after {
+      content: '';
+      position: absolute;
+      inset: -4px;
+      border-radius: 20px;
+      background: conic-gradient(from 0deg, var(--gold), var(--purple), var(--blue), var(--gold));
+      z-index: -1;
+      opacity: 0;
+    }
+
+    .reveal-modal.active .reveal-card::after {
+      animation: reveal-border-glow 3s linear 1s infinite;
+    }
+
+    @keyframes reveal-border-glow {
+      0% { 
+        opacity: 0.8;
+        transform: rotate(0deg);
+      }
+      100% { 
+        opacity: 0.8;
+        transform: rotate(360deg);
+      }
+    }
+
+    .reveal-card-icon {
+      font-size: 90px;
+      margin-bottom: 16px;
+      animation: reveal-icon-bounce 2s ease-in-out infinite;
+    }
+
+    @keyframes reveal-icon-bounce {
+      0%, 100% { transform: scale(1) rotate(0deg); }
+      25% { transform: scale(1.1) rotate(-5deg); }
+      75% { transform: scale(1.1) rotate(5deg); }
+    }
+
+    .reveal-card-name {
+      font-size: 26px;
+      font-weight: bold;
+      text-shadow: 0 2px 10px rgba(0,0,0,0.5);
+    }
+
+    .reveal-card-rarity {
+      color: var(--gold);
+      font-size: 16px;
+      margin-top: 8px;
+    }
+
+    .reveal-text {
+      font-size: 26px;
+      font-weight: bold;
+      background: linear-gradient(90deg, #ffd700, #ffaa00);
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+      background-clip: text;
+      margin-top: 30px;
+      opacity: 0;
+    }
+
+    .reveal-modal.active .reveal-text {
+      animation: reveal-text-in 0.6s ease-out 1.2s forwards;
+    }
+
+    @keyframes reveal-text-in {
+      0% {
+        opacity: 0;
+        transform: translateY(20px);
+      }
+      100% {
+        opacity: 1;
+        transform: translateY(0);
+      }
+    }
+
+    .reveal-close {
+      background: linear-gradient(90deg, #ffd700, #ffaa00);
+      color: #000;
+      border: none;
+      border-radius: 24px;
+      padding: 14px 50px;
+      font-size: 18px;
+      font-weight: bold;
+      cursor: pointer;
+      margin-top: 20px;
+      opacity: 0;
+      transition: transform 0.2s;
+    }
+
+    .reveal-modal.active .reveal-close {
+      animation: fade-in-up 0.5s ease-out 1.4s forwards;
+    }
+
+    .reveal-close:active {
+      transform: scale(0.95);
+    }
+
+    /* 庆祝粒子 */
+    .celebration-particles {
+      position: absolute;
+      top: 0;
+      left: 0;
+      right: 0;
+      bottom: 0;
+      pointer-events: none;
+      overflow: hidden;
+    }
+
+    .celebration-particle {
+      position: absolute;
+      font-size: 24px;
+      animation: celebration-burst 1.5s ease-out forwards;
+    }
+
+    @keyframes celebration-burst {
+      0% {
+        transform: translate(0, 0) scale(0) rotate(0deg);
+        opacity: 1;
+      }
+      100% {
+        transform: translate(var(--tx), var(--ty)) scale(1.5) rotate(720deg);
+        opacity: 0;
+      }
+    }
+  </style>
+</head>
+<body>
+  <div class="phone-frame">
+    <!-- 增强版粒子背景 -->
+    <div class="particle-container" id="particles"></div>
+    
+    <!-- 背景光晕 -->
+    <div class="glow-orb gold"></div>
+    <div class="glow-orb purple"></div>
+    
+    <!-- 触摸涟漪容器 -->
+    <div class="ripple-container" id="rippleContainer"></div>
+
+    <!-- Demo列表页 -->
+    <div id="demoList">
+      <div class="nav-header">
+        <div class="nav-placeholder"></div>
+        <span class="nav-title">桌游风格Demo展示</span>
+        <div class="nav-placeholder"></div>
+      </div>
+      
+      <div class="demo-list">
+        <p style="text-align: center; color: var(--text-secondary); margin-bottom: 24px; line-height: 1.6; opacity: 0; animation: fade-in-up 0.6s ease-out 0.2s forwards;">
+          ✨ 增强动画版本 ✨<br>
+          灵感来源于《三国杀》、《炉石传说》等卡牌桌游<br>
+          点击下方卡片查看Demo效果
+        </p>
+        
+        <div class="demo-card" style="border-left-color: var(--gold); animation-delay: 0.3s;" onclick="showDemo(1)">
+          <span class="demo-card-icon">🧙</span>
+          <div class="demo-card-info">
+            <div class="demo-card-title">Demo 1</div>
+            <div class="demo-card-subtitle">登录页面 - 冒险者入场</div>
+          </div>
+          <span class="demo-card-arrow">→</span>
+        </div>
+        
+        <div class="demo-card" style="border-left-color: var(--purple); animation-delay: 0.4s;" onclick="showDemo(2)">
+          <span class="demo-card-icon">🏰</span>
+          <div class="demo-card-info">
+            <div class="demo-card-title">Demo 2</div>
+            <div class="demo-card-subtitle">主页 - 故事世界大厅</div>
+          </div>
+          <span class="demo-card-arrow">→</span>
+        </div>
+        
+        <div class="demo-card" style="border-left-color: var(--crimson); animation-delay: 0.5s;" onclick="showDemo(3)">
+          <span class="demo-card-icon">🎬</span>
+          <div class="demo-card-info">
+            <div class="demo-card-title">Demo 3</div>
+            <div class="demo-card-subtitle">故事导演台 - 天气特效</div>
+          </div>
+          <span class="demo-card-arrow">→</span>
+        </div>
+        
+        <div class="demo-card" style="border-left-color: var(--blue); animation-delay: 0.6s;" onclick="showDemo(4)">
+          <span class="demo-card-icon">📖</span>
+          <div class="demo-card-info">
+            <div class="demo-card-title">Demo 4</div>
+            <div class="demo-card-subtitle">章节阅读 - 沉浸体验</div>
+          </div>
+          <span class="demo-card-arrow">→</span>
+        </div>
+        
+        <div class="demo-card" style="border-left-color: var(--green); animation-delay: 0.7s;" onclick="showDemo(5)">
+          <span class="demo-card-icon">🎭</span>
+          <div class="demo-card-info">
+            <div class="demo-card-title">Demo 5</div>
+            <div class="demo-card-subtitle">角色收集 - 卡牌图鉴</div>
+          </div>
+          <span class="demo-card-arrow">→</span>
+        </div>
+      </div>
+    </div>
+
+    <!-- Demo 1: 登录页面 -->
+    <div class="demo-content" id="demo1">
+      <div class="nav-header">
+        <span class="nav-back" onclick="goBack()">← 返回</span>
+        <span class="nav-title">Demo 1: 冒险者入场</span>
+        <div class="nav-placeholder"></div>
+      </div>
+      
+      <div class="login-demo">
+        <h1 class="login-title">🧱 乐高故事书</h1>
+        <p class="login-subtitle">选择你的角色，开始冒险</p>
+        
+        <div class="fan-cards">
+          <div class="fan-card" onclick="selectFanCard(this)">
+            <span class="role-tag role-protagonist">主角</span>
+            <span class="fan-card-icon">🧙</span>
+            <span class="fan-card-name">法师</span>
+            <div class="card-stats">
+              <span class="stat-gem stat-attack">5</span>
+              <span class="stat-gem stat-health">8</span>
+            </div>
+          </div>
+          <div class="fan-card" onclick="selectFanCard(this)">
+            <span class="role-tag role-antagonist">反派</span>
+            <span class="fan-card-icon">🦸</span>
+            <span class="fan-card-name">战士</span>
+            <div class="card-stats">
+              <span class="stat-gem stat-attack">7</span>
+              <span class="stat-gem stat-health">6</span>
+            </div>
+          </div>
+          <div class="fan-card" onclick="selectFanCard(this)">
+            <span class="role-tag role-supporting">配角</span>
+            <span class="fan-card-icon">🧝</span>
+            <span class="fan-card-name">精灵</span>
+            <div class="card-stats">
+              <span class="stat-gem stat-attack">2</span>
+              <span class="stat-gem stat-health">4</span>
+            </div>
+          </div>
+        </div>
+        
+        <button class="start-btn disabled" id="startBtn" onclick="createRipple(event)">
+          <span>🎮 开始冒险</span>
+        </button>
+      </div>
+    </div>
+
+    <!-- Demo 2: 主页 -->
+    <div class="demo-content" id="demo2">
+      <div class="nav-header">
+        <span class="nav-back" onclick="goBack()">← 返回</span>
+        <span class="nav-title">Demo 2: 故事世界大厅</span>
+        <div class="nav-placeholder"></div>
+      </div>
+      
+      <div class="home-demo">
+        <div class="home-header">
+          <div class="greeting">你好，冒险者！</div>
+          <div class="sub-greeting">今天想听什么故事？</div>
+        </div>
+        
+        <div class="welcome-card">
+          <h2 class="welcome-title">🏰 欢迎来到乐高故事世界</h2>
+          <p style="color: var(--text-secondary); margin-bottom: 12px; position: relative;">在这里，你可以：</p>
+          <div class="feature-list">
+            <div class="feature-item">• 选择你喜欢的乐高人仔作为故事角色</div>
+            <div class="feature-item">• 创建属于你自己的冒险故事</div>
+            <div class="feature-item">• 解答有趣的谜题推进剧情</div>
+            <div class="feature-item">• 与朋友分享你的故事</div>
+          </div>
+          <button class="start-btn" style="width: 100%; position: relative; opacity: 1; animation: none;" onclick="createRipple(event)">
+            <span>🎮 开始冒险</span>
+          </button>
+        </div>
+        
+        <div class="section">
+          <div class="section-header">
+            <span class="section-icon">🔥</span>
+            <span class="section-title">热门人仔</span>
+          </div>
+          <div class="card-scroll">
+            <div class="char-card" style="border-color: var(--gold);" onclick="createRipple(event)">
+              <span class="role-tag role-protagonist">主角</span>
+              <span class="char-card-icon">🧙</span>
+              <span class="char-card-name">法师</span>
+              <div class="card-stats">
+                <span class="stat-gem stat-attack">5</span>
+                <span class="stat-gem stat-health">8</span>
+              </div>
+            </div>
+            <div class="char-card" style="border-color: var(--purple);" onclick="createRipple(event)">
+              <span class="role-tag role-antagonist">反派</span>
+              <span class="char-card-icon">🦸</span>
+              <span class="char-card-name">战士</span>
+              <div class="card-stats">
+                <span class="stat-gem stat-attack">7</span>
+                <span class="stat-gem stat-health">6</span>
+              </div>
+            </div>
+            <div class="char-card" style="border-color: var(--silver);" onclick="createRipple(event)">
+              <span class="role-tag role-supporting">配角</span>
+              <span class="char-card-icon">🧝</span>
+              <span class="char-card-name">精灵</span>
+              <div class="card-stats">
+                <span class="stat-gem stat-attack">2</span>
+                <span class="stat-gem stat-health">4</span>
+              </div>
+            </div>
+            <div class="char-card" style="border-color: var(--gold);" onclick="createRipple(event)">
+              <span class="role-tag role-protagonist">主角</span>
+              <span class="char-card-icon">🤴</span>
+              <span class="char-card-name">王子</span>
+              <div class="card-stats">
+                <span class="stat-gem stat-attack">4</span>
+                <span class="stat-gem stat-health">5</span>
+              </div>
+            </div>
+          </div>
+        </div>
+        
+        <div class="section">
+          <div class="section-header">
+            <span class="section-icon">📚</span>
+            <span class="section-title">最近故事</span>
+          </div>
+          <div class="story-card" onclick="createRipple(event)">
+            <span class="story-card-icon">📖</span>
+            <div class="story-card-info">
+              <div class="story-card-title">龙之传说</div>
+              <div class="story-card-meta">
+                <span>3章 · ⭐4.5</span>
+              </div>
+            </div>
+            <span style="color: var(--text-muted);">→</span>
+          </div>
+          <div class="story-card" style="animation-delay: 0.15s;" onclick="createRipple(event)">
+            <span class="story-card-icon">📖</span>
+            <div class="story-card-info">
+              <div class="story-card-title">魔法森林</div>
+              <div class="story-card-meta">
+                <span>5章 · ⭐4.8</span>
+              </div>
+            </div>
+            <span style="color: var(--text-muted);">→</span>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Demo 3: 导演台 -->
+    <div class="demo-content" id="demo3">
+      <div class="weather-container" id="weatherContainer"></div>
+      
+      <div class="nav-header">
+        <span class="nav-back" onclick="goBack()">← 返回</span>
+        <span class="nav-title">Demo 3: 故事导演台</span>
+        <div class="nav-placeholder"></div>
+      </div>
+      
+      <div class="director-demo">
+        <div class="stage-area">
+          <h3 class="stage-title">🎭 舞台预览</h3>
+          <div class="stage-grid">
+            <div class="stage-slot" id="slot-character">
+              <span class="stage-slot-icon">👑</span>
+              <span>主角</span>
+            </div>
+            <div class="stage-slot" id="slot-adventure">
+              <span class="stage-slot-icon">🗺️</span>
+              <span>冒险</span>
+            </div>
+            <div class="stage-slot" id="slot-terrain">
+              <span class="stage-slot-icon">🏔️</span>
+              <span>地形</span>
+            </div>
+            <div class="stage-slot" id="slot-weather">
+              <span class="stage-slot-icon">🌤️</span>
+              <span>天气</span>
+            </div>
+          </div>
+          <div class="story-preview">
+            <p class="preview-text" id="previewText">选择卡牌来构建你的故事...</p>
+          </div>
+        </div>
+        
+        <div class="card-section">
+          <div class="section-header-bar" style="background: rgba(168,85,247,0.15); border-color: var(--purple);">
+            <span class="section-header-text" style="color: var(--purple);">🗺️ 冒险类型 (必选1)</span>
+          </div>
+          <div class="card-scroll">
+            <div class="select-card" onclick="selectDirectorCard('adventure', '🏰', '探险', 'purple')">
+              <span class="select-card-icon">🏰</span>
+              <span class="select-card-name">探险</span>
+            </div>
+            <div class="select-card" onclick="selectDirectorCard('adventure', '🔍', '解谜', 'purple')">
+              <span class="select-card-icon">🔍</span>
+              <span class="select-card-name">解谜</span>
+            </div>
+            <div class="select-card" onclick="selectDirectorCard('adventure', '🦸', '救援', 'purple')">
+              <span class="select-card-icon">🦸</span>
+              <span class="select-card-name">救援</span>
+            </div>
+          </div>
+        </div>
+        
+        <div class="card-section">
+          <div class="section-header-bar" style="background: rgba(255,215,0,0.15); border-color: var(--gold);">
+            <span class="section-header-text" style="color: var(--gold);">👥 角色 (主角必选1)</span>
+          </div>
+          <div class="card-scroll">
+            <div class="select-card" onclick="selectDirectorCard('character', '🧙', '法师', 'gold')">
+              <span class="select-card-icon">🧙</span>
+              <span class="select-card-name">法师</span>
+            </div>
+            <div class="select-card" onclick="selectDirectorCard('character', '🦸', '战士', 'gold')">
+              <span class="select-card-icon">🦸</span>
+              <span class="select-card-name">战士</span>
+            </div>
+            <div class="select-card" onclick="selectDirectorCard('character', '🧝', '精灵', 'gold')">
+              <span class="select-card-icon">🧝</span>
+              <span class="select-card-name">精灵</span>
+            </div>
+          </div>
+        </div>
+        
+        <div class="card-section">
+          <div class="section-header-bar" style="background: rgba(34,197,94,0.15); border-color: var(--green);">
+            <span class="section-header-text" style="color: var(--green);">🏔️ 地形 (必选1)</span>
+          </div>
+          <div class="card-scroll">
+            <div class="select-card" onclick="selectDirectorCard('terrain', '🌲', '森林', 'green')">
+              <span class="select-card-icon">🌲</span>
+              <span class="select-card-name">森林</span>
+            </div>
+            <div class="select-card" onclick="selectDirectorCard('terrain', '🏔️', '山脉', 'green')">
+              <span class="select-card-icon">🏔️</span>
+              <span class="select-card-name">山脉</span>
+            </div>
+            <div class="select-card" onclick="selectDirectorCard('terrain', '🌊', '海洋', 'green')">
+              <span class="select-card-icon">🌊</span>
+              <span class="select-card-name">海洋</span>
+            </div>
+          </div>
+        </div>
+        
+        <div class="card-section">
+          <div class="section-header-bar" style="background: rgba(59,130,246,0.15); border-color: var(--blue);">
+            <span class="section-header-text" style="color: var(--blue);">🌤️ 天气 (必选1)</span>
+          </div>
+          <div class="card-scroll">
+            <div class="select-card" onclick="selectDirectorCard('weather', '☀️', '晴天', 'blue')">
+              <span class="select-card-icon">☀️</span>
+              <span class="select-card-name">晴天</span>
+            </div>
+            <div class="select-card" onclick="selectDirectorCard('weather', '🌧️', '雨天', 'blue')">
+              <span class="select-card-icon">🌧️</span>
+              <span class="select-card-name">雨天</span>
+            </div>
+            <div class="select-card" onclick="selectDirectorCard('weather', '❄️', '雪天', 'blue')">
+              <span class="select-card-icon">❄️</span>
+              <span class="select-card-name">雪天</span>
+            </div>
+          </div>
+        </div>
+      </div>
+      
+      <div class="bottom-bar">
+        <div class="requirements">
+          <div class="req-item"><div class="req-dot" id="req-character"></div><span class="req-text" id="req-text-character">主角</span></div>
+          <div class="req-item"><div class="req-dot" id="req-adventure"></div><span class="req-text" id="req-text-adventure">冒险</span></div>
+          <div class="req-item"><div class="req-dot" id="req-terrain"></div><span class="req-text" id="req-text-terrain">地形</span></div>
+          <div class="req-item"><div class="req-dot" id="req-weather"></div><span class="req-text" id="req-text-weather">天气</span></div>
+        </div>
+        <button class="action-btn" id="actionBtn">🎬 开拍！</button>
+      </div>
+    </div>
+
+    <!-- Demo 4: 阅读 -->
+    <div class="demo-content" id="demo4">
+      <div class="nav-header">
+        <span class="nav-back" onclick="goBack()">← 返回</span>
+        <span class="nav-title">Demo 4: 沉浸式阅读</span>
+        <div class="nav-placeholder"></div>
+      </div>
+      
+      <div class="reader-demo">
+        <h2 class="chapter-title">第一章：启程</h2>
+        
+        <p class="paragraph">
+          在一个阳光明媚的早晨，勇敢的骑士<span class="keyword" onclick="createRipple(event)">【艾德蒙】</span>骑着他忠诚的战马，穿过了古老的森林。
+        </p>
+        <p class="paragraph">
+          远处，高耸的城堡在晨光中闪烁着金色的光芒。
+        </p>
+        <p class="paragraph">
+          他知道，一场伟大的冒险即将开始...
+        </p>
+        
+        <div class="puzzle-card" id="puzzleCard">
+          <h3 class="puzzle-title">🧩 谜题挑战</h3>
+          <p style="margin-bottom: 16px;">骑士应该选择哪条路？</p>
+          <div class="puzzle-option" onclick="answerPuzzle('A')">A. 穿越黑暗森林</div>
+          <div class="puzzle-option" onclick="answerPuzzle('B')">B. 绕道阳光大道</div>
+          <div class="puzzle-option" onclick="answerPuzzle('C')">C. 等待夜幕降临</div>
+        </div>
+        
+        <div class="result-card" id="resultCard">
+          <div class="celebration-stars" id="celebrationStars"></div>
+          <p class="result-icon" id="resultIcon">🎉</p>
+          <p class="result-title" id="resultTitle">回答正确！</p>
+          <p id="resultText">你选择了明智的道路！</p>
+        </div>
+      </div>
+    </div>
+
+    <!-- Demo 5: 收集 -->
+    <div class="demo-content" id="demo5">
+      <div class="nav-header">
+        <span class="nav-back" onclick="goBack()">← 返回</span>
+        <span class="nav-title">Demo 5: 角色图鉴</span>
+        <div class="nav-placeholder"></div>
+      </div>
+      
+      <div class="reveal-btn" onclick="showReveal()">🎁</div>
+      
+      <div class="collection-demo">
+        <div class="collection-info">
+          已收集: 12/50
+        </div>
+        
+        <div class="card-grid" id="cardGrid"></div>
+      </div>
+      
+      <div class="card-detail" id="cardDetail">
+        <p class="card-detail-icon" id="detailIcon">🧙</p>
+        <p class="card-detail-name" id="detailName">法师</p>
+        <p class="card-detail-rarity" id="detailRarity">稀有度: ⭐⭐⭐⭐</p>
+        <button class="use-btn" onclick="createRipple(event)">使用此角色</button>
+      </div>
+    </div>
+
+    <!-- 增强版新卡牌获得弹窗 -->
+    <div class="reveal-modal" id="revealModal">
+      <div class="celebration-particles" id="celebrationParticles"></div>
+      <div style="text-align: center;">
+        <div class="reveal-card">
+          <div class="reveal-shine"></div>
+          <span class="reveal-card-icon">🐉</span>
+          <span class="reveal-card-name">龙骑士</span>
+          <span class="reveal-card-rarity">⭐⭐⭐⭐</span>
+        </div>
+        <p class="reveal-text">🎉 获得新角色！</p>
+        <button class="reveal-close" onclick="hideReveal()">确定</button>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    // ========== 增强版粒子系统 ==========
+    function createParticles() {
+      const container = document.getElementById('particles');
+      const types = ['star', 'diamond', 'circle'];
+      const colors = ['#ffd700', '#a855f7', '#3b82f6', '#22c55e'];
+      
+      for (let i = 0; i < 30; i++) {
+        const particle = document.createElement('div');
+        const type = types[Math.floor(Math.random() * types.length)];
+        particle.className = `particle ${type} ${Math.random() > 0.5 ? 'twinkle' : ''}`;
+        particle.style.left = Math.random() * 100 + '%';
+        particle.style.animationDelay = Math.random() * 15 + 's';
+        particle.style.animationDuration = (12 + Math.random() * 10) + 's';
+        
+        if (type === 'star') {
+          particle.style.borderBottomColor = colors[Math.floor(Math.random() * colors.length)];
+        } else if (type === 'diamond') {
+          particle.style.background = colors[Math.floor(Math.random() * colors.length)];
+        } else {
+          particle.style.background = colors[Math.floor(Math.random() * colors.length)];
+        }
+        
+        container.appendChild(particle);
+      }
+    }
+    createParticles();
+
+    // ========== 触摸涟漪效果 ==========
+    function createRipple(event) {
+      const container = document.getElementById('rippleContainer');
+      const ripple = document.createElement('div');
+      ripple.className = 'ripple';
+      
+      const rect = event.target.getBoundingClientRect();
+      const x = event.clientX || (rect.left + rect.width / 2);
+      const y = event.clientY || (rect.top + rect.height / 2);
+      
+      ripple.style.left = x - 50 + 'px';
+      ripple.style.top = y - 50 + 'px';
+      ripple.style.width = '100px';
+      ripple.style.height = '100px';
+      ripple.style.background = 'radial-gradient(circle, rgba(255, 215, 0, 0.4), transparent)';
+      
+      container.appendChild(ripple);
+      
+      setTimeout(() => ripple.remove(), 600);
+    }
+
+    // ========== Demo切换 ==========
+    function showDemo(num) {
+      createRipple(event);
+      
+      setTimeout(() => {
+        document.getElementById('demoList').style.display = 'none';
+        document.querySelectorAll('.demo-content').forEach(el => el.classList.remove('active'));
+        document.getElementById('demo' + num).classList.add('active');
+        
+        if (num === 5) {
+          initCollectionGrid();
+        }
+      }, 100);
+    }
+
+    function goBack() {
+      createRipple(event);
+      
+      setTimeout(() => {
+        document.getElementById('demoList').style.display = 'block';
+        document.querySelectorAll('.demo-content').forEach(el => el.classList.remove('active'));
+        
+        document.getElementById('weatherContainer').innerHTML = '';
+        directorSelections = { adventure: null, terrain: null, weather: null, character: null };
+        updateDirectorSlots();
+        
+        document.getElementById('cardDetail').classList.remove('show');
+        selectedCollectionCard = null;
+      }, 100);
+    }
+
+    // ========== Demo 1: 扇形卡牌 ==========
+    let selectedFanCard = null;
+    
+    function selectFanCard(card) {
+      createRipple(event);
+      
+      document.querySelectorAll('.fan-card').forEach(c => c.classList.remove('selected'));
+      card.classList.add('selected');
+      selectedFanCard = card;
+      
+      const btn = document.getElementById('startBtn');
+      btn.classList.remove('disabled');
+    }
+
+    // ========== Demo 3: 导演台 ==========
+    let directorSelections = { adventure: null, terrain: null, weather: null, character: null };
+
+    function selectDirectorCard(type, icon, name, color) {
+      createRipple(event);
+      
+      const section = event.target.closest('.card-section');
+      section.querySelectorAll('.select-card').forEach(c => c.classList.remove('selected'));
+      
+      if (directorSelections[type] && directorSelections[type].name === name) {
+        directorSelections[type] = null;
+        if (type === 'weather') {
+          document.getElementById('weatherContainer').innerHTML = '';
+        }
+      } else {
+        directorSelections[type] = { icon, name, color };
+        event.target.closest('.select-card').classList.add('selected');
+        if (type === 'weather') {
+          showWeatherEffect(name);
+        }
+      }
+      updateDirectorSlots();
+    }
+
+    function updateDirectorSlots() {
+      ['character', 'adventure', 'terrain', 'weather'].forEach(type => {
+        const slot = document.getElementById('slot-' + type);
+        const req = document.getElementById('req-' + type);
+        const reqText = document.getElementById('req-text-' + type);
+        
+        if (directorSelections[type]) {
+          slot.classList.add('filled');
+          slot.innerHTML = `<span class="stage-slot-icon">${directorSelections[type].icon}</span><span>${directorSelections[type].name}</span>`;
+          req.classList.add('met');
+          req.innerHTML = '✓';
+          reqText.classList.add('met');
+        } else {
+          slot.classList.remove('filled');
+          const icons = { character: '👑', adventure: '🗺️', terrain: '🏔️', weather: '🌤️' };
+          const labels = { character: '主角', adventure: '冒险', terrain: '地形', weather: '天气' };
+          slot.innerHTML = `<span class="stage-slot-icon">${icons[type]}</span><span>${labels[type]}</span>`;
+          req.classList.remove('met');
+          req.innerHTML = '';
+          reqText.classList.remove('met');
+        }
+      });
+
+      const parts = [];
+      if (directorSelections.character) parts.push(directorSelections.character.name);
+      if (directorSelections.adventure) parts.push(`开启${directorSelections.adventure.name}`);
+      if (directorSelections.terrain) parts.push(`在${directorSelections.terrain.name}`);
+      if (directorSelections.weather) parts.push(`${directorSelections.weather.name}中`);
+      
+      document.getElementById('previewText').textContent = parts.length ? parts.join('，') + '...' : '选择卡牌来构建你的故事...';
+
+      const allSelected = Object.values(directorSelections).every(s => s !== null);
+      const btn = document.getElementById('actionBtn');
+      if (allSelected) {
+        btn.classList.add('ready');
+      } else {
+        btn.classList.remove('ready');
+      }
+    }
+
+    // ========== 增强版天气效果 ==========
+    function showWeatherEffect(weather) {
+      const container = document.getElementById('weatherContainer');
+      container.innerHTML = '';
+      
+      if (weather === '晴天') {
+        // 太阳核心
+        const sunContainer = document.createElement('div');
+        sunContainer.className = 'sun-container';
+        
+        const sunCore = document.createElement('div');
+        sunCore.className = 'sun-core';
+        sunContainer.appendChild(sunCore);
+        
+        // 太阳光芒
+        const sunRays = document.createElement('div');
+        sunRays.className = 'sun-rays';
+        for (let i = 0; i < 8; i++) {
+          const ray = document.createElement('div');
+          ray.className = 'sun-ray';
+          sunRays.appendChild(ray);
+        }
+        sunContainer.appendChild(sunRays);
+        
+        container.appendChild(sunContainer);
+        
+        // 光束扩散
+        for (let i = 0; i < 3; i++) {
+          const beam = document.createElement('div');
+          beam.className = 'light-beam';
+          beam.style.animationDelay = i * 0.7 + 's';
+          container.appendChild(beam);
+        }
+        
+      } else if (weather === '雨天') {
+        // 雨滴
+        for (let i = 0; i < 80; i++) {
+          const drop = document.createElement('div');
+          drop.className = 'rain-drop';
+          drop.style.left = Math.random() * 100 + '%';
+          drop.style.animationDelay = Math.random() * 2 + 's';
+          drop.style.animationDuration = (0.4 + Math.random() * 0.4) + 's';
+          drop.style.opacity = 0.3 + Math.random() * 0.5;
+          container.appendChild(drop);
+        }
+        
+        // 闪电
+        const lightning = document.createElement('div');
+        lightning.className = 'lightning';
+        lightning.id = 'lightning';
+        container.appendChild(lightning);
+        
+        // 随机闪电
+        setInterval(() => {
+          if (Math.random() > 0.7) {
+            lightning.classList.add('flash');
+            setTimeout(() => lightning.classList.remove('flash'), 200);
+          }
+        }, 3000);
+        
+      } else if (weather === '雪天') {
+        // 雪花
+        for (let i = 0; i < 50; i++) {
+          const flake = document.createElement('div');
+          flake.className = 'snow-flake';
+          flake.textContent = '❄';
+          flake.style.left = Math.random() * 100 + '%';
+          flake.style.fontSize = (12 + Math.random() * 20) + 'px';
+          flake.style.animationDelay = Math.random() * 5 + 's';
+          flake.style.animationDuration = (4 + Math.random() * 5) + 's';
+          flake.style.opacity = 0.5 + Math.random() * 0.5;
+          container.appendChild(flake);
+        }
+        
+        // 霜冻效果
+        const frost = document.createElement('div');
+        frost.className = 'frost-overlay';
+        container.appendChild(frost);
+      }
+    }
+
+    // ========== Demo 4: 谜题 ==========
+    function answerPuzzle(answer) {
+      createRipple(event);
+      
+      const correct = answer === 'B';
+      const resultCard = document.getElementById('resultCard');
+      const puzzleCard = document.getElementById('puzzleCard');
+      
+      puzzleCard.style.display = 'none';
+      resultCard.style.display = 'block';
+      
+      if (correct) {
+        resultCard.className = 'result-card result-correct show';
+        document.getElementById('resultIcon').textContent = '🎉';
+        document.getElementById('resultTitle').textContent = '回答正确！';
+        document.getElementById('resultText').textContent = '你选择了明智的道路！';
+        
+        // 庆祝星星
+        createCelebrationStars();
+      } else {
+        resultCard.className = 'result-card result-wrong show';
+        document.getElementById('resultIcon').textContent = '😅';
+        document.getElementById('resultTitle').textContent = '答错了';
+        document.getElementById('resultText').textContent = '正确答案是 B，继续加油！';
+      }
+    }
+
+    function createCelebrationStars() {
+      const container = document.getElementById('celebrationStars');
+      container.innerHTML = '';
+      
+      const stars = ['⭐', '✨', '🌟', '💫'];
+      for (let i = 0; i < 12; i++) {
+        const star = document.createElement('span');
+        star.className = 'star-particle';
+        star.textContent = stars[Math.floor(Math.random() * stars.length)];
+        star.style.left = '50%';
+        star.style.top = '50%';
+        star.style.setProperty('--tx', (Math.random() - 0.5) * 300 + 'px');
+        star.style.setProperty('--ty', (Math.random() - 0.5) * 300 + 'px');
+        star.style.animationDelay = Math.random() * 0.3 + 's';
+        container.appendChild(star);
+      }
+    }
+
+    // ========== Demo 5: 收集 ==========
+    const collectionCards = [
+      { icon: '🧙', name: '法师', stars: 4, color: 'var(--gold)' },
+      { icon: '🦸', name: '战士', stars: 3, color: 'var(--purple)' },
+      { icon: '🧝', name: '精灵', stars: 2, color: 'var(--blue)' },
+      { icon: '🤴', name: '王子', stars: 1, color: 'var(--silver)' },
+      { icon: '🧛', name: '吸血鬼', stars: 3, color: 'var(--purple)' },
+      { icon: '🧜', name: '美人鱼', stars: 2, color: 'var(--blue)' },
+      { icon: '🦹', name: '英雄', stars: 4, color: 'var(--gold)' },
+      { icon: '👺', name: '妖怪', stars: 1, color: 'var(--silver)' },
+    ];
+
+    let selectedCollectionCard = null;
+
+    function initCollectionGrid() {
+      const grid = document.getElementById('cardGrid');
+      grid.innerHTML = '';
+      
+      collectionCards.forEach((card, index) => {
+        const cardEl = document.createElement('div');
+        cardEl.className = 'collection-card';
+        cardEl.style.borderColor = card.color;
+        cardEl.style.color = card.color;
+        cardEl.style.animationDelay = index * 0.05 + 's';
+        cardEl.innerHTML = `
+          <span class="collection-card-icon">${card.icon}</span>
+          <span class="collection-card-name">${card.name}</span>
+          <span class="collection-card-stars">${'⭐'.repeat(card.stars)}</span>
+        `;
+        cardEl.onclick = (e) => selectCollectionCard(cardEl, card.icon, card.name, card.stars, card.color);
+        grid.appendChild(cardEl);
+      });
+    }
+
+    function selectCollectionCard(cardEl, icon, name, stars, color) {
+      createRipple(event);
+      
+      if (selectedCollectionCard) {
+        selectedCollectionCard.classList.remove('selected');
+      }
+      
+      if (selectedCollectionCard === cardEl) {
+        selectedCollectionCard = null;
+        document.getElementById('cardDetail').classList.remove('show');
+      } else {
+        cardEl.classList.add('selected');
+        selectedCollectionCard = cardEl;
+        
+        document.getElementById('detailIcon').textContent = icon;
+        document.getElementById('detailName').textContent = name;
+        document.getElementById('detailRarity').textContent = '稀有度: ' + '⭐'.repeat(stars);
+        document.getElementById('cardDetail').classList.add('show');
+      }
+    }
+
+    // ========== 新卡牌获得 ==========
+    function showReveal() {
+      createRipple(event);
+      
+      document.getElementById('revealModal').classList.add('active');
+      
+      // 创建庆祝粒子
+      setTimeout(() => {
+        createCelebrationParticles();
+      }, 800);
+    }
+
+    function createCelebrationParticles() {
+      const container = document.getElementById('celebrationParticles');
+      container.innerHTML = '';
+      
+      const particles = ['⭐', '✨', '🌟', '💫', '🎉', '🎊'];
+      for (let i = 0; i < 20; i++) {
+        const particle = document.createElement('span');
+        particle.className = 'celebration-particle';
+        particle.textContent = particles[Math.floor(Math.random() * particles.length)];
+        particle.style.left = '50%';
+        particle.style.top = '40%';
+        particle.style.setProperty('--tx', (Math.random() - 0.5) * 400 + 'px');
+        particle.style.setProperty('--ty', (Math.random() - 0.5) * 400 + 'px');
+        particle.style.animationDelay = Math.random() * 0.5 + 's';
+        container.appendChild(particle);
+      }
+    }
+
+    function hideReveal() {
+      createRipple(event);
+      document.getElementById('revealModal').classList.remove('active');
+    }
+
+    // 初始化收集网格
+    initCollectionGrid();
+  </script>
+</body>
+</html>
