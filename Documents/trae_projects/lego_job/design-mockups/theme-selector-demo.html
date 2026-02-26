@@ -1,0 +1,658 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>主题风格 - 乐高故事书桌游风格</title>
+    <link href="https://fonts.googleapis.com/css2?family=Cinzel:wght@400;600;700&family=Noto+Sans+SC:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --gold: #ffd700;
+            --gold-dark: #b8860b;
+            --silver: #c0c0c0;
+            --crimson: #dc2626;
+            --purple: #a855f7;
+            --green: #22c55e;
+            --blue: #3b82f6;
+            --orange: #f59e0b;
+            --bg-dark: #0d0d14;
+            --bg-medium: #1a1a2e;
+            --text-primary: #f8fafc;
+            --text-secondary: #94a3b8;
+            --font-title: 'Cinzel', serif;
+            --font-body: 'Noto Sans SC', sans-serif;
+        }
+
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+
+        body {
+            font-family: var(--font-body);
+            background: linear-gradient(180deg, #1a1a2e 0%, #0d0d14 100%);
+            min-height: 100vh;
+            color: var(--text-primary);
+            overflow-x: hidden;
+        }
+
+        .particles {
+            position: fixed;
+            inset: 0;
+            pointer-events: none;
+            z-index: 0;
+        }
+
+        .particle {
+            position: absolute;
+            width: 2px;
+            height: 2px;
+            background: var(--gold);
+            border-radius: 50%;
+            opacity: 0.3;
+            animation: float 20s linear infinite;
+        }
+
+        @keyframes float {
+            0% { transform: translateY(100vh); opacity: 0; }
+            10% { opacity: 0.3; }
+            90% { opacity: 0.3; }
+            100% { transform: translateY(-100vh); opacity: 0; }
+        }
+
+        .container {
+            position: relative;
+            z-index: 1;
+            max-width: 1000px;
+            margin: 0 auto;
+            padding: 20px;
+        }
+
+        .header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 20px 0;
+            border-bottom: 1px solid rgba(255,215,0,0.2);
+            margin-bottom: 30px;
+            flex-wrap: wrap;
+            gap: 15px;
+        }
+
+        .header-title {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+        }
+
+        .header-icon {
+            font-size: 2rem;
+        }
+
+        .header-text {
+            font-family: var(--font-title);
+            font-size: 1.8rem;
+            font-weight: 700;
+            background: linear-gradient(135deg, var(--gold), #ff9800);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+        }
+
+        .nav-tabs {
+            display: flex;
+            gap: 10px;
+        }
+
+        .nav-tab {
+            padding: 10px 18px;
+            border-radius: 10px;
+            background: rgba(255,255,255,0.05);
+            border: 1px solid rgba(255,255,255,0.1);
+            color: var(--text-secondary);
+            font-size: 0.85rem;
+            font-weight: 500;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            text-decoration: none;
+            display: flex;
+            align-items: center;
+            gap: 6px;
+        }
+
+        .nav-tab:hover {
+            background: rgba(255,215,0,0.1);
+            border-color: rgba(255,215,0,0.3);
+            color: var(--text-primary);
+        }
+
+        .section-header {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            margin-bottom: 25px;
+        }
+
+        .section-icon {
+            font-size: 1.5rem;
+        }
+
+        .section-title {
+            font-family: var(--font-title);
+            font-size: 1.3rem;
+            font-weight: 600;
+            color: var(--gold);
+        }
+
+        .theme-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+            gap: 25px;
+            margin-bottom: 40px;
+        }
+
+        .theme-card {
+            background: linear-gradient(180deg, #2d2d44, #1a1a2e);
+            border-radius: 20px;
+            overflow: hidden;
+            cursor: pointer;
+            transition: all 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+            border: 3px solid transparent;
+            position: relative;
+        }
+
+        .theme-card:hover {
+            transform: translateY(-10px) scale(1.02);
+            box-shadow: 0 20px 40px rgba(0,0,0,0.4);
+        }
+
+        .theme-card.selected {
+            border-color: var(--gold);
+            box-shadow: 0 0 30px rgba(255,215,0,0.3);
+        }
+
+        .theme-card.selected::after {
+            content: '✓';
+            position: absolute;
+            top: 15px;
+            right: 15px;
+            width: 30px;
+            height: 30px;
+            background: var(--green);
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1rem;
+            color: white;
+            font-weight: 700;
+        }
+
+        .theme-preview {
+            height: 160px;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .theme-preview.dark {
+            background: linear-gradient(180deg, #1a1a2e, #0d0d14);
+        }
+
+        .theme-preview.light {
+            background: linear-gradient(180deg, #f8fafc, #e2e8f0);
+        }
+
+        .theme-preview.forest {
+            background: linear-gradient(180deg, #1a3a2e, #0d1a14);
+        }
+
+        .theme-preview.ocean {
+            background: linear-gradient(180deg, #1a2a3a, #0d141a);
+        }
+
+        .theme-preview.sunset {
+            background: linear-gradient(180deg, #3a2a1a, #1a1410);
+        }
+
+        .theme-preview.magic {
+            background: linear-gradient(180deg, #2a1a3a, #140d1a);
+        }
+
+        .preview-card {
+            position: absolute;
+            bottom: 20px;
+            left: 20px;
+            right: 20px;
+            height: 60px;
+            border-radius: 10px;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            padding: 10px 15px;
+        }
+
+        .theme-preview.dark .preview-card {
+            background: rgba(255,255,255,0.1);
+            border: 1px solid rgba(255,215,0,0.3);
+        }
+
+        .theme-preview.light .preview-card {
+            background: rgba(0,0,0,0.1);
+            border: 1px solid rgba(0,0,0,0.2);
+        }
+
+        .theme-preview.forest .preview-card {
+            background: rgba(34,197,94,0.2);
+            border: 1px solid rgba(34,197,94,0.3);
+        }
+
+        .theme-preview.ocean .preview-card {
+            background: rgba(59,130,246,0.2);
+            border: 1px solid rgba(59,130,246,0.3);
+        }
+
+        .theme-preview.sunset .preview-card {
+            background: rgba(245,158,11,0.2);
+            border: 1px solid rgba(245,158,11,0.3);
+        }
+
+        .theme-preview.magic .preview-card {
+            background: rgba(168,85,247,0.2);
+            border: 1px solid rgba(168,85,247,0.3);
+        }
+
+        .preview-avatar {
+            width: 40px;
+            height: 40px;
+            border-radius: 8px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1.2rem;
+        }
+
+        .theme-preview.dark .preview-avatar { background: linear-gradient(135deg, var(--gold), #ff9800); }
+        .theme-preview.light .preview-avatar { background: linear-gradient(135deg, #3b82f6, #1d4ed8); }
+        .theme-preview.forest .preview-avatar { background: linear-gradient(135deg, #22c55e, #16a34a); }
+        .theme-preview.ocean .preview-avatar { background: linear-gradient(135deg, #3b82f6, #1d4ed8); }
+        .theme-preview.sunset .preview-avatar { background: linear-gradient(135deg, #f59e0b, #d97706); }
+        .theme-preview.magic .preview-avatar { background: linear-gradient(135deg, #a855f7, #7c3aed); }
+
+        .preview-text {
+            flex: 1;
+        }
+
+        .preview-title {
+            font-size: 0.85rem;
+            font-weight: 600;
+            margin-bottom: 2px;
+        }
+
+        .theme-preview.light .preview-title { color: #1e293b; }
+
+        .preview-subtitle {
+            font-size: 0.7rem;
+            opacity: 0.7;
+        }
+
+        .theme-info {
+            padding: 20px;
+        }
+
+        .theme-name {
+            font-family: var(--font-title);
+            font-size: 1.1rem;
+            font-weight: 600;
+            margin-bottom: 8px;
+        }
+
+        .theme-desc {
+            color: var(--text-secondary);
+            font-size: 0.85rem;
+            margin-bottom: 15px;
+        }
+
+        .theme-tags {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 8px;
+        }
+
+        .theme-tag {
+            padding: 4px 12px;
+            border-radius: 15px;
+            font-size: 0.75rem;
+            font-weight: 500;
+        }
+
+        .theme-tag.gold { background: rgba(255,215,0,0.2); color: var(--gold); }
+        .theme-tag.green { background: rgba(34,197,94,0.2); color: var(--green); }
+        .theme-tag.blue { background: rgba(59,130,246,0.2); color: var(--blue); }
+        .theme-tag.orange { background: rgba(245,158,11,0.2); color: var(--orange); }
+        .theme-tag.purple { background: rgba(168,85,247,0.2); color: var(--purple); }
+
+        .preview-section {
+            background: linear-gradient(180deg, #2d2d44, #1a1a2e);
+            border-radius: 20px;
+            border: 2px solid rgba(255,215,0,0.3);
+            padding: 30px;
+            margin-bottom: 30px;
+        }
+
+        .preview-header {
+            text-align: center;
+            margin-bottom: 25px;
+        }
+
+        .preview-label {
+            color: var(--text-secondary);
+            font-size: 0.9rem;
+            margin-bottom: 10px;
+        }
+
+        .preview-theme-name {
+            font-family: var(--font-title);
+            font-size: 1.5rem;
+            font-weight: 600;
+            color: var(--gold);
+        }
+
+        .preview-demo {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(100px, 1fr));
+            gap: 15px;
+        }
+
+        .demo-card {
+            background: linear-gradient(180deg, #3d3d3d, #2a2a2a);
+            border-radius: 12px;
+            padding: 15px;
+            text-align: center;
+            border: 2px solid var(--gold);
+        }
+
+        .demo-icon {
+            font-size: 2rem;
+            margin-bottom: 8px;
+        }
+
+        .demo-text {
+            font-size: 0.8rem;
+            color: var(--text-secondary);
+        }
+
+        .apply-btn {
+            display: block;
+            width: 100%;
+            max-width: 300px;
+            margin: 30px auto 0;
+            padding: 15px 30px;
+            font-size: 1.1rem;
+            font-weight: 600;
+            border: none;
+            border-radius: 25px;
+            background: linear-gradient(135deg, var(--gold), #ff9800);
+            color: #000;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            font-family: var(--font-body);
+            box-shadow: 0 0 25px rgba(255,215,0,0.5);
+            text-align: center;
+        }
+
+        .apply-btn:hover {
+            transform: scale(1.05);
+            box-shadow: 0 0 35px rgba(255,215,0,0.7);
+        }
+
+        .footer {
+            text-align: center;
+            padding: 30px;
+            color: var(--text-secondary);
+            font-size: 0.9rem;
+            border-top: 1px solid rgba(255,255,255,0.1);
+            margin-top: 40px;
+        }
+
+        .toast {
+            position: fixed;
+            top: 20px;
+            left: 50%;
+            transform: translateX(-50%) translateY(-10px);
+            background: rgba(0,0,0,0.95);
+            padding: 12px 25px;
+            border-radius: 10px;
+            border: 1px solid var(--gold);
+            font-size: 0.9rem;
+            opacity: 0;
+            transition: all 0.3s ease;
+            z-index: 1002;
+        }
+
+        .toast.show {
+            transform: translateX(-50%) translateY(0);
+            opacity: 1;
+        }
+
+        .toast.success { border-color: var(--green); color: var(--green); }
+
+        @media (max-width: 600px) {
+            .theme-grid {
+                grid-template-columns: 1fr;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="particles" id="particles"></div>
+
+    <div class="container">
+        <header class="header">
+            <div class="header-title">
+                <span class="header-icon">🎨</span>
+                <h1 class="header-text">主题风格</h1>
+            </div>
+            <nav class="nav-tabs">
+                <a href="index-demo.html" class="nav-tab">🏠 首页</a>
+                <a href="bookshelf-demo.html" class="nav-tab">📚 我的书架</a>
+            </nav>
+        </header>
+
+        <div class="section-header">
+            <span class="section-icon">✨</span>
+            <h2 class="section-title">选择你喜欢的风格</h2>
+        </div>
+
+        <div class="theme-grid">
+            <div class="theme-card selected" onclick="selectTheme(this, '暗夜金辉')">
+                <div class="theme-preview dark">
+                    <div class="preview-card">
+                        <div class="preview-avatar">🧝‍♀️</div>
+                        <div class="preview-text">
+                            <div class="preview-title">艾拉拉</div>
+                            <div class="preview-subtitle">精灵法师</div>
+                        </div>
+                    </div>
+                </div>
+                <div class="theme-info">
+                    <h3 class="theme-name">暗夜金辉</h3>
+                    <p class="theme-desc">经典桌游风格，深色背景配金色点缀</p>
+                    <div class="theme-tags">
+                        <span class="theme-tag gold">金色</span>
+                        <span class="theme-tag">深色</span>
+                        <span class="theme-tag">经典</span>
+                    </div>
+                </div>
+            </div>
+
+            <div class="theme-card" onclick="selectTheme(this, '森林秘境')">
+                <div class="theme-preview forest">
+                    <div class="preview-card">
+                        <div class="preview-avatar">🌲</div>
+                        <div class="preview-text">
+                            <div class="preview-title">森林精灵</div>
+                            <div class="preview-subtitle">自然守护者</div>
+                        </div>
+                    </div>
+                </div>
+                <div class="theme-info">
+                    <h3 class="theme-name">森林秘境</h3>
+                    <p class="theme-desc">清新自然风格，绿色系主题</p>
+                    <div class="theme-tags">
+                        <span class="theme-tag green">绿色</span>
+                        <span class="theme-tag">自然</span>
+                        <span class="theme-tag">清新</span>
+                    </div>
+                </div>
+            </div>
+
+            <div class="theme-card" onclick="selectTheme(this, '深海探秘')">
+                <div class="theme-preview ocean">
+                    <div class="preview-card">
+                        <div class="preview-avatar">🌊</div>
+                        <div class="preview-text">
+                            <div class="preview-title">海洋冒险</div>
+                            <div class="preview-subtitle">深海探险家</div>
+                        </div>
+                    </div>
+                </div>
+                <div class="theme-info">
+                    <h3 class="theme-name">深海探秘</h3>
+                    <p class="theme-desc">神秘海洋风格，蓝色系主题</p>
+                    <div class="theme-tags">
+                        <span class="theme-tag blue">蓝色</span>
+                        <span class="theme-tag">海洋</span>
+                        <span class="theme-tag">神秘</span>
+                    </div>
+                </div>
+            </div>
+
+            <div class="theme-card" onclick="selectTheme(this, '日落黄昏')">
+                <div class="theme-preview sunset">
+                    <div class="preview-card">
+                        <div class="preview-avatar">🌅</div>
+                        <div class="preview-text">
+                            <div class="preview-title">黄昏传说</div>
+                            <div class="preview-subtitle">日落勇士</div>
+                        </div>
+                    </div>
+                </div>
+                <div class="theme-info">
+                    <h3 class="theme-name">日落黄昏</h3>
+                    <p class="theme-desc">温暖夕阳风格，橙色系主题</p>
+                    <div class="theme-tags">
+                        <span class="theme-tag orange">橙色</span>
+                        <span class="theme-tag">温暖</span>
+                        <span class="theme-tag">夕阳</span>
+                    </div>
+                </div>
+            </div>
+
+            <div class="theme-card" onclick="selectTheme(this, '魔法星空')">
+                <div class="theme-preview magic">
+                    <div class="preview-card">
+                        <div class="preview-avatar">✨</div>
+                        <div class="preview-text">
+                            <div class="preview-title">魔法师</div>
+                            <div class="preview-subtitle">星空魔法</div>
+                        </div>
+                    </div>
+                </div>
+                <div class="theme-info">
+                    <h3 class="theme-name">魔法星空</h3>
+                    <p class="theme-desc">神秘魔法风格，紫色系主题</p>
+                    <div class="theme-tags">
+                        <span class="theme-tag purple">紫色</span>
+                        <span class="theme-tag">魔法</span>
+                        <span class="theme-tag">星空</span>
+                    </div>
+                </div>
+            </div>
+
+            <div class="theme-card" onclick="selectTheme(this, '明亮简约')">
+                <div class="theme-preview light">
+                    <div class="preview-card">
+                        <div class="preview-avatar">☀️</div>
+                        <div class="preview-text">
+                            <div class="preview-title">阳光故事</div>
+                            <div class="preview-subtitle">明亮风格</div>
+                        </div>
+                    </div>
+                </div>
+                <div class="theme-info">
+                    <h3 class="theme-name">明亮简约</h3>
+                    <p class="theme-desc">清新明亮风格，浅色背景主题</p>
+                    <div class="theme-tags">
+                        <span class="theme-tag blue">浅色</span>
+                        <span class="theme-tag">简约</span>
+                        <span class="theme-tag">清新</span>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="preview-section">
+            <div class="preview-header">
+                <p class="preview-label">当前预览</p>
+                <h3 class="preview-theme-name" id="previewName">暗夜金辉</h3>
+            </div>
+            <div class="preview-demo">
+                <div class="demo-card">
+                    <div class="demo-icon">📚</div>
+                    <div class="demo-text">书架</div>
+                </div>
+                <div class="demo-card">
+                    <div class="demo-icon">🎭</div>
+                    <div class="demo-text">角色</div>
+                </div>
+                <div class="demo-card">
+                    <div class="demo-icon">📖</div>
+                    <div class="demo-text">故事</div>
+                </div>
+                <div class="demo-card">
+                    <div class="demo-icon">🗺️</div>
+                    <div class="demo-text">冒险</div>
+                </div>
+            </div>
+        </div>
+
+        <button class="apply-btn" onclick="applyTheme()">✨ 应用主题</button>
+
+        <footer class="footer">
+            <p>乐高故事书 &copy; 2024 - 让想象力飞翔</p>
+        </footer>
+    </div>
+
+    <div class="toast" id="toast"></div>
+
+    <script>
+        for (var i = 0; i < 15; i++) {
+            var p = document.createElement('div');
+            p.className = 'particle';
+            p.style.left = Math.random() * 100 + '%';
+            p.style.animationDelay = Math.random() * 20 + 's';
+            document.getElementById('particles').appendChild(p);
+        }
+
+        var currentTheme = '暗夜金辉';
+
+        function selectTheme(el, name) {
+            document.querySelectorAll('.theme-card').forEach(function(card) {
+                card.classList.remove('selected');
+            });
+            el.classList.add('selected');
+            currentTheme = name;
+            document.getElementById('previewName').textContent = name;
+        }
+
+        function applyTheme() {
+            showToast('主题「' + currentTheme + '」已应用！✨', 'success');
+        }
+
+        function showToast(msg, type) {
+            var toast = document.getElementById('toast');
+            toast.textContent = msg;
+            toast.className = 'toast show ' + (type || '');
+            setTimeout(function() {
+                toast.classList.remove('show');
+            }, 2000);
+        }
+    </script>
+</body>
+</html>

@@ -1,0 +1,481 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>魔法风云会风格 - 乐高故事书</title>
+    <link href="https://fonts.googleapis.com/css2?family=Cinzel:wght@400;600;700&family=Noto+Sans+SC:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --white-mana: #f8f6e3;
+            --blue-mana: #0e68ab;
+            --black-mana: #150b00;
+            --red-mana: #d3202a;
+            --green-mana: #00733e;
+            --bg-dark: #1a1a1a;
+            --bg-medium: #2d2d2d;
+            --text-primary: #f8fafc;
+            --text-secondary: #a0a0a0;
+            --font-title: 'Cinzel', serif;
+            --font-body: 'Noto Sans SC', sans-serif;
+        }
+
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+
+        body {
+            font-family: var(--font-body);
+            background: linear-gradient(180deg, var(--bg-medium) 0%, var(--bg-dark) 100%);
+            min-height: 100vh;
+            color: var(--text-primary);
+        }
+
+        .mana-particles {
+            position: fixed;
+            inset: 0;
+            pointer-events: none;
+            z-index: 0;
+        }
+
+        .mana-particle {
+            position: absolute;
+            width: 4px;
+            height: 4px;
+            border-radius: 50%;
+            animation: float-mana 10s linear infinite;
+        }
+
+        @keyframes float-mana {
+            0% { transform: translateY(100vh); opacity: 0; }
+            10% { opacity: 0.6; }
+            90% { opacity: 0.6; }
+            100% { transform: translateY(-100vh); opacity: 0; }
+        }
+
+        .container {
+            position: relative;
+            z-index: 1;
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 20px;
+        }
+
+        .header {
+            text-align: center;
+            padding: 40px 20px;
+        }
+
+        .main-title {
+            font-family: var(--font-title);
+            font-size: 3rem;
+            font-weight: 700;
+            background: linear-gradient(135deg, var(--white-mana), var(--blue-mana), var(--black-mana), var(--red-mana), var(--green-mana));
+            background-size: 200% auto;
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            animation: mana-shift 5s linear infinite;
+            margin-bottom: 10px;
+        }
+
+        @keyframes mana-shift {
+            0% { background-position: 0% center; }
+            100% { background-position: 200% center; }
+        }
+
+        .subtitle {
+            font-size: 1.1rem;
+            color: var(--text-secondary);
+        }
+
+        .mana-bar {
+            display: flex;
+            justify-content: center;
+            gap: 15px;
+            margin: 30px 0;
+        }
+
+        .mana-symbol {
+            width: 50px;
+            height: 50px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1.5rem;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            border: 3px solid rgba(255,255,255,0.2);
+        }
+
+        .mana-symbol:hover {
+            transform: scale(1.2);
+        }
+
+        .mana-symbol.white { background: linear-gradient(135deg, #fff8dc, var(--white-mana)); color: #333; }
+        .mana-symbol.blue { background: linear-gradient(135deg, #60a5fa, var(--blue-mana)); color: white; }
+        .mana-symbol.black { background: linear-gradient(135deg, #333, var(--black-mana)); color: #a0a0a0; }
+        .mana-symbol.red { background: linear-gradient(135deg, #f87171, var(--red-mana)); color: white; }
+        .mana-symbol.green { background: linear-gradient(135deg, #4ade80, var(--green-mana)); color: white; }
+
+        .section {
+            margin: 40px 0;
+        }
+
+        .section-header {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            margin-bottom: 20px;
+            padding-bottom: 10px;
+            border-bottom: 2px solid var(--blue-mana);
+        }
+
+        .section-title {
+            font-family: var(--font-title);
+            font-size: 1.5rem;
+            color: var(--white-mana);
+        }
+
+        .mtg-cards {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(180px, 1fr));
+            gap: 25px;
+        }
+
+        .mtg-card {
+            aspect-ratio: 5/7;
+            border-radius: 12px;
+            overflow: hidden;
+            cursor: pointer;
+            transition: all 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+            position: relative;
+            border: 4px solid;
+        }
+
+        .mtg-card:hover {
+            transform: translateY(-15px) scale(1.05);
+            z-index: 10;
+        }
+
+        .mtg-card.white { border-color: var(--white-mana); background: linear-gradient(180deg, #f5f0dc, #e8e0c8); }
+        .mtg-card.blue { border-color: var(--blue-mana); background: linear-gradient(180deg, #1e4a7a, #0a2a4a); }
+        .mtg-card.black { border-color: #555; background: linear-gradient(180deg, #2a2a2a, #0a0a0a); }
+        .mtg-card.red { border-color: var(--red-mana); background: linear-gradient(180deg, #4a1a1a, #1a0a0a); }
+        .mtg-card.green { border-color: var(--green-mana); background: linear-gradient(180deg, #1a4a2a, #0a2a1a); }
+
+        .card-frame {
+            height: 100%;
+            display: flex;
+            flex-direction: column;
+        }
+
+        .card-header {
+            padding: 8px 10px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .card-name {
+            font-family: var(--font-title);
+            font-size: 0.85rem;
+            font-weight: 600;
+        }
+
+        .mtg-card.white .card-name { color: #333; }
+        .mtg-card.blue .card-name,
+        .mtg-card.black .card-name,
+        .mtg-card.red .card-name,
+        .mtg-card.green .card-name { color: var(--white-mana); }
+
+        .card-cost {
+            display: flex;
+            gap: 3px;
+        }
+
+        .cost-symbol {
+            width: 18px;
+            height: 18px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 0.6rem;
+            font-weight: 700;
+        }
+
+        .cost-symbol.white { background: var(--white-mana); color: #333; }
+        .cost-symbol.blue { background: var(--blue-mana); color: white; }
+        .cost-symbol.black { background: #333; color: #a0a0a0; }
+        .cost-symbol.red { background: var(--red-mana); color: white; }
+        .cost-symbol.green { background: var(--green-mana); color: white; }
+        .cost-symbol.colorless { background: #888; color: white; }
+
+        .card-art {
+            flex: 1;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 3rem;
+            margin: 0 8px;
+            border-radius: 8px;
+        }
+
+        .mtg-card.white .card-art { background: linear-gradient(180deg, #fff8dc, #f0e8d0); }
+        .mtg-card.blue .card-art { background: linear-gradient(180deg, #1a3a5a, #0a1a2a); }
+        .mtg-card.black .card-art { background: linear-gradient(180deg, #1a1a1a, #050505); }
+        .mtg-card.red .card-art { background: linear-gradient(180deg, #3a1a1a, #1a0a0a); }
+        .mtg-card.green .card-art { background: linear-gradient(180deg, #1a3a1a, #0a1a0a); }
+
+        .card-type {
+            padding: 5px 10px;
+            font-size: 0.7rem;
+            border-top: 1px solid rgba(255,255,255,0.2);
+            border-bottom: 1px solid rgba(255,255,255,0.2);
+        }
+
+        .mtg-card.white .card-type { color: #555; }
+        .mtg-card:not(.white) .card-type { color: var(--text-secondary); }
+
+        .card-text {
+            padding: 8px 10px;
+            font-size: 0.65rem;
+            line-height: 1.3;
+            flex: 1;
+        }
+
+        .mtg-card.white .card-text { color: #333; }
+        .mtg-card:not(.white) .card-text { color: var(--text-primary); }
+
+        .card-power {
+            padding: 5px 10px;
+            text-align: right;
+            font-family: var(--font-title);
+            font-size: 0.85rem;
+            font-weight: 700;
+            border-top: 1px solid rgba(255,255,255,0.2);
+        }
+
+        .rarity-gem {
+            position: absolute;
+            top: 8px;
+            right: 8px;
+            width: 15px;
+            height: 15px;
+            border-radius: 50%;
+        }
+
+        .rarity-gem.common { background: linear-gradient(135deg, #888, #555); }
+        .rarity-gem.uncommon { background: linear-gradient(135deg, #60a5fa, #2563eb); }
+        .rarity-gem.rare { background: linear-gradient(135deg, #ffd700, #b8860b); }
+        .rarity-gem.mythic { background: linear-gradient(135deg, #f97316, #dc2626); }
+
+        .hand-display {
+            display: flex;
+            justify-content: center;
+            gap: -30px;
+            margin: 30px 0;
+        }
+
+        .hand-card {
+            width: 100px;
+            height: 140px;
+            border-radius: 8px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            margin-left: -20px;
+            border: 3px solid;
+        }
+
+        .hand-card:first-child { margin-left: 0; }
+
+        .hand-card:hover {
+            transform: translateY(-30px);
+            z-index: 10;
+        }
+
+        .hand-card.white { border-color: var(--white-mana); background: linear-gradient(180deg, #f5f0dc, #e8e0c8); }
+        .hand-card.blue { border-color: var(--blue-mana); background: linear-gradient(180deg, #1e4a7a, #0a2a4a); }
+        .hand-card.black { border-color: #555; background: linear-gradient(180deg, #2a2a2a, #0a0a0a); }
+        .hand-card.red { border-color: var(--red-mana); background: linear-gradient(180deg, #4a1a1a, #1a0a0a); }
+        .hand-card.green { border-color: var(--green-mana); background: linear-gradient(180deg, #1a4a2a, #0a2a1a); }
+
+        .cta-section {
+            text-align: center;
+            margin: 50px 0;
+        }
+
+        .cta-btn {
+            display: inline-block;
+            padding: 15px 50px;
+            font-size: 1.2rem;
+            font-weight: 700;
+            border: none;
+            border-radius: 25px;
+            background: linear-gradient(135deg, var(--blue-mana), var(--green-mana));
+            color: white;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            text-decoration: none;
+        }
+
+        .cta-btn:hover {
+            transform: scale(1.05);
+        }
+
+        .footer {
+            text-align: center;
+            padding: 30px;
+            color: var(--text-secondary);
+            font-size: 0.9rem;
+        }
+    </style>
+</head>
+<body>
+    <div class="mana-particles" id="particles"></div>
+
+    <div class="container">
+        <header class="header">
+            <h1 class="main-title">✨ 魔法风云会风格</h1>
+            <p class="subtitle">五色魔法 · 奇幻卡牌 · 策略对决</p>
+        </header>
+
+        <div class="mana-bar">
+            <div class="mana-symbol white">☀️</div>
+            <div class="mana-symbol blue">💧</div>
+            <div class="mana-symbol black">💀</div>
+            <div class="mana-symbol red">🔥</div>
+            <div class="mana-symbol green">🌿</div>
+        </div>
+
+        <section class="section">
+            <div class="section-header">
+                <span>🎴</span>
+                <h2 class="section-title">生物卡牌</h2>
+            </div>
+            <div class="mtg-cards">
+                <div class="mtg-card white">
+                    <div class="rarity-gem rare"></div>
+                    <div class="card-frame">
+                        <div class="card-header">
+                            <span class="card-name">光明骑士</span>
+                            <div class="card-cost">
+                                <div class="cost-symbol white">1</div>
+                                <div class="cost-symbol white">W</div>
+                            </div>
+                        </div>
+                        <div class="card-art">🦸</div>
+                        <div class="card-type">生物 ~ 人类骑士</div>
+                        <div class="card-text">先攻，警戒</div>
+                        <div class="card-power">2/2</div>
+                    </div>
+                </div>
+
+                <div class="mtg-card blue">
+                    <div class="rarity-gem mythic"></div>
+                    <div class="card-frame">
+                        <div class="card-header">
+                            <span class="card-name">水元素</span>
+                            <div class="card-cost">
+                                <div class="cost-symbol blue">2</div>
+                                <div class="cost-symbol blue">U</div>
+                            </div>
+                        </div>
+                        <div class="card-art">🌊</div>
+                        <div class="card-type">生物 ~ 元素</div>
+                        <div class="card-text">飞行，不能被阻挡</div>
+                        <div class="card-power">3/3</div>
+                    </div>
+                </div>
+
+                <div class="mtg-card black">
+                    <div class="rarity-gem uncommon"></div>
+                    <div class="card-frame">
+                        <div class="card-header">
+                            <span class="card-name">暗影刺客</span>
+                            <div class="card-cost">
+                                <div class="cost-symbol black">1</div>
+                                <div class="cost-symbol black">B</div>
+                            </div>
+                        </div>
+                        <div class="card-art">🥷</div>
+                        <div class="card-type">生物 ~ 人类刺客</div>
+                        <div class="card-text">死触，威胁</div>
+                        <div class="card-power">1/1</div>
+                    </div>
+                </div>
+
+                <div class="mtg-card red">
+                    <div class="rarity-gem rare"></div>
+                    <div class="card-frame">
+                        <div class="card-header">
+                            <span class="card-name">火焰巨龙</span>
+                            <div class="card-cost">
+                                <div class="cost-symbol red">4</div>
+                                <div class="cost-symbol red">R</div>
+                                <div class="cost-symbol red">R</div>
+                            </div>
+                        </div>
+                        <div class="card-art">🐉</div>
+                        <div class="card-type">生物 ~ 龙</div>
+                        <div class="card-text">飞行，敏捷</div>
+                        <div class="card-power">5/5</div>
+                    </div>
+                </div>
+
+                <div class="mtg-card green">
+                    <div class="rarity-gem mythic"></div>
+                    <div class="card-frame">
+                        <div class="card-header">
+                            <span class="card-name">森林巨人</span>
+                            <div class="card-cost">
+                                <div class="cost-symbol green">3</div>
+                                <div class="cost-symbol green">G</div>
+                                <div class="cost-symbol green">G</div>
+                            </div>
+                        </div>
+                        <div class="card-art">🌳</div>
+                        <div class="card-type">生物 ~ 巨人</div>
+                        <div class="card-text">践踏，守护</div>
+                        <div class="card-power">6/6</div>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <section class="section">
+            <div class="section-header">
+                <span>✋</span>
+                <h2 class="section-title">手牌</h2>
+            </div>
+            <div class="hand-display">
+                <div class="hand-card white"></div>
+                <div class="hand-card blue"></div>
+                <div class="hand-card black"></div>
+                <div class="hand-card red"></div>
+                <div class="hand-card green"></div>
+            </div>
+        </section>
+
+        <section class="cta-section">
+            <a href="index.html" class="cta-btn">✨ 返回风格选择</a>
+        </section>
+
+        <footer class="footer">
+            <p>魔法风云会风格 Demo - 乐高故事书</p>
+        </footer>
+    </div>
+
+    <script>
+        var particles = document.getElementById('particles');
+        var colors = ['#f8f6e3', '#0e68ab', '#555', '#d3202a', '#00733e'];
+        for (var i = 0; i < 30; i++) {
+            var p = document.createElement('div');
+            p.className = 'mana-particle';
+            p.style.left = Math.random() * 100 + '%';
+            p.style.background = colors[Math.floor(Math.random() * colors.length)];
+            p.style.animationDelay = Math.random() * 10 + 's';
+            particles.appendChild(p);
+        }
+    </script>
+</body>
+</html>

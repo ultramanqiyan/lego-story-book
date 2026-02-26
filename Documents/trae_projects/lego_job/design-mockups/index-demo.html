@@ -1,0 +1,616 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>乐高故事书 - 桌游风格首页</title>
+    <link href="https://fonts.googleapis.com/css2?family=Cinzel:wght@400;600;700&family=Noto+Sans+SC:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --gold: #ffd700;
+            --gold-dark: #b8860b;
+            --silver: #c0c0c0;
+            --bronze: #cd7f32;
+            --crimson: #dc2626;
+            --purple: #a855f7;
+            --green: #22c55e;
+            --blue: #3b82f6;
+            --orange: #f59e0b;
+            --bg-dark: #0d0d14;
+            --bg-medium: #1a1a2e;
+            --text-primary: #f8fafc;
+            --text-secondary: #94a3b8;
+            --font-title: 'Cinzel', serif;
+            --font-body: 'Noto Sans SC', sans-serif;
+        }
+
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+
+        body {
+            font-family: var(--font-body);
+            background: linear-gradient(180deg, #1a1a2e 0%, #0d0d14 100%);
+            min-height: 100vh;
+            color: var(--text-primary);
+            overflow-x: hidden;
+        }
+
+        .particles {
+            position: fixed;
+            inset: 0;
+            pointer-events: none;
+            z-index: 0;
+        }
+
+        .particle {
+            position: absolute;
+            width: 2px;
+            height: 2px;
+            background: var(--gold);
+            border-radius: 50%;
+            opacity: 0.3;
+            animation: float 20s linear infinite;
+        }
+
+        @keyframes float {
+            0% { transform: translateY(100vh); opacity: 0; }
+            10% { opacity: 0.3; }
+            90% { opacity: 0.3; }
+            100% { transform: translateY(-100vh); opacity: 0; }
+        }
+
+        .container {
+            position: relative;
+            z-index: 1;
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 20px;
+        }
+
+        .header {
+            text-align: center;
+            padding: 60px 20px 40px;
+        }
+
+        .main-title {
+            font-family: var(--font-title);
+            font-size: 3.5rem;
+            font-weight: 700;
+            background: linear-gradient(135deg, var(--gold), #ff9800, var(--gold));
+            background-size: 200% auto;
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            animation: shimmer 3s linear infinite;
+            text-shadow: 0 0 40px rgba(255,215,0,0.3);
+            margin-bottom: 15px;
+        }
+
+        @keyframes shimmer {
+            0% { background-position: 0% center; }
+            100% { background-position: 200% center; }
+        }
+
+        .subtitle {
+            font-size: 1.3rem;
+            color: var(--text-secondary);
+            animation: fadeInUp 0.8s ease-out 0.3s both;
+        }
+
+        @keyframes fadeInUp {
+            from { opacity: 0; transform: translateY(20px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        .nav-cards {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 20px;
+            margin: 40px 0;
+        }
+
+        .nav-card {
+            background: linear-gradient(180deg, #2d2d44, #1a1a2e);
+            border-radius: 15px;
+            padding: 25px;
+            text-align: center;
+            cursor: pointer;
+            transition: all 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+            border: 2px solid rgba(255,255,255,0.1);
+            position: relative;
+            overflow: hidden;
+            text-decoration: none;
+            color: var(--text-primary);
+        }
+
+        .nav-card::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            height: 3px;
+            background: linear-gradient(90deg, var(--gold), var(--purple), var(--gold));
+        }
+
+        .nav-card:hover {
+            transform: translateY(-10px) scale(1.02);
+            border-color: var(--gold);
+            box-shadow: 0 20px 40px rgba(0,0,0,0.4), 0 0 30px rgba(255,215,0,0.2);
+        }
+
+        .nav-icon {
+            font-size: 3rem;
+            margin-bottom: 15px;
+            display: block;
+        }
+
+        .nav-title {
+            font-family: var(--font-title);
+            font-size: 1.1rem;
+            font-weight: 600;
+            color: var(--gold);
+            margin-bottom: 8px;
+        }
+
+        .nav-desc {
+            font-size: 0.85rem;
+            color: var(--text-secondary);
+        }
+
+        .section {
+            margin: 50px 0;
+        }
+
+        .section-header {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            margin-bottom: 25px;
+            padding-bottom: 15px;
+            border-bottom: 1px solid rgba(255,215,0,0.2);
+        }
+
+        .section-icon {
+            font-size: 1.8rem;
+        }
+
+        .section-title {
+            font-family: var(--font-title);
+            font-size: 1.5rem;
+            font-weight: 600;
+            color: var(--gold);
+        }
+
+        .card-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(220px, 1fr));
+            gap: 20px;
+        }
+
+        .hs-card {
+            width: 100%;
+            aspect-ratio: 3/4;
+            max-width: 180px;
+            margin: 0 auto;
+            border-radius: 12px;
+            cursor: pointer;
+            transition: all 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+            display: flex;
+            flex-direction: column;
+            overflow: hidden;
+            box-shadow: 0 5px 15px rgba(0,0,0,0.4);
+            background: linear-gradient(180deg, #3d3d3d, #1a1a1a);
+            border: 3px solid;
+            position: relative;
+        }
+
+        .hs-card.protagonist { border-color: var(--gold); box-shadow: 0 5px 15px rgba(0,0,0,0.4), 0 0 10px rgba(255,215,0,0.2); }
+        .hs-card.antagonist { border-color: var(--crimson); box-shadow: 0 5px 15px rgba(0,0,0,0.4), 0 0 10px rgba(220,38,38,0.2); }
+        .hs-card.supporting { border-color: var(--silver); }
+        .hs-card.adventure { border-color: var(--purple); }
+
+        .hs-card:hover {
+            transform: translateY(-15px) scale(1.08);
+            z-index: 100;
+            box-shadow: 0 20px 40px rgba(0,0,0,0.5), 0 0 25px rgba(255,215,0,0.3);
+        }
+
+        .hs-portrait {
+            flex: 1;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            background: linear-gradient(180deg, #4a4a4a, #2a2a2a);
+            position: relative;
+            overflow: hidden;
+        }
+
+        .hs-portrait::before {
+            content: '';
+            position: absolute;
+            inset: 0;
+            background: radial-gradient(ellipse at center top, rgba(255,255,255,0.1), transparent 50%);
+        }
+
+        .hs-avatar {
+            font-size: 3rem;
+            filter: drop-shadow(0 3px 6px rgba(0,0,0,0.5));
+        }
+
+        .hs-name-banner {
+            padding: 8px 10px;
+            background: linear-gradient(180deg, #5a4a3a, #3a2a1a);
+            text-align: center;
+        }
+
+        .hs-name {
+            font-family: var(--font-title);
+            font-size: 0.85rem;
+            font-weight: 600;
+            color: #fff8e1;
+            text-shadow: 1px 1px 2px rgba(0,0,0,0.8);
+        }
+
+        .hs-stats {
+            display: flex;
+            justify-content: space-between;
+            padding: 6px 10px;
+            background: linear-gradient(180deg, #2a2a2a, #1a1a1a);
+        }
+
+        .hs-gem {
+            width: 22px;
+            height: 22px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 10px;
+            font-weight: 700;
+            color: white;
+            text-shadow: 1px 1px 1px rgba(0,0,0,0.5);
+        }
+
+        .hs-gem.attack {
+            background: linear-gradient(180deg, #fbbf24, #d97706);
+            box-shadow: 0 2px 4px rgba(0,0,0,0.3);
+        }
+
+        .hs-gem.health {
+            background: linear-gradient(180deg, #f87171, #dc2626);
+            box-shadow: 0 2px 4px rgba(0,0,0,0.3);
+        }
+
+        .role-tag {
+            position: absolute;
+            top: 5px;
+            left: 5px;
+            padding: 3px 8px;
+            border-radius: 4px;
+            font-size: 9px;
+            font-weight: 700;
+            letter-spacing: 0.5px;
+        }
+
+        .hs-card.protagonist .role-tag {
+            background: linear-gradient(180deg, var(--gold), var(--gold-dark));
+            color: #1a0f0a;
+        }
+
+        .hs-card.antagonist .role-tag {
+            background: linear-gradient(180deg, var(--crimson), #991b1b);
+            color: white;
+        }
+
+        .hs-card.supporting .role-tag {
+            background: linear-gradient(180deg, var(--silver), #808080);
+            color: #1a0f0a;
+        }
+
+        .hs-card.adventure .role-tag {
+            background: linear-gradient(180deg, var(--purple), #6b21a8);
+            color: white;
+        }
+
+        .book-card {
+            background: linear-gradient(180deg, #2d2d44, #1a1a2e);
+            border-radius: 15px;
+            padding: 20px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            border: 2px solid rgba(255,255,255,0.1);
+            display: flex;
+            align-items: center;
+            gap: 15px;
+        }
+
+        .book-card:hover {
+            transform: translateY(-5px);
+            border-color: var(--gold);
+            box-shadow: 0 10px 30px rgba(0,0,0,0.4), 0 0 20px rgba(255,215,0,0.15);
+        }
+
+        .book-cover {
+            width: 60px;
+            height: 80px;
+            border-radius: 5px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1.8rem;
+            background: linear-gradient(135deg, var(--purple), var(--blue));
+            box-shadow: 3px 3px 10px rgba(0,0,0,0.4);
+        }
+
+        .book-info h3 {
+            font-size: 1rem;
+            margin-bottom: 5px;
+            color: var(--text-primary);
+        }
+
+        .book-info p {
+            font-size: 0.85rem;
+            color: var(--text-secondary);
+        }
+
+        .book-stats {
+            display: flex;
+            gap: 15px;
+            margin-top: 8px;
+        }
+
+        .stat-item {
+            display: flex;
+            align-items: center;
+            gap: 5px;
+            font-size: 0.8rem;
+        }
+
+        .stat-gem {
+            width: 14px;
+            height: 18px;
+            border-radius: 50% 50% 50% 50% / 60% 60% 40% 40%;
+            position: relative;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.4);
+        }
+
+        .stat-gem::before {
+            content: '';
+            position: absolute;
+            top: 20%;
+            left: 20%;
+            width: 30%;
+            height: 30%;
+            background: rgba(255,255,255,0.6);
+            border-radius: 50%;
+        }
+
+        .stat-gem.blue { background: linear-gradient(180deg, #60a5fa, #2563eb); }
+        .stat-gem.gold { background: linear-gradient(180deg, #ffd700, #b8860b); }
+
+        .cta-section {
+            text-align: center;
+            margin: 60px 0;
+            padding: 40px;
+            background: rgba(0,0,0,0.3);
+            border-radius: 20px;
+            border: 1px solid rgba(255,215,0,0.2);
+        }
+
+        .cta-title {
+            font-family: var(--font-title);
+            font-size: 1.8rem;
+            color: var(--gold);
+            margin-bottom: 15px;
+        }
+
+        .cta-desc {
+            color: var(--text-secondary);
+            margin-bottom: 25px;
+            font-size: 1.1rem;
+        }
+
+        .cta-btn {
+            display: inline-block;
+            padding: 15px 50px;
+            font-size: 1.2rem;
+            font-weight: 700;
+            border: none;
+            border-radius: 25px;
+            background: linear-gradient(135deg, var(--gold), #ff9800);
+            color: #000;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            font-family: var(--font-body);
+            text-decoration: none;
+            box-shadow: 0 0 30px rgba(255,215,0,0.5);
+            animation: btn-pulse 2s ease-in-out infinite;
+        }
+
+        @keyframes btn-pulse {
+            0%, 100% { box-shadow: 0 0 30px rgba(255,215,0,0.5); }
+            50% { box-shadow: 0 0 50px rgba(255,215,0,0.8); }
+        }
+
+        .cta-btn:hover {
+            transform: scale(1.05);
+        }
+
+        .footer {
+            text-align: center;
+            padding: 30px;
+            color: var(--text-secondary);
+            font-size: 0.9rem;
+            border-top: 1px solid rgba(255,255,255,0.1);
+        }
+
+        @media (max-width: 768px) {
+            .main-title {
+                font-size: 2.5rem;
+            }
+            
+            .nav-cards {
+                grid-template-columns: repeat(2, 1fr);
+            }
+            
+            .card-grid {
+                grid-template-columns: repeat(2, 1fr);
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="particles" id="particles"></div>
+
+    <div class="container">
+        <header class="header">
+            <h1 class="main-title">乐高故事书</h1>
+            <p class="subtitle">创建属于你的冒险故事！</p>
+        </header>
+
+        <nav class="nav-cards">
+            <a href="bookshelf-demo.html" class="nav-card">
+                <span class="nav-icon">📚</span>
+                <div class="nav-title">我的书架</div>
+                <div class="nav-desc">管理你的故事收藏</div>
+            </a>
+            <a href="characters-demo.html" class="nav-card">
+                <span class="nav-icon">🎭</span>
+                <div class="nav-title">人仔角色</div>
+                <div class="nav-desc">创建独特角色</div>
+            </a>
+            <a href="adventure-demo.html" class="nav-card">
+                <span class="nav-icon">🗺️</span>
+                <div class="nav-title">冒险模式</div>
+                <div class="nav-desc">阅读与解谜</div>
+            </a>
+            <a href="theme-selector-demo.html" class="nav-card">
+                <span class="nav-icon">🎨</span>
+                <div class="nav-title">主题风格</div>
+                <div class="nav-desc">个性化外观</div>
+            </a>
+        </nav>
+
+        <section class="section">
+            <div class="section-header">
+                <span class="section-icon">🔥</span>
+                <h2 class="section-title">热门人仔</h2>
+            </div>
+            <div class="card-grid">
+                <div class="hs-card protagonist">
+                    <span class="role-tag">主角</span>
+                    <div class="hs-portrait"><span class="hs-avatar">🧝‍♀️</span></div>
+                    <div class="hs-name-banner"><span class="hs-name">艾拉拉</span></div>
+                    <div class="hs-stats">
+                        <div class="hs-gem attack">5</div>
+                        <div class="hs-gem health">8</div>
+                    </div>
+                </div>
+                <div class="hs-card protagonist">
+                    <span class="role-tag">主角</span>
+                    <div class="hs-portrait"><span class="hs-avatar">⚔️</span></div>
+                    <div class="hs-name-banner"><span class="hs-name">雷恩</span></div>
+                    <div class="hs-stats">
+                        <div class="hs-gem attack">7</div>
+                        <div class="hs-gem health">6</div>
+                    </div>
+                </div>
+                <div class="hs-card supporting">
+                    <span class="role-tag">配角</span>
+                    <div class="hs-portrait"><span class="hs-avatar">🧙‍♂️</span></div>
+                    <div class="hs-name-banner"><span class="hs-name">老智者奥伦</span></div>
+                    <div class="hs-stats">
+                        <div class="hs-gem attack">2</div>
+                        <div class="hs-gem health">4</div>
+                    </div>
+                </div>
+                <div class="hs-card antagonist">
+                    <span class="role-tag">反派</span>
+                    <div class="hs-portrait"><span class="hs-avatar">👿</span></div>
+                    <div class="hs-name-banner"><span class="hs-name">黑暗领主</span></div>
+                    <div class="hs-stats">
+                        <div class="hs-gem attack">9</div>
+                        <div class="hs-gem health">10</div>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <section class="section">
+            <div class="section-header">
+                <span class="section-icon">📚</span>
+                <h2 class="section-title">最近故事</h2>
+            </div>
+            <div class="card-grid">
+                <div class="book-card">
+                    <div class="book-cover">📖</div>
+                    <div class="book-info">
+                        <h3>魔法王国的冒险</h3>
+                        <div class="book-stats">
+                            <div class="stat-item">
+                                <div class="stat-gem blue"></div>
+                                <span>5章</span>
+                            </div>
+                            <div class="stat-item">
+                                <div class="stat-gem gold"></div>
+                                <span>12.5k字</span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <div class="book-card">
+                    <div class="book-cover" style="background: linear-gradient(135deg, var(--green), var(--blue));">📖</div>
+                    <div class="book-info">
+                        <h3>太空探险记</h3>
+                        <div class="book-stats">
+                            <div class="stat-item">
+                                <div class="stat-gem blue"></div>
+                                <span>3章</span>
+                            </div>
+                            <div class="stat-item">
+                                <div class="stat-gem gold"></div>
+                                <span>8.2k字</span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <div class="book-card">
+                    <div class="book-cover" style="background: linear-gradient(135deg, var(--orange), var(--crimson));">📖</div>
+                    <div class="book-info">
+                        <h3>海底世界奇遇</h3>
+                        <div class="book-stats">
+                            <div class="stat-item">
+                                <div class="stat-gem blue"></div>
+                                <span>7章</span>
+                            </div>
+                            <div class="stat-item">
+                                <div class="stat-gem gold"></div>
+                                <span>18.3k字</span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <section class="cta-section">
+            <h2 class="cta-title">开始你的冒险</h2>
+            <p class="cta-desc">创建独特角色，编织精彩故事，与朋友分享你的创意</p>
+            <a href="login-demo.html" class="cta-btn">🎮 开始冒险</a>
+        </section>
+
+        <footer class="footer">
+            <p>乐高故事书 &copy; 2024 - 让想象力飞翔</p>
+        </footer>
+    </div>
+
+    <script>
+        for (var i = 0; i < 20; i++) {
+            var p = document.createElement('div');
+            p.className = 'particle';
+            p.style.left = Math.random() * 100 + '%';
+            p.style.animationDelay = Math.random() * 20 + 's';
+            document.getElementById('particles').appendChild(p);
+        }
+    </script>
+</body>
+</html>

@@ -1,0 +1,524 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>花砖物语风格 - 乐高故事书</title>
+    <link href="https://fonts.googleapis.com/css2?family=Cinzel:wght@400;600;700&family=Noto+Sans+SC:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --azul-blue: #0066cc;
+            --azul-white: #f0f8ff;
+            --azul-yellow: #ffd700;
+            --azul-dark: #003366;
+            --azul-cyan: #00bcd4;
+            --azul-red: #e53935;
+            --bg-dark: #1a2a3a;
+            --bg-medium: #2a3a4a;
+            --text-primary: #f8fafc;
+            --text-secondary: #a0b0c0;
+            --font-title: 'Cinzel', serif;
+            --font-body: 'Noto Sans SC', sans-serif;
+        }
+
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+
+        body {
+            font-family: var(--font-body);
+            background: linear-gradient(180deg, var(--bg-medium) 0%, var(--bg-dark) 100%);
+            min-height: 100vh;
+            color: var(--text-primary);
+        }
+
+        .pattern-bg {
+            position: fixed;
+            inset: 0;
+            opacity: 0.03;
+            background-image: url("data:image/svg+xml,%3Csvg width='60' height='60' viewBox='0 0 60 60' xmlns='http://www.w3.org/2000/svg'%3E%3Cpath d='M30 0L60 30L30 60L0 30z' fill='%230066cc' fill-opacity='1'/%3E%3C/svg%3E");
+            background-size: 30px 30px;
+            pointer-events: none;
+        }
+
+        .container {
+            position: relative;
+            z-index: 1;
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 20px;
+        }
+
+        .header {
+            text-align: center;
+            padding: 40px 20px;
+        }
+
+        .main-title {
+            font-family: var(--font-title);
+            font-size: 3rem;
+            font-weight: 700;
+            color: var(--azul-blue);
+            text-shadow: 2px 2px 4px rgba(0,0,0,0.3);
+            margin-bottom: 10px;
+        }
+
+        .subtitle {
+            font-size: 1.1rem;
+            color: var(--text-secondary);
+        }
+
+        .azul-pattern {
+            display: flex;
+            justify-content: center;
+            gap: 10px;
+            margin: 20px 0;
+        }
+
+        .pattern-tile {
+            width: 40px;
+            height: 40px;
+            border-radius: 5px;
+            animation: tile-glow 2s ease-in-out infinite;
+        }
+
+        .pattern-tile:nth-child(1) { background: var(--azul-blue); animation-delay: 0s; }
+        .pattern-tile:nth-child(2) { background: var(--azul-cyan); animation-delay: 0.2s; }
+        .pattern-tile:nth-child(3) { background: var(--azul-yellow); animation-delay: 0.4s; }
+        .pattern-tile:nth-child(4) { background: var(--azul-red); animation-delay: 0.6s; }
+        .pattern-tile:nth-child(5) { background: var(--azul-white); animation-delay: 0.8s; }
+
+        @keyframes tile-glow {
+            0%, 100% { box-shadow: 0 0 5px currentColor; }
+            50% { box-shadow: 0 0 20px currentColor; }
+        }
+
+        .section {
+            margin: 40px 0;
+        }
+
+        .section-header {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            margin-bottom: 20px;
+        }
+
+        .section-title {
+            font-family: var(--font-title);
+            font-size: 1.5rem;
+            color: var(--azul-blue);
+        }
+
+        .factory-area {
+            display: flex;
+            flex-wrap: wrap;
+            justify-content: center;
+            gap: 20px;
+            margin: 30px 0;
+        }
+
+        .factory-disc {
+            width: 120px;
+            height: 120px;
+            background: var(--bg-medium);
+            border-radius: 50%;
+            display: flex;
+            flex-wrap: wrap;
+            align-items: center;
+            justify-content: center;
+            padding: 15px;
+            gap: 5px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            border: 3px solid var(--azul-blue);
+        }
+
+        .factory-disc:hover {
+            transform: scale(1.1);
+            box-shadow: 0 0 30px rgba(0, 102, 204, 0.5);
+        }
+
+        .factory-tile {
+            width: 25px;
+            height: 25px;
+            border-radius: 4px;
+        }
+
+        .factory-tile.blue { background: var(--azul-blue); }
+        .factory-tile.cyan { background: var(--azul-cyan); }
+        .factory-tile.yellow { background: var(--azul-yellow); }
+        .factory-tile.red { background: var(--azul-red); }
+        .factory-tile.white { background: var(--azul-white); border: 1px solid #ccc; }
+
+        .player-board {
+            background: var(--bg-medium);
+            border-radius: 20px;
+            padding: 25px;
+            margin: 30px 0;
+            border: 3px solid var(--azul-blue);
+        }
+
+        .board-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 20px;
+        }
+
+        .player-name {
+            font-family: var(--font-title);
+            font-size: 1.3rem;
+            color: var(--azul-blue);
+        }
+
+        .player-score {
+            font-family: var(--font-title);
+            font-size: 2rem;
+            color: var(--azul-yellow);
+        }
+
+        .pattern-rows {
+            display: flex;
+            flex-direction: column;
+            gap: 8px;
+            margin-bottom: 20px;
+        }
+
+        .pattern-row {
+            display: flex;
+            align-items: center;
+            gap: 5px;
+        }
+
+        .row-label {
+            width: 30px;
+            font-family: var(--font-title);
+            color: var(--text-secondary);
+        }
+
+        .row-slots {
+            display: flex;
+            gap: 5px;
+        }
+
+        .slot {
+            width: 35px;
+            height: 35px;
+            border: 2px dashed rgba(255,255,255,0.2);
+            border-radius: 5px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            transition: all 0.3s ease;
+        }
+
+        .slot.filled {
+            border-style: solid;
+        }
+
+        .slot.blue.filled { background: var(--azul-blue); border-color: var(--azul-blue); }
+        .slot.cyan.filled { background: var(--azul-cyan); border-color: var(--azul-cyan); }
+        .slot.yellow.filled { background: var(--azul-yellow); border-color: var(--azul-yellow); }
+        .slot.red.filled { background: var(--azul-red); border-color: var(--azul-red); }
+        .slot.white.filled { background: var(--azul-white); border-color: #ccc; }
+
+        .wall-grid {
+            display: grid;
+            grid-template-columns: repeat(5, 35px);
+            gap: 5px;
+            justify-content: center;
+        }
+
+        .wall-cell {
+            width: 35px;
+            height: 35px;
+            background: rgba(0,0,0,0.3);
+            border-radius: 5px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 0.7rem;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+
+        .wall-cell:hover {
+            background: rgba(0, 102, 204, 0.3);
+        }
+
+        .wall-cell.filled {
+            border-radius: 50%;
+        }
+
+        .wall-cell.blue.filled { background: var(--azul-blue); }
+        .wall-cell.cyan.filled { background: var(--azul-cyan); }
+        .wall-cell.yellow.filled { background: var(--azul-yellow); }
+        .wall-cell.red.filled { background: var(--azul-red); }
+        .wall-cell.white.filled { background: var(--azul-white); }
+
+        .floor-line {
+            display: flex;
+            gap: 5px;
+            justify-content: center;
+            margin-top: 20px;
+        }
+
+        .floor-slot {
+            width: 30px;
+            height: 30px;
+            background: rgba(255,0,0,0.2);
+            border-radius: 5px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 0.7rem;
+            color: #ff6b6b;
+        }
+
+        .score-track {
+            display: flex;
+            justify-content: center;
+            gap: 2px;
+            margin: 20px 0;
+            flex-wrap: wrap;
+        }
+
+        .score-point {
+            width: 25px;
+            height: 25px;
+            background: var(--bg-dark);
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 0.6rem;
+            color: var(--text-secondary);
+        }
+
+        .score-point.milestone {
+            background: var(--azul-yellow);
+            color: var(--bg-dark);
+            font-weight: 700;
+        }
+
+        .cta-section {
+            text-align: center;
+            margin: 50px 0;
+        }
+
+        .cta-btn {
+            display: inline-block;
+            padding: 15px 50px;
+            font-size: 1.2rem;
+            font-weight: 700;
+            border: none;
+            border-radius: 25px;
+            background: linear-gradient(135deg, var(--azul-blue), var(--azul-cyan));
+            color: white;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            text-decoration: none;
+        }
+
+        .cta-btn:hover {
+            transform: scale(1.05);
+        }
+
+        .footer {
+            text-align: center;
+            padding: 30px;
+            color: var(--text-secondary);
+            font-size: 0.9rem;
+        }
+    </style>
+</head>
+<body>
+    <div class="pattern-bg"></div>
+
+    <div class="container">
+        <header class="header">
+            <h1 class="main-title">🪟 花砖物语风格</h1>
+            <p class="subtitle">葡萄牙瓷砖 · 几何美学 · 精致布局</p>
+            <div class="azul-pattern">
+                <div class="pattern-tile"></div>
+                <div class="pattern-tile"></div>
+                <div class="pattern-tile"></div>
+                <div class="pattern-tile"></div>
+                <div class="pattern-tile"></div>
+            </div>
+        </header>
+
+        <section class="section">
+            <div class="section-header">
+                <span>🏭</span>
+                <h2 class="section-title">工厂圆盘</h2>
+            </div>
+            <div class="factory-area">
+                <div class="factory-disc">
+                    <div class="factory-tile blue"></div>
+                    <div class="factory-tile blue"></div>
+                    <div class="factory-tile yellow"></div>
+                    <div class="factory-tile red"></div>
+                </div>
+                <div class="factory-disc">
+                    <div class="factory-tile cyan"></div>
+                    <div class="factory-tile cyan"></div>
+                    <div class="factory-tile white"></div>
+                    <div class="factory-tile blue"></div>
+                </div>
+                <div class="factory-disc">
+                    <div class="factory-tile yellow"></div>
+                    <div class="factory-tile yellow"></div>
+                    <div class="factory-tile yellow"></div>
+                    <div class="factory-tile red"></div>
+                </div>
+                <div class="factory-disc">
+                    <div class="factory-tile white"></div>
+                    <div class="factory-tile white"></div>
+                    <div class="factory-tile cyan"></div>
+                    <div class="factory-tile cyan"></div>
+                </div>
+                <div class="factory-disc">
+                    <div class="factory-tile red"></div>
+                    <div class="factory-tile red"></div>
+                    <div class="factory-tile blue"></div>
+                    <div class="factory-tile white"></div>
+                </div>
+            </div>
+        </section>
+
+        <section class="section">
+            <div class="section-header">
+                <span>🎯</span>
+                <h2 class="section-title">玩家面板</h2>
+            </div>
+            <div class="player-board">
+                <div class="board-header">
+                    <div class="player-name">玩家 1</div>
+                    <div class="player-score">24</div>
+                </div>
+                <div class="pattern-rows">
+                    <div class="pattern-row">
+                        <div class="row-label">1</div>
+                        <div class="row-slots">
+                            <div class="slot blue filled"></div>
+                        </div>
+                    </div>
+                    <div class="pattern-row">
+                        <div class="row-label">2</div>
+                        <div class="row-slots">
+                            <div class="slot cyan filled"></div>
+                            <div class="slot cyan filled"></div>
+                        </div>
+                    </div>
+                    <div class="pattern-row">
+                        <div class="row-label">3</div>
+                        <div class="row-slots">
+                            <div class="slot"></div>
+                            <div class="slot"></div>
+                            <div class="slot"></div>
+                        </div>
+                    </div>
+                    <div class="pattern-row">
+                        <div class="row-label">4</div>
+                        <div class="row-slots">
+                            <div class="slot yellow filled"></div>
+                            <div class="slot yellow filled"></div>
+                            <div class="slot yellow filled"></div>
+                            <div class="slot yellow filled"></div>
+                        </div>
+                    </div>
+                    <div class="pattern-row">
+                        <div class="row-label">5</div>
+                        <div class="row-slots">
+                            <div class="slot"></div>
+                            <div class="slot"></div>
+                            <div class="slot"></div>
+                            <div class="slot"></div>
+                            <div class="slot"></div>
+                        </div>
+                    </div>
+                </div>
+                <div class="wall-grid">
+                    <div class="wall-cell blue filled"></div>
+                    <div class="wall-cell">🟦</div>
+                    <div class="wall-cell">🟨</div>
+                    <div class="wall-cell">🔴</div>
+                    <div class="wall-cell">⚪</div>
+                    <div class="wall-cell">⚪</div>
+                    <div class="wall-cell blue filled"></div>
+                    <div class="wall-cell cyan filled"></div>
+                    <div class="wall-cell">🟨</div>
+                    <div class="wall-cell">🔴</div>
+                    <div class="wall-cell">🔴</div>
+                    <div class="wall-cell">⚪</div>
+                    <div class="wall-cell blue filled"></div>
+                    <div class="wall-cell cyan filled"></div>
+                    <div class="wall-cell yellow filled"></div>
+                    <div class="wall-cell yellow filled"></div>
+                    <div class="wall-cell">🔴</div>
+                    <div class="wall-cell">⚪</div>
+                    <div class="wall-cell">🟦</div>
+                    <div class="wall-cell cyan filled"></div>
+                    <div class="wall-cell cyan filled"></div>
+                    <div class="wall-cell yellow filled"></div>
+                    <div class="wall-cell yellow filled"></div>
+                    <div class="wall-cell yellow filled"></div>
+                    <div class="wall-cell">⚪</div>
+                </div>
+                <div class="floor-line">
+                    <div class="floor-slot">-1</div>
+                    <div class="floor-slot">-1</div>
+                    <div class="floor-slot">-2</div>
+                    <div class="floor-slot">-2</div>
+                    <div class="floor-slot">-2</div>
+                    <div class="floor-slot">-3</div>
+                    <div class="floor-slot">-3</div>
+                </div>
+            </div>
+        </section>
+
+        <section class="section">
+            <div class="section-header">
+                <span>📊</span>
+                <h2 class="section-title">得分轨道</h2>
+            </div>
+            <div class="score-track">
+                <div class="score-point">0</div>
+                <div class="score-point">1</div>
+                <div class="score-point">2</div>
+                <div class="score-point">3</div>
+                <div class="score-point">4</div>
+                <div class="score-point milestone">5</div>
+                <div class="score-point">6</div>
+                <div class="score-point">7</div>
+                <div class="score-point">8</div>
+                <div class="score-point">9</div>
+                <div class="score-point milestone">10</div>
+                <div class="score-point">11</div>
+                <div class="score-point">12</div>
+                <div class="score-point">13</div>
+                <div class="score-point">14</div>
+                <div class="score-point milestone">15</div>
+                <div class="score-point">16</div>
+                <div class="score-point">17</div>
+                <div class="score-point">18</div>
+                <div class="score-point">19</div>
+                <div class="score-point milestone">20</div>
+                <div class="score-point">21</div>
+                <div class="score-point">22</div>
+                <div class="score-point">23</div>
+                <div class="score-point" style="background: var(--azul-yellow); color: var(--bg-dark);">24</div>
+                <div class="score-point milestone">25</div>
+            </div>
+        </section>
+
+        <section class="cta-section">
+            <a href="index.html" class="cta-btn">🪟 返回风格选择</a>
+        </section>
+
+        <footer class="footer">
+            <p>花砖物语风格 Demo - 乐高故事书</p>
+        </footer>
+    </div>
+</body>
+</html>

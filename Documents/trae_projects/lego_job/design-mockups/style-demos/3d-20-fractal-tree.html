@@ -1,0 +1,295 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>3D分形树 - 乐高故事书</title>
+    <link href="https://fonts.googleapis.com/css2?family=Cinzel:wght@400;600;700&family=Noto+Sans+SC:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --trunk: #8B4513;
+            --branch: #A0522D;
+            --leaf-1: #228B22;
+            --leaf-2: #32CD32;
+            --leaf-3: #90EE90;
+            --bg-nature: #0d1f0d;
+        }
+
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+
+        body {
+            font-family: 'Noto Sans SC', sans-serif;
+            background: linear-gradient(180deg, #1a3a1a 0%, var(--bg-nature) 100%);
+            min-height: 100vh;
+            color: #f8fafc;
+            overflow-x: hidden;
+        }
+
+        .container {
+            max-width: 1400px;
+            margin: 0 auto;
+            padding: 40px 20px;
+        }
+
+        .header {
+            text-align: center;
+            margin-bottom: 40px;
+        }
+
+        .main-title {
+            font-family: 'Cinzel', serif;
+            font-size: 2.8rem;
+            background: linear-gradient(135deg, var(--trunk), var(--leaf-1), var(--leaf-2));
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            margin-bottom: 10px;
+        }
+
+        .subtitle {
+            color: #94a3b8;
+            font-size: 1.1rem;
+        }
+
+        .tree-scene {
+            position: relative;
+            height: 600px;
+            display: flex;
+            justify-content: center;
+            align-items: flex-end;
+            perspective: 1000px;
+            overflow: hidden;
+        }
+
+        .fractal-tree {
+            position: relative;
+            width: 600px;
+            height: 500px;
+            transform-style: preserve-3d;
+        }
+
+        .branch {
+            position: absolute;
+            transform-origin: bottom center;
+            border-radius: 50%;
+            transition: all 0.5s ease;
+        }
+
+        .trunk {
+            width: 20px;
+            height: 150px;
+            background: linear-gradient(90deg, var(--trunk), var(--branch));
+            bottom: 0;
+            left: 50%;
+            transform: translateX(-50%);
+            border-radius: 10px;
+        }
+
+        .level-1 {
+            width: 12px;
+            height: 100px;
+            background: linear-gradient(90deg, var(--branch), #CD853F);
+        }
+
+        .level-2 {
+            width: 8px;
+            height: 70px;
+            background: linear-gradient(90deg, #CD853F, #DEB887);
+        }
+
+        .level-3 {
+            width: 5px;
+            height: 50px;
+            background: linear-gradient(90deg, #DEB887, #F5DEB3);
+        }
+
+        .leaf {
+            position: absolute;
+            width: 30px;
+            height: 30px;
+            border-radius: 50% 0 50% 50%;
+            animation: leaf-sway 3s ease-in-out infinite;
+        }
+
+        .leaf:nth-child(4n) { background: var(--leaf-1); }
+        .leaf:nth-child(4n+1) { background: var(--leaf-2); }
+        .leaf:nth-child(4n+2) { background: var(--leaf-3); }
+        .leaf:nth-child(4n+3) { background: #7CFC00; }
+
+        @keyframes leaf-sway {
+            0%, 100% { transform: rotate(0deg) scale(1); }
+            50% { transform: rotate(15deg) scale(1.1); }
+        }
+
+        .ground {
+            position: absolute;
+            bottom: 0;
+            width: 100%;
+            height: 100px;
+            background: linear-gradient(180deg, #2d5a2d 0%, #1a3a1a 100%);
+            border-radius: 50% 50% 0 0 / 50px 50px 0 0;
+        }
+
+        .falling-leaf {
+            position: absolute;
+            font-size: 1.5rem;
+            animation: fall 5s linear infinite;
+        }
+
+        @keyframes fall {
+            0% { transform: translateY(-50px) rotate(0deg); opacity: 1; }
+            100% { transform: translateY(550px) rotate(360deg); opacity: 0; }
+        }
+
+        .controls {
+            display: flex;
+            justify-content: center;
+            gap: 15px;
+            margin-top: 40px;
+            flex-wrap: wrap;
+        }
+
+        .control-btn {
+            padding: 12px 24px;
+            background: rgba(255,255,255,0.1);
+            border: 2px solid var(--leaf-2);
+            border-radius: 25px;
+            color: var(--leaf-2);
+            cursor: pointer;
+            transition: all 0.3s ease;
+            font-family: 'Cinzel', serif;
+        }
+
+        .control-btn:hover, .control-btn.active {
+            background: var(--leaf-2);
+            color: var(--bg-nature);
+            transform: translateY(-2px);
+        }
+
+        .nav-bar {
+            display: flex;
+            justify-content: center;
+            gap: 20px;
+            margin-top: 60px;
+        }
+
+        .nav-btn {
+            padding: 15px 40px;
+            background: linear-gradient(145deg, rgba(255,255,255,0.1), rgba(255,255,255,0.05));
+            border: 2px solid var(--leaf-1);
+            border-radius: 30px;
+            color: var(--leaf-1);
+            font-family: 'Cinzel', serif;
+            font-size: 1rem;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            text-decoration: none;
+            display: inline-block;
+        }
+
+        .nav-btn:hover {
+            background: var(--leaf-1);
+            color: var(--bg-nature);
+            transform: translateY(-3px);
+            box-shadow: 0 10px 30px rgba(34, 139, 34, 0.3);
+        }
+
+        @media (max-width: 768px) {
+            .main-title { font-size: 2rem; }
+            .tree-scene { height: 400px; }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <header class="header">
+            <h1 class="main-title">3D分形树</h1>
+            <p class="subtitle">递归生成 - 树枝分叉生长动画</p>
+        </header>
+
+        <div class="tree-scene">
+            <div class="ground"></div>
+            <div class="fractal-tree" id="tree"></div>
+        </div>
+
+        <div class="controls">
+            <button class="control-btn active" onclick="growTree()">生长</button>
+            <button class="control-btn" onclick="shakeTree()">摇晃</button>
+            <button class="control-btn" onclick="changeSeason()">换季</button>
+        </div>
+
+        <nav class="nav-bar">
+            <a href="3d-19-ring-menu.html" class="nav-btn">上一个效果</a>
+            <a href="index.html" class="nav-btn">返回首页</a>
+            <a href="3d-21-particle-explosion.html" class="nav-btn">下一个效果</a>
+        </nav>
+    </div>
+
+    <script>
+        function createBranch(level, maxLevel, parentX, parentY, angle) {
+            if (level > maxLevel) {
+                // 创建叶子
+                const leaf = document.createElement('div');
+                leaf.className = 'leaf';
+                leaf.style.left = parentX + 'px';
+                leaf.style.top = parentY + 'px';
+                leaf.style.transform = `rotate(${Math.random() * 360}deg)`;
+                leaf.style.animationDelay = Math.random() * 2 + 's';
+                return [leaf];
+            }
+
+            const branches = [];
+            const length = 100 * Math.pow(0.7, level);
+            const endX = parentX + Math.sin(angle) * length;
+            const endY = parentY - Math.cos(angle) * length;
+
+            const branch = document.createElement('div');
+            branch.className = `branch level-${level}`;
+            branch.style.left = parentX + 'px';
+            branch.style.top = parentY + 'px';
+            branch.style.height = length + 'px';
+            branch.style.transform = `translateX(-50%) rotate(${angle}rad)`;
+            branches.push(branch);
+
+            // 递归创建子分支
+            const subBranches1 = createBranch(level + 1, maxLevel, endX, endY, angle - 0.5);
+            const subBranches2 = createBranch(level + 1, maxLevel, endX, endY, angle + 0.5);
+            
+            return branches.concat(subBranches1, subBranches2);
+        }
+
+        function growTree() {
+            const tree = document.getElementById('tree');
+            tree.innerHTML = '<div class="branch trunk"></div>';
+            
+            setTimeout(() => {
+                const branches = createBranch(1, 3, 300, 150, 0);
+                branches.forEach((branch, index) => {
+                    setTimeout(() => {
+                        tree.appendChild(branch);
+                    }, index * 100);
+                });
+            }, 500);
+        }
+
+        function shakeTree() {
+            const tree = document.getElementById('tree');
+            tree.style.animation = 'shake 0.5s ease-in-out';
+            setTimeout(() => {
+                tree.style.animation = '';
+            }, 500);
+        }
+
+        function changeSeason() {
+            const leaves = document.querySelectorAll('.leaf');
+            const colors = ['#228B22', '#FF8C00', '#FFD700', '#FF6347'];
+            leaves.forEach(leaf => {
+                leaf.style.background = colors[Math.floor(Math.random() * colors.length)];
+            });
+        }
+
+        // 初始化
+        growTree();
+    </script>
+</body>
+</html>

@@ -1,0 +1,860 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>书籍详情 - 乐高故事书桌游风格</title>
+    <link href="https://fonts.googleapis.com/css2?family=Cinzel:wght@400;600;700&family=Noto+Sans+SC:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --gold: #ffd700;
+            --gold-dark: #b8860b;
+            --silver: #c0c0c0;
+            --crimson: #dc2626;
+            --purple: #a855f7;
+            --green: #22c55e;
+            --blue: #3b82f6;
+            --orange: #f59e0b;
+            --bg-dark: #0d0d14;
+            --bg-medium: #1a1a2e;
+            --text-primary: #f8fafc;
+            --text-secondary: #94a3b8;
+            --font-title: 'Cinzel', serif;
+            --font-body: 'Noto Sans SC', sans-serif;
+        }
+
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+
+        body {
+            font-family: var(--font-body);
+            background: linear-gradient(180deg, #1a1a2e 0%, #0d0d14 100%);
+            min-height: 100vh;
+            color: var(--text-primary);
+            overflow-x: hidden;
+        }
+
+        .particles {
+            position: fixed;
+            inset: 0;
+            pointer-events: none;
+            z-index: 0;
+        }
+
+        .particle {
+            position: absolute;
+            width: 2px;
+            height: 2px;
+            background: var(--gold);
+            border-radius: 50%;
+            opacity: 0.3;
+            animation: float 20s linear infinite;
+        }
+
+        @keyframes float {
+            0% { transform: translateY(100vh); opacity: 0; }
+            10% { opacity: 0.3; }
+            90% { opacity: 0.3; }
+            100% { transform: translateY(-100vh); opacity: 0; }
+        }
+
+        .main-container {
+            position: relative;
+            z-index: 1;
+            height: 100vh;
+            display: flex;
+            flex-direction: column;
+        }
+
+        .header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 15px 20px;
+            background: rgba(0,0,0,0.5);
+            border-bottom: 1px solid rgba(255,215,0,0.2);
+            flex-shrink: 0;
+        }
+
+        .header-left {
+            display: flex;
+            align-items: center;
+            gap: 15px;
+        }
+
+        .back-btn {
+            width: 40px;
+            height: 40px;
+            border-radius: 10px;
+            background: rgba(255,255,255,0.1);
+            border: 1px solid rgba(255,255,255,0.2);
+            color: var(--text-primary);
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1.2rem;
+            transition: all 0.3s ease;
+            text-decoration: none;
+        }
+
+        .back-btn:hover {
+            background: rgba(255,215,0,0.2);
+            border-color: var(--gold);
+        }
+
+        .book-info {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+        }
+
+        .book-title {
+            font-family: var(--font-title);
+            font-size: 1.3rem;
+            font-weight: 600;
+            color: var(--gold);
+        }
+
+        .book-stats {
+            display: flex;
+            gap: 15px;
+            font-size: 0.85rem;
+            color: var(--text-secondary);
+        }
+
+        .stat-item {
+            display: flex;
+            align-items: center;
+            gap: 5px;
+        }
+
+        .header-nav {
+            display: flex;
+            gap: 10px;
+        }
+
+        .nav-btn {
+            padding: 8px 15px;
+            border-radius: 8px;
+            background: rgba(255,255,255,0.05);
+            border: 1px solid rgba(255,255,255,0.1);
+            color: var(--text-secondary);
+            font-size: 0.85rem;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            text-decoration: none;
+            display: flex;
+            align-items: center;
+            gap: 5px;
+        }
+
+        .nav-btn:hover {
+            background: rgba(255,215,0,0.1);
+            border-color: rgba(255,215,0,0.3);
+            color: var(--text-primary);
+        }
+
+        .content-area {
+            flex: 1;
+            display: flex;
+            overflow: hidden;
+        }
+
+        .panel {
+            background: linear-gradient(180deg, #1a1a2e, #0d0d14);
+            border-right: 1px solid rgba(255,215,0,0.1);
+            display: flex;
+            flex-direction: column;
+        }
+
+        .panel-header {
+            padding: 15px 20px;
+            background: rgba(0,0,0,0.3);
+            border-bottom: 1px solid rgba(255,255,255,0.1);
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .panel-title {
+            font-family: var(--font-title);
+            font-size: 1rem;
+            font-weight: 600;
+            color: var(--gold);
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .panel-content {
+            flex: 1;
+            overflow-y: auto;
+            padding: 15px;
+        }
+
+        .left-panel {
+            width: 280px;
+            flex-shrink: 0;
+        }
+
+        .center-panel {
+            flex: 1;
+            border-right: 1px solid rgba(255,215,0,0.1);
+        }
+
+        .right-panel {
+            width: 320px;
+            flex-shrink: 0;
+            border-right: none;
+        }
+
+        .chapter-list {
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
+        }
+
+        .chapter-card {
+            background: linear-gradient(180deg, #2d2d44, #1a1a2e);
+            border-radius: 12px;
+            padding: 15px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            border: 2px solid transparent;
+        }
+
+        .chapter-card:hover {
+            border-color: rgba(255,215,0,0.3);
+            transform: translateX(5px);
+        }
+
+        .chapter-card.active {
+            border-color: var(--gold);
+            background: linear-gradient(180deg, #3d3d54, #2a2a3e);
+        }
+
+        .chapter-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 8px;
+        }
+
+        .chapter-number {
+            font-size: 0.8rem;
+            color: var(--text-secondary);
+        }
+
+        .chapter-status {
+            padding: 3px 8px;
+            border-radius: 10px;
+            font-size: 0.7rem;
+            font-weight: 600;
+        }
+
+        .chapter-status.completed {
+            background: rgba(34,197,94,0.2);
+            color: var(--green);
+        }
+
+        .chapter-status.draft {
+            background: rgba(245,158,11,0.2);
+            color: var(--orange);
+        }
+
+        .chapter-title {
+            font-weight: 600;
+            font-size: 0.95rem;
+            margin-bottom: 5px;
+        }
+
+        .chapter-preview {
+            font-size: 0.8rem;
+            color: var(--text-secondary);
+            overflow: hidden;
+            text-overflow: ellipsis;
+            white-space: nowrap;
+        }
+
+        .story-container {
+            height: 100%;
+            display: flex;
+            flex-direction: column;
+        }
+
+        .story-header {
+            padding: 15px 20px;
+            background: rgba(0,0,0,0.3);
+            border-bottom: 1px solid rgba(255,255,255,0.1);
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .story-title {
+            font-family: var(--font-title);
+            font-size: 1.1rem;
+            font-weight: 600;
+            color: var(--gold);
+        }
+
+        .story-nav {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .story-nav-btn {
+            width: 35px;
+            height: 35px;
+            border-radius: 10px;
+            background: rgba(255,255,255,0.05);
+            border: 1px solid rgba(255,255,255,0.1);
+            color: var(--text-primary);
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            transition: all 0.2s ease;
+        }
+
+        .story-nav-btn:hover:not(:disabled) {
+            background: rgba(255,215,0,0.2);
+            border-color: var(--gold);
+        }
+
+        .story-nav-btn:disabled {
+            opacity: 0.3;
+            cursor: not-allowed;
+        }
+
+        .story-nav-info {
+            font-size: 0.85rem;
+            color: var(--text-secondary);
+        }
+
+        .story-content {
+            flex: 1;
+            overflow-y: auto;
+            padding: 25px;
+            font-size: 1.1rem;
+            line-height: 2;
+        }
+
+        .story-content p {
+            margin-bottom: 20px;
+            text-indent: 2em;
+        }
+
+        .char-name { color: #f87171; font-weight: 600; }
+        .action-word { color: #a78bfa; font-weight: 600; }
+        .emotion-word { color: #4ade80; font-weight: 600; }
+        .location-word { color: #fbbf24; font-weight: 600; }
+        .weather-word { color: #60a5fa; font-weight: 600; }
+        .item-word { color: #f472b6; font-weight: 600; }
+
+        .story-footer {
+            padding: 15px 20px;
+            background: rgba(0,0,0,0.3);
+            border-top: 1px solid rgba(255,255,255,0.1);
+            display: flex;
+            justify-content: center;
+            gap: 15px;
+        }
+
+        .action-btn {
+            padding: 12px 25px;
+            border-radius: 20px;
+            font-size: 0.95rem;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            font-family: var(--font-body);
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .action-btn.primary {
+            background: linear-gradient(135deg, var(--gold), #ff9800);
+            color: #000;
+            border: none;
+            box-shadow: 0 0 20px rgba(255,215,0,0.4);
+        }
+
+        .action-btn.primary:hover {
+            transform: scale(1.05);
+        }
+
+        .action-btn.secondary {
+            background: transparent;
+            color: var(--text-secondary);
+            border: 1px solid rgba(255,255,255,0.2);
+        }
+
+        .action-btn.secondary:hover {
+            background: rgba(255,255,255,0.1);
+            color: var(--text-primary);
+        }
+
+        .character-grid {
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+            gap: 12px;
+        }
+
+        .hs-card {
+            aspect-ratio: 3/4;
+            border-radius: 10px;
+            cursor: pointer;
+            transition: all 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+            display: flex;
+            flex-direction: column;
+            overflow: hidden;
+            box-shadow: 0 5px 15px rgba(0,0,0,0.4);
+            background: linear-gradient(180deg, #3d3d3d, #1a1a1a);
+            border: 2px solid;
+            position: relative;
+        }
+
+        .hs-card.protagonist { border-color: var(--gold); }
+        .hs-card.antagonist { border-color: var(--crimson); }
+        .hs-card.supporting { border-color: var(--silver); }
+
+        .hs-card:hover {
+            transform: translateY(-8px) scale(1.05);
+            z-index: 100;
+            box-shadow: 0 15px 30px rgba(0,0,0,0.5), 0 0 20px rgba(255,215,0,0.3);
+        }
+
+        .hs-portrait {
+            flex: 1;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            background: linear-gradient(180deg, #4a4a4a, #2a2a2a);
+        }
+
+        .hs-avatar {
+            font-size: 2rem;
+        }
+
+        .hs-name-banner {
+            padding: 5px 8px;
+            background: linear-gradient(180deg, #5a4a3a, #3a2a1a);
+            text-align: center;
+        }
+
+        .hs-name {
+            font-family: var(--font-title);
+            font-size: 0.7rem;
+            font-weight: 600;
+            color: #fff8e1;
+        }
+
+        .hs-card-actions {
+            position: absolute;
+            top: 5px;
+            right: 5px;
+            display: flex;
+            gap: 4px;
+            opacity: 0;
+            transition: opacity 0.2s ease;
+        }
+
+        .hs-card:hover .hs-card-actions {
+            opacity: 1;
+        }
+
+        .hs-action-btn {
+            width: 22px;
+            height: 22px;
+            border-radius: 5px;
+            border: 1px solid rgba(255,255,255,0.3);
+            background: rgba(0,0,0,0.6);
+            color: white;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 10px;
+            transition: all 0.2s ease;
+        }
+
+        .hs-action-btn:hover {
+            transform: scale(1.1);
+        }
+
+        .hs-action-btn.edit:hover {
+            background: rgba(59,130,246,0.6);
+        }
+
+        .hs-action-btn.delete:hover {
+            background: rgba(220,38,38,0.6);
+        }
+
+        .add-card {
+            aspect-ratio: 3/4;
+            border-radius: 10px;
+            border: 2px dashed rgba(255,255,255,0.2);
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            gap: 8px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            background: rgba(139,92,246,0.1);
+        }
+
+        .add-card:hover {
+            border-color: var(--purple);
+            background: rgba(139,92,246,0.2);
+        }
+
+        .add-icon {
+            font-size: 1.5rem;
+        }
+
+        .add-text {
+            font-size: 0.75rem;
+            color: var(--text-secondary);
+        }
+
+        .modal-overlay {
+            position: fixed;
+            inset: 0;
+            background: rgba(0,0,0,0.8);
+            display: none;
+            align-items: center;
+            justify-content: center;
+            z-index: 1000;
+            backdrop-filter: blur(5px);
+        }
+
+        .modal-overlay.active {
+            display: flex;
+        }
+
+        .modal {
+            background: linear-gradient(180deg, #2d2d44, #1a1a2e);
+            border-radius: 20px;
+            border: 3px solid var(--gold);
+            padding: 30px;
+            width: 90%;
+            max-width: 500px;
+            max-height: 80vh;
+            overflow-y: auto;
+            position: relative;
+        }
+
+        .modal-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 20px;
+            padding-bottom: 15px;
+            border-bottom: 1px solid rgba(255,215,0,0.2);
+        }
+
+        .modal-title {
+            font-family: var(--font-title);
+            font-size: 1.3rem;
+            font-weight: 600;
+            color: var(--gold);
+        }
+
+        .modal-close {
+            width: 30px;
+            height: 30px;
+            border-radius: 50%;
+            background: rgba(0,0,0,0.3);
+            border: 1px solid var(--text-secondary);
+            color: var(--text-primary);
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1.2rem;
+            transition: all 0.2s ease;
+        }
+
+        .modal-close:hover {
+            background: var(--crimson);
+            border-color: var(--crimson);
+        }
+
+        .prompt-content {
+            background: rgba(0,0,0,0.4);
+            border-radius: 10px;
+            padding: 20px;
+            font-family: monospace;
+            font-size: 0.9rem;
+            line-height: 1.8;
+            white-space: pre-wrap;
+            color: var(--text-secondary);
+        }
+
+        .toast {
+            position: fixed;
+            top: 20px;
+            left: 50%;
+            transform: translateX(-50%) translateY(-10px);
+            background: rgba(0,0,0,0.95);
+            padding: 12px 25px;
+            border-radius: 10px;
+            border: 1px solid var(--gold);
+            font-size: 0.9rem;
+            opacity: 0;
+            transition: all 0.3s ease;
+            z-index: 1002;
+        }
+
+        .toast.show {
+            transform: translateX(-50%) translateY(0);
+            opacity: 1;
+        }
+
+        .toast.success { border-color: var(--green); color: var(--green); }
+
+        @media (max-width: 900px) {
+            .content-area {
+                flex-direction: column;
+            }
+            
+            .left-panel, .right-panel {
+                width: 100%;
+                max-height: 200px;
+            }
+            
+            .center-panel {
+                border-right: none;
+                border-bottom: 1px solid rgba(255,215,0,0.1);
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="particles" id="particles"></div>
+
+    <div class="main-container">
+        <header class="header">
+            <div class="header-left">
+                <a href="bookshelf-demo.html" class="back-btn">←</a>
+                <div class="book-info">
+                    <h1 class="book-title">魔法王国的冒险</h1>
+                    <div class="book-stats">
+                        <span class="stat-item">📚 5章</span>
+                        <span class="stat-item">🎭 4角色</span>
+                        <span class="stat-item">📝 12.5k字</span>
+                    </div>
+                </div>
+            </div>
+            <nav class="header-nav">
+                <a href="share-demo.html" class="nav-btn">🔗 分享</a>
+                <a href="theme-selector-demo.html" class="nav-btn">🎨 主题</a>
+                <a href="index-demo.html" class="nav-btn">🏠 首页</a>
+            </nav>
+        </header>
+
+        <div class="content-area">
+            <div class="panel left-panel">
+                <div class="panel-header">
+                    <h2 class="panel-title">📖 章节</h2>
+                </div>
+                <div class="panel-content">
+                    <div class="chapter-list">
+                        <div class="chapter-card active" onclick="selectChapter(1)">
+                            <div class="chapter-header">
+                                <span class="chapter-number">第1章</span>
+                                <span class="chapter-status completed">已完成</span>
+                            </div>
+                            <h3 class="chapter-title">启程的黎明</h3>
+                            <p class="chapter-preview">在魔法王国的边缘，艾拉拉站在村口...</p>
+                        </div>
+                        <div class="chapter-card" onclick="selectChapter(2)">
+                            <div class="chapter-header">
+                                <span class="chapter-number">第2章</span>
+                                <span class="chapter-status completed">已完成</span>
+                            </div>
+                            <h3 class="chapter-title">神秘森林</h3>
+                            <p class="chapter-preview">森林深处传来奇异的光芒...</p>
+                        </div>
+                        <div class="chapter-card" onclick="selectChapter(3)">
+                            <div class="chapter-header">
+                                <span class="chapter-number">第3章</span>
+                                <span class="chapter-status completed">已完成</span>
+                            </div>
+                            <h3 class="chapter-title">老智者的预言</h3>
+                            <p class="chapter-preview">奥伦大师揭示了古老的秘密...</p>
+                        </div>
+                        <div class="chapter-card" onclick="selectChapter(4)">
+                            <div class="chapter-header">
+                                <span class="chapter-number">第4章</span>
+                                <span class="chapter-status draft">草稿</span>
+                            </div>
+                            <h3 class="chapter-title">黑暗降临</h3>
+                            <p class="chapter-preview">乌云遮蔽了天空，黑暗领主...</p>
+                        </div>
+                        <div class="chapter-card" onclick="selectChapter(5)">
+                            <div class="chapter-header">
+                                <span class="chapter-number">第5章</span>
+                                <span class="chapter-status draft">草稿</span>
+                            </div>
+                            <h3 class="chapter-title">最终决战</h3>
+                            <p class="chapter-preview">命运的齿轮开始转动...</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="panel center-panel">
+                <div class="story-container">
+                    <div class="story-header">
+                        <h2 class="story-title">第一章：启程的黎明</h2>
+                        <div class="story-nav">
+                            <button class="story-nav-btn" disabled>←</button>
+                            <span class="story-nav-info">1 / 5</span>
+                            <button class="story-nav-btn">→</button>
+                        </div>
+                    </div>
+                    <div class="story-content">
+                        <p>在<span class="location-word">魔法王国</span>的边缘，有一座被<span class="location-word">古老森林</span>环绕的小村庄。<span class="char-name">艾拉拉</span>站在村口，望着远处若隐若现的<span class="location-word">城堡</span>塔尖，心中充满了<span class="emotion-word">期待</span>和<span class="emotion-word">紧张</span>。</p>
+                        <p>"准备好了吗，年轻的冒险者？"<span class="char-name">老智者奥伦</span>的声音从身后传来，他的眼中闪烁着<span class="emotion-word">慈祥</span>的光芒。</p>
+                        <p><span class="char-name">艾拉拉</span><span class="action-word">转过身</span>，<span class="action-word">握紧</span>了手中的<span class="item-word">魔法杖</span>，坚定地点了点头。"我准备好了，奥伦大师。"</p>
+                        <p>就在这时，<span class="char-name">雷恩</span>从村子里跑了出来，手中挥舞着他的<span class="item-word">长剑</span>。"等等我！我也要一起去冒险！"</p>
+                        <p><span class="char-name">艾拉拉</span>看着这位从小一起长大的好友，<span class="emotion-word">微笑</span>着说："那就让我们一起出发吧！"</p>
+                        <p>阳光穿过<span class="weather-word">晴朗</span>的天空，洒在两个年轻人的身上。他们的冒险，才刚刚开始...</p>
+                    </div>
+                    <div class="story-footer">
+                        <button class="action-btn secondary" onclick="openPromptModal()">📝 查看提示词</button>
+                        <button class="action-btn primary" onclick="generateNextChapter()">✨ 生成下一章</button>
+                    </div>
+                </div>
+            </div>
+
+            <div class="panel right-panel">
+                <div class="panel-header">
+                    <h2 class="panel-title">🎭 角色</h2>
+                </div>
+                <div class="panel-content">
+                    <div class="character-grid">
+                        <div class="hs-card protagonist">
+                            <div class="hs-card-actions">
+                                <button class="hs-action-btn edit" title="编辑">✏️</button>
+                                <button class="hs-action-btn delete" title="删除">🗑️</button>
+                            </div>
+                            <div class="hs-portrait"><span class="hs-avatar">🧝‍♀️</span></div>
+                            <div class="hs-name-banner"><span class="hs-name">艾拉拉</span></div>
+                        </div>
+                        <div class="hs-card protagonist">
+                            <div class="hs-card-actions">
+                                <button class="hs-action-btn edit" title="编辑">✏️</button>
+                                <button class="hs-action-btn delete" title="删除">🗑️</button>
+                            </div>
+                            <div class="hs-portrait"><span class="hs-avatar">⚔️</span></div>
+                            <div class="hs-name-banner"><span class="hs-name">雷恩</span></div>
+                        </div>
+                        <div class="hs-card supporting">
+                            <div class="hs-card-actions">
+                                <button class="hs-action-btn edit" title="编辑">✏️</button>
+                                <button class="hs-action-btn delete" title="删除">🗑️</button>
+                            </div>
+                            <div class="hs-portrait"><span class="hs-avatar">🧙‍♂️</span></div>
+                            <div class="hs-name-banner"><span class="hs-name">老智者奥伦</span></div>
+                        </div>
+                        <div class="hs-card antagonist">
+                            <div class="hs-card-actions">
+                                <button class="hs-action-btn edit" title="编辑">✏️</button>
+                                <button class="hs-action-btn delete" title="删除">🗑️</button>
+                            </div>
+                            <div class="hs-portrait"><span class="hs-avatar">👿</span></div>
+                            <div class="hs-name-banner"><span class="hs-name">黑暗领主</span></div>
+                        </div>
+                        <div class="add-card" onclick="addCharacter()">
+                            <span class="add-icon">➕</span>
+                            <span class="add-text">添加角色</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="modal-overlay" id="promptModal">
+        <div class="modal">
+            <div class="modal-header">
+                <h3 class="modal-title">📝 故事提示词</h3>
+                <button class="modal-close" onclick="closeModal('promptModal')">×</button>
+            </div>
+            <div class="prompt-content">故事背景：魔法王国
+主角：艾拉拉（精灵法师）、雷恩（勇敢战士）
+配角：老智者奥伦
+反派：黑暗领主
+
+风格：奇幻冒险
+基调：积极向上、友情、勇气
+
+当前场景：艾拉拉和雷恩准备踏上冒险旅程，奥伦大师给予指引
+
+要求：
+- 保持角色性格一致
+- 加入适当的魔法元素
+- 推进故事情节发展
+- 字数控制在100字左右</div>
+        </div>
+    </div>
+
+    <div class="toast" id="toast"></div>
+
+    <script>
+        for (var i = 0; i < 15; i++) {
+            var p = document.createElement('div');
+            p.className = 'particle';
+            p.style.left = Math.random() * 100 + '%';
+            p.style.animationDelay = Math.random() * 20 + 's';
+            document.getElementById('particles').appendChild(p);
+        }
+
+        function selectChapter(num) {
+            document.querySelectorAll('.chapter-card').forEach(function(card, index) {
+                card.classList.toggle('active', index === num - 1);
+            });
+            showToast('已切换到第' + num + '章', 'success');
+        }
+
+        function openPromptModal() {
+            document.getElementById('promptModal').classList.add('active');
+        }
+
+        function closeModal(id) {
+            document.getElementById(id).classList.remove('active');
+        }
+
+        function generateNextChapter() {
+            showToast('正在生成下一章...', 'success');
+        }
+
+        function addCharacter() {
+            window.location.href = 'characters-demo.html';
+        }
+
+        function showToast(msg, type) {
+            var toast = document.getElementById('toast');
+            toast.textContent = msg;
+            toast.className = 'toast show ' + (type || '');
+            setTimeout(function() {
+                toast.classList.remove('show');
+            }, 2000);
+        }
+
+        document.querySelectorAll('.modal-overlay').forEach(function(modal) {
+            modal.addEventListener('click', function(e) {
+                if (e.target === this) {
+                    this.classList.remove('active');
+                }
+            });
+        });
+    </script>
+</body>
+</html>

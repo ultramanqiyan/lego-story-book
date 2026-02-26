@@ -1,0 +1,474 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>血染钟楼风格 - 乐高故事书</title>
+    <link href="https://fonts.googleapis.com/css2?family=Cinzel:wght@400;600;700&family=Noto+Sans+SC:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --blood-red: #8b0000;
+            --gothic-black: #0a0a0a;
+            --parchment: #f4e4bc;
+            --gold-trim: #c9a227;
+            --bg-dark: #0d0d0d;
+            --bg-medium: #1a1a1a;
+            --bg-light: #2a2a2a;
+            --text-primary: #e8e8e8;
+            --text-secondary: #888;
+            --font-title: 'Cinzel', serif;
+            --font-body: 'Noto Sans SC', sans-serif;
+        }
+
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+
+        body {
+            font-family: var(--font-body);
+            background: var(--bg-dark);
+            min-height: 100vh;
+            color: var(--text-primary);
+        }
+
+        .gothic-border {
+            position: fixed;
+            inset: 0;
+            border: 15px solid;
+            border-image: linear-gradient(135deg, #3a2a1a, #2a1a0a, #3a2a1a) 1;
+            pointer-events: none;
+            z-index: 100;
+        }
+
+        .candlelight {
+            position: fixed;
+            width: 100px;
+            height: 100px;
+            border-radius: 50%;
+            background: radial-gradient(circle, rgba(255, 200, 100, 0.1), transparent 70%);
+            pointer-events: none;
+            animation: flicker 3s ease-in-out infinite;
+        }
+
+        .candlelight.c1 { top: 20%; left: 10%; }
+        .candlelight.c2 { top: 30%; right: 15%; }
+        .candlelight.c3 { bottom: 20%; left: 20%; }
+
+        @keyframes flicker {
+            0%, 100% { opacity: 0.5; transform: scale(1); }
+            50% { opacity: 0.8; transform: scale(1.1); }
+        }
+
+        .container {
+            position: relative;
+            z-index: 1;
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 40px 20px;
+        }
+
+        .header {
+            text-align: center;
+            padding: 40px 20px;
+        }
+
+        .clock-tower {
+            width: 150px;
+            height: 150px;
+            margin: 0 auto 20px;
+            position: relative;
+        }
+
+        .clock-face {
+            width: 100%;
+            height: 100%;
+            background: linear-gradient(135deg, var(--parchment), #d4c4a8);
+            border-radius: 50%;
+            border: 5px solid var(--gold-trim);
+            position: relative;
+            box-shadow: 0 0 30px rgba(201, 162, 39, 0.3);
+        }
+
+        .clock-hand {
+            position: absolute;
+            bottom: 50%;
+            left: 50%;
+            transform-origin: bottom center;
+            background: var(--gothic-black);
+        }
+
+        .clock-hand.hour {
+            width: 4px;
+            height: 40px;
+            margin-left: -2px;
+            animation: clock-tick 43200s linear infinite;
+        }
+
+        .clock-hand.minute {
+            width: 3px;
+            height: 55px;
+            margin-left: -1.5px;
+            animation: clock-tick 3600s linear infinite;
+        }
+
+        @keyframes clock-tick {
+            from { transform: rotate(0deg); }
+            to { transform: rotate(360deg); }
+        }
+
+        .clock-center {
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            width: 10px;
+            height: 10px;
+            background: var(--gold-trim);
+            border-radius: 50%;
+            transform: translate(-50%, -50%);
+        }
+
+        .main-title {
+            font-family: var(--font-title);
+            font-size: 3rem;
+            font-weight: 700;
+            color: var(--blood-red);
+            text-shadow: 0 0 20px rgba(139, 0, 0, 0.5);
+            margin-bottom: 10px;
+        }
+
+        .subtitle {
+            font-size: 1.1rem;
+            color: var(--text-secondary);
+        }
+
+        .section {
+            margin: 50px 0;
+        }
+
+        .section-header {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            margin-bottom: 25px;
+            padding-bottom: 15px;
+            border-bottom: 1px solid var(--blood-red);
+        }
+
+        .section-title {
+            font-family: var(--font-title);
+            font-size: 1.5rem;
+            color: var(--gold-trim);
+        }
+
+        .character-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+            gap: 25px;
+        }
+
+        .gothic-card {
+            background: linear-gradient(180deg, var(--bg-light), var(--bg-medium));
+            border-radius: 15px;
+            overflow: hidden;
+            cursor: pointer;
+            transition: all 0.4s ease;
+            border: 3px solid var(--gold-trim);
+            position: relative;
+        }
+
+        .gothic-card:hover {
+            transform: translateY(-10px);
+            box-shadow: 0 15px 30px rgba(0,0,0,0.5), 0 0 20px rgba(139, 0, 0, 0.3);
+        }
+
+        .gothic-card::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            height: 5px;
+            background: linear-gradient(90deg, var(--blood-red), var(--gold-trim), var(--blood-red));
+        }
+
+        .card-seal {
+            position: absolute;
+            top: 10px;
+            right: 10px;
+            width: 30px;
+            height: 30px;
+            background: var(--blood-red);
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 0.8rem;
+            border: 2px solid var(--gold-trim);
+        }
+
+        .card-portrait {
+            height: 120px;
+            background: linear-gradient(180deg, rgba(139,0,0,0.2), transparent);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 3.5rem;
+        }
+
+        .card-info {
+            padding: 15px;
+            background: linear-gradient(180deg, var(--parchment), #e4d4a8);
+            color: var(--gothic-black);
+        }
+
+        .card-name {
+            font-family: var(--font-title);
+            font-size: 1.1rem;
+            font-weight: 600;
+            margin-bottom: 5px;
+        }
+
+        .card-ability {
+            font-size: 0.8rem;
+            color: #555;
+            font-style: italic;
+        }
+
+        .card-type {
+            display: inline-block;
+            padding: 3px 10px;
+            background: var(--blood-red);
+            color: white;
+            border-radius: 10px;
+            font-size: 0.7rem;
+            margin-top: 8px;
+        }
+
+        .story-scroll {
+            background: linear-gradient(180deg, var(--parchment), #e4d4a8);
+            border-radius: 15px;
+            padding: 30px;
+            border: 5px solid var(--gold-trim);
+            position: relative;
+            color: var(--gothic-black);
+        }
+
+        .story-scroll::before,
+        .story-scroll::after {
+            content: '📜';
+            position: absolute;
+            font-size: 2rem;
+            opacity: 0.3;
+        }
+
+        .story-scroll::before { top: 10px; left: 10px; }
+        .story-scroll::after { bottom: 10px; right: 10px; }
+
+        .story-title {
+            font-family: var(--font-title);
+            font-size: 1.5rem;
+            color: var(--blood-red);
+            text-align: center;
+            margin-bottom: 20px;
+        }
+
+        .story-content {
+            font-size: 1rem;
+            line-height: 1.8;
+        }
+
+        .story-content p {
+            margin-bottom: 15px;
+            text-indent: 2em;
+        }
+
+        .blood-text {
+            color: var(--blood-red);
+            font-weight: 600;
+        }
+
+        .vote-area {
+            display: flex;
+            justify-content: center;
+            gap: 30px;
+            margin: 30px 0;
+        }
+
+        .vote-token {
+            width: 80px;
+            height: 80px;
+            border-radius: 50%;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            border: 3px solid;
+        }
+
+        .vote-token.yes {
+            background: rgba(34, 197, 94, 0.2);
+            border-color: #22c55e;
+            color: #22c55e;
+        }
+
+        .vote-token.no {
+            background: rgba(220, 38, 38, 0.2);
+            border-color: #dc2626;
+            color: #dc2626;
+        }
+
+        .vote-token:hover {
+            transform: scale(1.1);
+        }
+
+        .vote-icon {
+            font-size: 1.5rem;
+        }
+
+        .vote-label {
+            font-size: 0.8rem;
+            margin-top: 5px;
+        }
+
+        .cta-section {
+            text-align: center;
+            margin: 50px 0;
+        }
+
+        .cta-btn {
+            display: inline-block;
+            padding: 15px 50px;
+            font-size: 1.2rem;
+            font-weight: 700;
+            border: none;
+            border-radius: 25px;
+            background: linear-gradient(135deg, var(--blood-red), #5a0000);
+            color: var(--parchment);
+            cursor: pointer;
+            transition: all 0.3s ease;
+            text-decoration: none;
+            border: 2px solid var(--gold-trim);
+        }
+
+        .cta-btn:hover {
+            transform: scale(1.05);
+            box-shadow: 0 0 30px rgba(139, 0, 0, 0.5);
+        }
+
+        .footer {
+            text-align: center;
+            padding: 30px;
+            color: var(--text-secondary);
+            font-size: 0.9rem;
+        }
+    </style>
+</head>
+<body>
+    <div class="gothic-border"></div>
+    <div class="candlelight c1"></div>
+    <div class="candlelight c2"></div>
+    <div class="candlelight c3"></div>
+
+    <div class="container">
+        <header class="header">
+            <div class="clock-tower">
+                <div class="clock-face">
+                    <div class="clock-hand hour"></div>
+                    <div class="clock-hand minute"></div>
+                    <div class="clock-center"></div>
+                </div>
+            </div>
+            <h1 class="main-title">🩸 血染钟楼风格</h1>
+            <p class="subtitle">哥特暗黑 · 钟楼时间 · 羊皮纸卷</p>
+        </header>
+
+        <section class="section">
+            <div class="section-header">
+                <span>🎭</span>
+                <h2 class="section-title">角色卡牌</h2>
+            </div>
+            <div class="character-grid">
+                <div class="gothic-card">
+                    <div class="card-seal">👁</div>
+                    <div class="card-portrait">🧛</div>
+                    <div class="card-info">
+                        <div class="card-name">吸血鬼</div>
+                        <div class="card-ability">每晚可以选择一名玩家，该玩家第二天会死亡</div>
+                        <span class="card-type">邪恶阵营</span>
+                    </div>
+                </div>
+
+                <div class="gothic-card">
+                    <div class="card-seal">🔮</div>
+                    <div class="card-portrait">🧙‍♀️</div>
+                    <div class="card-info">
+                        <div class="card-name">女巫</div>
+                        <div class="card-ability">每晚可以得知一名玩家的阵营</div>
+                        <span class="card-type">善良阵营</span>
+                    </div>
+                </div>
+
+                <div class="gothic-card">
+                    <div class="card-seal">⚔️</div>
+                    <div class="card-portrait">🦸</div>
+                    <div class="card-info">
+                        <div class="card-name">骑士</div>
+                        <div class="card-ability">死亡时可以指定一名玩家一起死亡</div>
+                        <span class="card-type">善良阵营</span>
+                    </div>
+                </div>
+
+                <div class="gothic-card">
+                    <div class="card-seal">🌙</div>
+                    <div class="card-portrait">🐺</div>
+                    <div class="card-info">
+                        <div class="card-name">狼人</div>
+                        <div class="card-ability">每晚与同伴交流，共同选择猎物</div>
+                        <span class="card-type">邪恶阵营</span>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <section class="section">
+            <div class="section-header">
+                <span>📜</span>
+                <h2 class="section-title">故事卷轴</h2>
+            </div>
+            <div class="story-scroll">
+                <h3 class="story-title">第十三章：钟楼之夜</h3>
+                <div class="story-content">
+                    <p>午夜的钟声敲响，<span class="blood-text">血月</span>高悬于天际。古老的钟楼在黑暗中投下长长的阴影，仿佛一个沉默的守护者。</p>
+                    <p>村民们聚集在广场上，每个人的眼中都闪烁着<span class="blood-text">恐惧</span>与<span class="blood-text">怀疑</span>。今夜，又有人将永远沉睡...</p>
+                    <p>钟楼的指针缓缓移动，时间在流逝，而<span class="blood-text">真相</span>却依然隐藏在黑暗之中。</p>
+                </div>
+            </div>
+        </section>
+
+        <section class="section">
+            <div class="section-header">
+                <span>🗳️</span>
+                <h2 class="section-title">投票表决</h2>
+            </div>
+            <div class="vote-area">
+                <div class="vote-token yes">
+                    <span class="vote-icon">✓</span>
+                    <span class="vote-label">处决</span>
+                </div>
+                <div class="vote-token no">
+                    <span class="vote-icon">✗</span>
+                    <span class="vote-label">赦免</span>
+                </div>
+            </div>
+        </section>
+
+        <section class="cta-section">
+            <a href="index.html" class="cta-btn">🩸 返回风格选择</a>
+        </section>
+
+        <footer class="footer">
+            <p>血染钟楼风格 Demo - 乐高故事书</p>
+        </footer>
+    </div>
+</body>
+</html>

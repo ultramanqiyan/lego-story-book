@@ -1,0 +1,623 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>桌游风格Demo展示 - 乐高故事书</title>
+    <link href="https://fonts.googleapis.com/css2?family=Cinzel:wght@400;600;700&family=Noto+Sans+SC:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --gold: #ffd700;
+            --gold-dark: #b8860b;
+            --bg-dark: #0d0d14;
+            --bg-medium: #1a1a2e;
+            --text-primary: #f8fafc;
+            --text-secondary: #94a3b8;
+            --font-title: 'Cinzel', serif;
+            --font-body: 'Noto Sans SC', sans-serif;
+        }
+
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+
+        body {
+            font-family: var(--font-body);
+            background: linear-gradient(180deg, #1a1a2e 0%, #0d0d14 100%);
+            min-height: 100vh;
+            color: var(--text-primary);
+        }
+
+        .container {
+            max-width: 1400px;
+            margin: 0 auto;
+            padding: 40px 20px;
+        }
+
+        .header {
+            text-align: center;
+            margin-bottom: 50px;
+        }
+
+        .main-title {
+            font-family: var(--font-title);
+            font-size: 3rem;
+            font-weight: 700;
+            background: linear-gradient(135deg, var(--gold), #ff9800);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            margin-bottom: 15px;
+        }
+
+        .subtitle {
+            font-size: 1.2rem;
+            color: var(--text-secondary);
+        }
+
+        .style-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+            gap: 25px;
+        }
+
+        .style-card {
+            background: linear-gradient(180deg, #2d2d44, #1a1a2e);
+            border-radius: 15px;
+            overflow: hidden;
+            cursor: pointer;
+            transition: all 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+            border: 2px solid rgba(255,255,255,0.1);
+            text-decoration: none;
+            color: var(--text-primary);
+        }
+
+        .style-card:hover {
+            transform: translateY(-10px) scale(1.02);
+            border-color: var(--gold);
+            box-shadow: 0 20px 40px rgba(0,0,0,0.4), 0 0 30px rgba(255,215,0,0.2);
+        }
+
+        .card-preview {
+            height: 160px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .card-icon {
+            font-size: 4rem;
+            filter: drop-shadow(0 4px 8px rgba(0,0,0,0.3));
+        }
+
+        .card-content {
+            padding: 20px;
+        }
+
+        .card-number {
+            font-size: 0.75rem;
+            color: var(--gold);
+            font-weight: 600;
+            letter-spacing: 1px;
+            margin-bottom: 5px;
+        }
+
+        .card-title {
+            font-family: var(--font-title);
+            font-size: 1.2rem;
+            font-weight: 600;
+            margin-bottom: 8px;
+        }
+
+        .card-desc {
+            font-size: 0.85rem;
+            color: var(--text-secondary);
+            line-height: 1.5;
+        }
+
+        .card-tags {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 6px;
+            margin-top: 12px;
+        }
+
+        .tag {
+            padding: 4px 10px;
+            border-radius: 12px;
+            font-size: 0.7rem;
+            background: rgba(255,255,255,0.1);
+        }
+
+        /* 各风格预览背景 */
+        .preview-werewolf { background: linear-gradient(135deg, #4a0e4e, #8b0000); }
+        .preview-codenames { background: linear-gradient(135deg, #dc2626, #2563eb); }
+        .preview-spyfall { background: linear-gradient(135deg, #1e3a5f, #0f1c2e); }
+        .preview-catan { background: linear-gradient(135deg, #8b4513, #228b22); }
+        .preview-splendor { background: linear-gradient(135deg, #e0115f, #0f52ba); }
+        .preview-azul { background: linear-gradient(135deg, #0066cc, #f0f8ff); }
+        .preview-blood { background: linear-gradient(135deg, #8b0000, #0a0a0a); }
+        .preview-gloomhaven { background: linear-gradient(135deg, #d4c4a8, #8b4513); }
+        .preview-wonders { background: linear-gradient(135deg, #d4af37, #cd7f32); }
+        .preview-ticket { background: linear-gradient(135deg, #c41e3a, #f5e6c8); }
+        .preview-agricola { background: linear-gradient(135deg, #deb887, #228b22); }
+        .preview-mars { background: linear-gradient(135deg, #c1440e, #0a0a0a); }
+        .preview-pandemic { background: linear-gradient(135deg, #0066cc, #22c55e); }
+        .preview-magic { background: linear-gradient(135deg, #d3202a, #00733e); }
+        .preview-sanguosha { background: linear-gradient(135deg, #dc143c, #1e90ff); }
+        .preview-3d-flip { background: linear-gradient(135deg, #2d1b4e, #1a0f2e); }
+        .preview-3d-island { background: linear-gradient(135deg, #1a1a3e, #4a4a8a); }
+        .preview-3d-hall { background: linear-gradient(135deg, #0a0a0f, #1a1a2e); }
+        .preview-3d-stage { background: linear-gradient(135deg, #1a0a2e, #2d1b4e); }
+        .preview-3d-tilt { background: linear-gradient(135deg, #0f0f1a, #1a1a2e); }
+        .preview-3d-ring { background: linear-gradient(135deg, #1a0a2e, #4a1a6e); }
+        .preview-3d-fractal { background: linear-gradient(135deg, #0a1a0a, #1a3a1a); }
+        .preview-3d-explosion { background: linear-gradient(135deg, #2a0a0a, #4a1a1a); }
+        .preview-3d-mirror { background: linear-gradient(135deg, #1a1a2e, #2a2a4e); }
+        .preview-3d-tornado { background: linear-gradient(135deg, #1a1a3e, #3a3a6e); }
+        .preview-3d-domino { background: linear-gradient(135deg, #2a1a0a, #4a2a1a); }
+        .preview-3d-spring { background: linear-gradient(135deg, #0a2a1a, #1a4a2a); }
+
+        .footer {
+            text-align: center;
+            margin-top: 60px;
+            padding: 30px;
+            color: var(--text-secondary);
+            font-size: 0.9rem;
+            border-top: 1px solid rgba(255,255,255,0.1);
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <header class="header">
+            <h1 class="main-title">桌游风格Demo展示</h1>
+            <p class="subtitle">15套不同桌游风格的UI设计方案 - 点击卡片查看详情</p>
+        </header>
+
+        <div class="style-grid">
+            <a href="style-01-werewolf.html" class="style-card">
+                <div class="card-preview preview-werewolf">
+                    <span class="card-icon">🐺</span>
+                </div>
+                <div class="card-content">
+                    <div class="card-number">STYLE 01</div>
+                    <h3 class="card-title">狼人杀风格</h3>
+                    <p class="card-desc">深紫暗红色调，神秘夜晚氛围，月亮狼影元素装饰</p>
+                    <div class="card-tags">
+                        <span class="tag">神秘</span>
+                        <span class="tag">悬疑</span>
+                        <span class="tag">夜晚</span>
+                    </div>
+                </div>
+            </a>
+
+            <a href="style-02-codenames.html" class="style-card">
+                <div class="card-preview preview-codenames">
+                    <span class="card-icon">🕵️</span>
+                </div>
+                <div class="card-content">
+                    <div class="card-number">STYLE 02</div>
+                    <h3 class="card-title">行动代号风格</h3>
+                    <p class="card-desc">红蓝对抗色调，简洁网格布局，特工间谍主题</p>
+                    <div class="card-tags">
+                        <span class="tag">对抗</span>
+                        <span class="tag">网格</span>
+                        <span class="tag">特工</span>
+                    </div>
+                </div>
+            </a>
+
+            <a href="style-03-spyfall.html" class="style-card">
+                <div class="card-preview preview-spyfall">
+                    <span class="card-icon">🎭</span>
+                </div>
+                <div class="card-content">
+                    <div class="card-number">STYLE 03</div>
+                    <h3 class="card-title">谁是卧底风格</h3>
+                    <p class="card-desc">地点卡片轮转，问号面具元素，悬疑计时器</p>
+                    <div class="card-tags">
+                        <span class="tag">悬疑</span>
+                        <span class="tag">推理</span>
+                        <span class="tag">社交</span>
+                    </div>
+                </div>
+            </a>
+
+            <a href="style-04-catan.html" class="style-card">
+                <div class="card-preview preview-catan">
+                    <span class="card-icon">🏝️</span>
+                </div>
+                <div class="card-content">
+                    <div class="card-number">STYLE 04</div>
+                    <h3 class="card-title">卡坦岛风格</h3>
+                    <p class="card-desc">六边形网格布局，资源色彩系统，建筑图标</p>
+                    <div class="card-tags">
+                        <span class="tag">策略</span>
+                        <span class="tag">资源</span>
+                        <span class="tag">建设</span>
+                    </div>
+                </div>
+            </a>
+
+            <a href="style-05-splendor.html" class="style-card">
+                <div class="card-preview preview-splendor">
+                    <span class="card-icon">💎</span>
+                </div>
+                <div class="card-content">
+                    <div class="card-number">STYLE 05</div>
+                    <h3 class="card-title">璀璨宝石风格</h3>
+                    <p class="card-desc">宝石色彩系统，贵族卡片设计，优雅光泽效果</p>
+                    <div class="card-tags">
+                        <span class="tag">优雅</span>
+                        <span class="tag">宝石</span>
+                        <span class="tag">贵族</span>
+                    </div>
+                </div>
+            </a>
+
+            <a href="style-06-azul.html" class="style-card">
+                <div class="card-preview preview-azul">
+                    <span class="card-icon">🪟</span>
+                </div>
+                <div class="card-content">
+                    <div class="card-number">STYLE 06</div>
+                    <h3 class="card-title">花砖物语风格</h3>
+                    <p class="card-desc">葡萄牙瓷砖图案，蓝白配色，几何装饰元素</p>
+                    <div class="card-tags">
+                        <span class="tag">几何</span>
+                        <span class="tag">艺术</span>
+                        <span class="tag">瓷砖</span>
+                    </div>
+                </div>
+            </a>
+
+            <a href="style-07-blood-clocktower.html" class="style-card">
+                <div class="card-preview preview-blood">
+                    <span class="card-icon">🩸</span>
+                </div>
+                <div class="card-content">
+                    <div class="card-number">STYLE 07</div>
+                    <h3 class="card-title">血染钟楼风格</h3>
+                    <p class="card-desc">哥特式暗黑风格，钟楼时间元素，红黑配色</p>
+                    <div class="card-tags">
+                        <span class="tag">哥特</span>
+                        <span class="tag">暗黑</span>
+                        <span class="tag">神秘</span>
+                    </div>
+                </div>
+            </a>
+
+            <a href="style-08-gloomhaven.html" class="style-card">
+                <div class="card-preview preview-gloomhaven">
+                    <span class="card-icon">⚔️</span>
+                </div>
+                <div class="card-content">
+                    <div class="card-number">STYLE 08</div>
+                    <h3 class="card-title">幽港迷城风格</h3>
+                    <p class="card-desc">欧洲奇幻风格，角色技能卡，地图板块元素</p>
+                    <div class="card-tags">
+                        <span class="tag">奇幻</span>
+                        <span class="tag">冒险</span>
+                        <span class="tag">战斗</span>
+                    </div>
+                </div>
+            </a>
+
+            <a href="style-09-seven-wonders.html" class="style-card">
+                <div class="card-preview preview-wonders">
+                    <span class="card-icon">🏛️</span>
+                </div>
+                <div class="card-content">
+                    <div class="card-number">STYLE 09</div>
+                    <h3 class="card-title">七大奇迹风格</h3>
+                    <p class="card-desc">古代文明主题，金色青铜色调，奇迹建筑图标</p>
+                    <div class="card-tags">
+                        <span class="tag">古代</span>
+                        <span class="tag">文明</span>
+                        <span class="tag">建筑</span>
+                    </div>
+                </div>
+            </a>
+
+            <a href="style-10-ticket-ride.html" class="style-card">
+                <div class="card-preview preview-ticket">
+                    <span class="card-icon">🚂</span>
+                </div>
+                <div class="card-content">
+                    <div class="card-number">STYLE 10</div>
+                    <h3 class="card-title">票务之旅风格</h3>
+                    <p class="card-desc">复古火车主题，彩色车票卡，地图路线设计</p>
+                    <div class="card-tags">
+                        <span class="tag">复古</span>
+                        <span class="tag">旅行</span>
+                        <span class="tag">火车</span>
+                    </div>
+                </div>
+            </a>
+
+            <a href="style-11-agricola.html" class="style-card">
+                <div class="card-preview preview-agricola">
+                    <span class="card-icon">🌾</span>
+                </div>
+                <div class="card-content">
+                    <div class="card-number">STYLE 11</div>
+                    <h3 class="card-title">农场主风格</h3>
+                    <p class="card-desc">农场田园主题，木质泥土色调，农田网格布局</p>
+                    <div class="card-tags">
+                        <span class="tag">农场</span>
+                        <span class="tag">田园</span>
+                        <span class="tag">资源</span>
+                    </div>
+                </div>
+            </a>
+
+            <a href="style-12-terraforming-mars.html" class="style-card">
+                <div class="card-preview preview-mars">
+                    <span class="card-icon">🔴</span>
+                </div>
+                <div class="card-content">
+                    <div class="card-number">STYLE 12</div>
+                    <h3 class="card-title">星际拓荒风格</h3>
+                    <p class="card-desc">科幻火星主题，红色星球色调，项目卡片设计</p>
+                    <div class="card-tags">
+                        <span class="tag">科幻</span>
+                        <span class="tag">火星</span>
+                        <span class="tag">太空</span>
+                    </div>
+                </div>
+            </a>
+
+            <a href="style-13-pandemic.html" class="style-card">
+                <div class="card-preview preview-pandemic">
+                    <span class="card-icon">🌍</span>
+                </div>
+                <div class="card-content">
+                    <div class="card-number">STYLE 13</div>
+                    <h3 class="card-title">瘟疫危机风格</h3>
+                    <p class="card-desc">全球地图视觉，疾病颜色系统，城市连接网络</p>
+                    <div class="card-tags">
+                        <span class="tag">合作</span>
+                        <span class="tag">全球</span>
+                        <span class="tag">策略</span>
+                    </div>
+                </div>
+            </a>
+
+            <a href="style-14-magic-the-gathering.html" class="style-card">
+                <div class="card-preview preview-magic">
+                    <span class="card-icon">✨</span>
+                </div>
+                <div class="card-content">
+                    <div class="card-number">STYLE 14</div>
+                    <h3 class="card-title">魔法风云会风格</h3>
+                    <p class="card-desc">五色魔法系统，奇幻插画风格，法力符号</p>
+                    <div class="card-tags">
+                        <span class="tag">魔法</span>
+                        <span class="tag">卡牌</span>
+                        <span class="tag">奇幻</span>
+                    </div>
+                </div>
+            </a>
+
+            <a href="style-15-sanguosha.html" class="style-card">
+                <div class="card-preview preview-sanguosha">
+                    <span class="card-icon">🏯</span>
+                </div>
+                <div class="card-content">
+                    <div class="card-number">STYLE 15</div>
+                    <h3 class="card-title">三国杀风格</h3>
+                    <p class="card-desc">中国古典风格，水墨画元素，武将卡牌设计</p>
+                    <div class="card-tags">
+                        <span class="tag">三国</span>
+                        <span class="tag">水墨</span>
+                        <span class="tag">武将</span>
+                    </div>
+                </div>
+            </a>
+        </div>
+
+        <header class="header" style="margin-top: 80px;">
+            <h1 class="main-title">3D效果Demo展示</h1>
+            <p class="subtitle">12种不同3D交互效果 - 点击卡片查看详情</p>
+        </header>
+
+        <div class="style-grid">
+            <a href="3d-01-flip-cards.html" class="style-card">
+                <div class="card-preview preview-3d-flip">
+                    <span class="card-icon">🔄</span>
+                </div>
+                <div class="card-content">
+                    <div class="card-number">3D 01</div>
+                    <h3 class="card-title">3D翻转卡牌</h3>
+                    <p class="card-desc">经典3D翻转效果，悬停查看卡牌背面详情</p>
+                    <div class="card-tags">
+                        <span class="tag">翻转</span>
+                        <span class="tag">双面</span>
+                        <span class="tag">卡牌</span>
+                    </div>
+                </div>
+            </a>
+
+            <a href="3d-02-floating-island.html" class="style-card">
+                <div class="card-preview preview-3d-island">
+                    <span class="card-icon">🏝️</span>
+                </div>
+                <div class="card-content">
+                    <div class="card-number">3D 02</div>
+                    <h3 class="card-title">3D悬浮岛屿</h3>
+                    <p class="card-desc">漂浮在云端的神秘岛屿，自动旋转场景</p>
+                    <div class="card-tags">
+                        <span class="tag">悬浮</span>
+                        <span class="tag">旋转</span>
+                        <span class="tag">场景</span>
+                    </div>
+                </div>
+            </a>
+
+            <a href="3d-03-perspective-hall.html" class="style-card">
+                <div class="card-preview preview-3d-hall">
+                    <span class="card-icon">🌐</span>
+                </div>
+                <div class="card-content">
+                    <div class="card-number">3D 03</div>
+                    <h3 class="card-title">3D透视走廊</h3>
+                    <p class="card-desc">科幻风格的无限走廊，卡片在空间中漂浮</p>
+                    <div class="card-tags">
+                        <span class="tag">透视</span>
+                        <span class="tag">科幻</span>
+                        <span class="tag">走廊</span>
+                    </div>
+                </div>
+            </a>
+
+            <a href="3d-04-rotating-stage.html" class="style-card">
+                <div class="card-preview preview-3d-stage">
+                    <span class="card-icon">🎭</span>
+                </div>
+                <div class="card-content">
+                    <div class="card-number">3D 04</div>
+                    <h3 class="card-title">3D旋转舞台</h3>
+                    <p class="card-desc">聚光灯下的角色展示，圆形旋转舞台</p>
+                    <div class="card-tags">
+                        <span class="tag">舞台</span>
+                        <span class="tag">聚光灯</span>
+                        <span class="tag">角色</span>
+                    </div>
+                </div>
+            </a>
+
+            <a href="3d-05-tilt-interaction.html" class="style-card">
+                <div class="card-preview preview-3d-tilt">
+                    <span class="card-icon">🎯</span>
+                </div>
+                <div class="card-content">
+                    <div class="card-number">3D 05</div>
+                    <h3 class="card-title">3D倾斜交互</h3>
+                    <p class="card-desc">鼠标跟随倾斜效果，多层深度感知</p>
+                    <div class="card-tags">
+                        <span class="tag">倾斜</span>
+                        <span class="tag">交互</span>
+                        <span class="tag">鼠标跟随</span>
+                    </div>
+                </div>
+            </a>
+
+            <a href="3d-19-ring-menu.html" class="style-card">
+                <div class="card-preview preview-3d-ring">
+                    <span class="card-icon">⭕</span>
+                </div>
+                <div class="card-content">
+                    <div class="card-number">3D 06</div>
+                    <h3 class="card-title">3D环形菜单</h3>
+                    <p class="card-desc">圆形轨道菜单，卡片环绕旋转，3D透视效果</p>
+                    <div class="card-tags">
+                        <span class="tag">环形</span>
+                        <span class="tag">旋转</span>
+                        <span class="tag">菜单</span>
+                    </div>
+                </div>
+            </a>
+
+            <a href="3d-20-fractal-tree.html" class="style-card">
+                <div class="card-preview preview-3d-fractal">
+                    <span class="card-icon">🌲</span>
+                </div>
+                <div class="card-content">
+                    <div class="card-number">3D 07</div>
+                    <h3 class="card-title">3D分形树</h3>
+                    <p class="card-desc">递归分形结构，生长动画，自然有机形态</p>
+                    <div class="card-tags">
+                        <span class="tag">分形</span>
+                        <span class="tag">生长</span>
+                        <span class="tag">自然</span>
+                    </div>
+                </div>
+            </a>
+
+            <a href="3d-21-particle-explosion.html" class="style-card">
+                <div class="card-preview preview-3d-explosion">
+                    <span class="card-icon">💥</span>
+                </div>
+                <div class="card-content">
+                    <div class="card-number">3D 08</div>
+                    <h3 class="card-title">3D粒子爆炸</h3>
+                    <p class="card-desc">粒子系统爆炸效果，物理模拟，色彩爆发</p>
+                    <div class="card-tags">
+                        <span class="tag">粒子</span>
+                        <span class="tag">爆炸</span>
+                        <span class="tag">物理</span>
+                    </div>
+                </div>
+            </a>
+
+            <a href="3d-22-mirror.html" class="style-card">
+                <div class="card-preview preview-3d-mirror">
+                    <span class="card-icon">🪞</span>
+                </div>
+                <div class="card-content">
+                    <div class="card-number">3D 09</div>
+                    <h3 class="card-title">3D镜面反射</h3>
+                    <p class="card-desc">镜面反射效果，倒影系统，光泽材质</p>
+                    <div class="card-tags">
+                        <span class="tag">镜面</span>
+                        <span class="tag">反射</span>
+                        <span class="tag">光泽</span>
+                    </div>
+                </div>
+            </a>
+
+            <a href="3d-23-tornado.html" class="style-card">
+                <div class="card-preview preview-3d-tornado">
+                    <span class="card-icon">🌪️</span>
+                </div>
+                <div class="card-content">
+                    <div class="card-number">3D 10</div>
+                    <h3 class="card-title">3D龙卷风</h3>
+                    <p class="card-desc">螺旋上升粒子，涡流效果，动态风暴</p>
+                    <div class="card-tags">
+                        <span class="tag">螺旋</span>
+                        <span class="tag">风暴</span>
+                        <span class="tag">动态</span>
+                    </div>
+                </div>
+            </a>
+
+            <a href="3d-24-domino.html" class="style-card">
+                <div class="card-preview preview-3d-domino">
+                    <span class="card-icon">🀄</span>
+                </div>
+                <div class="card-content">
+                    <div class="card-number">3D 11</div>
+                    <h3 class="card-title">3D多米诺骨牌</h3>
+                    <p class="card-desc">连锁反应动画，物理碰撞，连锁倒下效果</p>
+                    <div class="card-tags">
+                        <span class="tag">连锁</span>
+                        <span class="tag">物理</span>
+                        <span class="tag">碰撞</span>
+                    </div>
+                </div>
+            </a>
+
+            <a href="3d-25-spring.html" class="style-card">
+                <div class="card-preview preview-3d-spring">
+                    <span class="card-icon">🌀</span>
+                </div>
+                <div class="card-content">
+                    <div class="card-number">3D 12</div>
+                    <h3 class="card-title">3D弹簧动画</h3>
+                    <p class="card-desc">弹性物理效果，弹簧运动，弹跳交互</p>
+                    <div class="card-tags">
+                        <span class="tag">弹性</span>
+                        <span class="tag">物理</span>
+                        <span class="tag">弹跳</span>
+                    </div>
+                </div>
+            </a>
+        </div>
+
+        <footer class="footer">
+            <p>乐高故事书 - 桌游风格Demo展示 &copy; 2024</p>
+        </footer>
+    </div>
+</body>
+</html>

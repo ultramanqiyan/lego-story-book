@@ -1,0 +1,594 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>璀璨宝石风格 - 乐高故事书</title>
+    <link href="https://fonts.googleapis.com/css2?family=Cinzel:wght@400;600;700&family=Noto+Sans+SC:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --ruby: #e0115f;
+            --sapphire: #0f52ba;
+            --emerald: #50c878;
+            --diamond: #b9f2ff;
+            --onyx: #353839;
+            --gold: #ffd700;
+            --bg-dark: #1a1a2e;
+            --bg-medium: #252542;
+            --bg-light: #353555;
+            --text-primary: #f8fafc;
+            --text-secondary: #a0a0b0;
+            --font-title: 'Cinzel', serif;
+            --font-body: 'Noto Sans SC', sans-serif;
+        }
+
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+
+        body {
+            font-family: var(--font-body);
+            background: linear-gradient(180deg, var(--bg-medium) 0%, var(--bg-dark) 100%);
+            min-height: 100vh;
+            color: var(--text-primary);
+        }
+
+        .sparkles {
+            position: fixed;
+            inset: 0;
+            pointer-events: none;
+            z-index: 0;
+        }
+
+        .sparkle {
+            position: absolute;
+            width: 4px;
+            height: 4px;
+            background: white;
+            border-radius: 50%;
+            animation: sparkle 3s ease-in-out infinite;
+        }
+
+        @keyframes sparkle {
+            0%, 100% { opacity: 0; transform: scale(0); }
+            50% { opacity: 1; transform: scale(1); }
+        }
+
+        .container {
+            position: relative;
+            z-index: 1;
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 20px;
+        }
+
+        .header {
+            text-align: center;
+            padding: 40px 20px;
+        }
+
+        .main-title {
+            font-family: var(--font-title);
+            font-size: 3rem;
+            font-weight: 700;
+            background: linear-gradient(135deg, var(--ruby), var(--sapphire), var(--emerald), var(--diamond));
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            margin-bottom: 10px;
+            animation: shimmer 3s linear infinite;
+            background-size: 200% auto;
+        }
+
+        @keyframes shimmer {
+            0% { background-position: 0% center; }
+            100% { background-position: 200% center; }
+        }
+
+        .subtitle {
+            font-size: 1.1rem;
+            color: var(--text-secondary);
+        }
+
+        .gem-bar {
+            display: flex;
+            justify-content: center;
+            gap: 15px;
+            margin: 30px 0;
+            flex-wrap: wrap;
+        }
+
+        .gem-item {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            padding: 8px 15px;
+            background: rgba(0,0,0,0.3);
+            border-radius: 20px;
+        }
+
+        .gem {
+            width: 25px;
+            height: 25px;
+            border-radius: 50%;
+            position: relative;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.3);
+        }
+
+        .gem::before {
+            content: '';
+            position: absolute;
+            top: 20%;
+            left: 20%;
+            width: 30%;
+            height: 30%;
+            background: rgba(255,255,255,0.6);
+            border-radius: 50%;
+        }
+
+        .gem.ruby { background: linear-gradient(135deg, #ff6b8a, var(--ruby)); }
+        .gem.sapphire { background: linear-gradient(135deg, #60a5fa, var(--sapphire)); }
+        .gem.emerald { background: linear-gradient(135deg, #86efac, var(--emerald)); }
+        .gem.diamond { background: linear-gradient(135deg, #ffffff, var(--diamond)); }
+        .gem.onyx { background: linear-gradient(135deg, #6b7280, var(--onyx)); }
+        .gem.gold { background: linear-gradient(135deg, #ffd700, #b8860b); }
+
+        .gem-count {
+            font-family: var(--font-title);
+            font-weight: 700;
+        }
+
+        .section {
+            margin: 40px 0;
+        }
+
+        .section-header {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            margin-bottom: 20px;
+        }
+
+        .section-title {
+            font-family: var(--font-title);
+            font-size: 1.5rem;
+            color: var(--gold);
+        }
+
+        .card-tiers {
+            display: flex;
+            flex-direction: column;
+            gap: 20px;
+        }
+
+        .tier-row {
+            display: flex;
+            gap: 15px;
+            justify-content: center;
+            flex-wrap: wrap;
+        }
+
+        .splendor-card {
+            width: 140px;
+            height: 190px;
+            background: linear-gradient(180deg, var(--bg-light), var(--bg-medium));
+            border-radius: 12px;
+            overflow: hidden;
+            cursor: pointer;
+            transition: all 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+            border: 3px solid;
+            position: relative;
+        }
+
+        .splendor-card:hover {
+            transform: translateY(-15px) scale(1.05);
+            box-shadow: 0 20px 40px rgba(0,0,0,0.4);
+        }
+
+        .splendor-card.tier1 { border-color: var(--emerald); }
+        .splendor-card.tier2 { border-color: var(--sapphire); }
+        .splendor-card.tier3 { border-color: var(--ruby); }
+
+        .card-gem-top {
+            height: 8px;
+        }
+
+        .splendor-card.tier1 .card-gem-top { background: linear-gradient(90deg, var(--emerald), #86efac); }
+        .splendor-card.tier2 .card-gem-top { background: linear-gradient(90deg, var(--sapphire), #60a5fa); }
+        .splendor-card.tier3 .card-gem-top { background: linear-gradient(90deg, var(--ruby), #ff6b8a); }
+
+        .card-points {
+            position: absolute;
+            top: 15px;
+            left: 10px;
+            font-family: var(--font-title);
+            font-size: 1.2rem;
+            font-weight: 700;
+            color: var(--gold);
+        }
+
+        .card-image {
+            height: 80px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 2.5rem;
+        }
+
+        .card-cost {
+            padding: 10px;
+            display: flex;
+            flex-wrap: wrap;
+            gap: 5px;
+            justify-content: center;
+        }
+
+        .cost-gem {
+            width: 22px;
+            height: 22px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 0.65rem;
+            font-weight: 700;
+            color: white;
+        }
+
+        .cost-gem.ruby { background: var(--ruby); }
+        .cost-gem.sapphire { background: var(--sapphire); }
+        .cost-gem.emerald { background: var(--emerald); }
+        .cost-gem.diamond { background: linear-gradient(135deg, #b9f2ff, #87ceeb); color: #333; }
+        .cost-gem.onyx { background: var(--onyx); }
+
+        .card-bonus {
+            position: absolute;
+            bottom: 10px;
+            right: 10px;
+            width: 25px;
+            height: 25px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .noble-section {
+            display: flex;
+            gap: 20px;
+            justify-content: center;
+            flex-wrap: wrap;
+            margin: 30px 0;
+        }
+
+        .noble-card {
+            width: 160px;
+            height: 100px;
+            background: linear-gradient(135deg, #f5f5dc, #daa520);
+            border-radius: 15px;
+            display: flex;
+            align-items: center;
+            padding: 15px;
+            gap: 10px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            border: 2px solid var(--gold);
+        }
+
+        .noble-card:hover {
+            transform: translateY(-10px);
+            box-shadow: 0 15px 30px rgba(255, 215, 0, 0.3);
+        }
+
+        .noble-portrait {
+            width: 50px;
+            height: 50px;
+            background: var(--bg-medium);
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1.5rem;
+        }
+
+        .noble-info {
+            flex: 1;
+        }
+
+        .noble-points {
+            font-family: var(--font-title);
+            font-size: 1.3rem;
+            font-weight: 700;
+            color: #333;
+        }
+
+        .noble-req {
+            display: flex;
+            gap: 3px;
+            margin-top: 5px;
+        }
+
+        .noble-req .req-gem {
+            width: 18px;
+            height: 18px;
+            border-radius: 50%;
+            font-size: 0.6rem;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: white;
+        }
+
+        .chip-stack {
+            display: flex;
+            justify-content: center;
+            gap: 10px;
+            margin: 30px 0;
+        }
+
+        .chip {
+            width: 50px;
+            height: 50px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-family: var(--font-title);
+            font-size: 1.2rem;
+            font-weight: 700;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            box-shadow: 0 4px 8px rgba(0,0,0,0.3);
+        }
+
+        .chip:hover {
+            transform: translateY(-5px);
+        }
+
+        .chip.ruby { background: linear-gradient(135deg, #ff6b8a, var(--ruby)); color: white; }
+        .chip.sapphire { background: linear-gradient(135deg, #60a5fa, var(--sapphire)); color: white; }
+        .chip.emerald { background: linear-gradient(135deg, #86efac, var(--emerald)); color: white; }
+        .chip.diamond { background: linear-gradient(135deg, #ffffff, var(--diamond)); color: #333; }
+        .chip.onyx { background: linear-gradient(135deg, #6b7280, var(--onyx)); color: white; }
+        .chip.gold { background: linear-gradient(135deg, #ffd700, #b8860b); color: #333; }
+
+        .cta-section {
+            text-align: center;
+            margin: 50px 0;
+        }
+
+        .cta-btn {
+            display: inline-block;
+            padding: 15px 50px;
+            font-size: 1.2rem;
+            font-weight: 700;
+            border: none;
+            border-radius: 25px;
+            background: linear-gradient(135deg, var(--ruby), var(--sapphire));
+            color: white;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            text-decoration: none;
+        }
+
+        .cta-btn:hover {
+            transform: scale(1.05);
+        }
+
+        .footer {
+            text-align: center;
+            padding: 30px;
+            color: var(--text-secondary);
+            font-size: 0.9rem;
+        }
+    </style>
+</head>
+<body>
+    <div class="sparkles" id="sparkles"></div>
+
+    <div class="container">
+        <header class="header">
+            <h1 class="main-title">💎 璀璨宝石风格</h1>
+            <p class="subtitle">宝石收集 · 贵族青睐 · 优雅策略</p>
+        </header>
+
+        <div class="gem-bar">
+            <div class="gem-item">
+                <div class="gem ruby"></div>
+                <div class="gem-count">4</div>
+            </div>
+            <div class="gem-item">
+                <div class="gem sapphire"></div>
+                <div class="gem-count">3</div>
+            </div>
+            <div class="gem-item">
+                <div class="gem emerald"></div>
+                <div class="gem-count">5</div>
+            </div>
+            <div class="gem-item">
+                <div class="gem diamond"></div>
+                <div class="gem-count">2</div>
+            </div>
+            <div class="gem-item">
+                <div class="gem onyx"></div>
+                <div class="gem-count">3</div>
+            </div>
+            <div class="gem-item">
+                <div class="gem gold"></div>
+                <div class="gem-count">1</div>
+            </div>
+        </div>
+
+        <section class="section">
+            <div class="section-header">
+                <span>👑</span>
+                <h2 class="section-title">贵族</h2>
+            </div>
+            <div class="noble-section">
+                <div class="noble-card">
+                    <div class="noble-portrait">👸</div>
+                    <div class="noble-info">
+                        <div class="noble-points">3</div>
+                        <div class="noble-req">
+                            <div class="req-gem" style="background: var(--emerald);">3</div>
+                            <div class="req-gem" style="background: var(--sapphire);">3</div>
+                            <div class="req-gem" style="background: var(--ruby);">3</div>
+                        </div>
+                    </div>
+                </div>
+                <div class="noble-card">
+                    <div class="noble-portrait">🤴</div>
+                    <div class="noble-info">
+                        <div class="noble-points">4</div>
+                        <div class="noble-req">
+                            <div class="req-gem" style="background: var(--diamond);">4</div>
+                            <div class="req-gem" style="background: var(--emerald);">4</div>
+                        </div>
+                    </div>
+                </div>
+                <div class="noble-card">
+                    <div class="noble-portrait">👑</div>
+                    <div class="noble-info">
+                        <div class="noble-points">5</div>
+                        <div class="noble-req">
+                            <div class="req-gem" style="background: var(--onyx);">4</div>
+                            <div class="req-gem" style="background: var(--ruby);">4</div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <section class="section">
+            <div class="section-header">
+                <span>🎴</span>
+                <h2 class="section-title">发展卡</h2>
+            </div>
+            <div class="card-tiers">
+                <div class="tier-row">
+                    <div class="splendor-card tier3">
+                        <div class="card-gem-top"></div>
+                        <div class="card-points">4</div>
+                        <div class="card-image">🏰</div>
+                        <div class="card-cost">
+                            <div class="cost-gem ruby">7</div>
+                        </div>
+                        <div class="card-bonus" style="background: var(--ruby);"></div>
+                    </div>
+                    <div class="splendor-card tier3">
+                        <div class="card-gem-top"></div>
+                        <div class="card-points">5</div>
+                        <div class="card-image">👑</div>
+                        <div class="card-cost">
+                            <div class="cost-gem sapphire">3</div>
+                            <div class="cost-gem emerald">3</div>
+                            <div class="cost-gem ruby">6</div>
+                        </div>
+                        <div class="card-bonus" style="background: var(--sapphire);"></div>
+                    </div>
+                </div>
+                <div class="tier-row">
+                    <div class="splendor-card tier2">
+                        <div class="card-gem-top"></div>
+                        <div class="card-points">2</div>
+                        <div class="card-image">⚔️</div>
+                        <div class="card-cost">
+                            <div class="cost-gem emerald">2</div>
+                            <div class="cost-gem onyx">3</div>
+                        </div>
+                        <div class="card-bonus" style="background: var(--emerald);"></div>
+                    </div>
+                    <div class="splendor-card tier2">
+                        <div class="card-gem-top"></div>
+                        <div class="card-points">3</div>
+                        <div class="card-image">🛡️</div>
+                        <div class="card-cost">
+                            <div class="cost-gem diamond">5</div>
+                        </div>
+                        <div class="card-bonus" style="background: var(--diamond);"></div>
+                    </div>
+                    <div class="splendor-card tier2">
+                        <div class="card-gem-top"></div>
+                        <div class="card-points">2</div>
+                        <div class="card-image">🏹</div>
+                        <div class="card-cost">
+                            <div class="cost-gem ruby">2</div>
+                            <div class="cost-gem sapphire">3</div>
+                        </div>
+                        <div class="card-bonus" style="background: var(--onyx);"></div>
+                    </div>
+                </div>
+                <div class="tier-row">
+                    <div class="splendor-card tier1">
+                        <div class="card-gem-top"></div>
+                        <div class="card-points">1</div>
+                        <div class="card-image">🗡️</div>
+                        <div class="card-cost">
+                            <div class="cost-gem onyx">3</div>
+                        </div>
+                        <div class="card-bonus" style="background: var(--onyx);"></div>
+                    </div>
+                    <div class="splendor-card tier1">
+                        <div class="card-gem-top"></div>
+                        <div class="card-image">🧪</div>
+                        <div class="card-cost">
+                            <div class="cost-gem ruby">2</div>
+                        </div>
+                        <div class="card-bonus" style="background: var(--ruby);"></div>
+                    </div>
+                    <div class="splendor-card tier1">
+                        <div class="card-gem-top"></div>
+                        <div class="card-image">📜</div>
+                        <div class="card-cost">
+                            <div class="cost-gem sapphire">1</div>
+                            <div class="cost-gem emerald">1</div>
+                            <div class="cost-gem onyx">1</div>
+                        </div>
+                        <div class="card-bonus" style="background: var(--sapphire);"></div>
+                    </div>
+                    <div class="splendor-card tier1">
+                        <div class="card-gem-top"></div>
+                        <div class="card-image">🔮</div>
+                        <div class="card-cost">
+                            <div class="cost-gem emerald">2</div>
+                        </div>
+                        <div class="card-bonus" style="background: var(--emerald);"></div>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <section class="section">
+            <div class="section-header">
+                <span>🪙</span>
+                <h2 class="section-title">宝石筹码</h2>
+            </div>
+            <div class="chip-stack">
+                <div class="chip ruby">7</div>
+                <div class="chip sapphire">7</div>
+                <div class="chip emerald">7</div>
+                <div class="chip diamond">7</div>
+                <div class="chip onyx">7</div>
+                <div class="chip gold">5</div>
+            </div>
+        </section>
+
+        <section class="cta-section">
+            <a href="index.html" class="cta-btn">💎 返回风格选择</a>
+        </section>
+
+        <footer class="footer">
+            <p>璀璨宝石风格 Demo - 乐高故事书</p>
+        </footer>
+    </div>
+
+    <script>
+        var sparkles = document.getElementById('sparkles');
+        for (var i = 0; i < 30; i++) {
+            var sparkle = document.createElement('div');
+            sparkle.className = 'sparkle';
+            sparkle.style.left = Math.random() * 100 + '%';
+            sparkle.style.top = Math.random() * 100 + '%';
+            sparkle.style.animationDelay = Math.random() * 3 + 's';
+            sparkles.appendChild(sparkle);
+        }
+    </script>
+</body>
+</html>

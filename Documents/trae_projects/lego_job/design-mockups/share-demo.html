@@ -1,0 +1,569 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>分享故事 - 乐高故事书桌游风格</title>
+    <link href="https://fonts.googleapis.com/css2?family=Cinzel:wght@400;600;700&family=Noto+Sans+SC:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --gold: #ffd700;
+            --gold-dark: #b8860b;
+            --silver: #c0c0c0;
+            --crimson: #dc2626;
+            --purple: #a855f7;
+            --green: #22c55e;
+            --blue: #3b82f6;
+            --orange: #f59e0b;
+            --bg-dark: #0d0d14;
+            --bg-medium: #1a1a2e;
+            --text-primary: #f8fafc;
+            --text-secondary: #94a3b8;
+            --font-title: 'Cinzel', serif;
+            --font-body: 'Noto Sans SC', sans-serif;
+        }
+
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+
+        body {
+            font-family: var(--font-body);
+            background: linear-gradient(180deg, #1a1a2e 0%, #0d0d14 100%);
+            min-height: 100vh;
+            color: var(--text-primary);
+            overflow-x: hidden;
+        }
+
+        .particles {
+            position: fixed;
+            inset: 0;
+            pointer-events: none;
+            z-index: 0;
+        }
+
+        .particle {
+            position: absolute;
+            width: 2px;
+            height: 2px;
+            background: var(--gold);
+            border-radius: 50%;
+            opacity: 0.3;
+            animation: float 20s linear infinite;
+        }
+
+        @keyframes float {
+            0% { transform: translateY(100vh); opacity: 0; }
+            10% { opacity: 0.3; }
+            90% { opacity: 0.3; }
+            100% { transform: translateY(-100vh); opacity: 0; }
+        }
+
+        .container {
+            position: relative;
+            z-index: 1;
+            max-width: 800px;
+            margin: 0 auto;
+            padding: 20px;
+        }
+
+        .header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 20px 0;
+            border-bottom: 1px solid rgba(255,215,0,0.2);
+            margin-bottom: 30px;
+            flex-wrap: wrap;
+            gap: 15px;
+        }
+
+        .header-title {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+        }
+
+        .header-icon {
+            font-size: 2rem;
+        }
+
+        .header-text {
+            font-family: var(--font-title);
+            font-size: 1.8rem;
+            font-weight: 700;
+            background: linear-gradient(135deg, var(--gold), #ff9800);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+        }
+
+        .nav-tabs {
+            display: flex;
+            gap: 10px;
+        }
+
+        .nav-tab {
+            padding: 10px 18px;
+            border-radius: 10px;
+            background: rgba(255,255,255,0.05);
+            border: 1px solid rgba(255,255,255,0.1);
+            color: var(--text-secondary);
+            font-size: 0.85rem;
+            font-weight: 500;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            text-decoration: none;
+            display: flex;
+            align-items: center;
+            gap: 6px;
+        }
+
+        .nav-tab:hover {
+            background: rgba(255,215,0,0.1);
+            border-color: rgba(255,215,0,0.3);
+            color: var(--text-primary);
+        }
+
+        .share-card {
+            background: linear-gradient(180deg, #2d2d44, #1a1a2e);
+            border-radius: 20px;
+            border: 3px solid var(--gold);
+            padding: 30px;
+            margin-bottom: 30px;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .share-card::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            height: 4px;
+            background: linear-gradient(90deg, var(--gold), var(--purple), var(--gold));
+        }
+
+        .card-header {
+            display: flex;
+            align-items: center;
+            gap: 15px;
+            margin-bottom: 25px;
+            padding-bottom: 20px;
+            border-bottom: 1px solid rgba(255,255,255,0.1);
+        }
+
+        .card-icon {
+            font-size: 2.5rem;
+        }
+
+        .card-title {
+            font-family: var(--font-title);
+            font-size: 1.5rem;
+            font-weight: 600;
+            color: var(--gold);
+        }
+
+        .card-subtitle {
+            color: var(--text-secondary);
+            font-size: 0.9rem;
+            margin-top: 5px;
+        }
+
+        .qr-section {
+            text-align: center;
+            margin: 30px 0;
+        }
+
+        .qr-container {
+            display: inline-block;
+            padding: 20px;
+            background: white;
+            border-radius: 15px;
+            margin-bottom: 20px;
+            position: relative;
+        }
+
+        .qr-container::before {
+            content: '';
+            position: absolute;
+            inset: -3px;
+            background: linear-gradient(135deg, var(--gold), var(--purple));
+            border-radius: 18px;
+            z-index: -1;
+        }
+
+        .qr-placeholder {
+            width: 180px;
+            height: 180px;
+            background: linear-gradient(135deg, #e0e0e0, #f5f5f5);
+            border-radius: 10px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 4rem;
+        }
+
+        .qr-hint {
+            color: var(--text-secondary);
+            font-size: 0.9rem;
+        }
+
+        .share-code-section {
+            text-align: center;
+            margin: 30px 0;
+            padding: 25px;
+            background: rgba(0,0,0,0.3);
+            border-radius: 15px;
+        }
+
+        .share-code-label {
+            color: var(--text-secondary);
+            font-size: 0.9rem;
+            margin-bottom: 10px;
+        }
+
+        .share-code {
+            font-family: var(--font-title);
+            font-size: 2.5rem;
+            font-weight: 700;
+            color: var(--gold);
+            letter-spacing: 8px;
+            margin-bottom: 15px;
+        }
+
+        .share-link-section {
+            margin: 25px 0;
+        }
+
+        .share-link-label {
+            color: var(--text-secondary);
+            font-size: 0.9rem;
+            margin-bottom: 10px;
+        }
+
+        .share-link-input {
+            display: flex;
+            gap: 10px;
+        }
+
+        .link-input {
+            flex: 1;
+            padding: 15px;
+            background: rgba(0,0,0,0.4);
+            border: 2px solid rgba(255,215,0,0.3);
+            border-radius: 10px;
+            color: var(--text-primary);
+            font-size: 0.9rem;
+            font-family: monospace;
+        }
+
+        .copy-btn {
+            padding: 15px 25px;
+            background: linear-gradient(135deg, var(--gold), #ff9800);
+            border: none;
+            border-radius: 10px;
+            color: #000;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            font-family: var(--font-body);
+        }
+
+        .copy-btn:hover {
+            transform: scale(1.05);
+        }
+
+        .settings-section {
+            margin-top: 25px;
+            padding-top: 25px;
+            border-top: 1px solid rgba(255,255,255,0.1);
+        }
+
+        .setting-item {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 15px 0;
+            border-bottom: 1px solid rgba(255,255,255,0.05);
+        }
+
+        .setting-label {
+            font-weight: 500;
+        }
+
+        .setting-desc {
+            color: var(--text-secondary);
+            font-size: 0.85rem;
+            margin-top: 5px;
+        }
+
+        .toggle-switch {
+            width: 50px;
+            height: 26px;
+            background: rgba(255,255,255,0.1);
+            border-radius: 13px;
+            cursor: pointer;
+            position: relative;
+            transition: all 0.3s ease;
+        }
+
+        .toggle-switch.active {
+            background: var(--green);
+        }
+
+        .toggle-switch::after {
+            content: '';
+            position: absolute;
+            top: 3px;
+            left: 3px;
+            width: 20px;
+            height: 20px;
+            background: white;
+            border-radius: 50%;
+            transition: all 0.3s ease;
+        }
+
+        .toggle-switch.active::after {
+            left: 27px;
+        }
+
+        .access-section {
+            background: linear-gradient(180deg, #2d2d44, #1a1a2e);
+            border-radius: 20px;
+            border: 2px solid var(--purple);
+            padding: 30px;
+        }
+
+        .form-group {
+            margin-bottom: 20px;
+        }
+
+        .form-label {
+            display: block;
+            margin-bottom: 10px;
+            font-weight: 600;
+            color: var(--text-secondary);
+            font-size: 0.95rem;
+        }
+
+        .form-input {
+            width: 100%;
+            padding: 15px 18px;
+            background: rgba(0,0,0,0.4);
+            border: 2px solid rgba(255,215,0,0.3);
+            border-radius: 12px;
+            color: var(--text-primary);
+            font-size: 1rem;
+            font-family: var(--font-body);
+            transition: all 0.3s ease;
+            text-align: center;
+            letter-spacing: 4px;
+        }
+
+        .form-input:focus {
+            outline: none;
+            border-color: var(--gold);
+            box-shadow: 0 0 15px rgba(255,215,0,0.3);
+        }
+
+        .form-input::placeholder {
+            letter-spacing: normal;
+        }
+
+        .submit-btn {
+            width: 100%;
+            padding: 15px;
+            font-size: 1.1rem;
+            font-weight: 600;
+            border: none;
+            border-radius: 15px;
+            background: linear-gradient(135deg, var(--purple), #6b21a8);
+            color: white;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            font-family: var(--font-body);
+            box-shadow: 0 0 20px rgba(168,85,247,0.4);
+        }
+
+        .submit-btn:hover {
+            transform: scale(1.02);
+            box-shadow: 0 0 30px rgba(168,85,247,0.6);
+        }
+
+        .footer {
+            text-align: center;
+            padding: 30px;
+            color: var(--text-secondary);
+            font-size: 0.9rem;
+            border-top: 1px solid rgba(255,255,255,0.1);
+            margin-top: 40px;
+        }
+
+        .toast {
+            position: fixed;
+            top: 20px;
+            left: 50%;
+            transform: translateX(-50%) translateY(-10px);
+            background: rgba(0,0,0,0.95);
+            padding: 12px 25px;
+            border-radius: 10px;
+            border: 1px solid var(--gold);
+            font-size: 0.9rem;
+            opacity: 0;
+            transition: all 0.3s ease;
+            z-index: 1002;
+        }
+
+        .toast.show {
+            transform: translateX(-50%) translateY(0);
+            opacity: 1;
+        }
+
+        .toast.success { border-color: var(--green); color: var(--green); }
+        .toast.error { border-color: var(--crimson); color: #f87171; }
+
+        @media (max-width: 600px) {
+            .share-link-input {
+                flex-direction: column;
+            }
+            
+            .share-code {
+                font-size: 1.8rem;
+                letter-spacing: 4px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="particles" id="particles"></div>
+
+    <div class="container">
+        <header class="header">
+            <div class="header-title">
+                <span class="header-icon">🔗</span>
+                <h1 class="header-text">分享故事</h1>
+            </div>
+            <nav class="nav-tabs">
+                <a href="index-demo.html" class="nav-tab">🏠 首页</a>
+                <a href="bookshelf-demo.html" class="nav-tab">📚 我的书架</a>
+            </nav>
+        </header>
+
+        <div class="share-card">
+            <div class="card-header">
+                <span class="card-icon">📤</span>
+                <div>
+                    <h2 class="card-title">分享魔法王国的冒险</h2>
+                    <p class="card-subtitle">让朋友一起阅读你的精彩故事</p>
+                </div>
+            </div>
+
+            <div class="qr-section">
+                <div class="qr-container">
+                    <div class="qr-placeholder">📱</div>
+                </div>
+                <p class="qr-hint">扫码阅读故事</p>
+            </div>
+
+            <div class="share-code-section">
+                <p class="share-code-label">分享码</p>
+                <div class="share-code">MAGIK42</div>
+                <p class="qr-hint">告诉朋友输入此码即可访问</p>
+            </div>
+
+            <div class="share-link-section">
+                <p class="share-link-label">分享链接</p>
+                <div class="share-link-input">
+                    <input type="text" class="link-input" value="https://lego-story.com/share/MAGIK42" readonly>
+                    <button class="copy-btn" onclick="copyLink()">📋 复制</button>
+                </div>
+            </div>
+
+            <div class="settings-section">
+                <div class="setting-item">
+                    <div>
+                        <div class="setting-label">允许评论</div>
+                        <div class="setting-desc">读者可以对故事发表评论</div>
+                    </div>
+                    <div class="toggle-switch active" onclick="toggleSwitch(this)"></div>
+                </div>
+                <div class="setting-item">
+                    <div>
+                        <div class="setting-label">公开分享</div>
+                        <div class="setting-desc">任何人都可以通过链接访问</div>
+                    </div>
+                    <div class="toggle-switch active" onclick="toggleSwitch(this)"></div>
+                </div>
+                <div class="setting-item">
+                    <div>
+                        <div class="setting-label">显示作者</div>
+                        <div class="setting-desc">在分享页面显示你的名字</div>
+                    </div>
+                    <div class="toggle-switch" onclick="toggleSwitch(this)"></div>
+                </div>
+            </div>
+        </div>
+
+        <div class="access-section">
+            <div class="card-header" style="border: none; padding-bottom: 0; margin-bottom: 20px;">
+                <span class="card-icon">🔓</span>
+                <div>
+                    <h2 class="card-title" style="color: var(--purple);">访问分享</h2>
+                    <p class="card-subtitle">输入分享码访问朋友的故事</p>
+                </div>
+            </div>
+
+            <div class="form-group">
+                <label class="form-label">输入分享码</label>
+                <input type="text" class="form-input" id="accessCode" placeholder="例如: MAGIK42" maxlength="10">
+            </div>
+
+            <button class="submit-btn" onclick="accessShare()">🚀 访问故事</button>
+        </div>
+
+        <footer class="footer">
+            <p>乐高故事书 &copy; 2024 - 让想象力飞翔</p>
+        </footer>
+    </div>
+
+    <div class="toast" id="toast"></div>
+
+    <script>
+        for (var i = 0; i < 15; i++) {
+            var p = document.createElement('div');
+            p.className = 'particle';
+            p.style.left = Math.random() * 100 + '%';
+            p.style.animationDelay = Math.random() * 20 + 's';
+            document.getElementById('particles').appendChild(p);
+        }
+
+        function copyLink() {
+            var input = document.querySelector('.link-input');
+            input.select();
+            document.execCommand('copy');
+            showToast('链接已复制！📋', 'success');
+        }
+
+        function toggleSwitch(el) {
+            el.classList.toggle('active');
+        }
+
+        function accessShare() {
+            var code = document.getElementById('accessCode').value.trim().toUpperCase();
+            if (!code) {
+                showToast('请输入分享码！', 'error');
+                return;
+            }
+            showToast('正在访问故事...', 'success');
+        }
+
+        function showToast(msg, type) {
+            var toast = document.getElementById('toast');
+            toast.textContent = msg;
+            toast.className = 'toast show ' + (type || '');
+            setTimeout(function() {
+                toast.classList.remove('show');
+            }, 2000);
+        }
+    </script>
+</body>
+</html>

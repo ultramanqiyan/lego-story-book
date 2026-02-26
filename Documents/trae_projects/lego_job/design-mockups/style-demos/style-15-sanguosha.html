@@ -1,0 +1,504 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>三国杀风格 - 乐高故事书</title>
+    <link href="https://fonts.googleapis.com/css2?family=Cinzel:wght@400;600;700&family=Noto+Sans+SC:wght@400;500;600;700&family=Ma+Shan+Zheng&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --wei-blue: #1e90ff;
+            --shu-red: #dc143c;
+            --wu-green: #228b22;
+            --qun-gray: #708090;
+            --gold-chinese: #d4af37;
+            --ink-black: #1a1510;
+            --paper: #f4e4bc;
+            --bg-dark: #1a1510;
+            --bg-medium: #2d2820;
+            --text-primary: #f8f0e0;
+            --text-secondary: #a09080;
+            --font-title: 'Ma Shan Zheng', 'Cinzel', serif;
+            --font-body: 'Noto Sans SC', sans-serif;
+        }
+
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+
+        body {
+            font-family: var(--font-body);
+            background: linear-gradient(180deg, var(--bg-medium) 0%, var(--bg-dark) 100%);
+            min-height: 100vh;
+            color: var(--text-primary);
+        }
+
+        .ink-bg {
+            position: fixed;
+            inset: 0;
+            opacity: 0.03;
+            background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 200 200' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noise'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%' height='100%' filter='url(%23noise)'/%3E%3C/svg%3E");
+            pointer-events: none;
+        }
+
+        .container {
+            position: relative;
+            z-index: 1;
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 20px;
+        }
+
+        .header {
+            text-align: center;
+            padding: 40px 20px;
+        }
+
+        .main-title {
+            font-family: var(--font-title);
+            font-size: 3.5rem;
+            font-weight: 700;
+            color: var(--gold-chinese);
+            text-shadow: 2px 2px 4px rgba(0,0,0,0.5);
+            margin-bottom: 10px;
+        }
+
+        .subtitle {
+            font-size: 1.1rem;
+            color: var(--text-secondary);
+        }
+
+        .faction-bar {
+            display: flex;
+            justify-content: center;
+            gap: 30px;
+            margin: 30px 0;
+        }
+
+        .faction-item {
+            text-align: center;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+
+        .faction-item:hover {
+            transform: scale(1.1);
+        }
+
+        .faction-icon {
+            width: 60px;
+            height: 60px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1.8rem;
+            margin: 0 auto 8px;
+            border: 3px solid;
+        }
+
+        .faction-item.wei .faction-icon { background: linear-gradient(135deg, #60a5fa, var(--wei-blue)); border-color: var(--wei-blue); }
+        .faction-item.shu .faction-icon { background: linear-gradient(135deg, #f87171, var(--shu-red)); border-color: var(--shu-red); }
+        .faction-item.wu .faction-icon { background: linear-gradient(135deg, #4ade80, var(--wu-green)); border-color: var(--wu-green); }
+        .faction-item.qun .faction-icon { background: linear-gradient(135deg, #9ca3af, var(--qun-gray)); border-color: var(--qun-gray); }
+
+        .faction-name {
+            font-family: var(--font-title);
+            font-size: 1.2rem;
+        }
+
+        .faction-item.wei .faction-name { color: var(--wei-blue); }
+        .faction-item.shu .faction-name { color: var(--shu-red); }
+        .faction-item.wu .faction-name { color: var(--wu-green); }
+        .faction-item.qun .faction-name { color: var(--qun-gray); }
+
+        .section {
+            margin: 40px 0;
+        }
+
+        .section-header {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            margin-bottom: 20px;
+            padding-bottom: 10px;
+            border-bottom: 2px solid var(--gold-chinese);
+        }
+
+        .section-title {
+            font-family: var(--font-title);
+            font-size: 1.8rem;
+            color: var(--gold-chinese);
+        }
+
+        .general-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+            gap: 25px;
+        }
+
+        .general-card {
+            background: linear-gradient(180deg, var(--paper), #e4d4a8);
+            border-radius: 15px;
+            overflow: hidden;
+            cursor: pointer;
+            transition: all 0.4s ease;
+            border: 4px solid;
+            position: relative;
+        }
+
+        .general-card:hover {
+            transform: translateY(-10px) scale(1.02);
+            box-shadow: 0 15px 30px rgba(0,0,0,0.4);
+        }
+
+        .general-card.wei { border-color: var(--wei-blue); }
+        .general-card.shu { border-color: var(--shu-red); }
+        .general-card.wu { border-color: var(--wu-green); }
+        .general-card.qun { border-color: var(--qun-gray); }
+
+        .card-seal {
+            position: absolute;
+            top: 10px;
+            right: 10px;
+            width: 40px;
+            height: 40px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-family: var(--font-title);
+            font-size: 1rem;
+            color: white;
+        }
+
+        .general-card.wei .card-seal { background: var(--wei-blue); }
+        .general-card.shu .card-seal { background: var(--shu-red); }
+        .general-card.wu .card-seal { background: var(--wu-green); }
+        .general-card.qun .card-seal { background: var(--qun-gray); }
+
+        .general-portrait {
+            height: 120px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 4rem;
+            background: linear-gradient(180deg, rgba(0,0,0,0.05), transparent);
+        }
+
+        .general-info {
+            padding: 15px;
+            color: var(--ink-black);
+        }
+
+        .general-name {
+            font-family: var(--font-title);
+            font-size: 1.3rem;
+            font-weight: 700;
+            margin-bottom: 5px;
+        }
+
+        .general-title {
+            font-size: 0.8rem;
+            color: #666;
+            margin-bottom: 10px;
+        }
+
+        .general-stats {
+            display: flex;
+            justify-content: space-around;
+            padding-top: 10px;
+            border-top: 1px solid rgba(0,0,0,0.1);
+        }
+
+        .stat-item {
+            text-align: center;
+        }
+
+        .stat-value {
+            font-family: var(--font-title);
+            font-size: 1.2rem;
+            font-weight: 700;
+        }
+
+        .stat-label {
+            font-size: 0.7rem;
+            color: #888;
+        }
+
+        .skill-section {
+            margin-top: 10px;
+        }
+
+        .skill-name {
+            font-family: var(--font-title);
+            font-size: 0.9rem;
+            color: var(--shu-red);
+        }
+
+        .skill-desc {
+            font-size: 0.7rem;
+            color: #555;
+            margin-top: 3px;
+        }
+
+        .hp-track {
+            display: flex;
+            justify-content: center;
+            gap: 8px;
+            margin: 20px 0;
+        }
+
+        .hp-point {
+            width: 30px;
+            height: 30px;
+            border-radius: 50%;
+            background: radial-gradient(circle at 30% 30%, #ff6b6b, #dc2626);
+            border: 2px solid #8b0000;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+
+        .hp-point:hover {
+            transform: scale(1.2);
+        }
+
+        .hp-point.lost {
+            background: var(--bg-dark);
+            border-color: #444;
+        }
+
+        .card-hand {
+            display: flex;
+            justify-content: center;
+            gap: 10px;
+            margin: 20px 0;
+        }
+
+        .hand-card {
+            width: 60px;
+            height: 85px;
+            border-radius: 8px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            font-size: 1.5rem;
+            border: 2px solid;
+        }
+
+        .hand-card:hover {
+            transform: translateY(-15px);
+        }
+
+        .hand-card.attack { background: linear-gradient(180deg, #fef3c7, #fde68a); border-color: var(--shu-red); }
+        .hand-card.dodge { background: linear-gradient(180deg, #dbeafe, #bfdbfe); border-color: var(--wei-blue); }
+        .hand-card.peach { background: linear-gradient(180deg, #fce7f3, #fbcfe8); border-color: #ec4899; }
+        .hand-card.equipment { background: linear-gradient(180deg, #d1fae5, #a7f3d0); border-color: var(--wu-green); }
+
+        .hand-card-label {
+            font-size: 0.6rem;
+            margin-top: 5px;
+            color: #333;
+        }
+
+        .cta-section {
+            text-align: center;
+            margin: 50px 0;
+        }
+
+        .cta-btn {
+            display: inline-block;
+            padding: 15px 50px;
+            font-size: 1.2rem;
+            font-weight: 700;
+            border: none;
+            border-radius: 25px;
+            background: linear-gradient(135deg, var(--gold-chinese), var(--shu-red));
+            color: white;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            text-decoration: none;
+            font-family: var(--font-title);
+        }
+
+        .cta-btn:hover {
+            transform: scale(1.05);
+        }
+
+        .footer {
+            text-align: center;
+            padding: 30px;
+            color: var(--text-secondary);
+            font-size: 0.9rem;
+        }
+    </style>
+</head>
+<body>
+    <div class="ink-bg"></div>
+
+    <div class="container">
+        <header class="header">
+            <h1 class="main-title">三国杀风格</h1>
+            <p class="subtitle">中国古典 · 水墨画风 · 武将对决</p>
+        </header>
+
+        <div class="faction-bar">
+            <div class="faction-item wei">
+                <div class="faction-icon">🐉</div>
+                <div class="faction-name">魏</div>
+            </div>
+            <div class="faction-item shu">
+                <div class="faction-icon">🦅</div>
+                <div class="faction-name">蜀</div>
+            </div>
+            <div class="faction-item wu">
+                <div class="faction-icon">🐯</div>
+                <div class="faction-name">吴</div>
+            </div>
+            <div class="faction-item qun">
+                <div class="faction-icon">🐺</div>
+                <div class="faction-name">群</div>
+            </div>
+        </div>
+
+        <section class="section">
+            <div class="section-header">
+                <span>⚔️</span>
+                <h2 class="section-title">武将卡牌</h2>
+            </div>
+            <div class="general-grid">
+                <div class="general-card shu">
+                    <div class="card-seal">蜀</div>
+                    <div class="general-portrait">⚔️</div>
+                    <div class="general-info">
+                        <div class="general-name">关羽</div>
+                        <div class="general-title">武圣</div>
+                        <div class="skill-section">
+                            <div class="skill-name">武圣</div>
+                            <div class="skill-desc">你可以将一张红色牌当【杀】使用或打出。</div>
+                        </div>
+                        <div class="general-stats">
+                            <div class="stat-item">
+                                <div class="stat-value">4</div>
+                                <div class="stat-label">体力</div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="general-card wei">
+                    <div class="card-seal">魏</div>
+                    <div class="general-portrait">🧙</div>
+                    <div class="general-info">
+                        <div class="general-name">曹操</div>
+                        <div class="general-title">魏武帝</div>
+                        <div class="skill-section">
+                            <div class="skill-name">奸雄</div>
+                            <div class="skill-desc">你可以立即获得对你造成伤害的牌。</div>
+                        </div>
+                        <div class="general-stats">
+                            <div class="stat-item">
+                                <div class="stat-value">4</div>
+                                <div class="stat-label">体力</div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="general-card wu">
+                    <div class="card-seal">吴</div>
+                    <div class="general-portrait">🏹</div>
+                    <div class="general-info">
+                        <div class="general-name">周瑜</div>
+                        <div class="general-title">大都督</div>
+                        <div class="skill-section">
+                            <div class="skill-name">英姿</div>
+                            <div class="skill-desc">摸牌阶段，你可以额外摸一张牌。</div>
+                        </div>
+                        <div class="general-stats">
+                            <div class="stat-item">
+                                <div class="stat-value">3</div>
+                                <div class="stat-label">体力</div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="general-card qun">
+                    <div class="card-seal">群</div>
+                    <div class="general-portrait">👹</div>
+                    <div class="general-info">
+                        <div class="general-name">吕布</div>
+                        <div class="general-title">飞将</div>
+                        <div class="skill-section">
+                            <div class="skill-name">无双</div>
+                            <div class="skill-desc">你需要打出两张【闪】才能抵消【杀】。</div>
+                        </div>
+                        <div class="general-stats">
+                            <div class="stat-item">
+                                <div class="stat-value">4</div>
+                                <div class="stat-label">体力</div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <section class="section">
+            <div class="section-header">
+                <span>❤️</span>
+                <h2 class="section-title">体力值</h2>
+            </div>
+            <div class="hp-track">
+                <div class="hp-point"></div>
+                <div class="hp-point"></div>
+                <div class="hp-point"></div>
+                <div class="hp-point lost"></div>
+            </div>
+        </section>
+
+        <section class="section">
+            <div class="section-header">
+                <span>🎴</span>
+                <h2 class="section-title">手牌</h2>
+            </div>
+            <div class="card-hand">
+                <div class="hand-card attack">
+                    <span>⚔️</span>
+                    <span class="hand-card-label">杀</span>
+                </div>
+                <div class="hand-card dodge">
+                    <span>🛡️</span>
+                    <span class="hand-card-label">闪</span>
+                </div>
+                <div class="hand-card peach">
+                    <span>🍑</span>
+                    <span class="hand-card-label">桃</span>
+                </div>
+                <div class="hand-card equipment">
+                    <span>🗡️</span>
+                    <span class="hand-card-label">武器</span>
+                </div>
+            </div>
+        </section>
+
+        <section class="cta-section">
+            <a href="index.html" class="cta-btn">返回风格选择</a>
+        </section>
+
+        <footer class="footer">
+            <p>三国杀风格 Demo - 乐高故事书</p>
+        </footer>
+    </div>
+
+    <script>
+        document.querySelectorAll('.hp-point').forEach(function(point) {
+            point.addEventListener('click', function() {
+                this.classList.toggle('lost');
+            });
+        });
+    </script>
+</body>
+</html>

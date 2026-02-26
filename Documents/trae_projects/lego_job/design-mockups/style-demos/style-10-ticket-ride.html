@@ -1,0 +1,445 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>票务之旅风格 - 乐高故事书</title>
+    <link href="https://fonts.googleapis.com/css2?family=Cinzel:wght@400;600;700&family=Noto+Sans+SC:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --train-red: #c41e3a;
+            --train-blue: #0047ab;
+            --train-green: #228b22;
+            --train-yellow: #ffd700;
+            --train-orange: #ff8c00;
+            --train-pink: #ff69b4;
+            --train-gray: #708090;
+            --train-white: #f5f5f5;
+            --vintage-paper: #f5e6c8;
+            --bg-dark: #2a2520;
+            --bg-medium: #3a3530;
+            --text-primary: #f8f0e0;
+            --text-secondary: #a09080;
+            --font-title: 'Cinzel', serif;
+            --font-body: 'Noto Sans SC', sans-serif;
+        }
+
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+
+        body {
+            font-family: var(--font-body);
+            background: linear-gradient(180deg, var(--bg-medium) 0%, var(--bg-dark) 100%);
+            min-height: 100vh;
+            color: var(--text-primary);
+        }
+
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 20px;
+        }
+
+        .header {
+            text-align: center;
+            padding: 40px 20px;
+        }
+
+        .main-title {
+            font-family: var(--font-title);
+            font-size: 3rem;
+            font-weight: 700;
+            color: var(--train-red);
+            text-shadow: 2px 2px 4px rgba(0,0,0,0.3);
+            margin-bottom: 10px;
+        }
+
+        .subtitle {
+            font-size: 1.1rem;
+            color: var(--text-secondary);
+        }
+
+        .train-animation {
+            font-size: 3rem;
+            animation: train-move 10s linear infinite;
+            display: inline-block;
+        }
+
+        @keyframes train-move {
+            0% { transform: translateX(-100px); }
+            100% { transform: translateX(100px); }
+        }
+
+        .section {
+            margin: 40px 0;
+        }
+
+        .section-header {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            margin-bottom: 20px;
+            padding-bottom: 10px;
+            border-bottom: 2px solid var(--train-red);
+        }
+
+        .section-title {
+            font-family: var(--font-title);
+            font-size: 1.5rem;
+            color: var(--vintage-paper);
+        }
+
+        .map-preview {
+            background: linear-gradient(180deg, var(--vintage-paper), #e5d6b8);
+            border-radius: 20px;
+            padding: 30px;
+            margin: 30px 0;
+            position: relative;
+            border: 5px solid #8b4513;
+        }
+
+        .map-title {
+            font-family: var(--font-title);
+            font-size: 1.3rem;
+            color: var(--bg-dark);
+            text-align: center;
+            margin-bottom: 20px;
+        }
+
+        .map-cities {
+            display: flex;
+            flex-wrap: wrap;
+            justify-content: center;
+            gap: 20px;
+        }
+
+        .city-node {
+            width: 60px;
+            height: 60px;
+            background: white;
+            border-radius: 50%;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            border: 3px solid var(--train-gray);
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+
+        .city-node:hover {
+            transform: scale(1.15);
+            border-color: var(--train-red);
+        }
+
+        .city-icon {
+            font-size: 1.2rem;
+        }
+
+        .city-name {
+            font-size: 0.6rem;
+            color: var(--bg-dark);
+            margin-top: 2px;
+        }
+
+        .route-line {
+            position: absolute;
+            height: 3px;
+            background: var(--train-gray);
+            transform-origin: left center;
+        }
+
+        .route-line.red { background: var(--train-red); }
+        .route-line.blue { background: var(--train-blue); }
+        .route-line.green { background: var(--train-green); }
+
+        .ticket-cards {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+            gap: 20px;
+        }
+
+        .ticket-card {
+            background: linear-gradient(180deg, var(--vintage-paper), #e5d6b8);
+            border-radius: 15px;
+            padding: 20px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            border: 3px solid #8b4513;
+            position: relative;
+        }
+
+        .ticket-card:hover {
+            transform: translateY(-10px) rotate(-2deg);
+            box-shadow: 0 15px 30px rgba(0,0,0,0.3);
+        }
+
+        .ticket-card.completed {
+            border-color: var(--train-green);
+        }
+
+        .ticket-card.completed::after {
+            content: '✓';
+            position: absolute;
+            top: 10px;
+            right: 10px;
+            width: 25px;
+            height: 25px;
+            background: var(--train-green);
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: white;
+            font-size: 0.8rem;
+        }
+
+        .ticket-route {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            margin-bottom: 10px;
+            color: var(--bg-dark);
+        }
+
+        .ticket-city {
+            font-family: var(--font-title);
+            font-size: 0.9rem;
+            font-weight: 600;
+        }
+
+        .ticket-arrow {
+            color: var(--train-gray);
+        }
+
+        .ticket-points {
+            font-family: var(--font-title);
+            font-size: 1.5rem;
+            font-weight: 700;
+            color: var(--train-red);
+            text-align: right;
+        }
+
+        .train-cards {
+            display: flex;
+            justify-content: center;
+            gap: 10px;
+            flex-wrap: wrap;
+            margin: 20px 0;
+        }
+
+        .train-card {
+            width: 50px;
+            height: 70px;
+            border-radius: 8px;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            border: 2px solid rgba(255,255,255,0.3);
+        }
+
+        .train-card:hover {
+            transform: translateY(-5px);
+        }
+
+        .train-card.red { background: var(--train-red); }
+        .train-card.blue { background: var(--train-blue); }
+        .train-card.green { background: var(--train-green); }
+        .train-card.yellow { background: var(--train-yellow); }
+        .train-card.orange { background: var(--train-orange); }
+        .train-card.pink { background: var(--train-pink); }
+        .train-card.gray { background: var(--train-gray); }
+        .train-card.white { background: var(--train-white); border-color: #ccc; }
+        .train-card.loco { 
+            background: linear-gradient(135deg, #333, #666);
+            border: 2px solid var(--gold);
+        }
+
+        .train-icon {
+            font-size: 1.5rem;
+        }
+
+        .score-section {
+            display: flex;
+            justify-content: center;
+            gap: 40px;
+            margin: 30px 0;
+        }
+
+        .score-item {
+            text-align: center;
+        }
+
+        .score-label {
+            font-size: 0.9rem;
+            color: var(--text-secondary);
+            margin-bottom: 5px;
+        }
+
+        .score-value {
+            font-family: var(--font-title);
+            font-size: 2.5rem;
+            font-weight: 700;
+            color: var(--train-yellow);
+        }
+
+        .cta-section {
+            text-align: center;
+            margin: 50px 0;
+        }
+
+        .cta-btn {
+            display: inline-block;
+            padding: 15px 50px;
+            font-size: 1.2rem;
+            font-weight: 700;
+            border: none;
+            border-radius: 25px;
+            background: linear-gradient(135deg, var(--train-red), #8b1428);
+            color: white;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            text-decoration: none;
+        }
+
+        .cta-btn:hover {
+            transform: scale(1.05);
+        }
+
+        .footer {
+            text-align: center;
+            padding: 30px;
+            color: var(--text-secondary);
+            font-size: 0.9rem;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <header class="header">
+            <h1 class="main-title">🚂 票务之旅风格</h1>
+            <p class="subtitle">复古火车 · 彩色车票 · 路线规划</p>
+            <div class="train-animation">🚂</div>
+        </header>
+
+        <div class="score-section">
+            <div class="score-item">
+                <div class="score-label">得分</div>
+                <div class="score-value">87</div>
+            </div>
+            <div class="score-item">
+                <div class="score-label">火车数量</div>
+                <div class="score-value">15</div>
+            </div>
+        </div>
+
+        <section class="section">
+            <div class="section-header">
+                <span>🗺️</span>
+                <h2 class="section-title">路线地图</h2>
+            </div>
+            <div class="map-preview">
+                <div class="map-title">冒险王国</div>
+                <div class="map-cities">
+                    <div class="city-node">
+                        <div class="city-icon">🏰</div>
+                        <div class="city-name">城堡</div>
+                    </div>
+                    <div class="city-node">
+                        <div class="city-icon">🌲</div>
+                        <div class="city-name">森林</div>
+                    </div>
+                    <div class="city-node">
+                        <div class="city-icon">🏔️</div>
+                        <div class="city-name">山脉</div>
+                    </div>
+                    <div class="city-node">
+                        <div class="city-icon">🌊</div>
+                        <div class="city-name">海岸</div>
+                    </div>
+                    <div class="city-node">
+                        <div class="city-icon">🏜️</div>
+                        <div class="city-name">沙漠</div>
+                    </div>
+                    <div class="city-node">
+                        <div class="city-icon">❄️</div>
+                        <div class="city-name">冰原</div>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <section class="section">
+            <div class="section-header">
+                <span>🎫</span>
+                <h2 class="section-title">任务车票</h2>
+            </div>
+            <div class="ticket-cards">
+                <div class="ticket-card completed">
+                    <div class="ticket-route">
+                        <span class="ticket-city">城堡</span>
+                        <span class="ticket-arrow">→</span>
+                        <span class="ticket-city">森林</span>
+                    </div>
+                    <div class="ticket-points">5</div>
+                </div>
+
+                <div class="ticket-card">
+                    <div class="ticket-route">
+                        <span class="ticket-city">山脉</span>
+                        <span class="ticket-arrow">→</span>
+                        <span class="ticket-city">海岸</span>
+                    </div>
+                    <div class="ticket-points">8</div>
+                </div>
+
+                <div class="ticket-card">
+                    <div class="ticket-route">
+                        <span class="ticket-city">沙漠</span>
+                        <span class="ticket-arrow">→</span>
+                        <span class="ticket-city">冰原</span>
+                    </div>
+                    <div class="ticket-points">12</div>
+                </div>
+
+                <div class="ticket-card completed">
+                    <div class="ticket-route">
+                        <span class="ticket-city">森林</span>
+                        <span class="ticket-arrow">→</span>
+                        <span class="ticket-city">山脉</span>
+                    </div>
+                    <div class="ticket-points">6</div>
+                </div>
+            </div>
+        </section>
+
+        <section class="section">
+            <div class="section-header">
+                <span>🚃</span>
+                <h2 class="section-title">火车卡牌</h2>
+            </div>
+            <div class="train-cards">
+                <div class="train-card red"><span class="train-icon">🚃</span></div>
+                <div class="train-card red"><span class="train-icon">🚃</span></div>
+                <div class="train-card blue"><span class="train-icon">🚃</span></div>
+                <div class="train-card green"><span class="train-icon">🚃</span></div>
+                <div class="train-card yellow"><span class="train-icon">🚃</span></div>
+                <div class="train-card orange"><span class="train-icon">🚃</span></div>
+                <div class="train-card gray"><span class="train-icon">🚃</span></div>
+                <div class="train-card white"><span class="train-icon">🚃</span></div>
+                <div class="train-card loco"><span class="train-icon">🚂</span></div>
+            </div>
+        </section>
+
+        <section class="cta-section">
+            <a href="index.html" class="cta-btn">🚂 返回风格选择</a>
+        </section>
+
+        <footer class="footer">
+            <p>票务之旅风格 Demo - 乐高故事书</p>
+        </footer>
+    </div>
+</body>
+</html>

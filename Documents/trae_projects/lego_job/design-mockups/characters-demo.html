@@ -1,0 +1,862 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>人仔角色 - 乐高故事书桌游风格</title>
+    <link href="https://fonts.googleapis.com/css2?family=Cinzel:wght@400;600;700&family=Noto+Sans+SC:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --gold: #ffd700;
+            --gold-dark: #b8860b;
+            --silver: #c0c0c0;
+            --crimson: #dc2626;
+            --purple: #a855f7;
+            --green: #22c55e;
+            --blue: #3b82f6;
+            --orange: #f59e0b;
+            --bg-dark: #0d0d14;
+            --bg-medium: #1a1a2e;
+            --text-primary: #f8fafc;
+            --text-secondary: #94a3b8;
+            --font-title: 'Cinzel', serif;
+            --font-body: 'Noto Sans SC', sans-serif;
+        }
+
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+
+        body {
+            font-family: var(--font-body);
+            background: linear-gradient(180deg, #1a1a2e 0%, #0d0d14 100%);
+            min-height: 100vh;
+            color: var(--text-primary);
+            overflow-x: hidden;
+        }
+
+        .particles {
+            position: fixed;
+            inset: 0;
+            pointer-events: none;
+            z-index: 0;
+        }
+
+        .particle {
+            position: absolute;
+            width: 2px;
+            height: 2px;
+            background: var(--gold);
+            border-radius: 50%;
+            opacity: 0.3;
+            animation: float 20s linear infinite;
+        }
+
+        @keyframes float {
+            0% { transform: translateY(100vh); opacity: 0; }
+            10% { opacity: 0.3; }
+            90% { opacity: 0.3; }
+            100% { transform: translateY(-100vh); opacity: 0; }
+        }
+
+        .container {
+            position: relative;
+            z-index: 1;
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 20px;
+        }
+
+        .header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 20px 0;
+            border-bottom: 1px solid rgba(255,215,0,0.2);
+            margin-bottom: 30px;
+            flex-wrap: wrap;
+            gap: 15px;
+        }
+
+        .header-title {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+        }
+
+        .header-icon {
+            font-size: 2rem;
+        }
+
+        .header-text {
+            font-family: var(--font-title);
+            font-size: 1.8rem;
+            font-weight: 700;
+            background: linear-gradient(135deg, var(--gold), #ff9800);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+        }
+
+        .nav-tabs {
+            display: flex;
+            gap: 10px;
+        }
+
+        .nav-tab {
+            padding: 10px 18px;
+            border-radius: 10px;
+            background: rgba(255,255,255,0.05);
+            border: 1px solid rgba(255,255,255,0.1);
+            color: var(--text-secondary);
+            font-size: 0.85rem;
+            font-weight: 500;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            text-decoration: none;
+            display: flex;
+            align-items: center;
+            gap: 6px;
+        }
+
+        .nav-tab:hover {
+            background: rgba(255,215,0,0.1);
+            border-color: rgba(255,215,0,0.3);
+            color: var(--text-primary);
+        }
+
+        .create-btn {
+            padding: 12px 25px;
+            font-size: 0.95rem;
+            font-weight: 600;
+            border: none;
+            border-radius: 20px;
+            background: linear-gradient(135deg, var(--gold), #ff9800);
+            color: #000;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            font-family: var(--font-body);
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+            box-shadow: 0 0 20px rgba(255,215,0,0.4);
+        }
+
+        .create-btn:hover {
+            transform: scale(1.05);
+            box-shadow: 0 0 30px rgba(255,215,0,0.6);
+        }
+
+        .section {
+            margin-bottom: 40px;
+        }
+
+        .section-header {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            margin-bottom: 20px;
+            padding: 15px 20px;
+            background: rgba(0,0,0,0.3);
+            border-radius: 12px;
+            border-left: 4px solid;
+        }
+
+        .section-header.preset {
+            border-color: var(--green);
+        }
+
+        .section-header.user {
+            border-color: var(--orange);
+        }
+
+        .section-icon {
+            font-size: 1.5rem;
+        }
+
+        .section-title {
+            font-family: var(--font-title);
+            font-size: 1.2rem;
+            font-weight: 600;
+        }
+
+        .section-desc {
+            color: var(--text-secondary);
+            font-size: 0.85rem;
+            margin-top: 5px;
+        }
+
+        .card-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(180px, 1fr));
+            gap: 20px;
+        }
+
+        .hs-card {
+            width: 100%;
+            max-width: 160px;
+            margin: 0 auto;
+            aspect-ratio: 3/4;
+            border-radius: 12px;
+            cursor: pointer;
+            transition: all 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+            display: flex;
+            flex-direction: column;
+            overflow: hidden;
+            box-shadow: 0 5px 15px rgba(0,0,0,0.4);
+            background: linear-gradient(180deg, #3d3d3d, #1a1a1a);
+            border: 3px solid;
+            position: relative;
+        }
+
+        .hs-card.protagonist {
+            border-color: var(--gold);
+            box-shadow: 0 5px 15px rgba(0,0,0,0.4), 0 0 15px rgba(255,215,0,0.2);
+        }
+
+        .hs-card.antagonist {
+            border-color: var(--crimson);
+            box-shadow: 0 5px 15px rgba(0,0,0,0.4), 0 0 15px rgba(220,38,38,0.2);
+        }
+
+        .hs-card.supporting {
+            border-color: var(--silver);
+        }
+
+        .hs-card.bystander {
+            border-color: #6b7280;
+        }
+
+        .hs-card:hover {
+            transform: translateY(-15px) scale(1.08);
+            z-index: 100;
+            box-shadow: 0 20px 40px rgba(0,0,0,0.5), 0 0 25px rgba(255,215,0,0.3);
+        }
+
+        .hs-portrait {
+            flex: 1;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            background: linear-gradient(180deg, #4a4a4a, #2a2a2a);
+            position: relative;
+            overflow: hidden;
+        }
+
+        .hs-portrait::before {
+            content: '';
+            position: absolute;
+            inset: 0;
+            background: radial-gradient(ellipse at center top, rgba(255,255,255,0.1), transparent 50%);
+        }
+
+        .hs-avatar {
+            font-size: 3rem;
+            filter: drop-shadow(0 3px 6px rgba(0,0,0,0.5));
+        }
+
+        .hs-name-banner {
+            padding: 8px 10px;
+            background: linear-gradient(180deg, #5a4a3a, #3a2a1a);
+            text-align: center;
+        }
+
+        .hs-name {
+            font-family: var(--font-title);
+            font-size: 0.85rem;
+            font-weight: 600;
+            color: #fff8e1;
+            text-shadow: 1px 1px 2px rgba(0,0,0,0.8);
+        }
+
+        .hs-stats {
+            display: flex;
+            justify-content: space-between;
+            padding: 6px 10px;
+            background: linear-gradient(180deg, #2a2a2a, #1a1a1a);
+        }
+
+        .hs-gem {
+            width: 22px;
+            height: 22px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 10px;
+            font-weight: 700;
+            color: white;
+            text-shadow: 1px 1px 1px rgba(0,0,0,0.5);
+        }
+
+        .hs-gem.attack {
+            background: linear-gradient(180deg, #fbbf24, #d97706);
+            box-shadow: 0 2px 4px rgba(0,0,0,0.3);
+        }
+
+        .hs-gem.health {
+            background: linear-gradient(180deg, #f87171, #dc2626);
+            box-shadow: 0 2px 4px rgba(0,0,0,0.3);
+        }
+
+        .role-tag {
+            position: absolute;
+            top: 5px;
+            left: 5px;
+            padding: 3px 8px;
+            border-radius: 4px;
+            font-size: 9px;
+            font-weight: 700;
+            letter-spacing: 0.5px;
+        }
+
+        .hs-card.protagonist .role-tag {
+            background: linear-gradient(180deg, var(--gold), var(--gold-dark));
+            color: #1a0f0a;
+        }
+
+        .hs-card.antagonist .role-tag {
+            background: linear-gradient(180deg, var(--crimson), #991b1b);
+            color: white;
+        }
+
+        .hs-card.supporting .role-tag {
+            background: linear-gradient(180deg, var(--silver), #808080);
+            color: #1a0f0a;
+        }
+
+        .hs-card.bystander .role-tag {
+            background: linear-gradient(180deg, #6b7280, #4b5563);
+            color: white;
+        }
+
+        .hs-card-actions {
+            position: absolute;
+            top: 5px;
+            right: 5px;
+            display: flex;
+            gap: 5px;
+            opacity: 0;
+            transition: opacity 0.2s ease;
+        }
+
+        .hs-card:hover .hs-card-actions {
+            opacity: 1;
+        }
+
+        .hs-action-btn {
+            width: 24px;
+            height: 24px;
+            border-radius: 6px;
+            border: 1px solid rgba(255,255,255,0.3);
+            background: rgba(0,0,0,0.6);
+            color: white;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 11px;
+            transition: all 0.2s ease;
+        }
+
+        .hs-action-btn:hover {
+            transform: scale(1.1);
+        }
+
+        .hs-action-btn.edit:hover {
+            background: rgba(59,130,246,0.6);
+            border-color: #3b82f6;
+        }
+
+        .hs-action-btn.delete:hover {
+            background: rgba(220,38,38,0.6);
+            border-color: #dc2626;
+        }
+
+        .system-badge {
+            position: absolute;
+            bottom: 5px;
+            left: 50%;
+            transform: translateX(-50%);
+            padding: 3px 10px;
+            background: var(--green);
+            color: white;
+            border-radius: 10px;
+            font-size: 9px;
+            font-weight: 600;
+        }
+
+        .modal-overlay {
+            position: fixed;
+            inset: 0;
+            background: rgba(0,0,0,0.8);
+            display: none;
+            align-items: center;
+            justify-content: center;
+            z-index: 1000;
+            backdrop-filter: blur(5px);
+        }
+
+        .modal-overlay.active {
+            display: flex;
+        }
+
+        .modal {
+            background: linear-gradient(180deg, #2d2d44, #1a1a2e);
+            border-radius: 20px;
+            border: 3px solid var(--gold);
+            padding: 30px;
+            width: 90%;
+            max-width: 450px;
+            position: relative;
+            transform: scale(0.9);
+            opacity: 0;
+            transition: all 0.3s ease;
+        }
+
+        .modal-overlay.active .modal {
+            transform: scale(1);
+            opacity: 1;
+        }
+
+        .modal-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 25px;
+            padding-bottom: 15px;
+            border-bottom: 1px solid rgba(255,215,0,0.2);
+        }
+
+        .modal-title {
+            font-family: var(--font-title);
+            font-size: 1.3rem;
+            font-weight: 600;
+            color: var(--gold);
+        }
+
+        .modal-close {
+            width: 30px;
+            height: 30px;
+            border-radius: 50%;
+            background: rgba(0,0,0,0.3);
+            border: 1px solid var(--text-secondary);
+            color: var(--text-primary);
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1.2rem;
+            transition: all 0.2s ease;
+        }
+
+        .modal-close:hover {
+            background: var(--crimson);
+            border-color: var(--crimson);
+        }
+
+        .form-group {
+            margin-bottom: 20px;
+        }
+
+        .form-label {
+            display: block;
+            margin-bottom: 8px;
+            font-weight: 600;
+            color: var(--text-secondary);
+            font-size: 0.9rem;
+        }
+
+        .form-input {
+            width: 100%;
+            padding: 12px 15px;
+            background: rgba(0,0,0,0.4);
+            border: 2px solid rgba(255,215,0,0.3);
+            border-radius: 10px;
+            color: var(--text-primary);
+            font-size: 1rem;
+            font-family: var(--font-body);
+            transition: all 0.3s ease;
+        }
+
+        .form-input:focus {
+            outline: none;
+            border-color: var(--gold);
+            box-shadow: 0 0 15px rgba(255,215,0,0.3);
+        }
+
+        .form-textarea {
+            min-height: 80px;
+            resize: vertical;
+        }
+
+        .modal-actions {
+            display: flex;
+            gap: 15px;
+            margin-top: 25px;
+        }
+
+        .modal-btn {
+            flex: 1;
+            padding: 12px;
+            font-size: 1rem;
+            font-weight: 600;
+            border: none;
+            border-radius: 10px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            font-family: var(--font-body);
+        }
+
+        .modal-btn.primary {
+            background: linear-gradient(135deg, var(--gold), #ff9800);
+            color: #000;
+        }
+
+        .modal-btn.secondary {
+            background: rgba(255,255,255,0.1);
+            color: var(--text-secondary);
+            border: 1px solid rgba(255,255,255,0.2);
+        }
+
+        .modal-btn:hover {
+            transform: translateY(-2px);
+        }
+
+        .modal-btn.danger {
+            background: linear-gradient(135deg, var(--crimson), #991b1b);
+            color: white;
+        }
+
+        .footer {
+            text-align: center;
+            padding: 30px;
+            color: var(--text-secondary);
+            font-size: 0.9rem;
+            border-top: 1px solid rgba(255,255,255,0.1);
+            margin-top: 40px;
+        }
+
+        .toast {
+            position: fixed;
+            top: 20px;
+            left: 50%;
+            transform: translateX(-50%) translateY(-10px);
+            background: rgba(0,0,0,0.95);
+            padding: 12px 25px;
+            border-radius: 10px;
+            border: 1px solid var(--gold);
+            font-size: 0.9rem;
+            opacity: 0;
+            transition: all 0.3s ease;
+            z-index: 1002;
+        }
+
+        .toast.show {
+            transform: translateX(-50%) translateY(0);
+            opacity: 1;
+        }
+
+        .toast.success { border-color: var(--green); color: var(--green); }
+        .toast.error { border-color: var(--crimson); color: #f87171; }
+
+        @media (max-width: 600px) {
+            .header {
+                flex-direction: column;
+                text-align: center;
+            }
+            
+            .card-grid {
+                grid-template-columns: repeat(2, 1fr);
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="particles" id="particles"></div>
+
+    <div class="container">
+        <header class="header">
+            <div class="header-title">
+                <span class="header-icon">🎭</span>
+                <h1 class="header-text">人仔角色</h1>
+            </div>
+            <nav class="nav-tabs">
+                <a href="index-demo.html" class="nav-tab">🏠 首页</a>
+                <a href="bookshelf-demo.html" class="nav-tab">📚 我的书架</a>
+                <a href="story-create-demo.html" class="nav-tab">✨ 创建故事</a>
+            </nav>
+            <button class="create-btn" onclick="openCreateModal()">➕ 创建人仔</button>
+        </header>
+
+        <section class="section">
+            <div class="section-header preset">
+                <span class="section-icon">⭐</span>
+                <div>
+                    <h2 class="section-title">预设人仔</h2>
+                    <p class="section-desc">系统提供的经典角色，可在故事中直接使用</p>
+                </div>
+            </div>
+            <div class="card-grid">
+                <div class="hs-card protagonist">
+                    <span class="role-tag">主角</span>
+                    <div class="hs-card-actions">
+                        <button class="hs-action-btn" title="查看">👁️</button>
+                    </div>
+                    <div class="hs-portrait"><span class="hs-avatar">🧝‍♀️</span></div>
+                    <div class="hs-name-banner"><span class="hs-name">艾拉拉</span></div>
+                    <div class="hs-stats">
+                        <div class="hs-gem attack">5</div>
+                        <div class="hs-gem health">8</div>
+                    </div>
+                    <span class="system-badge">系统预设</span>
+                </div>
+
+                <div class="hs-card protagonist">
+                    <span class="role-tag">主角</span>
+                    <div class="hs-card-actions">
+                        <button class="hs-action-btn" title="查看">👁️</button>
+                    </div>
+                    <div class="hs-portrait"><span class="hs-avatar">⚔️</span></div>
+                    <div class="hs-name-banner"><span class="hs-name">雷恩</span></div>
+                    <div class="hs-stats">
+                        <div class="hs-gem attack">7</div>
+                        <div class="hs-gem health">6</div>
+                    </div>
+                    <span class="system-badge">系统预设</span>
+                </div>
+
+                <div class="hs-card supporting">
+                    <span class="role-tag">配角</span>
+                    <div class="hs-card-actions">
+                        <button class="hs-action-btn" title="查看">👁️</button>
+                    </div>
+                    <div class="hs-portrait"><span class="hs-avatar">🧙‍♂️</span></div>
+                    <div class="hs-name-banner"><span class="hs-name">老智者奥伦</span></div>
+                    <div class="hs-stats">
+                        <div class="hs-gem attack">2</div>
+                        <div class="hs-gem health">4</div>
+                    </div>
+                    <span class="system-badge">系统预设</span>
+                </div>
+
+                <div class="hs-card antagonist">
+                    <span class="role-tag">反派</span>
+                    <div class="hs-card-actions">
+                        <button class="hs-action-btn" title="查看">👁️</button>
+                    </div>
+                    <div class="hs-portrait"><span class="hs-avatar">👿</span></div>
+                    <div class="hs-name-banner"><span class="hs-name">黑暗领主</span></div>
+                    <div class="hs-stats">
+                        <div class="hs-gem attack">9</div>
+                        <div class="hs-gem health">10</div>
+                    </div>
+                    <span class="system-badge">系统预设</span>
+                </div>
+            </div>
+        </section>
+
+        <section class="section">
+            <div class="section-header user">
+                <span class="section-icon">🎨</span>
+                <div>
+                    <h2 class="section-title">我的人仔</h2>
+                    <p class="section-desc">你创建的专属角色，可以修改或删除</p>
+                </div>
+            </div>
+            <div class="card-grid">
+                <div class="hs-card supporting">
+                    <span class="role-tag">配角</span>
+                    <div class="hs-card-actions">
+                        <button class="hs-action-btn edit" onclick="openEditModal('小精灵露娜')" title="编辑">✏️</button>
+                        <button class="hs-action-btn delete" onclick="openDeleteModal('小精灵露娜')" title="删除">🗑️</button>
+                    </div>
+                    <div class="hs-portrait"><span class="hs-avatar">🧚</span></div>
+                    <div class="hs-name-banner"><span class="hs-name">小精灵露娜</span></div>
+                    <div class="hs-stats">
+                        <div class="hs-gem attack">3</div>
+                        <div class="hs-gem health">5</div>
+                    </div>
+                </div>
+
+                <div class="hs-card supporting">
+                    <span class="role-tag">配角</span>
+                    <div class="hs-card-actions">
+                        <button class="hs-action-btn edit" onclick="openEditModal('铁匠托尔')" title="编辑">✏️</button>
+                        <button class="hs-action-btn delete" onclick="openDeleteModal('铁匠托尔')" title="删除">🗑️</button>
+                    </div>
+                    <div class="hs-portrait"><span class="hs-avatar">🔨</span></div>
+                    <div class="hs-name-banner"><span class="hs-name">铁匠托尔</span></div>
+                    <div class="hs-stats">
+                        <div class="hs-gem attack">4</div>
+                        <div class="hs-gem health">5</div>
+                    </div>
+                </div>
+
+                <div class="hs-card bystander">
+                    <span class="role-tag">路人</span>
+                    <div class="hs-card-actions">
+                        <button class="hs-action-btn edit" onclick="openEditModal('村民汤姆')" title="编辑">✏️</button>
+                        <button class="hs-action-btn delete" onclick="openDeleteModal('村民汤姆')" title="删除">🗑️</button>
+                    </div>
+                    <div class="hs-portrait"><span class="hs-avatar">👨‍🌾</span></div>
+                    <div class="hs-name-banner"><span class="hs-name">村民汤姆</span></div>
+                    <div class="hs-stats">
+                        <div class="hs-gem attack">1</div>
+                        <div class="hs-gem health">2</div>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <footer class="footer">
+            <p>乐高故事书 &copy; 2024 - 让想象力飞翔</p>
+        </footer>
+    </div>
+
+    <div class="modal-overlay" id="createModal">
+        <div class="modal">
+            <div class="modal-header">
+                <h3 class="modal-title">🎭 创建新人仔</h3>
+                <button class="modal-close" onclick="closeModal('createModal')">×</button>
+            </div>
+            <form onsubmit="createCharacter(event)">
+                <div class="form-group">
+                    <label class="form-label">👤 名称</label>
+                    <input type="text" class="form-input" placeholder="给角色起个名字" required>
+                </div>
+                <div class="form-group">
+                    <label class="form-label">📝 描述</label>
+                    <textarea class="form-input form-textarea" placeholder="描述一下这个角色"></textarea>
+                </div>
+                <div class="form-group">
+                    <label class="form-label">💫 性格</label>
+                    <input type="text" class="form-input" placeholder="例如：勇敢、善良">
+                </div>
+                <div class="form-group">
+                    <label class="form-label">🗣️ 说话风格</label>
+                    <input type="text" class="form-input" placeholder="例如：亲切友好">
+                </div>
+                <div class="modal-actions">
+                    <button type="button" class="modal-btn secondary" onclick="closeModal('createModal')">取消</button>
+                    <button type="submit" class="modal-btn primary">✨ 创建</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <div class="modal-overlay" id="editModal">
+        <div class="modal">
+            <div class="modal-header">
+                <h3 class="modal-title">✏️ 编辑人仔</h3>
+                <button class="modal-close" onclick="closeModal('editModal')">×</button>
+            </div>
+            <form onsubmit="saveCharacter(event)">
+                <div class="form-group">
+                    <label class="form-label">👤 名称</label>
+                    <input type="text" class="form-input" id="editName" required>
+                </div>
+                <div class="form-group">
+                    <label class="form-label">📝 描述</label>
+                    <textarea class="form-input form-textarea" id="editDesc"></textarea>
+                </div>
+                <div class="form-group">
+                    <label class="form-label">💫 性格</label>
+                    <input type="text" class="form-input" id="editPersonality">
+                </div>
+                <div class="form-group">
+                    <label class="form-label">🗣️ 说话风格</label>
+                    <input type="text" class="form-input" id="editStyle">
+                </div>
+                <div class="modal-actions">
+                    <button type="button" class="modal-btn secondary" onclick="closeModal('editModal')">取消</button>
+                    <button type="submit" class="modal-btn primary">💾 保存</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <div class="modal-overlay" id="deleteModal">
+        <div class="modal" style="max-width: 400px;">
+            <div class="modal-header">
+                <h3 class="modal-title" style="color: var(--crimson);">🗑️ 确认删除</h3>
+                <button class="modal-close" onclick="closeModal('deleteModal')">×</button>
+            </div>
+            <p style="text-align: center; margin-bottom: 25px; font-size: 1.1rem;">
+                确定要删除人仔 <strong id="deleteName" style="color: var(--gold);"></strong> 吗？
+            </p>
+            <p style="text-align: center; color: var(--text-secondary); font-size: 0.9rem; margin-bottom: 20px;">
+                此操作不可撤销
+            </p>
+            <div class="modal-actions">
+                <button class="modal-btn secondary" onclick="closeModal('deleteModal')">取消</button>
+                <button class="modal-btn danger" onclick="confirmDelete()">确认删除</button>
+            </div>
+        </div>
+    </div>
+
+    <div class="toast" id="toast"></div>
+
+    <script>
+        for (var i = 0; i < 15; i++) {
+            var p = document.createElement('div');
+            p.className = 'particle';
+            p.style.left = Math.random() * 100 + '%';
+            p.style.animationDelay = Math.random() * 20 + 's';
+            document.getElementById('particles').appendChild(p);
+        }
+
+        function openCreateModal() {
+            document.getElementById('createModal').classList.add('active');
+        }
+
+        function openEditModal(name) {
+            document.getElementById('editName').value = name;
+            document.getElementById('editDesc').value = '一个神秘的角色...';
+            document.getElementById('editPersonality').value = '勇敢、善良';
+            document.getElementById('editStyle').value = '亲切友好';
+            document.getElementById('editModal').classList.add('active');
+        }
+
+        function openDeleteModal(name) {
+            document.getElementById('deleteName').textContent = name;
+            document.getElementById('deleteModal').classList.add('active');
+        }
+
+        function closeModal(id) {
+            document.getElementById(id).classList.remove('active');
+        }
+
+        function createCharacter(e) {
+            e.preventDefault();
+            closeModal('createModal');
+            showToast('人仔创建成功！🎉', 'success');
+        }
+
+        function saveCharacter(e) {
+            e.preventDefault();
+            closeModal('editModal');
+            showToast('人仔更新成功！✨', 'success');
+        }
+
+        function confirmDelete() {
+            closeModal('deleteModal');
+            showToast('人仔已删除！🗑️', 'success');
+        }
+
+        function showToast(msg, type) {
+            var toast = document.getElementById('toast');
+            toast.textContent = msg;
+            toast.className = 'toast show ' + (type || '');
+            setTimeout(function() {
+                toast.classList.remove('show');
+            }, 2000);
+        }
+
+        document.querySelectorAll('.modal-overlay').forEach(function(modal) {
+            modal.addEventListener('click', function(e) {
+                if (e.target === this) {
+                    this.classList.remove('active');
+                }
+            });
+        });
+    </script>
+</body>
+</html>

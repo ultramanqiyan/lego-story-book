@@ -1,0 +1,402 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>行动代号风格 - 乐高故事书</title>
+    <link href="https://fonts.googleapis.com/css2?family=Cinzel:wght@400;600;700&family=Noto+Sans+SC:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --red-team: #dc2626;
+            --blue-team: #2563eb;
+            --neutral: #f5f5dc;
+            --assassin: #1a1a1a;
+            --bg-dark: #2c2c2c;
+            --bg-medium: #3d3d3d;
+            --text-primary: #ffffff;
+            --text-secondary: #a0a0a0;
+            --font-title: 'Cinzel', serif;
+            --font-body: 'Noto Sans SC', sans-serif;
+        }
+
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+
+        body {
+            font-family: var(--font-body);
+            background: var(--bg-dark);
+            min-height: 100vh;
+            color: var(--text-primary);
+        }
+
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 20px;
+        }
+
+        .header {
+            text-align: center;
+            padding: 40px 20px;
+            background: linear-gradient(135deg, rgba(220, 38, 38, 0.2), rgba(37, 100, 235, 0.2));
+            border-radius: 20px;
+            margin-bottom: 30px;
+        }
+
+        .main-title {
+            font-family: var(--font-title);
+            font-size: 3rem;
+            font-weight: 700;
+            background: linear-gradient(135deg, var(--red-team), var(--blue-team));
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            margin-bottom: 10px;
+        }
+
+        .subtitle {
+            font-size: 1.1rem;
+            color: var(--text-secondary);
+        }
+
+        .team-indicator {
+            display: flex;
+            justify-content: center;
+            gap: 40px;
+            margin-top: 20px;
+        }
+
+        .team {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            padding: 10px 20px;
+            border-radius: 10px;
+        }
+
+        .team.red { background: rgba(220, 38, 38, 0.2); border: 2px solid var(--red-team); }
+        .team.blue { background: rgba(37, 100, 235, 0.2); border: 2px solid var(--blue-team); }
+
+        .team-dot {
+            width: 15px;
+            height: 15px;
+            border-radius: 50%;
+        }
+
+        .team.red .team-dot { background: var(--red-team); }
+        .team.blue .team-dot { background: var(--blue-team); }
+
+        .word-grid {
+            display: grid;
+            grid-template-columns: repeat(5, 1fr);
+            gap: 10px;
+            margin: 30px 0;
+        }
+
+        .word-card {
+            aspect-ratio: 3/2;
+            background: var(--bg-medium);
+            border-radius: 8px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1.1rem;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            border: 2px solid transparent;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .word-card:hover {
+            transform: scale(1.05);
+        }
+
+        .word-card.red { border-color: var(--red-team); background: rgba(220, 38, 38, 0.1); }
+        .word-card.blue { border-color: var(--blue-team); background: rgba(37, 100, 235, 0.1); }
+        .word-card.neutral { border-color: var(--neutral); background: rgba(245, 245, 220, 0.1); }
+        .word-card.assassin { border-color: var(--assassin); background: rgba(26, 26, 26, 0.8); }
+
+        .word-card.revealed::after {
+            content: '';
+            position: absolute;
+            inset: 0;
+            opacity: 0.3;
+        }
+
+        .word-card.revealed.red::after { background: var(--red-team); }
+        .word-card.revealed.blue::after { background: var(--blue-team); }
+        .word-card.revealed.neutral::after { background: var(--neutral); }
+        .word-card.revealed.assassin::after { background: var(--assassin); }
+
+        .section {
+            margin: 40px 0;
+        }
+
+        .section-header {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            margin-bottom: 20px;
+        }
+
+        .section-title {
+            font-family: var(--font-title);
+            font-size: 1.5rem;
+        }
+
+        .section-title.red { color: var(--red-team); }
+        .section-title.blue { color: var(--blue-team); }
+
+        .agent-cards {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+            gap: 20px;
+        }
+
+        .agent-card {
+            background: var(--bg-medium);
+            border-radius: 15px;
+            padding: 20px;
+            text-align: center;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            border: 3px solid;
+        }
+
+        .agent-card.red { border-color: var(--red-team); }
+        .agent-card.blue { border-color: var(--blue-team); }
+
+        .agent-card:hover {
+            transform: translateY(-10px);
+            box-shadow: 0 15px 30px rgba(0,0,0,0.3);
+        }
+
+        .agent-icon {
+            font-size: 3rem;
+            margin-bottom: 10px;
+        }
+
+        .agent-name {
+            font-family: var(--font-title);
+            font-size: 1.1rem;
+            margin-bottom: 5px;
+        }
+
+        .agent-role {
+            font-size: 0.85rem;
+            color: var(--text-secondary);
+        }
+
+        .spy-icon {
+            position: fixed;
+            bottom: 20px;
+            right: 20px;
+            font-size: 3rem;
+            opacity: 0.1;
+            animation: spy-float 6s ease-in-out infinite;
+        }
+
+        @keyframes spy-float {
+            0%, 100% { transform: translateY(0) rotate(0deg); }
+            50% { transform: translateY(-20px) rotate(10deg); }
+        }
+
+        .score-panel {
+            display: flex;
+            justify-content: center;
+            gap: 50px;
+            margin: 30px 0;
+            padding: 20px;
+            background: var(--bg-medium);
+            border-radius: 15px;
+        }
+
+        .score-item {
+            text-align: center;
+        }
+
+        .score-label {
+            font-size: 0.9rem;
+            color: var(--text-secondary);
+            margin-bottom: 5px;
+        }
+
+        .score-value {
+            font-family: var(--font-title);
+            font-size: 2.5rem;
+            font-weight: 700;
+        }
+
+        .score-value.red { color: var(--red-team); }
+        .score-value.blue { color: var(--blue-team); }
+
+        .lightbulb {
+            display: inline-block;
+            animation: glow 2s ease-in-out infinite;
+        }
+
+        @keyframes glow {
+            0%, 100% { filter: drop-shadow(0 0 5px #ffd700); }
+            50% { filter: drop-shadow(0 0 20px #ffd700); }
+        }
+
+        .cta-section {
+            text-align: center;
+            margin: 50px 0;
+        }
+
+        .cta-btn {
+            display: inline-block;
+            padding: 15px 50px;
+            font-size: 1.2rem;
+            font-weight: 700;
+            border: none;
+            border-radius: 25px;
+            background: linear-gradient(135deg, var(--red-team), var(--blue-team));
+            color: white;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            text-decoration: none;
+        }
+
+        .cta-btn:hover {
+            transform: scale(1.05);
+        }
+
+        .footer {
+            text-align: center;
+            padding: 30px;
+            color: var(--text-secondary);
+            font-size: 0.9rem;
+        }
+
+        @media (max-width: 768px) {
+            .word-grid {
+                grid-template-columns: repeat(3, 1fr);
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <header class="header">
+            <h1 class="main-title">🕵️ 行动代号风格</h1>
+            <p class="subtitle">红蓝对抗 · 词卡网格 · 特工间谍</p>
+            <div class="team-indicator">
+                <div class="team red">
+                    <div class="team-dot"></div>
+                    <span>红队特工</span>
+                </div>
+                <div class="team blue">
+                    <div class="team-dot"></div>
+                    <span>蓝队特工</span>
+                </div>
+            </div>
+        </header>
+
+        <div class="score-panel">
+            <div class="score-item">
+                <div class="score-label">红队得分</div>
+                <div class="score-value red">7</div>
+            </div>
+            <div class="score-item">
+                <span class="lightbulb" style="font-size: 3rem;">💡</span>
+            </div>
+            <div class="score-item">
+                <div class="score-label">蓝队得分</div>
+                <div class="score-value blue">5</div>
+            </div>
+        </div>
+
+        <section class="section">
+            <div class="section-header">
+                <span>🔤</span>
+                <h2 class="section-title">词卡网格</h2>
+            </div>
+            <div class="word-grid">
+                <div class="word-card red">魔法</div>
+                <div class="word-card blue">森林</div>
+                <div class="word-card neutral">城堡</div>
+                <div class="word-card red">龙</div>
+                <div class="word-card blue">骑士</div>
+                <div class="word-card neutral">宝藏</div>
+                <div class="word-card assassin">黑暗</div>
+                <div class="word-card blue">精灵</div>
+                <div class="word-card red">勇士</div>
+                <div class="word-card neutral">王国</div>
+                <div class="word-card blue">法师</div>
+                <div class="word-card red">剑</div>
+                <div class="word-card neutral">盾牌</div>
+                <div class="word-card red">冒险</div>
+                <div class="word-card blue">传说</div>
+                <div class="word-card neutral">宝石</div>
+                <div class="word-card red">英雄</div>
+                <div class="word-card blue">神秘</div>
+                <div class="word-card neutral">古老</div>
+                <div class="word-card neutral">智慧</div>
+                <div class="word-card red">战斗</div>
+                <div class="word-card blue">守护</div>
+                <div class="word-card neutral">村庄</div>
+                <div class="word-card red">火焰</div>
+                <div class="word-card blue">冰雪</div>
+            </div>
+        </section>
+
+        <section class="section">
+            <div class="section-header">
+                <span>🎭</span>
+                <h2 class="section-title red">红队特工</h2>
+            </div>
+            <div class="agent-cards">
+                <div class="agent-card red">
+                    <div class="agent-icon">🔥</div>
+                    <div class="agent-name">火焰使者</div>
+                    <div class="agent-role">队长</div>
+                </div>
+                <div class="agent-card red">
+                    <div class="agent-icon">⚔️</div>
+                    <div class="agent-name">剑士</div>
+                    <div class="agent-role">队员</div>
+                </div>
+            </div>
+        </section>
+
+        <section class="section">
+            <div class="section-header">
+                <span>🎭</span>
+                <h2 class="section-title blue">蓝队特工</h2>
+            </div>
+            <div class="agent-cards">
+                <div class="agent-card blue">
+                    <div class="agent-icon">❄️</div>
+                    <div class="agent-name">冰霜法师</div>
+                    <div class="agent-role">队长</div>
+                </div>
+                <div class="agent-card blue">
+                    <div class="agent-icon">🛡️</div>
+                    <div class="agent-name">守护者</div>
+                    <div class="agent-role">队员</div>
+                </div>
+            </div>
+        </section>
+
+        <section class="cta-section">
+            <a href="index.html" class="cta-btn">🕵️ 返回风格选择</a>
+        </section>
+
+        <footer class="footer">
+            <p>行动代号风格 Demo - 乐高故事书</p>
+        </footer>
+    </div>
+
+    <div class="spy-icon">🕵️</div>
+
+    <script>
+        document.querySelectorAll('.word-card').forEach(function(card) {
+            card.addEventListener('click', function() {
+                this.classList.toggle('revealed');
+            });
+        });
+    </script>
+</body>
+</html>
