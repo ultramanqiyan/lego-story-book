@@ -86,11 +86,11 @@ const MagicParticle = ({ config }) => {
         withSequence(
           withTiming(config.initialOpacity, {
             duration: config.blinkDuration / 2,
-            easing: EASINGS.sine,
+            easing: Easing.sin,
           }),
           withTiming(config.initialOpacity * 0.3, {
             duration: config.blinkDuration / 2,
-            easing: EASINGS.sine,
+            easing: Easing.sin,
           })
         ),
         -1,

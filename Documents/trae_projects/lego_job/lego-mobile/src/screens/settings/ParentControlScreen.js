@@ -36,13 +36,14 @@ const ParentControlScreen = ({ navigation }) => {
     try {
       const data = await usersAPI.getUser(user?.userId);
       if (data?.user) {
-        setTimeLimit(data.user.daily_time_limit || 120);
-        setTimeUsed(data.user.time_used_today || 0);
-        setWeeklyData(data.user.weekly_data || []);
+        const u = data.user;
+        setTimeLimit(u.daily_time_limit || u.dailyTimeLimit || 120);
+        setTimeUsed(u.time_used_today || u.timeUsedToday || 0);
+        setWeeklyData(u.weekly_data || u.weeklyData || []);
         setStats({
-          storiesCompleted: data.user.stories_completed || 0,
-          chaptersCompleted: data.user.chapters_completed || 0,
-          puzzlesSolved: data.user.puzzles_solved || 0,
+          storiesCompleted: u.stories_completed || u.storiesCompleted || 0,
+          chaptersCompleted: u.chapters_completed || u.chaptersCompleted || 0,
+          puzzlesSolved: u.puzzles_solved || u.puzzlesSolved || 0,
         });
       }
     } catch (error) {

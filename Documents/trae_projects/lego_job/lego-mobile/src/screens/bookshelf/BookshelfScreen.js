@@ -48,13 +48,13 @@ const BookshelfScreen = ({ navigation }) => {
     return (
       <Card
         style={[styles.bookCard, { backgroundColor: color }]}
-        onPress={() => navigation.navigate('BookDetail', { bookId: item.book_id })}
+        onPress={() => navigation.navigate('BookDetail', { bookId: item.book_id || item.bookId || item.id })}
       >
         <Text style={styles.bookIcon}>📖</Text>
         <Text style={styles.bookTitle} numberOfLines={2}>
           {item.title}
         </Text>
-        <Text style={styles.bookChapters}>📚 {item.chapter_count}章</Text>
+        <Text style={styles.bookChapters}>📚 {item.chapter_count || item.chapterCount || 0}章</Text>
       </Card>
     );
   };
@@ -81,7 +81,7 @@ const BookshelfScreen = ({ navigation }) => {
         <FlatList
           data={books}
           renderItem={renderBookItem}
-          keyExtractor={(item) => item.book_id}
+          keyExtractor={(item) => item.book_id || item.bookId || item.id || String(Math.random())}
           numColumns={2}
           columnWrapperStyle={styles.row}
           contentContainerStyle={styles.listContent}

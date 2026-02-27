@@ -73,15 +73,17 @@ const StoryCreateScreen = ({ navigation }) => {
   };
 
   const toggleCharacter = (character) => {
-    const isSelected = selectedCharacters.some((c) => c.character_id === character.character_id);
+    const charId = character.character_id || character.characterId || character.id;
+    const isSelected = selectedCharacters.some((c) => (c.character_id || c.characterId) === charId);
     if (isSelected) {
-      setSelectedCharacters(selectedCharacters.filter((c) => c.character_id !== character.character_id));
+      setSelectedCharacters(selectedCharacters.filter((c) => (c.character_id || c.characterId) !== charId));
     } else {
       const hasProtagonist = selectedCharacters.some((c) => c.roleType === 'protagonist');
       setSelectedCharacters([
         ...selectedCharacters,
         {
           ...character,
+          characterId: charId,
           roleType: hasProtagonist ? 'supporting' : 'protagonist',
           customName: character.name,
         },
@@ -97,13 +99,13 @@ const StoryCreateScreen = ({ navigation }) => {
       })));
     }
     setSelectedCharacters(selectedCharacters.map((c) =>
-      c.character_id === characterId ? { ...c, roleType } : c
+      (c.character_id || c.characterId) === characterId ? { ...c, roleType } : c
     ));
   };
 
   const updateCharacterName = (characterId, customName) => {
     setSelectedCharacters(selectedCharacters.map((c) =>
-      c.character_id === characterId ? { ...c, customName } : c
+      (c.character_id || c.characterId) === characterId ? { ...c, customName } : c
     ));
   };
 
@@ -132,31 +134,32 @@ const StoryCreateScreen = ({ navigation }) => {
 
     setIsCreating(true);
     try {
+      const bookId = selectedBook.book_id || selectedBook.bookId || selectedBook.id;
       for (const char of selectedCharacters) {
+        const charId = char.character_id || char.characterId || char.id;
         await bookCharactersAPI.add(
-          selectedBook.book_id,
-          char.character_id,
+          bookId,
+          charId,
           char.customName.trim(),
           char.roleType
         );
       }
 
       const charactersData = selectedCharacters.map((c) => ({
-        character_id: c.character_id,
+        character_id: c.character_id || c.characterId || c.id,
         custom_name: c.customName.trim(),
         personality: c.personality || '神秘',
-        speaking_style: c.speaking_style || '正常',
+        speaking_style: c.speaking_style || c.speakingStyle || '正常',
       }));
 
       const storyData = await storyAPI.generate({
         characters: charactersData,
         plot: selectedPlot.name,
-        chapter: 1,
         chapterCharacters: charactersData,
       });
 
       await chaptersAPI.create(
-        selectedBook.book_id,
+        bookId,
         storyData.title || '第一章',
         storyData.content,
         storyData.puzzle
@@ -164,7 +167,7 @@ const StoryCreateScreen = ({ navigation }) => {
 
       toast.success('故事创建成功！🎉');
       setTimeout(() => {
-        navigation.replace('BookDetail', { bookId: selectedBook.book_id });
+        navigation.replace('BookDetail', { bookId });
       }, 1000);
     } catch (error) {
       toast.error(`创建失败：${error.message}`);
@@ -194,22 +197,25 @@ const StoryCreateScreen = ({ navigation }) => {
             <Text style={styles.stepTitle}>第一步：选择书籍</Text>
             <Text style={styles.stepDesc}>选择一个已有书籍继续创作，或创建新书籍</Text>
 
-            {books.map((book) => (
-              <Card
-                key={book.book_id}
-                style={[
-                  styles.bookCard,
-                  selectedBook?.book_id === book.book_id && styles.bookCardSelected,
-                ]}
-                onPress={() => selectBook(book)}
-              >
-                <Text style={styles.bookIcon}>📖</Text>
-                <View style={styles.bookInfo}>
-                  <Text style={styles.bookTitle}>{book.title}</Text>
-                  <Text style={styles.bookChapters}>📚 {book.chapter_count}章</Text>
-                </View>
-              </Card>
-            ))}
+            {books.map((book) => {
+              const bookId = book.book_id || book.bookId || book.id;
+              return (
+                <Card
+                  key={bookId}
+                  style={[
+                    styles.bookCard,
+                    (selectedBook?.book_id || selectedBook?.bookId || selectedBook?.id) === bookId && styles.bookCardSelected,
+                  ]}
+                  onPress={() => selectBook(book)}
+                >
+                  <Text style={styles.bookIcon}>📖</Text>
+                  <View style={styles.bookInfo}>
+                    <Text style={styles.bookTitle}>{book.title}</Text>
+                    <Text style={styles.bookChapters}>📚 {book.chapter_count || book.chapterCount || 0}章</Text>
+                  </View>
+                </Card>
+              );
+            })}
 
             <View style={styles.newBookSection}>
               <Text style={styles.newBookLabel}>或者创建新书籍</Text>
@@ -264,46 +270,50 @@ const StoryCreateScreen = ({ navigation }) => {
               {selectedCharacters.length === 0 ? (
                 <Text style={styles.emptyText}>点击下方人仔添加角色</Text>
               ) : (
-                selectedCharacters.map((char, index) => (
-                  <View key={char.character_id} style={styles.selectedCharacter}>
-                    <Text style={styles.selectedEmoji}>
-                      {CHARACTER_EMOJIS[index % CHARACTER_EMOJIS.length]}
-                    </Text>
-                    <View style={styles.selectedInfo}>
-                      <Text style={styles.selectedName}>{char.name}</Text>
-                      <View style={styles.roleSelector}>
-                        {ROLE_TYPES.map((role) => (
-                          <TouchableOpacity
-                            key={role.value}
-                            style={[
-                              styles.roleOption,
-                              char.roleType === role.value && styles.roleOptionActive,
-                            ]}
-                            onPress={() => updateCharacterRole(char.character_id, role.value)}
-                          >
-                            <Text style={styles.roleOptionText}>{role.label}</Text>
-                          </TouchableOpacity>
-                        ))}
+                selectedCharacters.map((char, index) => {
+                  const charId = char.character_id || char.characterId || char.id;
+                  return (
+                    <View key={charId} style={styles.selectedCharacter}>
+                      <Text style={styles.selectedEmoji}>
+                        {CHARACTER_EMOJIS[index % CHARACTER_EMOJIS.length]}
+                      </Text>
+                      <View style={styles.selectedInfo}>
+                        <Text style={styles.selectedName}>{char.name}</Text>
+                        <View style={styles.roleSelector}>
+                          {ROLE_TYPES.map((role) => (
+                            <TouchableOpacity
+                              key={role.value}
+                              style={[
+                                styles.roleOption,
+                                char.roleType === role.value && styles.roleOptionActive,
+                              ]}
+                              onPress={() => updateCharacterRole(charId, role.value)}
+                            >
+                              <Text style={styles.roleOptionText}>{role.label}</Text>
+                            </TouchableOpacity>
+                          ))}
+                        </View>
                       </View>
+                      <TouchableOpacity
+                        style={styles.removeBtn}
+                        onPress={() => toggleCharacter(char)}
+                      >
+                        <Text style={styles.removeText}>×</Text>
+                      </TouchableOpacity>
                     </View>
-                    <TouchableOpacity
-                      style={styles.removeBtn}
-                      onPress={() => toggleCharacter(char)}
-                    >
-                      <Text style={styles.removeText}>×</Text>
-                    </TouchableOpacity>
-                  </View>
-                ))
+                  );
+                })
               )}
             </Card>
 
             <Text style={styles.sectionTitle}>🎭 可选人仔</Text>
             <View style={styles.characterGrid}>
               {characters.map((char, index) => {
-                const isSelected = selectedCharacters.some((c) => c.character_id === char.character_id);
+                const charId = char.character_id || char.characterId || char.id;
+                const isSelected = selectedCharacters.some((c) => (c.character_id || c.characterId) === charId);
                 return (
                   <Card
-                    key={char.character_id}
+                    key={charId}
                     style={[styles.characterCard, isSelected && styles.characterCardDisabled]}
                     onPress={() => !isSelected && toggleCharacter(char)}
                   >

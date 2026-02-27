@@ -17,6 +17,7 @@ import BookDetailScreen from '../screens/story/BookDetailScreen';
 import StoryDirectorScreen from '../screens/story/StoryDirectorScreen';
 import ChapterScreen from '../screens/chapter/ChapterScreen';
 import ShareScreen from '../screens/share/ShareScreen';
+import { Card3DDemoScreen } from '../screens/demo';
 
 const Tab = createBottomTabNavigator();
 const Stack = createNativeStackNavigator();
@@ -45,6 +46,7 @@ const HomeStack = () => {
       <Stack.Screen name="BookDetail" component={BookDetailScreen} />
       <Stack.Screen name="StoryDirector" component={StoryDirectorScreen} />
       <Stack.Screen name="Chapter" component={ChapterScreen} />
+      <Stack.Screen name="Card3DDemo" component={Card3DDemoScreen} />
     </Stack.Navigator>
   );
 };

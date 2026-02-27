@@ -19,7 +19,7 @@ export const use3DCard = (options = {}) => {
   const {
     onFlip,
     onTilt,
-    onSelect,
+    onPress, // 点击回调（新增）
     enableTilt = true,
     enableFlip = true,
   } = options;
@@ -185,16 +185,23 @@ export const use3DCard = (options = {}) => {
       resetTilt();
     });
 
-  // 点击手势
+  // 点击手势 - 根据enableFlip决定是否翻转，始终调用onPress
   const tapGesture = Gesture.Tap()
     .onEnd(() => {
-      flipCard();
+      // 调用 onPress 回调
+      if (onPress) {
+        runOnJS(onPress)();
+      }
+      // 只有启用翻转时才翻转
+      if (enableFlip && !onPress) {
+        flipCard();
+      }
     });
 
   // 组合手势
   const combinedGesture = Gesture.Simultaneous(gesture, tapGesture);
 
-  // 选中状态动画
+  // 选中状态动画 - 不再调用 onPress
   const animateSelect = useCallback((selected) => {
     if (selected) {
       scale.value = withSpring(1.1, { damping: 12, stiffness: 200 });
@@ -203,11 +210,8 @@ export const use3DCard = (options = {}) => {
     } else {
       resetTilt();
     }
-
-    if (onSelect) {
-      onSelect(selected);
-    }
-  }, [scale, elevation, glowOpacity, resetTilt, onSelect]);
+    // 注意：这里不再调用 onPress，避免重复触发
+  }, [scale, elevation, glowOpacity, resetTilt]);
 
   return {
     // 动画样式

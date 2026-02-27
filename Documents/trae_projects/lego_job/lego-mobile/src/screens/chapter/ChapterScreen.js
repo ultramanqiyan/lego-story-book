@@ -101,7 +101,8 @@ const ChapterScreen = ({ route, navigation }) => {
     try {
       const data = await chaptersAPI.getDetail(chapterId, user?.userId);
       setChapter(data.chapter);
-      if (data.chapter.has_puzzle && data.puzzle) {
+      const hasPuzzle = data.chapter.has_puzzle || data.chapter.hasPuzzle;
+      if (hasPuzzle && data.puzzle) {
         setPuzzle(data.puzzle);
         if (data.puzzleRecord) {
           setIsCorrect(data.puzzleRecord.is_correct === 1);
@@ -139,7 +140,8 @@ const ChapterScreen = ({ route, navigation }) => {
 
     setSelectedAnswer(answer);
     try {
-      const result = await puzzleAPI.submit(puzzle.puzzle_id, user?.userId, answer);
+      const puzzleId = puzzle.puzzle_id || puzzle.id || puzzle.puzzleId;
+      const result = await puzzleAPI.submit(puzzleId, user?.userId, answer);
       setAttempts(result.attempts);
       
       if (result.isCorrect) {
@@ -243,7 +245,7 @@ const ChapterScreen = ({ route, navigation }) => {
       </View>
       
       <Header
-        title={`第${chapter?.chapter_number}章`}
+        title={`第${chapter?.chapter_number || chapter?.chapterNumber}章`}
         subtitle={chapter?.title}
         leftButton={<Header.BackButton onPress={() => navigation.goBack()} />}
       />
@@ -283,17 +285,21 @@ const ChapterScreen = ({ route, navigation }) => {
               <>
                 <Text style={styles.hintTitle}>👥 登场角色</Text>
                 <View style={styles.charactersList}>
-                  {bookCharacters.map((char, index) => (
-                    <View key={index} style={styles.characterChip}>
-                      <Text style={styles.characterName}>{char.custom_name || char.name}</Text>
-                      <Text style={styles.characterRole}>
-                        {char.role_type === 'protagonist' && '👑'}
-                        {char.role_type === 'antagonist' && '😈'}
-                        {char.role_type === 'supporting' && '⭐'}
-                        {char.role_type === 'extra' && '👤'}
-                      </Text>
-                    </View>
-                  ))}
+                  {bookCharacters.map((char, index) => {
+                    const charName = char.custom_name || char.customName || char.name;
+                    const roleType = char.role_type || char.roleType;
+                    return (
+                      <View key={index} style={styles.characterChip}>
+                        <Text style={styles.characterName}>{charName}</Text>
+                        <Text style={styles.characterRole}>
+                          {roleType === 'protagonist' && '👑'}
+                          {roleType === 'antagonist' && '😈'}
+                          {roleType === 'supporting' && '⭐'}
+                          {roleType === 'extra' && '👤'}
+                        </Text>
+                      </View>
+                    );
+                  })}
                 </View>
               </>
             )}

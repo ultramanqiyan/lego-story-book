@@ -8,11 +8,13 @@ const KeywordHighlight = ({ content, characters = [] }) => {
   const keywords = [];
 
   characters.forEach((char) => {
-    if (char.custom_name) {
+    const customName = char.custom_name || char.customName || char.name;
+    const roleType = char.role_type || char.roleType;
+    if (customName) {
       keywords.push({
-        text: char.custom_name,
+        text: customName,
         type: 'character',
-        role: char.role_type,
+        role: roleType,
       });
     }
   });

@@ -11,6 +11,7 @@ import {
   withDelay,
   interpolate,
   Extrapolate,
+  Easing,
 } from 'react-native-reanimated';
 import { PARTICLES_CONFIG, generateParticleConfig } from '../utils/animations';
 

@@ -69,13 +69,13 @@ const BookDetailScreen = ({ route, navigation }) => {
   };
 
   const availableCharacters = allCharacters.filter(
-    (c) => !characters.some((bc) => bc.character_id === c.character_id)
+    (c) => !characters.some((bc) => (bc.character_id || bc.characterId) === (c.character_id || c.characterId))
   );
 
   const stats = {
     chapterCount: chapters.length,
     characterCount: characters.length,
-    totalWords: chapters.reduce((sum, ch) => sum + (ch.word_count || 0), 0),
+    totalWords: chapters.reduce((sum, ch) => sum + (ch.word_count || ch.wordCount || 0), 0),
   };
 
   const handleAddCharacter = async () => {
@@ -89,7 +89,7 @@ const BookDetailScreen = ({ route, navigation }) => {
     }
 
     const duplicateName = characters.find(
-      (c) => c.custom_name === newCharacter.customName.trim()
+      (c) => (c.custom_name || c.customName) === newCharacter.customName.trim()
     );
     if (duplicateName) {
       toast.error('角色名称已存在，请使用不同的名称');
@@ -119,7 +119,7 @@ const BookDetailScreen = ({ route, navigation }) => {
     }
 
     const duplicateName = characters.find(
-      (c) => c.custom_name === editingCharacter.customName.trim() && c.id !== editingCharacter.id
+      (c) => (c.custom_name || c.customName) === editingCharacter.customName.trim() && (c.id || c.bookCharacterId) !== editingCharacter.id
     );
     if (duplicateName) {
       toast.error('角色名称已存在，请使用不同的名称');
@@ -128,8 +128,8 @@ const BookDetailScreen = ({ route, navigation }) => {
 
     try {
       await bookCharactersAPI.update(editingCharacter.id, {
-        custom_name: editingCharacter.customName.trim(),
-        role_type: editingCharacter.role_type,
+        customName: editingCharacter.customName.trim(),
+        roleType: editingCharacter.role_type,
       });
       toast.success('角色更新成功！');
       setEditModalVisible(false);
@@ -165,9 +165,9 @@ const BookDetailScreen = ({ route, navigation }) => {
 
   const openEditCharacter = (character) => {
     setEditingCharacter({
-      id: character.id,
-      customName: character.custom_name,
-      role_type: character.role_type,
+      id: character.id || character.bookCharacterId,
+      customName: character.custom_name || character.customName || character.name,
+      role_type: character.role_type || character.roleType,
     });
     setEditModalVisible(true);
   };
@@ -236,15 +236,15 @@ const BookDetailScreen = ({ route, navigation }) => {
   const renderChapterItem = ({ item, index }) => (
     <Card
       style={styles.chapterCard}
-      onPress={() => navigation.navigate('Chapter', { chapterId: item.chapter_id, bookId })}
+      onPress={() => navigation.navigate('Chapter', { chapterId: item.chapter_id || item.chapterId || item.id, bookId })}
     >
       <View style={styles.chapterInfo}>
-        <Text style={styles.chapterNumber}>第{item.chapter_number}章</Text>
+        <Text style={styles.chapterNumber}>第{item.chapter_number || item.chapterNumber}章</Text>
         <Text style={styles.chapterTitle}>{item.title}</Text>
       </View>
-      {item.has_puzzle && (
+      {(item.has_puzzle || item.hasPuzzle) && (
         <Text style={styles.puzzleIcon}>
-          {item.puzzle_result === 1 ? '✅' : item.puzzle_result === 0 ? '❌' : '🧩'}
+          {(item.puzzle_result || item.puzzleResult) === 1 ? '✅' : (item.puzzle_result || item.puzzleResult) === 0 ? '❌' : '🧩'}
         </Text>
       )}
     </Card>
@@ -255,9 +255,9 @@ const BookDetailScreen = ({ route, navigation }) => {
       <Text style={styles.characterEmoji}>
         {CHARACTER_EMOJIS[index % CHARACTER_EMOJIS.length]}
       </Text>
-      <Text style={styles.characterName}>{item.custom_name}</Text>
-      <View style={[styles.roleBadge, getRoleBadgeStyle(item.role_type)]}>
-        <Text style={styles.roleBadgeText}>{getRoleLabel(item.role_type)}</Text>
+      <Text style={styles.characterName}>{item.custom_name || item.customName || item.name}</Text>
+      <View style={[styles.roleBadge, getRoleBadgeStyle(item.role_type || item.roleType)]}>
+        <Text style={styles.roleBadgeText}>{getRoleLabel(item.role_type || item.roleType)}</Text>
       </View>
       <View style={styles.characterActions}>
         <TouchableOpacity
@@ -268,7 +268,7 @@ const BookDetailScreen = ({ route, navigation }) => {
         </TouchableOpacity>
         <TouchableOpacity
           style={styles.actionBtn}
-          onPress={() => handleDeleteCharacter(item.id)}
+          onPress={() => handleDeleteCharacter(item.id || item.bookCharacterId)}
         >
           <Text style={styles.actionBtnText}>🗑️</Text>
         </TouchableOpacity>
@@ -369,7 +369,7 @@ const BookDetailScreen = ({ route, navigation }) => {
         <FlatList
           data={chapters}
           renderItem={renderChapterItem}
-          keyExtractor={(item) => item.chapter_id}
+          keyExtractor={(item) => item.chapter_id || item.chapterId || item.id || String(Math.random())}
           contentContainerStyle={styles.listContent}
           ListEmptyComponent={
             <EmptyState
@@ -383,7 +383,7 @@ const BookDetailScreen = ({ route, navigation }) => {
         <FlatList
           data={characters}
           renderItem={renderCharacterItem}
-          keyExtractor={(item) => item.id}
+          keyExtractor={(item) => item.id || item.bookCharacterId || item.character_id || String(Math.random())}
           numColumns={2}
           columnWrapperStyle={styles.characterRow}
           contentContainerStyle={styles.listContent}
@@ -425,18 +425,21 @@ const BookDetailScreen = ({ route, navigation }) => {
             <Text style={styles.label}>选择人仔 *</Text>
             {availableCharacters.length > 0 ? (
               <View style={styles.characterSelector}>
-                {availableCharacters.map((char) => (
-                  <TouchableOpacity
-                    key={char.character_id}
-                    style={[
-                      styles.characterOption,
-                      newCharacter.characterId === char.character_id && styles.characterOptionActive,
-                    ]}
-                    onPress={() => setNewCharacter({ ...newCharacter, characterId: char.character_id })}
-                  >
-                    <Text style={styles.characterOptionText}>{char.name}</Text>
-                  </TouchableOpacity>
-                ))}
+                {availableCharacters.map((char) => {
+              const charId = char.character_id || char.characterId || char.id;
+              return (
+                <TouchableOpacity
+                  key={charId}
+                  style={[
+                    styles.characterOption,
+                    newCharacter.characterId === charId && styles.characterOptionActive,
+                  ]}
+                  onPress={() => setNewCharacter({ ...newCharacter, characterId: charId })}
+                >
+                  <Text style={styles.characterOptionText}>{char.name}</Text>
+                </TouchableOpacity>
+              );
+            })}
               </View>
             ) : (
               <View style={styles.emptyCharacters}>

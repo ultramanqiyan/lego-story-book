@@ -33,8 +33,8 @@ const AdventureScreen = ({ navigation }) => {
         usersAPI.getUser(user?.userId),
       ]);
       setBooks(booksData.books || []);
-      setTimeUsed(userData?.user?.time_used_today || 0);
-      setTimeLimit(userData?.user?.daily_time_limit || 120);
+      setTimeUsed(userData?.user?.time_used_today || userData?.user?.timeUsedToday || 0);
+      setTimeLimit(userData?.user?.daily_time_limit || userData?.user?.dailyTimeLimit || 120);
     } catch (error) {
       toast.error('加载失败');
     } finally {
@@ -47,12 +47,12 @@ const AdventureScreen = ({ navigation }) => {
   const renderBookItem = ({ item }) => (
     <Card
       style={styles.bookCard}
-      onPress={() => navigation.navigate('BookDetail', { bookId: item.book_id })}
+      onPress={() => navigation.navigate('BookDetail', { bookId: item.book_id || item.bookId || item.id })}
     >
       <Text style={styles.bookIcon}>📖</Text>
       <View style={styles.bookInfo}>
         <Text style={styles.bookTitle}>{item.title}</Text>
-        <Text style={styles.bookChapters}>📚 {item.chapter_count}章</Text>
+        <Text style={styles.bookChapters}>📚 {item.chapter_count || item.chapterCount || 0}章</Text>
       </View>
       <Text style={styles.bookArrow}>→</Text>
     </Card>
@@ -86,7 +86,7 @@ const AdventureScreen = ({ navigation }) => {
         <FlatList
           data={books}
           renderItem={renderBookItem}
-          keyExtractor={(item) => item.book_id}
+          keyExtractor={(item) => item.book_id || item.bookId || item.id || String(Math.random())}
           contentContainerStyle={styles.listContent}
         />
       ) : (

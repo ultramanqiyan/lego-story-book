@@ -93,16 +93,23 @@ const StoryDirectorScreen = ({ route, navigation }) => {
         plotOptionsAPI.get(),
       ]);
       setCharacters(charsData.characters || []);
-      setPlotOptions(plotData.plotOptions);
+      // 处理 plotOptions 数据格式，支持两种格式：{ plotOptions: {...} } 或 { weather: [...], ... }
+      const options = plotData.plotOptions || plotData || {};
+      setPlotOptions(options);
       
       charsData.characters?.forEach((_, i) => {
         charCardAnims[i] = new Animated.Value(0);
       });
     } catch (error) {
       toast.error('加载数据失败');
+      console.error('加载数据错误:', error);
     } finally {
       setIsLoading(false);
     }
+  };
+
+  const getCharacterId = (character) => {
+    return character.character_id || character.id || character.characterId;
   };
 
   const getRoleCount = (roleType) => {
@@ -110,13 +117,14 @@ const StoryDirectorScreen = ({ route, navigation }) => {
   };
 
   const toggleCharacter = (character) => {
+    const charId = getCharacterId(character);
     const existingIndex = selectedCharacters.findIndex(
-      (c) => c.character_id === character.character_id
+      (c) => getCharacterId(c) === charId
     );
     
     if (existingIndex !== -1) {
       setSelectedCharacters(
-        selectedCharacters.filter((c) => c.character_id !== character.character_id)
+        selectedCharacters.filter((c) => getCharacterId(c) !== charId)
       );
     } else {
       if (selectedCharacters.length >= 5) {
@@ -127,6 +135,7 @@ const StoryDirectorScreen = ({ route, navigation }) => {
       const hasProtagonist = getRoleCount('protagonist') > 0;
       const newCharacter = {
         ...character,
+        characterId: charId,
         roleType: hasProtagonist ? 'supporting' : 'protagonist',
       };
       setSelectedCharacters([...selectedCharacters, newCharacter]);
@@ -136,9 +145,9 @@ const StoryDirectorScreen = ({ route, navigation }) => {
   const updateCharacterRole = (characterId, newRoleType) => {
     if (newRoleType === 'protagonist') {
       const currentProtagonist = selectedCharacters.find(c => c.roleType === 'protagonist');
-      if (currentProtagonist && currentProtagonist.character_id !== characterId) {
+      if (currentProtagonist && getCharacterId(currentProtagonist) !== characterId) {
         setSelectedCharacters(selectedCharacters.map(c => {
-          if (c.character_id === characterId) {
+          if (getCharacterId(c) === characterId) {
             return { ...c, roleType: newRoleType };
           }
           if (c.roleType === 'protagonist') {
@@ -151,7 +160,7 @@ const StoryDirectorScreen = ({ route, navigation }) => {
     }
 
     if (newRoleType === 'supporting' && getRoleCount('supporting') >= 2) {
-      const currentChar = selectedCharacters.find(c => c.character_id === characterId);
+      const currentChar = selectedCharacters.find(c => getCharacterId(c) === characterId);
       if (currentChar && currentChar.roleType !== 'supporting') {
         toast.warning('配角最多只能选2个');
         return;
@@ -159,7 +168,7 @@ const StoryDirectorScreen = ({ route, navigation }) => {
     }
 
     setSelectedCharacters(selectedCharacters.map(c => 
-      c.character_id === characterId ? { ...c, roleType: newRoleType } : c
+      getCharacterId(c) === characterId ? { ...c, roleType: newRoleType } : c
     ));
   };
 
@@ -183,12 +192,8 @@ const StoryDirectorScreen = ({ route, navigation }) => {
 
     setIsGenerating(true);
     try {
-      const charactersData = selectedCharacters.map(c => ({
-        character_id: c.character_id,
-        role_type: c.roleType,
-        custom_name: c.name,
-      }));
-      await chaptersAPI.generate(bookId, user?.userId, plotSelection, charactersData);
+      const characterIds = selectedCharacters.map(c => getCharacterId(c));
+      await chaptersAPI.generate(bookId, user?.userId, plotSelection, characterIds);
       toast.success('章节生成成功！🎬');
       navigation.goBack();
     } catch (error) {
@@ -371,7 +376,7 @@ const StoryDirectorScreen = ({ route, navigation }) => {
               title="☀️ 选择天气"
               items={plotOptions.weather}
               selectedId={plotSelection.weather}
-              onSelect={(id) =>
+              onPress={(id) =>
                 setPlotSelection({ ...plotSelection, weather: id })
               }
             />
@@ -380,7 +385,7 @@ const StoryDirectorScreen = ({ route, navigation }) => {
               title="🗺️ 选择冒险类型"
               items={plotOptions.adventureType}
               selectedId={plotSelection.adventureType}
-              onSelect={(id) =>
+              onPress={(id) =>
                 setPlotSelection({ ...plotSelection, adventureType: id })
               }
             />
@@ -389,7 +394,7 @@ const StoryDirectorScreen = ({ route, navigation }) => {
               title="🌲 选择地形"
               items={plotOptions.terrain}
               selectedId={plotSelection.terrain}
-              onSelect={(id) =>
+              onPress={(id) =>
                 setPlotSelection({ ...plotSelection, terrain: id })
               }
             />
@@ -398,7 +403,7 @@ const StoryDirectorScreen = ({ route, navigation }) => {
               title="🪄 选择装备"
               items={plotOptions.equipment}
               selectedId={plotSelection.equipment}
-              onSelect={(id) =>
+              onPress={(id) =>
                 setPlotSelection({ ...plotSelection, equipment: id })
               }
             />

@@ -99,15 +99,15 @@ export const bookCharactersAPI = {
    * 更新书籍角色
    * @param {string} id - 记录ID
    * @param {Object} data - 更新数据
-   * @param {string} [data.custom_name] - 自定义名称
-   * @param {string} [data.role_type] - 角色类型
+   * @param {string} [data.customName] - 自定义名称
+   * @param {string} [data.roleType] - 角色类型
    * @returns {Promise<{message: string}>} 更新结果
    */
   async update(id, data) {
     return apiClient.put('/book-characters', {
       id,
-      customName: data.custom_name,
-      roleType: data.role_type,
+      customName: data.customName,
+      roleType: data.roleType,
     });
   },
 

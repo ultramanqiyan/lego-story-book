@@ -100,7 +100,7 @@ const HomeScreen = ({ navigation }) => {
       ]);
 
       const presetChars = (charsData.characters || [])
-        .filter((c) => c.creator_id === 'system')
+        .filter((c) => (c.creator_id || c.creatorId) === 'system')
         .slice(0, 4);
       setPopularCharacters(presetChars);
 
@@ -168,13 +168,13 @@ const HomeScreen = ({ navigation }) => {
       >
         <Card
           style={[styles.bookCard, { borderLeftColor: color, borderLeftWidth: 4 }]}
-          onPress={() => navigation.navigate('BookDetail', { bookId: item.book_id })}
+          onPress={() => navigation.navigate('BookDetail', { bookId: item.book_id || item.bookId || item.id })}
         >
           <Text style={styles.bookIcon}>📖</Text>
           <Text style={styles.bookTitle} numberOfLines={1}>
             {item.title}
           </Text>
-          <Text style={styles.bookChapters}>📚 {item.chapter_count}章</Text>
+          <Text style={styles.bookChapters}>📚 {item.chapter_count || item.chapterCount || 0}章</Text>
         </Card>
       </Animated.View>
     );
@@ -269,6 +269,14 @@ const HomeScreen = ({ navigation }) => {
                 style={styles.startButton}
               />
             </Animated.View>
+            <View style={{ marginTop: 12 }}>
+              <Button
+                title="🎴 3D卡牌演示"
+                onPress={() => navigation.navigate('Card3DDemo')}
+                variant="outline"
+                size="sm"
+              />
+            </View>
           </Card>
         </Animated.View>
 
@@ -286,7 +294,7 @@ const HomeScreen = ({ navigation }) => {
             <FlatList
               data={popularCharacters}
               renderItem={renderCharacterItem}
-              keyExtractor={(item) => item.character_id}
+              keyExtractor={(item) => item.character_id || item.characterId || item.id || String(Math.random())}
               horizontal
               showsHorizontalScrollIndicator={false}
               contentContainerStyle={styles.horizontalList}
@@ -314,7 +322,7 @@ const HomeScreen = ({ navigation }) => {
             <FlatList
               data={recentBooks}
               renderItem={renderBookItem}
-              keyExtractor={(item) => item.book_id}
+              keyExtractor={(item) => item.book_id || item.bookId || item.id || String(Math.random())}
               horizontal
               showsHorizontalScrollIndicator={false}
               contentContainerStyle={styles.horizontalList}

@@ -1,15 +1,15 @@
 /**
  * Card3D组件 - 3D翻转卡牌，带悬浮倾斜效果
+ * 统一版本：Web端和移动端效果一致
  */
 
-import React, { useEffect } from 'react';
-import { View, Text, StyleSheet, Dimensions } from 'react-native';
+import React, { useEffect, useState, useMemo } from 'react';
+import { View, Text, StyleSheet, Dimensions, Platform, TouchableOpacity } from 'react-native';
 import Animated from 'react-native-reanimated';
 import { GestureDetector } from 'react-native-gesture-handler';
 import { use3DCard } from '../../hooks/use3DCard';
 import { COLORS } from '../../utils/constants';
-
-const { width: SCREEN_WIDTH } = Dimensions.get('window');
+import { CARD_3D_CONFIG } from '../../utils/animations';
 
 const Card3D = ({
   frontContent,
@@ -17,10 +17,10 @@ const Card3D = ({
   icon,
   name,
   isSelected = false,
-  onSelect,
+  onPress, // 点击回调
   onFlip,
-  width = 80,
-  height = 110,
+  width = CARD_3D_CONFIG.cardWidth,
+  height = CARD_3D_CONFIG.cardHeight,
   style,
   enableTilt = true,
   enableFlip = true,
@@ -37,10 +37,16 @@ const Card3D = ({
     flipCard,
   } = use3DCard({
     onFlip,
-    onSelect,
+    onPress, // 传递给 hook
     enableTilt,
     enableFlip,
   });
+
+  const [isWeb, setIsWeb] = useState(false);
+
+  useEffect(() => {
+    setIsWeb(Platform.OS === 'web');
+  }, []);
 
   // 选中状态动画
   useEffect(() => {
@@ -65,104 +71,125 @@ const Card3D = ({
 
   const variantStyles = getVariantStyles();
 
+  // 卡片内容
+  const cardContent = (
+    <>
+      {/* 发光效果层 */}
+      <Animated.View
+        style={[
+          styles.glowLayer,
+          glowAnimatedStyle,
+          { width: width + 10, height: height + 10 },
+        ]}
+      >
+        <View
+          style={[
+            styles.glow,
+            { backgroundColor: variantStyles.borderColor },
+          ]}
+        />
+      </Animated.View>
+
+      {/* 阴影层 */}
+      <Animated.View
+        style={[
+          styles.shadowLayer,
+          shadowAnimatedStyle,
+          { width, height },
+        ]}
+      >
+        <View
+          style={[
+            styles.shadowCard,
+            { backgroundColor: variantStyles.borderColor },
+          ]}
+        />
+      </Animated.View>
+
+      {/* 正面 */}
+      <Animated.View
+        style={[
+          styles.cardFace,
+          styles.cardFront,
+          frontAnimatedStyle,
+          { width, height },
+        ]}
+        onLayout={updateLayout}
+      >
+        <View
+          style={[
+            styles.cardContent,
+            { backgroundColor: variantStyles.backgroundColor },
+            { borderColor: variantStyles.borderColor },
+          ]}
+        >
+          {frontContent || (
+            <>
+              <Text style={styles.cardIcon}>{icon || '🎭'}</Text>
+              <Text style={styles.cardName} numberOfLines={1}>
+                {name || 'Card'}
+              </Text>
+            </>
+          )}
+        </View>
+      </Animated.View>
+
+      {/* 背面 */}
+      <Animated.View
+        style={[
+          styles.cardFace,
+          styles.cardBack,
+          backAnimatedStyle,
+          { width, height },
+        ]}
+      >
+        <View
+          style={[
+            styles.cardContent,
+            styles.cardBackContent,
+            { borderColor: variantStyles.borderColor },
+          ]}
+        >
+          {backContent || (
+            <>
+              <View style={styles.legoPattern}>
+                {[...Array(4)].map((_, i) => (
+                  <View key={i} style={styles.legoDot} />
+                ))}
+              </View>
+              <Text style={styles.backText}>🧱</Text>
+            </>
+          )}
+        </View>
+      </Animated.View>
+
+      {/* 选中标记 */}
+      {isSelected && (
+        <View style={styles.selectedBadge}>
+          <Text style={styles.selectedText}>✓</Text>
+        </View>
+      )}
+    </>
+  );
+
+  // Web端使用TouchableOpacity处理点击
+  if (isWeb) {
+    return (
+      <TouchableOpacity 
+        style={[styles.container, { width, height }, style]}
+        onPress={onPress}
+        activeOpacity={0.9}
+      >
+        {cardContent}
+      </TouchableOpacity>
+    );
+  }
+
+  // 移动端使用GestureDetector
   return (
     <GestureDetector gesture={gesture}>
       <View style={[styles.container, { width, height }, style]}>
-        {/* 发光效果层 */}
-        <Animated.View
-          style={[
-            styles.glowLayer,
-            glowAnimatedStyle,
-            { width: width + 10, height: height + 10 },
-          ]}
-        >
-          <View
-            style={[
-              styles.glow,
-              { backgroundColor: variantStyles.borderColor },
-            ]}
-          />
-        </Animated.View>
-
-        {/* 阴影层 */}
-        <Animated.View
-          style={[
-            styles.shadowLayer,
-            shadowAnimatedStyle,
-            { width, height },
-          ]}
-        >
-          <View
-            style={[
-              styles.shadowCard,
-              { backgroundColor: variantStyles.borderColor },
-            ]}
-          />
-        </Animated.View>
-
-        {/* 正面 */}
-        <Animated.View
-          style={[
-            styles.cardFace,
-            styles.cardFront,
-            frontAnimatedStyle,
-            { width, height },
-          ]}
-          onLayout={updateLayout}
-        >
-          <View
-            style={[
-              styles.cardContent,
-              { backgroundColor: variantStyles.backgroundColor },
-              { borderColor: variantStyles.borderColor },
-            ]}
-          >
-            {frontContent || (
-              <>
-                <Text style={styles.cardIcon}>{icon || '🎭'}</Text>
-                <Text style={styles.cardName} numberOfLines={1}>
-                  {name || 'Card'}
-                </Text>
-              </>
-            )}
-          </View>
-        </Animated.View>
-
-        {/* 背面 */}
-        <Animated.View
-          style={[
-            styles.cardFace,
-            styles.cardBack,
-            backAnimatedStyle,
-            { width, height },
-          ]}
-        >
-          <View
-            style={[
-              styles.cardContent,
-              styles.cardBackContent,
-              { borderColor: variantStyles.borderColor },
-            ]}
-          >
-            {backContent || (
-              <>
-                <View style={styles.legoPattern}>
-                  {[...Array(4)].map((_, i) => (
-                    <View key={i} style={styles.legoDot} />
-                  ))}
-                </View>
-                <Text style={styles.backText}>🧱</Text>
-              </>
-            )}
-          </View>
-        </Animated.View>
-
-        {/* 选中标记 */}
-        {isSelected && (
-          <View style={styles.selectedBadge}>
-            <Text style={styles.selectedText}>✓</Text>
-          </View>
-        )}
+        {cardContent}
       </View>
     </GestureDetector>
   );

@@ -1,6 +1,16 @@
 import Constants from 'expo-constants';
+import { Platform } from 'react-native';
 
-const API_BASE = Constants.expoConfig?.extra?.apiBaseUrl || 'https://lego-story.pages.dev/api';
+// 根据平台选择正确的 API 地址
+const getApiBase = () => {
+  if (Platform.OS === 'web') {
+    // Web 端使用相对路径或本地开发服务器地址
+    return 'http://localhost:8788/api';
+  }
+  return Constants.expoConfig?.extra?.apiBaseUrl || 'https://lego-story.pages.dev/api';
+};
+
+const API_BASE = getApiBase();
 
 class APIClient {
   constructor() {
@@ -44,8 +54,9 @@ class APIClient {
 
       return data;
     } catch (error) {
-      if (error.message === 'Network request failed') {
-        throw new Error('网络连接失败，请检查网络');
+      console.error('API Request Error:', error);
+      if (error.message === 'Network request failed' || error.message.includes('Failed to fetch')) {
+        throw new Error('网络连接失败，请检查网络或后端服务是否启动');
       }
       throw error;
     }

@@ -6,6 +6,7 @@ import {
   FlatList,
   TouchableOpacity,
   Animated,
+  RefreshControl,
   Easing,
 } from 'react-native';
 import { useAuth } from '../../context/AuthContext';
@@ -88,12 +89,13 @@ const CharactersScreen = ({ navigation }) => {
   };
 
   const handleDelete = async (character) => {
-    if (!character?.character_id) {
+    const charId = character.character_id || character.id || character.characterId;
+    if (!charId) {
       toast.error('角色信息无效');
       return;
     }
     try {
-      await charactersAPI.delete(character.character_id);
+      await charactersAPI.delete(charId);
       toast.success('删除成功');
       setDetailVisible(false);
       loadCharacters();
@@ -104,8 +106,9 @@ const CharactersScreen = ({ navigation }) => {
 
   const handleFormSubmit = async (characterData) => {
     try {
-      if (editingCharacter?.character_id) {
-        await charactersAPI.update(editingCharacter.character_id, characterData);
+      const editingId = editingCharacter?.character_id || editingCharacter?.id || editingCharacter?.characterId;
+      if (editingId) {
+        await charactersAPI.update(editingId, characterData);
         toast.success('更新成功');
       } else {
         await charactersAPI.create({ ...characterData, creatorId: user?.userId });
@@ -145,7 +148,7 @@ const CharactersScreen = ({ navigation }) => {
           icon={emoji}
           name={item.name}
           isSelected={false}
-          onSelect={() => openDetail(item)}
+          onPress={() => openDetail(item)}
           variant={isPreset ? 'primary' : 'default'}
           width={100}
           height={140}
@@ -226,12 +229,12 @@ const CharactersScreen = ({ navigation }) => {
       />
       <FlatList
         data={characters}
-        keyExtractor={(item) => item.character_id}
+        keyExtractor={(item) => item.character_id || item.id || item.characterId || String(Math.random())}
         numColumns={2}
         contentContainerStyle={styles.listContent}
         showsVerticalScrollIndicator={false}
         refreshControl={
-          <Animated.RefreshControl refreshing={refreshing} onRefresh={onRefresh} />
+          <RefreshControl refreshing={refreshing} onRefresh={onRefresh} />
         }
         ListHeaderComponent={
           <Animated.Text

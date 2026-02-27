@@ -1,12 +1,22 @@
-import React from 'react';
+import React, { useEffect } from 'react';
 import {
   TouchableOpacity,
   Text,
   StyleSheet,
   ActivityIndicator,
   View,
+  Platform,
 } from 'react-native';
+import Animated, {
+  useSharedValue,
+  useAnimatedStyle,
+  withTiming,
+  withSpring,
+} from 'react-native-reanimated';
 import { COLORS } from '../../utils/constants';
+import { MICRO_INTERACTION_CONFIG } from '../../utils/animations';
+
+const AnimatedTouchable = Animated.createAnimatedComponent(TouchableOpacity);
 
 const Button = ({
   title,
@@ -19,6 +29,9 @@ const Button = ({
   style,
   textStyle,
 }) => {
+  const scale = useSharedValue(1);
+  const elevation = useSharedValue(3);
+
   const getVariantStyles = () => {
     switch (variant) {
       case 'primary':
@@ -74,18 +87,47 @@ const Button = ({
     return COLORS.white;
   };
 
+  // 微交互动画
+  const handlePressIn = () => {
+    scale.value = withTiming(MICRO_INTERACTION_CONFIG.button.pressScale, {
+      duration: MICRO_INTERACTION_CONFIG.button.pressDuration,
+    });
+    elevation.value = withTiming(1, {
+      duration: MICRO_INTERACTION_CONFIG.button.pressDuration,
+    });
+  };
+
+  const handlePressOut = () => {
+    scale.value = withSpring(MICRO_INTERACTION_CONFIG.button.releaseScale, {
+      damping: 15,
+      stiffness: 150,
+    });
+    elevation.value = withTiming(3, {
+      duration: MICRO_INTERACTION_CONFIG.button.releaseDuration,
+    });
+  };
+
+  const animatedStyle = useAnimatedStyle(() => ({
+    transform: [{ scale: scale.value }],
+    elevation: elevation.value,
+    shadowOpacity: elevation.value / 10,
+  }));
+
   return (
-    <TouchableOpacity
+    <AnimatedTouchable
       onPress={onPress}
+      onPressIn={handlePressIn}
+      onPressOut={handlePressOut}
       disabled={disabled || loading}
       style={[
         styles.button,
         getVariantStyles(),
         getSizeStyles(),
         disabled && styles.disabled,
+        animatedStyle,
         style,
       ]}
-      activeOpacity={0.8}
+      activeOpacity={0.9}
     >
       {loading ? (
         <ActivityIndicator color={getTextColor()} size="small" />
@@ -104,7 +146,7 @@ const Button = ({
           </Text>
         </View>
       )}
-    </TouchableOpacity>
+    </AnimatedTouchable>
   );
 };
 
@@ -115,6 +157,10 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     justifyContent: 'center',
     minHeight: 48,
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 2 },
+    shadowRadius: 4,
+    elevation: 3,
   },
   content: {
     flexDirection: 'row',

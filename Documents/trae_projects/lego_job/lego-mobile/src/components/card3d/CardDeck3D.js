@@ -1,9 +1,10 @@
 /**
  * CardDeck3D组件 - 3D卡牌组，带扇形展开和堆叠效果（网页端风格）
+ * 优化版本：修复Web端显示问题
  */
 
-import React, { useEffect, useCallback } from 'react';
-import { View, Text, StyleSheet, Dimensions } from 'react-native';
+import React, { useEffect, useCallback, useState } from 'react';
+import { View, Text, StyleSheet, Dimensions, Platform } from 'react-native';
 import Animated, {
   useSharedValue,
   useAnimatedStyle,
@@ -12,12 +13,10 @@ import Animated, {
   withDelay,
   interpolate,
   Extrapolate,
-  withRepeat,
-  withSequence,
 } from 'react-native-reanimated';
 import Card3D from './Card3D';
 import { COLORS } from '../../utils/constants';
-import { CARD_3D_CONFIG, EASINGS, calculateFanPosition } from '../../utils/animations';
+import { CARD_3D_CONFIG, EASINGS } from '../../utils/animations';
 
 const { width: SCREEN_WIDTH } = Dimensions.get('window');
 
@@ -25,7 +24,7 @@ const CardDeck3D = ({
   title,
   items,
   selectedId,
-  onSelect,
+  onPress,
   iconKey = 'icon',
   nameKey = 'name',
   emoji,
@@ -34,10 +33,14 @@ const CardDeck3D = ({
   enableFanSpread = true,
   stackOffset = CARD_3D_CONFIG.stackOffset,
 }) => {
-  const isExpanded = useSharedValue(false);
-  const containerScale = useSharedValue(1);
+  const isExpanded = useSharedValue(0);
+  const [isWeb, setIsWeb] = useState(false);
+
+  // 确保 items 是数组
+  const safeItems = Array.isArray(items) ? items : [];
 
   useEffect(() => {
+    setIsWeb(Platform.OS === 'web');
     if (enableFanSpread) {
       const timer = setTimeout(() => {
         isExpanded.value = withTiming(1, {
@@ -47,7 +50,7 @@ const CardDeck3D = ({
       }, 300);
       return () => clearTimeout(timer);
     }
-  }, [items.length, enableFanSpread]);
+  }, [safeItems.length, enableFanSpread]);
 
   const getIcon = (item, index) => {
     if (item[iconKey]) return item[iconKey];
@@ -56,38 +59,42 @@ const CardDeck3D = ({
   };
 
   const handleSelect = useCallback((id) => {
-    onSelect?.(id);
-  }, [onSelect]);
+    onPress?.(id);
+  }, [onPress]);
 
-  const getCardAnimatedStyle = (index, total) => {
+  // 计算单个卡牌的动画样式
+  const useCardAnimatedStyle = (index, total, itemId) => {
     return useAnimatedStyle(() => {
-      const isSelected = selectedId === items[index]?.id;
+      const isSelected = selectedId === itemId;
 
-      const fanPosition = calculateFanPosition(
-        index,
-        total,
-        CARD_3D_CONFIG.fanAngle,
-        CARD_3D_CONFIG.fanRadius
-      );
+      // 计算扇形角度
+      const startAngle = -CARD_3D_CONFIG.fanAngle / 2;
+      const angleStep = total > 1 ? CARD_3D_CONFIG.fanAngle / (total - 1) : 0;
+      const targetAngle = startAngle + index * angleStep;
+      const angleRad = (targetAngle * Math.PI) / 180;
+
+      // 计算位置
+      const targetTranslateX = Math.sin(angleRad) * CARD_3D_CONFIG.fanRadius;
+      const targetTranslateY = -Math.abs(Math.cos(angleRad) * CARD_3D_CONFIG.fanRadius * 0.3);
 
       const rotateZ = interpolate(
         isExpanded.value,
         [0, 1],
-        [0, fanPosition.angle],
+        [0, targetAngle],
         Extrapolate.CLAMP
       );
 
       const translateX = interpolate(
         isExpanded.value,
         [0, 1],
-        [index * stackOffset, fanPosition.translateX],
+        [index * stackOffset, targetTranslateX],
         Extrapolate.CLAMP
       );
 
       const translateY = interpolate(
         isExpanded.value,
         [0, 1],
-        [index * stackOffset * 0.5, fanPosition.translateY],
+        [index * stackOffset * 0.5, targetTranslateY],
         Extrapolate.CLAMP
       );
 
@@ -97,7 +104,7 @@ const CardDeck3D = ({
 
       const scale = isSelected
         ? interpolate(isExpanded.value, [0, 1], [1, 1.25])
-        : interpolate(isExpanded.value, [0, 1], [1, 1]);
+        : 1;
 
       return {
         transform: [
@@ -111,29 +118,92 @@ const CardDeck3D = ({
     });
   };
 
+  // 标题动画样式
+  const titleAnimatedStyle = useAnimatedStyle(() => ({
+    opacity: interpolate(isExpanded.value, [0, 1], [0.5, 1]),
+    transform: [
+      {
+        translateY: interpolate(isExpanded.value, [0, 1], [10, 0]),
+      },
+    ],
+  }));
+
+  // Web端使用简化的渲染
+  if (isWeb) {
+    return (
+      <View style={styles.container}>
+        {showTitle && title && (
+          <Text style={styles.title}>{title}</Text>
+        )}
+        <View style={styles.deckContainerWeb}>
+          {safeItems.map((item, index) => {
+            const isSelected = selectedId === item.id;
+            // 计算扇形位置
+            const total = safeItems.length;
+            const startAngle = -CARD_3D_CONFIG.fanAngle / 2;
+            const angleStep = total > 1 ? CARD_3D_CONFIG.fanAngle / (total - 1) : 0;
+            const angleDeg = startAngle + index * angleStep;
+            const angleRad = (angleDeg * Math.PI) / 180;
+            const translateX = Math.sin(angleRad) * CARD_3D_CONFIG.fanRadius;
+            const translateY = -Math.abs(Math.cos(angleRad) * CARD_3D_CONFIG.fanRadius * 0.3);
+
+            return (
+              <View
+                key={item.id}
+                style={[
+                  styles.cardWrapperWeb,
+                  {
+                    transform: [
+                      { translateX },
+                      { translateY: isSelected ? translateY - 20 : translateY },
+                      { rotateZ: `${angleDeg}deg` },
+                      { scale: isSelected ? 1.15 : 1 },
+                    ],
+                    zIndex: isSelected ? 100 : index,
+                  },
+                ]}
+              >
+                <Card3D
+                  icon={getIcon(item, index)}
+                  name={item[nameKey]}
+                  isSelected={isSelected}
+                  onPress={() => handleSelect(item.id)}
+                  variant={isSelected ? 'primary' : variant}
+                  width={CARD_3D_CONFIG.cardWidth}
+                  height={CARD_3D_CONFIG.cardHeight}
+                  enableTilt={false}
+                  enableFlip={false}
+                />
+              </View>
+            );
+          })}
+        </View>
+
+        <View style={styles.decorations}>
+          <View style={[styles.decorationDot, styles.dot1]} />
+          <View style={[styles.decorationDot, styles.dot2]} />
+          <View style={[styles.decorationDot, styles.dot3]} />
+        </View>
+      </View>
+    );
+  }
+
   return (
     <View style={styles.container}>
       {showTitle && title && (
         <Animated.Text
           style={[
             styles.title,
-            useAnimatedStyle(() => ({
-              opacity: interpolate(isExpanded.value, [0, 1], [0.5, 1]),
-              transform: [
-                {
-                  translateY: interpolate(isExpanded.value, [0, 1], [10, 0]),
-                },
-              ],
-            })),
+            titleAnimatedStyle,
           ]}
         >
           {title}
         </Animated.Text>
       )}
       <View style={styles.deckContainer}>
-        {items.map((item, index) => {
+        {safeItems.map((item, index) => {
           const isSelected = selectedId === item.id;
-          const cardAnimatedStyle = getCardAnimatedStyle(index, items.length);
+          const cardAnimatedStyle = useCardAnimatedStyle(index, safeItems.length, item.id);
 
           return (
             <Animated.View
@@ -144,7 +214,7 @@ const CardDeck3D = ({
                 icon={getIcon(item, index)}
                 name={item[nameKey]}
                 isSelected={isSelected}
-                onSelect={() => handleSelect(item.id)}
+                onPress={() => handleSelect(item.id)}
                 variant={isSelected ? 'primary' : variant}
                 width={CARD_3D_CONFIG.cardWidth}
                 height={CARD_3D_CONFIG.cardHeight}
@@ -184,7 +254,19 @@ const styles = StyleSheet.create({
     height: 140,
     position: 'relative',
   },
+  deckContainerWeb: {
+    flexDirection: 'row',
+    justifyContent: 'center',
+    alignItems: 'flex-end',
+    height: 140,
+    position: 'relative',
+  },
   cardWrapper: {
+    position: 'absolute',
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  cardWrapperWeb: {
     position: 'absolute',
     alignItems: 'center',
     justifyContent: 'center',
