@@ -13,6 +13,7 @@ import { useToast } from '../../context/ToastContext';
 import { charactersAPI } from '../../api';
 import { Card, Button, Loading, EmptyState, Header, Modal, GlowOrbBackground } from '../../components/common';
 import CharacterForm from '../../components/characters/CharacterForm';
+import Card3D from '../../components/card3d/Card3D';
 import { COLORS, CHARACTER_EMOJIS } from '../../utils/constants';
 
 const BOUNCE_EASING = Easing.bezier(0.68, -0.55, 0.265, 1.55);
@@ -20,7 +21,7 @@ const BOUNCE_EASING = Easing.bezier(0.68, -0.55, 0.265, 1.55);
 const CharactersScreen = ({ navigation }) => {
   const { user } = useAuth();
   const toast = useToast();
-  
+
   const [characters, setCharacters] = useState([]);
   const [isLoading, setIsLoading] = useState(true);
   const [refreshing, setRefreshing] = useState(false);
@@ -44,7 +45,6 @@ const CharactersScreen = ({ navigation }) => {
         easing: BOUNCE_EASING,
         useNativeDriver: true,
       }).start();
-
       cardAnims.forEach((anim, index) => {
         Animated.spring(anim, {
           toValue: 1,
@@ -130,7 +130,7 @@ const CharactersScreen = ({ navigation }) => {
   const renderCharacterCard = ({ item, index, isPreset }) => {
     const anim = cardAnims[index] || new Animated.Value(1);
     const emoji = CHARACTER_EMOJIS[index % CHARACTER_EMOJIS.length];
-    
+
     return (
       <Animated.View
         style={{
@@ -141,49 +141,65 @@ const CharactersScreen = ({ navigation }) => {
           ],
         }}
       >
-        <TouchableOpacity
-          style={[styles.card, isPreset && styles.presetCard]}
-          onPress={() => openDetail(item)}
-          activeOpacity={0.9}
-        >
-          {isPreset && (
-            <View style={styles.presetBadge}>
-              <Text style={styles.presetBadgeText}>系统</Text>
-            </View>
-          )}
-          <Text style={styles.cardEmoji}>{emoji}</Text>
-          <Text style={styles.cardName} numberOfLines={1}>
-            {item.name}
-          </Text>
-          <Text style={styles.cardDesc} numberOfLines={2}>
-            {item.description || '神秘角色'}
-          </Text>
-          
-          {item.personality && (
-            <View style={styles.tagContainer}>
-              <View style={styles.personalityTag}>
-                <Text style={styles.tagText}>✨ {item.personality}</Text>
+        <Card3D
+          icon={emoji}
+          name={item.name}
+          isSelected={false}
+          onSelect={() => openDetail(item)}
+          variant={isPreset ? 'primary' : 'default'}
+          width={100}
+          height={140}
+          enableTilt={true}
+          enableFlip={true}
+          frontContent={
+            <>
+              {isPreset && (
+                <View style={styles.presetBadge}>
+                  <Text style={styles.presetBadgeText}>系统</Text>
+                </View>
+              )}
+              <Text style={styles.cardName} numberOfLines={1}>
+                {item.name}
+              </Text>
+              <Text style={styles.cardDesc} numberOfLines={2}>
+                {item.description || '神秘角色'}
+              </Text>
+              {item.personality && (
+                <View style={styles.tagContainer}>
+                  <View style={styles.personalityTag}>
+                    <Text style={styles.tagText}>✨ {item.personality}</Text>
+                  </View>
+                </View>
+              )}
+              {!isPreset && (
+                <View style={styles.cardActions}>
+                  <TouchableOpacity
+                    style={styles.actionBtn}
+                    onPress={() => handleEdit(item)}
+                  >
+                    <Text style={styles.actionBtnText}>✏️</Text>
+                  </TouchableOpacity>
+                  <TouchableOpacity
+                    style={styles.actionBtn}
+                    onPress={() => handleDelete(item)}
+                  >
+                    <Text style={styles.actionBtnText}>🗑️</Text>
+                  </TouchableOpacity>
+                </View>
+              )}
+            </>
+          }
+          backContent={
+            <View style={styles.cardBackContent}>
+              <View style={styles.legoPattern}>
+                {[...Array(4)].map((_, i) => (
+                  <View key={i} style={styles.legoDot} />
+                ))}
               </View>
+              <Text style={styles.backText}>🧱</Text>
             </View>
-          )}
-          
-          {!isPreset && (
-            <View style={styles.cardActions}>
-              <TouchableOpacity
-                style={styles.actionBtn}
-                onPress={() => handleEdit(item)}
-              >
-                <Text style={styles.actionBtnText}>✏️</Text>
-              </TouchableOpacity>
-              <TouchableOpacity
-                style={styles.actionBtn}
-                onPress={() => handleDelete(item)}
-              >
-                <Text style={styles.actionBtnText}>🗑️</Text>
-              </TouchableOpacity>
-            </View>
-          )}
-        </TouchableOpacity>
+          }
+        />
       </Animated.View>
     );
   };
@@ -191,11 +207,11 @@ const CharactersScreen = ({ navigation }) => {
   return (
     <View style={styles.container}>
       <GlowOrbBackground />
-      
+
       <View style={styles.debugLabel}>
         <Text style={styles.debugLabelText}>📱 当前页面: CharactersScreen (角色页)</Text>
       </View>
-      
+
       <Header
         title="🎭 角色收集"
         subtitle={`共 ${characters.length} 个角色`}
@@ -208,7 +224,6 @@ const CharactersScreen = ({ navigation }) => {
           />
         }
       />
-
       <FlatList
         data={characters}
         keyExtractor={(item) => item.character_id}
@@ -219,10 +234,10 @@ const CharactersScreen = ({ navigation }) => {
           <Animated.RefreshControl refreshing={refreshing} onRefresh={onRefresh} />
         }
         ListHeaderComponent={
-          <Animated.Text 
+          <Animated.Text
             style={[
               styles.sectionTitle,
-              { 
+              {
                 opacity: titleAnim,
                 transform: [{ translateX: titleAnim.interpolate({ inputRange: [0, 1], outputRange: [-20, 0] }) }],
               }
@@ -231,7 +246,7 @@ const CharactersScreen = ({ navigation }) => {
             🌟 预设人仔
           </Animated.Text>
         }
-        renderItem={({ item, index }) => 
+        renderItem={({ item, index }) =>
           renderCharacterCard({ item, index, isPreset: item.creator_id === 'system' })
         }
         ListEmptyComponent={
@@ -272,7 +287,7 @@ const CharactersScreen = ({ navigation }) => {
             <Text style={styles.detailDesc}>
               {selectedCharacter.description || '这个角色充满了神秘感...'}
             </Text>
-            
+
             <View style={styles.attributesContainer}>
               {selectedCharacter.personality && (
                 <View style={styles.attributeRow}>
@@ -291,7 +306,7 @@ const CharactersScreen = ({ navigation }) => {
                 </View>
               )}
             </View>
-            
+
             <View style={styles.detailActions}>
               {selectedCharacter.creator_id !== 'system' && (
                 <>
@@ -349,28 +364,22 @@ const styles = StyleSheet.create({
     color: COLORS.text,
     marginBottom: 16,
   },
-  card: {
-    flex: 1,
-    margin: 6,
-    backgroundColor: COLORS.white,
-    borderRadius: 16,
-    padding: 16,
-    alignItems: 'center',
-    minHeight: 180,
-    shadowColor: COLORS.legoYellow,
-    shadowOffset: { width: 0, height: 4 },
-    shadowOpacity: 0.15,
-    shadowRadius: 8,
-    elevation: 5,
+  cardName: {
+    fontSize: 14,
+    fontWeight: 'bold',
+    color: COLORS.text,
+    marginBottom: 4,
   },
-  presetCard: {
-    borderWidth: 2,
-    borderColor: COLORS.legoYellow,
+  cardDesc: {
+    fontSize: 11,
+    color: COLORS.textLight,
+    textAlign: 'center',
+    marginBottom: 8,
   },
   presetBadge: {
     position: 'absolute',
-    top: 8,
-    right: 8,
+    top: 6,
+    right: 6,
     backgroundColor: COLORS.legoYellow,
     paddingHorizontal: 8,
     paddingVertical: 2,
@@ -380,22 +389,6 @@ const styles = StyleSheet.create({
     fontSize: 10,
     fontWeight: 'bold',
     color: COLORS.text,
-  },
-  cardEmoji: {
-    fontSize: 48,
-    marginBottom: 8,
-  },
-  cardName: {
-    fontSize: 16,
-    fontWeight: 'bold',
-    color: COLORS.text,
-    marginBottom: 4,
-  },
-  cardDesc: {
-    fontSize: 12,
-    color: COLORS.textLight,
-    textAlign: 'center',
-    marginBottom: 8,
   },
   tagContainer: {
     flexDirection: 'row',
@@ -485,6 +478,34 @@ const styles = StyleSheet.create({
   },
   detailBtn: {
     flex: 1,
+  },
+  cardBackContent: {
+    backgroundColor: COLORS.background,
+    width: '100%',
+    height: '100%',
+    borderRadius: 12,
+    alignItems: 'center',
+    justifyContent: 'center',
+    padding: 8,
+  },
+  legoPattern: {
+    flexDirection: 'row',
+    flexWrap: 'wrap',
+    width: 40,
+    height: 40,
+    justifyContent: 'space-between',
+    alignContent: 'space-between',
+    marginBottom: 8,
+  },
+  legoDot: {
+    width: 14,
+    height: 14,
+    borderRadius: 7,
+    backgroundColor: COLORS.legoYellow,
+    opacity: 0.6,
+  },
+  backText: {
+    fontSize: 24,
   },
 });
 

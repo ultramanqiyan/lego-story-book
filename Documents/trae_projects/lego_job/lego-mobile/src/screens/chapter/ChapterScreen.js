@@ -116,14 +116,15 @@ const ChapterScreen = ({ route, navigation }) => {
         setNavigationInfo(data.navigation);
       }
 
-      if (bookId) {
+      const effectiveBookId = bookId || data.chapter?.book_id;
+      if (effectiveBookId) {
         try {
-          const bookData = await booksAPI.getDetail(bookId, user?.userId);
-          if (bookData.characters) {
+          const bookData = await booksAPI.getDetail(effectiveBookId, user?.userId);
+          if (bookData.characters && bookData.characters.length > 0) {
             setBookCharacters(bookData.characters);
           }
         } catch (e) {
-          // ignore
+          console.warn('Failed to load book characters:', e);
         }
       }
     } catch (error) {

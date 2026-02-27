@@ -17,19 +17,29 @@ const KeywordHighlight = ({ content, characters = [] }) => {
     }
   });
 
-  const actionWords = ['飞向', '跳跃', '奔跑', '战斗', '探索', '发现', '拯救', '追逐', '攀爬', '游泳', '飞翔', '旋转', '冲刺', '躲闪', '攻击', '防御', '寻找', '收集', '建造', '修复'];
+  const actionWords = ['飞向', '跳跃', '奔跑', '战斗', '探索', '发现', '拯救', '追逐', '攀爬', '游泳', '飞翔', '旋转', '冲刺', '躲闪', '攻击', '防御', '寻找', '收集', '建造', '修复', '转过身', '握紧', '举起', '拔出', '走上前', '拉住'];
   actionWords.forEach((word) => {
     keywords.push({ text: word, type: 'action' });
   });
 
-  const emotionWords = ['开心', '快乐', '勇敢', '害怕', '兴奋', '紧张', '感动', '惊讶', '愤怒', '悲伤', '期待', '满足', '自豪', '担心', '安心', '激动', '欣慰', '坚定', '犹豫'];
+  const emotionWords = ['开心', '快乐', '勇敢', '害怕', '兴奋', '紧张', '感动', '惊讶', '愤怒', '悲伤', '期待', '满足', '自豪', '担心', '安心', '激动', '欣慰', '坚定', '犹豫', '恐惧', '慈祥', '关切'];
   emotionWords.forEach((word) => {
     keywords.push({ text: word, type: 'emotion' });
   });
 
-  const locationWords = ['城堡', '森林', '太空', '海底', '沙漠', '雪山', '火山', '洞穴', '城市', '村庄', '花园', '岛屿', '山脉', '河流', '星空', '云层', '迷宫', '宝藏', '遗迹', '基地'];
+  const locationWords = ['城堡', '森林', '太空', '海底', '沙漠', '雪山', '火山', '洞穴', '城市', '村庄', '花园', '岛屿', '山脉', '河流', '星空', '云层', '迷宫', '宝藏', '遗迹', '基地', '悬崖'];
   locationWords.forEach((word) => {
     keywords.push({ text: word, type: 'location' });
+  });
+
+  const weatherWords = ['阳光', '浓雾', '闪电', '乌云', '夜空', '和平', '清晨', '下雨', '打雷', '下雪', '大雾', '狂风', '彩虹', '星夜'];
+  weatherWords.forEach((word) => {
+    keywords.push({ text: word, type: 'weather' });
+  });
+
+  const itemWords = ['魔法杖', '宝剑', '盾牌', '地图', '药水', '金龙'];
+  itemWords.forEach((word) => {
+    keywords.push({ text: word, type: 'item' });
   });
 
   keywords.sort((a, b) => b.text.length - a.text.length);
@@ -59,6 +69,18 @@ const KeywordHighlight = ({ content, characters = [] }) => {
         return {
           backgroundColor: '#E3F2FD',
           color: COLORS.legoBlue,
+          fontWeight: '600',
+        };
+      case 'weather':
+        return {
+          backgroundColor: '#E0F7FA',
+          color: '#0288D1',
+          fontWeight: '600',
+        };
+      case 'item':
+        return {
+          backgroundColor: '#FCE4EC',
+          color: '#E91E63',
           fontWeight: '600',
         };
       default:

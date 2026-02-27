@@ -71,21 +71,21 @@
   },
   "suites": [
     {
-      "title": "app.spec.js",
-      "file": "app.spec.js",
+      "title": "book.spec.js",
+      "file": "book.spec.js",
       "column": 0,
       "line": 0,
       "specs": [],
       "suites": [
         {
-          "title": "谜题功能测试",
-          "file": "app.spec.js",
-          "line": 254,
+          "title": "情节选择功能测试",
+          "file": "book.spec.js",
+          "line": 4,
           "column": 6,
           "specs": [
             {
-              "title": "冒险模式页面应该加载",
-              "ok": true,
+              "title": "点击添加章节按钮应该显示情节选择弹窗",
+              "ok": false,
               "tags": [],
               "tests": [
                 {
@@ -98,28 +98,58 @@
                     {
                       "workerIndex": 0,
                       "parallelIndex": 0,
-                      "status": "passed",
-                      "duration": 3627,
-                      "errors": [],
+                      "status": "failed",
+                      "duration": 7013,
+                      "error": {
+                        "message": "Error: \u001b[2mexpect(\u001b[22m\u001b[31mlocator\u001b[39m\u001b[2m).\u001b[22mtoBeVisible\u001b[2m(\u001b[22m\u001b[2m)\u001b[22m failed\n\nLocator: locator('#chapterCharacterModal')\nExpected: visible\nError: element(s) not found\n\nCall log:\n\u001b[2m  - Expect \"toBeVisible\" with timeout 5000ms\u001b[22m\n\u001b[2m  - waiting for locator('#chapterCharacterModal')\u001b[22m\n",
+                        "stack": "Error: \u001b[2mexpect(\u001b[22m\u001b[31mlocator\u001b[39m\u001b[2m).\u001b[22mtoBeVisible\u001b[2m(\u001b[22m\u001b[2m)\u001b[22m failed\n\nLocator: locator('#chapterCharacterModal')\nExpected: visible\nError: element(s) not found\n\nCall log:\n\u001b[2m  - Expect \"toBeVisible\" with timeout 5000ms\u001b[22m\n\u001b[2m  - waiting for locator('#chapterCharacterModal')\u001b[22m\n\n    at C:\\Users\\yannis\\Documents\\trae_projects\\lego_job\\tests\\e2e\\book.spec.js:19:26",
+                        "location": {
+                          "file": "C:\\Users\\yannis\\Documents\\trae_projects\\lego_job\\tests\\e2e\\book.spec.js",
+                          "column": 26,
+                          "line": 19
+                        },
+                        "snippet": "\u001b[0m \u001b[90m 17 |\u001b[39m     \n \u001b[90m 18 |\u001b[39m     \u001b[36mconst\u001b[39m chapterModal \u001b[33m=\u001b[39m \u001b[36mawait\u001b[39m page\u001b[33m.\u001b[39mlocator(\u001b[32m'#chapterCharacterModal'\u001b[39m)\u001b[33m;\u001b[39m\n\u001b[31m\u001b[1m>\u001b[22m\u001b[39m\u001b[90m 19 |\u001b[39m     expect(chapterModal)\u001b[33m.\u001b[39mtoBeVisible()\u001b[33m;\u001b[39m\n \u001b[90m    |\u001b[39m                          \u001b[31m\u001b[1m^\u001b[22m\u001b[39m\n \u001b[90m 20 |\u001b[39m     \n \u001b[90m 21 |\u001b[39m     \u001b[36mconst\u001b[39m confirmChapterChars \u001b[33m=\u001b[39m \u001b[36mawait\u001b[39m page\u001b[33m.\u001b[39mlocator(\u001b[32m'#confirmChapterChars'\u001b[39m)\u001b[33m;\u001b[39m\n \u001b[90m 22 |\u001b[39m     expect(chapterModal)\u001b[33m.\u001b[39mtoBeVisible()\u001b[33m;\u001b[39m\u001b[0m"
+                      },
+                      "errors": [
+                        {
+                          "location": {
+                            "file": "C:\\Users\\yannis\\Documents\\trae_projects\\lego_job\\tests\\e2e\\book.spec.js",
+                            "column": 26,
+                            "line": 19
+                          },
+                          "message": "Error: \u001b[2mexpect(\u001b[22m\u001b[31mlocator\u001b[39m\u001b[2m).\u001b[22mtoBeVisible\u001b[2m(\u001b[22m\u001b[2m)\u001b[22m failed\n\nLocator: locator('#chapterCharacterModal')\nExpected: visible\nError: element(s) not found\n\nCall log:\n\u001b[2m  - Expect \"toBeVisible\" with timeout 5000ms\u001b[22m\n\u001b[2m  - waiting for locator('#chapterCharacterModal')\u001b[22m\n\n\n\u001b[0m \u001b[90m 17 |\u001b[39m     \n \u001b[90m 18 |\u001b[39m     \u001b[36mconst\u001b[39m chapterModal \u001b[33m=\u001b[39m \u001b[36mawait\u001b[39m page\u001b[33m.\u001b[39mlocator(\u001b[32m'#chapterCharacterModal'\u001b[39m)\u001b[33m;\u001b[39m\n\u001b[31m\u001b[1m>\u001b[22m\u001b[39m\u001b[90m 19 |\u001b[39m     expect(chapterModal)\u001b[33m.\u001b[39mtoBeVisible()\u001b[33m;\u001b[39m\n \u001b[90m    |\u001b[39m                          \u001b[31m\u001b[1m^\u001b[22m\u001b[39m\n \u001b[90m 20 |\u001b[39m     \n \u001b[90m 21 |\u001b[39m     \u001b[36mconst\u001b[39m confirmChapterChars \u001b[33m=\u001b[39m \u001b[36mawait\u001b[39m page\u001b[33m.\u001b[39mlocator(\u001b[32m'#confirmChapterChars'\u001b[39m)\u001b[33m;\u001b[39m\n \u001b[90m 22 |\u001b[39m     expect(chapterModal)\u001b[33m.\u001b[39mtoBeVisible()\u001b[33m;\u001b[39m\u001b[0m\n\u001b[2m    at C:\\Users\\yannis\\Documents\\trae_projects\\lego_job\\tests\\e2e\\book.spec.js:19:26\u001b[22m"
+                        }
+                      ],
                       "stdout": [],
                       "stderr": [],
                       "retry": 0,
-                      "startTime": "2026-02-24T09:27:41.522Z",
+                      "startTime": "2026-02-24T10:49:35.901Z",
                       "annotations": [],
-                      "attachments": []
+                      "attachments": [
+                        {
+                          "name": "screenshot",
+                          "contentType": "image/png",
+                          "path": "C:\\Users\\yannis\\Documents\\trae_projects\\lego_job\\test-results\\book-情节选择功能测试-点击添加章节按钮应该显示情节选择弹窗-chromium\\test-failed-1.png"
+                        }
+                      ],
+                      "errorLocation": {
+                        "file": "C:\\Users\\yannis\\Documents\\trae_projects\\lego_job\\tests\\e2e\\book.spec.js",
+                        "column": 26,
+                        "line": 19
+                      }
                     }
                   ],
-                  "status": "expected"
+                  "status": "unexpected"
                 }
               ],
-              "id": "a510cc93a867214a2ea0-df4ffe7415401b14507d",
-              "file": "app.spec.js",
-              "line": 255,
+              "id": "a23a6e98a7c77929248d-0ca9e69ac0b426b423fd",
+              "file": "book.spec.js",
+              "line": 5,
               "column": 3
             },
             {
-              "title": "尝试次数指示器应该在有谜题时显示",
-              "ok": true,
+              "title": "情节选择弹窗应该显示4个维度选项",
+              "ok": false,
               "tags": [],
               "tests": [
                 {
@@ -130,30 +160,60 @@
                   "projectName": "chromium",
                   "results": [
                     {
-                      "workerIndex": 0,
+                      "workerIndex": 1,
                       "parallelIndex": 0,
-                      "status": "passed",
-                      "duration": 4891,
-                      "errors": [],
+                      "status": "failed",
+                      "duration": 6856,
+                      "error": {
+                        "message": "Error: \u001b[2mexpect(\u001b[22m\u001b[31mlocator\u001b[39m\u001b[2m).\u001b[22mtoBeVisible\u001b[2m(\u001b[22m\u001b[2m)\u001b[22m failed\n\nLocator: locator('#chapterCharacterModal')\nExpected: visible\nError: element(s) not found\n\nCall log:\n\u001b[2m  - Expect \"toBeVisible\" with timeout 5000ms\u001b[22m\n\u001b[2m  - waiting for locator('#chapterCharacterModal')\u001b[22m\n",
+                        "stack": "Error: \u001b[2mexpect(\u001b[22m\u001b[31mlocator\u001b[39m\u001b[2m).\u001b[22mtoBeVisible\u001b[2m(\u001b[22m\u001b[2m)\u001b[22m failed\n\nLocator: locator('#chapterCharacterModal')\nExpected: visible\nError: element(s) not found\n\nCall log:\n\u001b[2m  - Expect \"toBeVisible\" with timeout 5000ms\u001b[22m\n\u001b[2m  - waiting for locator('#chapterCharacterModal')\u001b[22m\n\n    at C:\\Users\\yannis\\Documents\\trae_projects\\lego_job\\tests\\e2e\\book.spec.js:56:26",
+                        "location": {
+                          "file": "C:\\Users\\yannis\\Documents\\trae_projects\\lego_job\\tests\\e2e\\book.spec.js",
+                          "column": 26,
+                          "line": 56
+                        },
+                        "snippet": "\u001b[0m \u001b[90m 54 |\u001b[39m     \n \u001b[90m 55 |\u001b[39m     \u001b[36mconst\u001b[39m chapterModal \u001b[33m=\u001b[39m \u001b[36mawait\u001b[39m page\u001b[33m.\u001b[39mlocator(\u001b[32m'#chapterCharacterModal'\u001b[39m)\u001b[33m;\u001b[39m\n\u001b[31m\u001b[1m>\u001b[22m\u001b[39m\u001b[90m 56 |\u001b[39m     expect(chapterModal)\u001b[33m.\u001b[39mtoBeVisible()\u001b[33m;\u001b[39m\n \u001b[90m    |\u001b[39m                          \u001b[31m\u001b[1m^\u001b[22m\u001b[39m\n \u001b[90m 57 |\u001b[39m     \n \u001b[90m 58 |\u001b[39m     \u001b[36mconst\u001b[39m confirmChapterChars \u001b[33m=\u001b[39m \u001b[36mawait\u001b[39m page\u001b[33m.\u001b[39mlocator(\u001b[32m'#confirmChapterChars'\u001b[39m)\u001b[33m;\u001b[39m\n \u001b[90m 59 |\u001b[39m     expect(chapterModal)\u001b[33m.\u001b[39mtoBeVisible()\u001b[33m;\u001b[39m\u001b[0m"
+                      },
+                      "errors": [
+                        {
+                          "location": {
+                            "file": "C:\\Users\\yannis\\Documents\\trae_projects\\lego_job\\tests\\e2e\\book.spec.js",
+                            "column": 26,
+                            "line": 56
+                          },
+                          "message": "Error: \u001b[2mexpect(\u001b[22m\u001b[31mlocator\u001b[39m\u001b[2m).\u001b[22mtoBeVisible\u001b[2m(\u001b[22m\u001b[2m)\u001b[22m failed\n\nLocator: locator('#chapterCharacterModal')\nExpected: visible\nError: element(s) not found\n\nCall log:\n\u001b[2m  - Expect \"toBeVisible\" with timeout 5000ms\u001b[22m\n\u001b[2m  - waiting for locator('#chapterCharacterModal')\u001b[22m\n\n\n\u001b[0m \u001b[90m 54 |\u001b[39m     \n \u001b[90m 55 |\u001b[39m     \u001b[36mconst\u001b[39m chapterModal \u001b[33m=\u001b[39m \u001b[36mawait\u001b[39m page\u001b[33m.\u001b[39mlocator(\u001b[32m'#chapterCharacterModal'\u001b[39m)\u001b[33m;\u001b[39m\n\u001b[31m\u001b[1m>\u001b[22m\u001b[39m\u001b[90m 56 |\u001b[39m     expect(chapterModal)\u001b[33m.\u001b[39mtoBeVisible()\u001b[33m;\u001b[39m\n \u001b[90m    |\u001b[39m                          \u001b[31m\u001b[1m^\u001b[22m\u001b[39m\n \u001b[90m 57 |\u001b[39m     \n \u001b[90m 58 |\u001b[39m     \u001b[36mconst\u001b[39m confirmChapterChars \u001b[33m=\u001b[39m \u001b[36mawait\u001b[39m page\u001b[33m.\u001b[39mlocator(\u001b[32m'#confirmChapterChars'\u001b[39m)\u001b[33m;\u001b[39m\n \u001b[90m 59 |\u001b[39m     expect(chapterModal)\u001b[33m.\u001b[39mtoBeVisible()\u001b[33m;\u001b[39m\u001b[0m\n\u001b[2m    at C:\\Users\\yannis\\Documents\\trae_projects\\lego_job\\tests\\e2e\\book.spec.js:56:26\u001b[22m"
+                        }
+                      ],
                       "stdout": [],
                       "stderr": [],
                       "retry": 0,
-                      "startTime": "2026-02-24T09:27:45.512Z",
+                      "startTime": "2026-02-24T10:49:45.069Z",
                       "annotations": [],
-                      "attachments": []
+                      "attachments": [
+                        {
+                          "name": "screenshot",
+                          "contentType": "image/png",
+                          "path": "C:\\Users\\yannis\\Documents\\trae_projects\\lego_job\\test-results\\book-情节选择功能测试-情节选择弹窗应该显示4个维度选项-chromium\\test-failed-1.png"
+                        }
+                      ],
+                      "errorLocation": {
+                        "file": "C:\\Users\\yannis\\Documents\\trae_projects\\lego_job\\tests\\e2e\\book.spec.js",
+                        "column": 26,
+                        "line": 56
+                      }
                     }
                   ],
-                  "status": "expected"
+                  "status": "unexpected"
                 }
               ],
-              "id": "a510cc93a867214a2ea0-7c7e52ea9c30a348dff7",
-              "file": "app.spec.js",
-              "line": 263,
+              "id": "a23a6e98a7c77929248d-2bed4a1c3e42b179749e",
+              "file": "book.spec.js",
+              "line": 42,
               "column": 3
             },
             {
-              "title": "谜题区域应该在有谜题时显示",
-              "ok": true,
+              "title": "每个维度应该显示8个选项",
+              "ok": false,
               "tags": [],
               "tests": [
                 {
@@ -164,30 +224,73 @@
                   "projectName": "chromium",
                   "results": [
                     {
-                      "workerIndex": 0,
+                      "workerIndex": 2,
                       "parallelIndex": 0,
-                      "status": "passed",
-                      "duration": 4755,
-                      "errors": [],
+                      "status": "failed",
+                      "duration": 6836,
+                      "error": {
+                        "message": "Error: \u001b[2mexpect(\u001b[22m\u001b[31mreceived\u001b[39m\u001b[2m).\u001b[22mtoBe\u001b[2m(\u001b[22m\u001b[32mexpected\u001b[39m\u001b[2m) // Object.is equality\u001b[22m\n\nExpected: \u001b[32m8\u001b[39m\nReceived: \u001b[31m0\u001b[39m",
+                        "stack": "Error: \u001b[2mexpect(\u001b[22m\u001b[31mreceived\u001b[39m\u001b[2m).\u001b[22mtoBe\u001b[2m(\u001b[22m\u001b[32mexpected\u001b[39m\u001b[2m) // Object.is equality\u001b[22m\n\nExpected: \u001b[32m8\u001b[39m\nReceived: \u001b[31m0\u001b[39m\n    at C:\\Users\\yannis\\Documents\\trae_projects\\lego_job\\tests\\e2e\\book.spec.js:105:26",
+                        "location": {
+                          "file": "C:\\Users\\yannis\\Documents\\trae_projects\\lego_job\\tests\\e2e\\book.spec.js",
+                          "column": 26,
+                          "line": 105
+                        },
+                        "snippet": "\u001b[0m \u001b[90m 103 |\u001b[39m     \u001b[36mconst\u001b[39m weatherOptions \u001b[33m=\u001b[39m \u001b[36mawait\u001b[39m page\u001b[33m.\u001b[39mlocator(\u001b[32m'#weatherOptions'\u001b[39m)\u001b[33m;\u001b[39m\n \u001b[90m 104 |\u001b[39m     \u001b[36mconst\u001b[39m weatherCount \u001b[33m=\u001b[39m \u001b[36mawait\u001b[39m weatherOptions\u001b[33m.\u001b[39mlocator(\u001b[32m'.plot-option-btn'\u001b[39m)\u001b[33m.\u001b[39mcount()\u001b[33m;\u001b[39m\n\u001b[31m\u001b[1m>\u001b[22m\u001b[39m\u001b[90m 105 |\u001b[39m     expect(weatherCount)\u001b[33m.\u001b[39mtoBe(\u001b[35m8\u001b[39m)\u001b[33m;\u001b[39m\n \u001b[90m     |\u001b[39m                          \u001b[31m\u001b[1m^\u001b[22m\u001b[39m\n \u001b[90m 106 |\u001b[39m     \n \u001b[90m 107 |\u001b[39m     \u001b[36mconst\u001b[39m adventureTypeOptions \u001b[33m=\u001b[39m \u001b[36mawait\u001b[39m page\u001b[33m.\u001b[39mlocator(\u001b[32m'#adventureTypeOptions'\u001b[39m)\u001b[33m;\u001b[39m\n \u001b[90m 108 |\u001b[39m     \u001b[36mconst\u001b[39m adventureCount \u001b[33m=\u001b[39m \u001b[36mawait\u001b[39m adventureTypeOptions\u001b[33m.\u001b[39mlocator(\u001b[32m'.plot-option-btn'\u001b[39m)\u001b[33m.\u001b[39mcount()\u001b[33m;\u001b[39m\u001b[0m"
+                      },
+                      "errors": [
+                        {
+                          "location": {
+                            "file": "C:\\Users\\yannis\\Documents\\trae_projects\\lego_job\\tests\\e2e\\book.spec.js",
+                            "column": 26,
+                            "line": 105
+                          },
+                          "message": "Error: \u001b[2mexpect(\u001b[22m\u001b[31mreceived\u001b[39m\u001b[2m).\u001b[22mtoBe\u001b[2m(\u001b[22m\u001b[32mexpected\u001b[39m\u001b[2m) // Object.is equality\u001b[22m\n\nExpected: \u001b[32m8\u001b[39m\nReceived: \u001b[31m0\u001b[39m\n\n\u001b[0m \u001b[90m 103 |\u001b[39m     \u001b[36mconst\u001b[39m weatherOptions \u001b[33m=\u001b[39m \u001b[36mawait\u001b[39m page\u001b[33m.\u001b[39mlocator(\u001b[32m'#weatherOptions'\u001b[39m)\u001b[33m;\u001b[39m\n \u001b[90m 104 |\u001b[39m     \u001b[36mconst\u001b[39m weatherCount \u001b[33m=\u001b[39m \u001b[36mawait\u001b[39m weatherOptions\u001b[33m.\u001b[39mlocator(\u001b[32m'.plot-option-btn'\u001b[39m)\u001b[33m.\u001b[39mcount()\u001b[33m;\u001b[39m\n\u001b[31m\u001b[1m>\u001b[22m\u001b[39m\u001b[90m 105 |\u001b[39m     expect(weatherCount)\u001b[33m.\u001b[39mtoBe(\u001b[35m8\u001b[39m)\u001b[33m;\u001b[39m\n \u001b[90m     |\u001b[39m                          \u001b[31m\u001b[1m^\u001b[22m\u001b[39m\n \u001b[90m 106 |\u001b[39m     \n \u001b[90m 107 |\u001b[39m     \u001b[36mconst\u001b[39m adventureTypeOptions \u001b[33m=\u001b[39m \u001b[36mawait\u001b[39m page\u001b[33m.\u001b[39mlocator(\u001b[32m'#adventureTypeOptions'\u001b[39m)\u001b[33m;\u001b[39m\n \u001b[90m 108 |\u001b[39m     \u001b[36mconst\u001b[39m adventureCount \u001b[33m=\u001b[39m \u001b[36mawait\u001b[39m adventureTypeOptions\u001b[33m.\u001b[39mlocator(\u001b[32m'.plot-option-btn'\u001b[39m)\u001b[33m.\u001b[39mcount()\u001b[33m;\u001b[39m\u001b[0m\n\u001b[2m    at C:\\Users\\yannis\\Documents\\trae_projects\\lego_job\\tests\\e2e\\book.spec.js:105:26\u001b[22m"
+                        },
+                        {
+                          "location": {
+                            "file": "C:\\Users\\yannis\\Documents\\trae_projects\\lego_job\\tests\\e2e\\book.spec.js",
+                            "column": 26,
+                            "line": 93
+                          },
+                          "message": "Error: \u001b[2mexpect(\u001b[22m\u001b[31mlocator\u001b[39m\u001b[2m).\u001b[22mtoBeVisible\u001b[2m(\u001b[22m\u001b[2m)\u001b[22m failed\n\nLocator: locator('#chapterCharacterModal')\nExpected: visible\nError: element(s) not found\n\nCall log:\n\u001b[2m  - Expect \"toBeVisible\" with timeout 5000ms\u001b[22m\n\u001b[2m  - waiting for locator('#chapterCharacterModal')\u001b[22m\n\n\n\u001b[0m \u001b[90m 91 |\u001b[39m     \n \u001b[90m 92 |\u001b[39m     \u001b[36mconst\u001b[39m chapterModal \u001b[33m=\u001b[39m \u001b[36mawait\u001b[39m page\u001b[33m.\u001b[39mlocator(\u001b[32m'#chapterCharacterModal'\u001b[39m)\u001b[33m;\u001b[39m\n\u001b[31m\u001b[1m>\u001b[22m\u001b[39m\u001b[90m 93 |\u001b[39m     expect(chapterModal)\u001b[33m.\u001b[39mtoBeVisible()\u001b[33m;\u001b[39m\n \u001b[90m    |\u001b[39m                          \u001b[31m\u001b[1m^\u001b[22m\u001b[39m\n \u001b[90m 94 |\u001b[39m     \n \u001b[90m 95 |\u001b[39m     \u001b[36mconst\u001b[39m confirmChapterChars \u001b[33m=\u001b[39m \u001b[36mawait\u001b[39m page\u001b[33m.\u001b[39mlocator(\u001b[32m'#confirmChapterChars'\u001b[39m)\u001b[33m;\u001b[39m\n \u001b[90m 96 |\u001b[39m     expect(chapterModal)\u001b[33m.\u001b[39mtoBeVisible()\u001b[33m;\u001b[39m\u001b[0m\n\u001b[2m    at C:\\Users\\yannis\\Documents\\trae_projects\\lego_job\\tests\\e2e\\book.spec.js:93:26\u001b[22m"
+                        }
+                      ],
                       "stdout": [],
                       "stderr": [],
                       "retry": 0,
-                      "startTime": "2026-02-24T09:27:50.419Z",
+                      "startTime": "2026-02-24T10:49:53.949Z",
                       "annotations": [],
-                      "attachments": []
+                      "attachments": [
+                        {
+                          "name": "screenshot",
+                          "contentType": "image/png",
+                          "path": "C:\\Users\\yannis\\Documents\\trae_projects\\lego_job\\test-results\\book-情节选择功能测试-每个维度应该显示8个选项-chromium\\test-failed-1.png"
+                        },
+                        {
+                          "name": "error-context",
+                          "contentType": "text/markdown",
+                          "path": "C:\\Users\\yannis\\Documents\\trae_projects\\lego_job\\test-results\\book-情节选择功能测试-每个维度应该显示8个选项-chromium\\error-context.md"
+                        }
+                      ],
+                      "errorLocation": {
+                        "file": "C:\\Users\\yannis\\Documents\\trae_projects\\lego_job\\tests\\e2e\\book.spec.js",
+                        "column": 26,
+                        "line": 105
+                      }
                     }
                   ],
-                  "status": "expected"
+                  "status": "unexpected"
                 }
               ],
-              "id": "a510cc93a867214a2ea0-188e5b1abe6d63d14ec6",
-              "file": "app.spec.js",
-              "line": 276,
+              "id": "a23a6e98a7c77929248d-8c305946df95cdfcdc66",
+              "file": "book.spec.js",
+              "line": 79,
               "column": 3
             },
             {
-              "title": "谜题选项应该可以点击",
-              "ok": true,
+              "title": "点击选项应该高亮显示",
+              "ok": false,
               "tags": [],
               "tests": [
                 {
@@ -198,93 +301,68 @@
                   "projectName": "chromium",
                   "results": [
                     {
-                      "workerIndex": 0,
+                      "workerIndex": 3,
                       "parallelIndex": 0,
-                      "status": "passed",
-                      "duration": 4779,
-                      "errors": [],
+                      "status": "failed",
+                      "duration": 6851,
+                      "error": {
+                        "message": "Error: \u001b[2mexpect(\u001b[22m\u001b[31mreceived\u001b[39m\u001b[2m).\u001b[22mtoBe\u001b[2m(\u001b[22m\u001b[32mexpected\u001b[39m\u001b[2m) // Object.is equality\u001b[22m\n\nExpected: \u001b[32m1\u001b[39m\nReceived: \u001b[31m0\u001b[39m",
+                        "stack": "Error: \u001b[2mexpect(\u001b[22m\u001b[31mreceived\u001b[39m\u001b[2m).\u001b[22mtoBe\u001b[2m(\u001b[22m\u001b[32mexpected\u001b[39m\u001b[2m) // Object.is equality\u001b[22m\n\nExpected: \u001b[32m1\u001b[39m\nReceived: \u001b[31m0\u001b[39m\n    at C:\\Users\\yannis\\Documents\\trae_projects\\lego_job\\tests\\e2e\\book.spec.js:146:26",
+                        "location": {
+                          "file": "C:\\Users\\yannis\\Documents\\trae_projects\\lego_job\\tests\\e2e\\book.spec.js",
+                          "column": 26,
+                          "line": 146
+                        },
+                        "snippet": "\u001b[0m \u001b[90m 144 |\u001b[39m     \u001b[36mconst\u001b[39m weatherOptions \u001b[33m=\u001b[39m \u001b[36mawait\u001b[39m page\u001b[33m.\u001b[39mlocator(\u001b[32m'#weatherOptions'\u001b[39m)\u001b[33m;\u001b[39m\n \u001b[90m 145 |\u001b[39m     \u001b[36mconst\u001b[39m weatherCount \u001b[33m=\u001b[39m \u001b[36mawait\u001b[39m weatherOptions\u001b[33m.\u001b[39mlocator(\u001b[32m'.plot-option-btn.selected'\u001b[39m)\u001b[33m.\u001b[39mcount()\u001b[33m;\u001b[39m\n\u001b[31m\u001b[1m>\u001b[22m\u001b[39m\u001b[90m 146 |\u001b[39m     expect(weatherCount)\u001b[33m.\u001b[39mtoBe(\u001b[35m1\u001b[39m)\u001b[33m;\u001b[39m\n \u001b[90m     |\u001b[39m                          \u001b[31m\u001b[1m^\u001b[22m\u001b[39m\n \u001b[90m 147 |\u001b[39m     \n \u001b[90m 148 |\u001b[39m     \u001b[36mconst\u001b[39m adventureTypeOptions \u001b[33m=\u001b[39m \u001b[36mawait\u001b[39m page\u001b[33m.\u001b[39mlocator(\u001b[32m'#adventureTypeOptions'\u001b[39m)\u001b[33m;\u001b[39m\n \u001b[90m 149 |\u001b[39m     \u001b[36mconst\u001b[39m adventureCount \u001b[33m=\u001b[39m \u001b[36mawait\u001b[39m adventureTypeOptions\u001b[33m.\u001b[39mlocator(\u001b[32m'.plot-option-btn.selected'\u001b[39m)\u001b[33m.\u001b[39mcount()\u001b[33m;\u001b[39m\u001b[0m"
+                      },
+                      "errors": [
+                        {
+                          "location": {
+                            "file": "C:\\Users\\yannis\\Documents\\trae_projects\\lego_job\\tests\\e2e\\book.spec.js",
+                            "column": 26,
+                            "line": 146
+                          },
+                          "message": "Error: \u001b[2mexpect(\u001b[22m\u001b[31mreceived\u001b[39m\u001b[2m).\u001b[22mtoBe\u001b[2m(\u001b[22m\u001b[32mexpected\u001b[39m\u001b[2m) // Object.is equality\u001b[22m\n\nExpected: \u001b[32m1\u001b[39m\nReceived: \u001b[31m0\u001b[39m\n\n\u001b[0m \u001b[90m 144 |\u001b[39m     \u001b[36mconst\u001b[39m weatherOptions \u001b[33m=\u001b[39m \u001b[36mawait\u001b[39m page\u001b[33m.\u001b[39mlocator(\u001b[32m'#weatherOptions'\u001b[39m)\u001b[33m;\u001b[39m\n \u001b[90m 145 |\u001b[39m     \u001b[36mconst\u001b[39m weatherCount \u001b[33m=\u001b[39m \u001b[36mawait\u001b[39m weatherOptions\u001b[33m.\u001b[39mlocator(\u001b[32m'.plot-option-btn.selected'\u001b[39m)\u001b[33m.\u001b[39mcount()\u001b[33m;\u001b[39m\n\u001b[31m\u001b[1m>\u001b[22m\u001b[39m\u001b[90m 146 |\u001b[39m     expect(weatherCount)\u001b[33m.\u001b[39mtoBe(\u001b[35m1\u001b[39m)\u001b[33m;\u001b[39m\n \u001b[90m     |\u001b[39m                          \u001b[31m\u001b[1m^\u001b[22m\u001b[39m\n \u001b[90m 147 |\u001b[39m     \n \u001b[90m 148 |\u001b[39m     \u001b[36mconst\u001b[39m adventureTypeOptions \u001b[33m=\u001b[39m \u001b[36mawait\u001b[39m page\u001b[33m.\u001b[39mlocator(\u001b[32m'#adventureTypeOptions'\u001b[39m)\u001b[33m;\u001b[39m\n \u001b[90m 149 |\u001b[39m     \u001b[36mconst\u001b[39m adventureCount \u001b[33m=\u001b[39m \u001b[36mawait\u001b[39m adventureTypeOptions\u001b[33m.\u001b[39mlocator(\u001b[32m'.plot-option-btn.selected'\u001b[39m)\u001b[33m.\u001b[39mcount()\u001b[33m;\u001b[39m\u001b[0m\n\u001b[2m    at C:\\Users\\yannis\\Documents\\trae_projects\\lego_job\\tests\\e2e\\book.spec.js:146:26\u001b[22m"
+                        },
+                        {
+                          "location": {
+                            "file": "C:\\Users\\yannis\\Documents\\trae_projects\\lego_job\\tests\\e2e\\book.spec.js",
+                            "column": 26,
+                            "line": 134
+                          },
+                          "message": "Error: \u001b[2mexpect(\u001b[22m\u001b[31mlocator\u001b[39m\u001b[2m).\u001b[22mtoBeVisible\u001b[2m(\u001b[22m\u001b[2m)\u001b[22m failed\n\nLocator: locator('#chapterCharacterModal')\nExpected: visible\nError: element(s) not found\n\nCall log:\n\u001b[2m  - Expect \"toBeVisible\" with timeout 5000ms\u001b[22m\n\u001b[2m  - waiting for locator('#chapterCharacterModal')\u001b[22m\n\n\n\u001b[0m \u001b[90m 132 |\u001b[39m     \n \u001b[90m 133 |\u001b[39m     \u001b[36mconst\u001b[39m chapterModal \u001b[33m=\u001b[39m \u001b[36mawait\u001b[39m page\u001b[33m.\u001b[39mlocator(\u001b[32m'#chapterCharacterModal'\u001b[39m)\u001b[33m;\u001b[39m\n\u001b[31m\u001b[1m>\u001b[22m\u001b[39m\u001b[90m 134 |\u001b[39m     expect(chapterModal)\u001b[33m.\u001b[39mtoBeVisible()\u001b[33m;\u001b[39m\n \u001b[90m     |\u001b[39m                          \u001b[31m\u001b[1m^\u001b[22m\u001b[39m\n \u001b[90m 135 |\u001b[39m     \n \u001b[90m 136 |\u001b[39m     \u001b[36mconst\u001b[39m confirmChapterChars \u001b[33m=\u001b[39m \u001b[36mawait\u001b[39m page\u001b[33m.\u001b[39mlocator(\u001b[32m'#confirmChapterChars'\u001b[39m)\u001b[33m;\u001b[39m\n \u001b[90m 137 |\u001b[39m     expect(chapterModal)\u001b[33m.\u001b[39mtoBeVisible()\u001b[33m;\u001b[39m\u001b[0m\n\u001b[2m    at C:\\Users\\yannis\\Documents\\trae_projects\\lego_job\\tests\\e2e\\book.spec.js:134:26\u001b[22m"
+                        }
+                      ],
                       "stdout": [],
                       "stderr": [],
                       "retry": 0,
-                      "startTime": "2026-02-24T09:27:55.188Z",
+                      "startTime": "2026-02-24T10:50:02.826Z",
                       "annotations": [],
-                      "attachments": []
+                      "attachments": [
+                        {
+                          "name": "screenshot",
+                          "contentType": "image/png",
+                          "path": "C:\\Users\\yannis\\Documents\\trae_projects\\lego_job\\test-results\\book-情节选择功能测试-点击选项应该高亮显示-chromium\\test-failed-1.png"
+                        },
+                        {
+                          "name": "error-context",
+                          "contentType": "text/markdown",
+                          "path": "C:\\Users\\yannis\\Documents\\trae_projects\\lego_job\\test-results\\book-情节选择功能测试-点击选项应该高亮显示-chromium\\error-context.md"
+                        }
+                      ],
+                      "errorLocation": {
+                        "file": "C:\\Users\\yannis\\Documents\\trae_projects\\lego_job\\tests\\e2e\\book.spec.js",
+                        "column": 26,
+                        "line": 146
+                      }
                     }
                   ],
-                  "status": "expected"
+                  "status": "unexpected"
                 }
               ],
-              "id": "a510cc93a867214a2ea0-3093168f498decc2f5b1",
-              "file": "app.spec.js",
-              "line": 289,
-              "column": 3
-            },
-            {
-              "title": "答错后应该显示提示",
-              "ok": true,
-              "tags": [],
-              "tests": [
-                {
-                  "timeout": 30000,
-                  "annotations": [],
-                  "expectedStatus": "passed",
-                  "projectId": "chromium",
-                  "projectName": "chromium",
-                  "results": [
-                    {
-                      "workerIndex": 0,
-                      "parallelIndex": 0,
-                      "status": "passed",
-                      "duration": 4934,
-                      "errors": [],
-                      "stdout": [],
-                      "stderr": [],
-                      "retry": 0,
-                      "startTime": "2026-02-24T09:27:59.982Z",
-                      "annotations": [],
-                      "attachments": []
-                    }
-                  ],
-                  "status": "expected"
-                }
-              ],
-              "id": "a510cc93a867214a2ea0-2e41b469810a3b78a5a1",
-              "file": "app.spec.js",
-              "line": 305,
-              "column": 3
-            },
-            {
-              "title": "第3次错误后应该显示温和惩罚",
-              "ok": true,
-              "tags": [],
-              "tests": [
-                {
-                  "timeout": 30000,
-                  "annotations": [],
-                  "expectedStatus": "passed",
-                  "projectId": "chromium",
-                  "projectName": "chromium",
-                  "results": [
-                    {
-                      "workerIndex": 0,
-                      "parallelIndex": 0,
-                      "status": "passed",
-                      "duration": 4738,
-                      "errors": [],
-                      "stdout": [],
-                      "stderr": [],
-                      "retry": 0,
-                      "startTime": "2026-02-24T09:28:04.930Z",
-                      "annotations": [],
-                      "attachments": []
-                    }
-                  ],
-                  "status": "expected"
-                }
-              ],
-              "id": "a510cc93a867214a2ea0-965fb99e50b102c6c3f7",
-              "file": "app.spec.js",
-              "line": 326,
+              "id": "a23a6e98a7c77929248d-70bc4086db1c4998725b",
+              "file": "book.spec.js",
+              "line": 120,
               "column": 3
             }
           ]
@@ -294,11 +372,11 @@
   ],
   "errors": [],
   "stats": {
-    "startTime": "2026-02-24T09:27:39.787Z",
-    "duration": 30189.086,
-    "expected": 6,
+    "startTime": "2026-02-24T10:49:34.238Z",
+    "duration": 35954.837,
+    "expected": 0,
     "skipped": 0,
-    "unexpected": 0,
+    "unexpected": 4,
     "flaky": 0
   }
 }

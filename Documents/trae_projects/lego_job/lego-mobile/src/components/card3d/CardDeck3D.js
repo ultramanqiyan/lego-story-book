@@ -1,5 +1,5 @@
 /**
- * CardDeck3D组件 - 3D卡牌组，带扇形展开和堆叠效果
+ * CardDeck3D组件 - 3D卡牌组，带扇形展开和堆叠效果（网页端风格）
  */
 
 import React, { useEffect, useCallback } from 'react';
@@ -12,10 +12,12 @@ import Animated, {
   withDelay,
   interpolate,
   Extrapolate,
+  withRepeat,
+  withSequence,
 } from 'react-native-reanimated';
 import Card3D from './Card3D';
 import { COLORS } from '../../utils/constants';
-import { CARD_3D_CONFIG, EASINGS, calculateFanAngle } from '../../utils/animations';
+import { CARD_3D_CONFIG, EASINGS, calculateFanPosition } from '../../utils/animations';
 
 const { width: SCREEN_WIDTH } = Dimensions.get('window');
 
@@ -32,76 +34,77 @@ const CardDeck3D = ({
   enableFanSpread = true,
   stackOffset = CARD_3D_CONFIG.stackOffset,
 }) => {
-  // 展开状态
   const isExpanded = useSharedValue(false);
   const containerScale = useSharedValue(1);
 
-  // 初始化展开动画
   useEffect(() => {
-    // 延迟展开，营造神秘感
-    const timer = setTimeout(() => {
-      isExpanded.value = withTiming(1, {
-        duration: CARD_3D_CONFIG.spreadDuration,
-        easing: EASINGS.bounceSoft,
-      });
-    }, 300);
+    if (enableFanSpread) {
+      const timer = setTimeout(() => {
+        isExpanded.value = withTiming(1, {
+          duration: CARD_3D_CONFIG.spreadDuration,
+          easing: EASINGS.bounceSoft,
+        });
+      }, 300);
+      return () => clearTimeout(timer);
+    }
+  }, [items.length, enableFanSpread]);
 
-    return () => clearTimeout(timer);
-  }, [items.length]);
-
-  // 获取图标
   const getIcon = (item, index) => {
     if (item[iconKey]) return item[iconKey];
     if (emoji) return emoji[index % emoji.length];
     return ['🎭', '🎨', '🎪', '🎯', '🎲', '🎸'][index % 6];
   };
 
-  // 处理选择
   const handleSelect = useCallback((id) => {
     onSelect?.(id);
   }, [onSelect]);
 
-  // 计算卡片位置样式
   const getCardAnimatedStyle = (index, total) => {
     return useAnimatedStyle(() => {
-      const fanAngle = calculateFanAngle(index, total, CARD_3D_CONFIG.fanAngle);
+      const isSelected = selectedId === items[index]?.id;
+
+      const fanPosition = calculateFanPosition(
+        index,
+        total,
+        CARD_3D_CONFIG.fanAngle,
+        CARD_3D_CONFIG.fanRadius
+      );
+
       const rotateZ = interpolate(
         isExpanded.value,
         [0, 1],
-        [0, fanAngle],
+        [0, fanPosition.angle],
         Extrapolate.CLAMP
       );
 
-      // 堆叠时的偏移
-      const stackX = index * stackOffset;
-      const stackY = index * stackOffset * 0.5;
-
-      // 展开时的位置
-      const spreadX = interpolate(
+      const translateX = interpolate(
         isExpanded.value,
         [0, 1],
-        [stackX, Math.sin((fanAngle * Math.PI) / 180) * 40],
+        [index * stackOffset, fanPosition.translateX],
         Extrapolate.CLAMP
       );
 
-      const spreadY = interpolate(
+      const translateY = interpolate(
         isExpanded.value,
         [0, 1],
-        [stackY, -Math.abs(fanAngle) * 0.3],
+        [index * stackOffset * 0.5, fanPosition.translateY],
         Extrapolate.CLAMP
       );
 
-      // 选中时的提升
-      const isSelected = selectedId === items[index]?.id;
       const elevation = isSelected
         ? interpolate(isExpanded.value, [0, 1], [0, CARD_3D_CONFIG.selectElevation])
         : 0;
 
+      const scale = isSelected
+        ? interpolate(isExpanded.value, [0, 1], [1, 1.25])
+        : interpolate(isExpanded.value, [0, 1], [1, 1]);
+
       return {
         transform: [
-          { translateX: spreadX },
-          { translateY: spreadY - elevation },
+          { translateX },
+          { translateY: translateY - elevation },
           { rotateZ: `${rotateZ}deg` },
+          { scale },
         ],
         zIndex: isSelected ? 100 : index,
       };
@@ -127,7 +130,6 @@ const CardDeck3D = ({
           {title}
         </Animated.Text>
       )}
-
       <View style={styles.deckContainer}>
         {items.map((item, index) => {
           const isSelected = selectedId === item.id;
@@ -154,7 +156,6 @@ const CardDeck3D = ({
         })}
       </View>
 
-      {/* 装饰性元素 */}
       <View style={styles.decorations}>
         <View style={[styles.decorationDot, styles.dot1]} />
         <View style={[styles.decorationDot, styles.dot2]} />
@@ -179,7 +180,7 @@ const styles = StyleSheet.create({
   deckContainer: {
     flexDirection: 'row',
     justifyContent: 'center',
-    alignItems: 'center',
+    alignItems: 'flex-end',
     height: 140,
     position: 'relative',
   },

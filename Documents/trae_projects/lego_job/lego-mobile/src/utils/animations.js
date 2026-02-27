@@ -38,6 +38,9 @@ export const CARD_3D_CONFIG = {
   stackOffset: 2,
   spreadDuration: 400,
   selectElevation: 20,
+  fanRadius: 80,
+  fanSpreadX: 45,
+  fanSpreadY: 25,
 };
 
 // ============ 天气特效配置 ============
@@ -139,29 +142,25 @@ export const MICRO_INTERACTION_CONFIG = {
 };
 
 // ============ 动画工具函数 ============
-
 /**
  * 生成随机数
  */
 export const random = (min, max) => Math.random() * (max - min) + min;
-
 /**
  * 生成随机整数
  */
 export const randomInt = (min, max) => Math.floor(Math.random() * (max - min + 1)) + min;
-
 /**
  * 从数组中随机选择
  */
 export const randomChoice = (arr) => arr[Math.floor(Math.random() * arr.length)];
-
 /**
  * 生成粒子初始配置
  */
 export const generateParticleConfig = (type = 'magic', index = 0) => {
   const config = PARTICLES_CONFIG[type];
-  const screenWidth = 400; // 默认屏幕宽度
-  const screenHeight = 800; // 默认屏幕高度
+  const screenWidth = 400;
+  const screenHeight = 800;
 
   return {
     id: `particle_${type}_${index}_${Date.now()}`,
@@ -238,6 +237,24 @@ export const calculateFanAngle = (index, total, fanAngle = 60) => {
 };
 
 /**
+ * 计算扇形卡牌位置（网页端风格）
+ * 使用三角函数计算卡片在扇形中的位置
+ */
+export const calculateFanPosition = (index, total, fanAngle = 60, radius = 80) => {
+  const startAngle = -fanAngle / 2;
+  const angleStep = total > 1 ? fanAngle / (total - 1) : 0;
+  const angleDeg = startAngle + index * angleStep;
+  const angleRad = (angleDeg * Math.PI) / 180;
+
+  return {
+    angle: angleDeg,
+    translateX: Math.sin(angleRad) * radius,
+    translateY: -Math.abs(Math.cos(angleRad) * radius * 0.3),
+    zIndex: index,
+  };
+};
+
+/**
  * 防抖函数
  */
 export const debounce = (func, wait) => {
@@ -281,6 +298,7 @@ export default {
   generateSnowFlakeConfig,
   calculateTiltAngle,
   calculateFanAngle,
+  calculateFanPosition,
   debounce,
   throttle,
 };
