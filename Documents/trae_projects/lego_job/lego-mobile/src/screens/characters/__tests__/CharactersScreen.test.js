@@ -20,20 +20,18 @@ jest.mock('../../../utils/storage', () => ({
   },
 }));
 
-const mockCharactersAPI = {
-  getList: jest.fn(() => Promise.resolve({
-    characters: [
-      { character_id: '1', name: '角色1', description: '描述1', creator_id: 'system', personality: '勇敢', speaking_style: '幽默' },
-      { character_id: '2', name: '角色2', description: '描述2', creator_id: 'user', personality: '聪明', speaking_style: '严肃' },
-    ]
-  })),
-  create: jest.fn(() => Promise.resolve({ success: true, characterId: 'new-char-id' })),
-  update: jest.fn(() => Promise.resolve({ success: true })),
-  delete: jest.fn(() => Promise.resolve({ success: true })),
-};
-
 jest.mock('../../../api', () => ({
-  charactersAPI: mockCharactersAPI,
+  charactersAPI: {
+    getList: jest.fn(() => Promise.resolve({
+      characters: [
+        { character_id: '1', name: '角色1', description: '描述1', creator_id: 'system', personality: '勇敢', speaking_style: '幽默' },
+        { character_id: '2', name: '角色2', description: '描述2', creator_id: 'user', personality: '聪明', speaking_style: '严肃' },
+      ]
+    })),
+    create: jest.fn(() => Promise.resolve({ success: true, characterId: 'new-char-id' })),
+    update: jest.fn(() => Promise.resolve({ success: true })),
+    delete: jest.fn(() => Promise.resolve({ success: true })),
+  },
 }));
 
 jest.mock('../../../context/AuthContext', () => ({
@@ -67,12 +65,6 @@ const renderWithProviders = (component) => {
 describe('CharactersScreen', () => {
   beforeEach(() => {
     jest.clearAllMocks();
-    mockCharactersAPI.getList.mockResolvedValue({
-      characters: [
-        { character_id: '1', name: '角色1', description: '描述1', creator_id: 'system', personality: '勇敢', speaking_style: '幽默' },
-        { character_id: '2', name: '角色2', description: '描述2', creator_id: 'user', personality: '聪明', speaking_style: '严肃' },
-      ]
-    });
   });
 
   describe('初始渲染', () => {
@@ -89,11 +81,48 @@ describe('CharactersScreen', () => {
         expect(getByText(/当前页面: CharactersScreen/)).toBeTruthy();
       }, { timeout: 5000 });
     });
+
+    it('应该显示创建按钮', async () => {
+      const { getByText } = renderWithProviders(<CharactersScreen navigation={mockNavigation} />);
+      await waitFor(() => {
+        expect(getByText(/创建/)).toBeTruthy();
+      }, { timeout: 5000 });
+    });
+
+    it('应该显示角色列表', async () => {
+      const { getByText } = renderWithProviders(<CharactersScreen navigation={mockNavigation} />);
+      await waitFor(() => {
+        expect(getByText('角色1')).toBeTruthy();
+        expect(getByText('角色2')).toBeTruthy();
+      }, { timeout: 5000 });
+    });
+
+    it('应该显示角色描述', async () => {
+      const { getByText } = renderWithProviders(<CharactersScreen navigation={mockNavigation} />);
+      await waitFor(() => {
+        expect(getByText('描述1')).toBeTruthy();
+        expect(getByText('描述2')).toBeTruthy();
+      }, { timeout: 5000 });
+    });
+  });
+
+  describe('创建角色', () => {
+    it('点击创建按钮应该打开表单弹窗', async () => {
+      const { getByText } = renderWithProviders(<CharactersScreen navigation={mockNavigation} />);
+      await waitFor(() => {
+        expect(getByText(/创建/)).toBeTruthy();
+      }, { timeout: 5000 });
+      fireEvent.press(getByText(/创建/));
+      await waitFor(() => {
+        expect(getByText(/创建新角色/)).toBeTruthy();
+      }, { timeout: 5000 });
+    });
   });
 
   describe('空状态', () => {
     it('应该显示空状态当没有角色时', async () => {
-      mockCharactersAPI.getList.mockResolvedValueOnce({ characters: [] });
+      const { charactersAPI } = require('../../../api');
+      charactersAPI.getList.mockResolvedValueOnce({ characters: [] });
       const { getByText } = renderWithProviders(<CharactersScreen navigation={mockNavigation} />);
       await waitFor(() => {
         expect(getByText('还没有角色')).toBeTruthy();
@@ -103,7 +132,8 @@ describe('CharactersScreen', () => {
 
   describe('API错误处理', () => {
     it('应该处理加载失败', async () => {
-      mockCharactersAPI.getList.mockRejectedValueOnce(new Error('网络错误'));
+      const { charactersAPI } = require('../../../api');
+      charactersAPI.getList.mockRejectedValueOnce(new Error('网络错误'));
       const { getByText } = renderWithProviders(<CharactersScreen navigation={mockNavigation} />);
       await waitFor(() => {
         expect(getByText('🎭 角色收集')).toBeTruthy();

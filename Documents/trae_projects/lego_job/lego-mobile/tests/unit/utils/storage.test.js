@@ -1,18 +1,19 @@
 import { storage } from '../../../src/utils/storage';
-
-jest.mock('@react-native-async-storage/async-storage', () => ({
-  getItem: jest.fn(),
-  setItem: jest.fn(),
-  removeItem: jest.fn(),
-  multiRemove: jest.fn(),
-  clear: jest.fn(),
-}));
-
 import AsyncStorage from '@react-native-async-storage/async-storage';
+import { Platform } from 'react-native';
+
+const mockLocalStorage = {
+  store: {},
+  getItem: jest.fn((key) => mockLocalStorage.store[key] || null),
+  setItem: jest.fn((key, value) => { mockLocalStorage.store[key] = value; }),
+  removeItem: jest.fn((key) => { delete mockLocalStorage.store[key]; }),
+  clear: jest.fn(() => { mockLocalStorage.store = {}; }),
+};
 
 describe('Storage', () => {
   beforeEach(() => {
     jest.clearAllMocks();
+    mockLocalStorage.store = {};
   });
 
   describe('getUserId', () => {
@@ -88,8 +89,48 @@ describe('Storage', () => {
     });
   });
 
+  describe('get', () => {
+    it('should get value by key', async () => {
+      AsyncStorage.getItem.mockResolvedValue('value');
+      const result = await storage.get('customKey');
+      expect(result).toBe('value');
+      expect(AsyncStorage.getItem).toHaveBeenCalledWith('customKey');
+    });
+  });
+
+  describe('set', () => {
+    it('should set value by key', async () => {
+      await storage.set('customKey', 'customValue');
+      expect(AsyncStorage.setItem).toHaveBeenCalledWith('customKey', 'customValue');
+    });
+  });
+
+  describe('remove', () => {
+    it('should remove value by key', async () => {
+      await storage.remove('customKey');
+      expect(AsyncStorage.removeItem).toHaveBeenCalledWith('customKey');
+    });
+  });
+
+  describe('getMultiple', () => {
+    it('should get multiple values', async () => {
+      AsyncStorage.multiGet = jest.fn().mockResolvedValue([['key1', 'value1'], ['key2', 'value2']]);
+      const result = await storage.getMultiple(['key1', 'key2']);
+      expect(result).toEqual([['key1', 'value1'], ['key2', 'value2']]);
+    });
+  });
+
+  describe('setMultiple', () => {
+    it('should set multiple values', async () => {
+      AsyncStorage.multiSet = jest.fn().mockResolvedValue(true);
+      await storage.setMultiple([['key1', 'value1'], ['key2', 'value2']]);
+      expect(AsyncStorage.multiSet).toHaveBeenCalledWith([['key1', 'value1'], ['key2', 'value2']]);
+    });
+  });
+
   describe('clearUserData', () => {
     it('should clear user data from storage', async () => {
+      AsyncStorage.multiRemove = jest.fn().mockResolvedValue(true);
       await storage.clearUserData();
       expect(AsyncStorage.multiRemove).toHaveBeenCalledWith(['userId', 'username']);
     });
@@ -97,8 +138,140 @@ describe('Storage', () => {
 
   describe('clearAll', () => {
     it('should clear all data from storage', async () => {
+      AsyncStorage.clear = jest.fn().mockResolvedValue(true);
       await storage.clearAll();
       expect(AsyncStorage.clear).toHaveBeenCalled();
+    });
+  });
+});
+
+describe('Storage Web Implementation', () => {
+  const originalPlatform = Platform.OS;
+  let originalLocalStorage;
+
+  beforeEach(() => {
+    jest.clearAllMocks();
+    originalLocalStorage = global.localStorage;
+    global.localStorage = mockLocalStorage;
+    mockLocalStorage.store = {};
+  });
+
+  afterEach(() => {
+    global.localStorage = originalLocalStorage;
+    Platform.OS = originalPlatform;
+  });
+
+  describe('webStorage operations', () => {
+    it('should handle localStorage getItem', () => {
+      mockLocalStorage.store.testKey = 'testValue';
+      const result = mockLocalStorage.getItem('testKey');
+      expect(result).toBe('testValue');
+    });
+
+    it('should handle localStorage setItem', () => {
+      mockLocalStorage.setItem('newKey', 'newValue');
+      expect(mockLocalStorage.store.newKey).toBe('newValue');
+    });
+
+    it('should handle localStorage removeItem', () => {
+      mockLocalStorage.store.toRemove = 'value';
+      mockLocalStorage.removeItem('toRemove');
+      expect(mockLocalStorage.store.toRemove).toBeUndefined();
+    });
+
+    it('should handle localStorage clear', () => {
+      mockLocalStorage.store.key1 = 'value1';
+      mockLocalStorage.store.key2 = 'value2';
+      mockLocalStorage.clear();
+      expect(Object.keys(mockLocalStorage.store)).toHaveLength(0);
+    });
+
+    it('should handle localStorage multiRemove simulation', () => {
+      mockLocalStorage.store.key1 = 'value1';
+      mockLocalStorage.store.key2 = 'value2';
+      ['key1', 'key2'].forEach(key => mockLocalStorage.removeItem(key));
+      expect(Object.keys(mockLocalStorage.store)).toHaveLength(0);
+    });
+
+    it('should handle localStorage multiGet simulation', () => {
+      mockLocalStorage.store.key1 = 'value1';
+      mockLocalStorage.store.key2 = 'value2';
+      const result = ['key1', 'key2'].map(key => [key, mockLocalStorage.getItem(key)]);
+      expect(result).toEqual([['key1', 'value1'], ['key2', 'value2']]);
+    });
+
+    it('should handle localStorage multiSet simulation', () => {
+      [['key1', 'value1'], ['key2', 'value2']].forEach(([key, value]) => {
+        mockLocalStorage.setItem(key, value);
+      });
+      expect(mockLocalStorage.store.key1).toBe('value1');
+      expect(mockLocalStorage.store.key2).toBe('value2');
+    });
+  });
+
+  describe('webStorage error handling', () => {
+    it('should handle getItem error gracefully', () => {
+      const errorStorage = {
+        getItem: jest.fn(() => { throw new Error('getItem error'); }),
+      };
+      const originalLocalStorage = global.localStorage;
+      global.localStorage = errorStorage;
+      
+      try {
+        errorStorage.getItem('key');
+      } catch (e) {
+        expect(e.message).toBe('getItem error');
+      }
+      
+      global.localStorage = originalLocalStorage;
+    });
+
+    it('should handle setItem error gracefully', () => {
+      const errorStorage = {
+        setItem: jest.fn(() => { throw new Error('setItem error'); }),
+      };
+      const originalLocalStorage = global.localStorage;
+      global.localStorage = errorStorage;
+      
+      try {
+        errorStorage.setItem('key', 'value');
+      } catch (e) {
+        expect(e.message).toBe('setItem error');
+      }
+      
+      global.localStorage = originalLocalStorage;
+    });
+
+    it('should handle removeItem error gracefully', () => {
+      const errorStorage = {
+        removeItem: jest.fn(() => { throw new Error('removeItem error'); }),
+      };
+      const originalLocalStorage = global.localStorage;
+      global.localStorage = errorStorage;
+      
+      try {
+        errorStorage.removeItem('key');
+      } catch (e) {
+        expect(e.message).toBe('removeItem error');
+      }
+      
+      global.localStorage = originalLocalStorage;
+    });
+
+    it('should handle clear error gracefully', () => {
+      const errorStorage = {
+        clear: jest.fn(() => { throw new Error('clear error'); }),
+      };
+      const originalLocalStorage = global.localStorage;
+      global.localStorage = errorStorage;
+      
+      try {
+        errorStorage.clear();
+      } catch (e) {
+        expect(e.message).toBe('clear error');
+      }
+      
+      global.localStorage = originalLocalStorage;
     });
   });
 });

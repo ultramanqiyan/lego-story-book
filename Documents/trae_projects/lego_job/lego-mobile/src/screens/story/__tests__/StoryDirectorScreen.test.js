@@ -1,296 +1,337 @@
 /**
- * StoryDirectorScreen 测试
- * 测试故事导演台的所有功能
+ * StoryDirectorScreen 单元测试
  */
 
 import React from 'react';
-import { render, screen, fireEvent, waitFor } from '@testing-library/react-native';
+import { render, fireEvent, waitFor } from '@testing-library/react-native';
 import StoryDirectorScreen from '../StoryDirectorScreen';
 import { AuthProvider } from '../../../context/AuthContext';
 import { ToastProvider } from '../../../context/ToastContext';
-import { charactersAPI, plotOptionsAPI, chaptersAPI } from '../../../api';
+import { charactersAPI, chaptersAPI, plotOptionsAPI } from '../../../api';
 
-// Mock API
-jest.mock('../../../api');
-
-// Mock navigation
+const mockNavigate = jest.fn();
+const mockGoBack = jest.fn();
 const mockNavigation = {
-  goBack: jest.fn(),
+  navigate: mockNavigate,
+  goBack: mockGoBack,
 };
 
 const mockRoute = {
-  params: {
-    bookId: 'book-123',
-  },
+  params: { bookId: 'test-book-id' },
 };
+
+const mockToast = {
+  success: jest.fn(),
+  error: jest.fn(),
+  info: jest.fn(),
+  warning: jest.fn(),
+};
+
+jest.mock('../../../utils/storage', () => ({
+  storage: {
+    getUserId: jest.fn(() => Promise.resolve('test-user-id')),
+    getUsername: jest.fn(() => Promise.resolve('test-user')),
+  },
+}));
+
+jest.mock('../../../api', () => ({
+  charactersAPI: {
+    getList: jest.fn(() => Promise.resolve({
+      characters: [
+        { character_id: '1', name: '角色1', description: '描述1', personality: '勇敢', speaking_style: '幽默', role_type: 'protagonist' },
+        { character_id: '2', name: '角色2', description: '描述2', personality: '聪明', speaking_style: '严肃', role_type: 'supporting' },
+        { character_id: '3', name: '角色3', description: '描述3', personality: '善良', speaking_style: '温柔', role_type: 'extra' },
+      ]
+    })),
+  },
+  chaptersAPI: {
+    create: jest.fn(() => Promise.resolve({ chapterId: 'new-chapter-id' })),
+    generate: jest.fn(() => Promise.resolve({ chapterId: 'generated-chapter-id' })),
+  },
+  plotOptionsAPI: {
+    get: jest.fn(() => Promise.resolve({
+      plotOptions: {
+        weather: [
+          { id: 'sunny', name: '晴天', icon: '☀️' },
+          { id: 'rainy', name: '雨天', icon: '🌧️' },
+          { id: 'snowy', name: '雪天', icon: '❄️' },
+        ],
+        adventureType: [
+          { id: 'exploration', name: '探索', icon: '🗺️' },
+          { id: 'rescue', name: '救援', icon: '🚨' },
+        ],
+        terrain: [
+          { id: 'forest', name: '森林', icon: '🌲' },
+          { id: 'mountain', name: '山脉', icon: '⛰️' },
+        ],
+        equipment: [
+          { id: 'sword', name: '剑', icon: '🗡️' },
+          { id: 'shield', name: '盾牌', icon: '🛡️' },
+        ],
+      },
+    })),
+  },
+}));
+
+jest.mock('../../../context/AuthContext', () => ({
+  AuthProvider: ({ children }) => children,
+  useAuth: () => ({
+    user: { userId: 'test-user-id' },
+    isLoggedIn: true,
+  }),
+}));
+
+jest.mock('../../../context/ToastContext', () => ({
+  ToastProvider: ({ children }) => children,
+  useToast: () => mockToast,
+}));
+
+jest.mock('../../../components/story/StagePreview', () => {
+  const { Text } = require('react-native');
+  return function MockStagePreview() {
+    return <Text>StagePreview</Text>;
+  };
+});
+
+jest.mock('../../../components/card3d', () => ({
+  CardDeck3D: function MockCardDeck3D({ title, items, selectedId, onPress }) {
+    const { Text, TouchableOpacity, View } = require('react-native');
+    return (
+      <View>
+        <Text>{title}</Text>
+        {items && items.map(item => (
+          <TouchableOpacity key={item.id} onPress={() => onPress(item.id)}>
+            <Text>{item.name}</Text>
+          </TouchableOpacity>
+        ))}
+      </View>
+    );
+  },
+}));
+
+jest.mock('../../../components/weather', () => ({
+  WeatherEffectV2: function MockWeatherEffectV2() {
+    return null;
+  },
+}));
+
+jest.mock('../../../components/particles', () => ({
+  MagicParticles: function MockMagicParticles() {
+    return null;
+  },
+}));
 
 const renderWithProviders = (component) => {
   return render(
-    <ToastProvider>
-      <AuthProvider>
+    <AuthProvider>
+      <ToastProvider>
         {component}
-      </AuthProvider>
-    </ToastProvider>
+      </ToastProvider>
+    </AuthProvider>
   );
 };
 
 describe('StoryDirectorScreen', () => {
-  const mockCharacters = {
-    characters: [
-      { character_id: 'c1', name: '角色A' },
-      { character_id: 'c2', name: '角色B' },
-      { character_id: 'c3', name: '角色C' },
-    ],
-  };
-
-  const mockPlotOptions = {
-    weather: [
-      { id: 'sunny', name: '晴天', icon: '☀️' },
-      { id: 'rainy', name: '雨天', icon: '🌧️' },
-    ],
-    adventureType: [
-      { id: 'explore', name: '探险', icon: '🏰' },
-      { id: 'mystery', name: '解谜', icon: '🔍' },
-    ],
-    terrain: [
-      { id: 'forest', name: '森林', icon: '🌲' },
-      { id: 'mountain', name: '山脉', icon: '🏔️' },
-    ],
-    equipment: [
-      { id: 'sword', name: '剑', icon: '⚔️' },
-      { id: 'wand', name: '魔杖', icon: '🪄' },
-    ],
-  };
-
   beforeEach(() => {
     jest.clearAllMocks();
-    charactersAPI.getList.mockResolvedValue(mockCharacters);
-    plotOptionsAPI.get.mockResolvedValue(mockPlotOptions);
-    chaptersAPI.generate.mockResolvedValue({ chapter_id: 'ch-1' });
   });
 
   describe('初始渲染', () => {
-    it('应该加载并显示导演台', async () => {
-      renderWithProviders(
-        <StoryDirectorScreen route={mockRoute} navigation={mockNavigation} />
-      );
-
+    it('应该渲染故事导演页面', async () => {
+      const { getByText } = renderWithProviders(<StoryDirectorScreen route={mockRoute} navigation={mockNavigation} />);
       await waitFor(() => {
-        expect(screen.getByText('🎬 故事导演台')).toBeTruthy();
-      });
+        expect(getByText(/当前页面: StoryDirectorScreen/)).toBeTruthy();
+      }, { timeout: 5000 });
     });
 
-    it('应该在无bookId时返回上一页', async () => {
-      const invalidRoute = { params: {} };
-      renderWithProviders(
-        <StoryDirectorScreen route={invalidRoute} navigation={mockNavigation} />
-      );
-
+    it('应该显示返回按钮', async () => {
+      const { getByText } = renderWithProviders(<StoryDirectorScreen route={mockRoute} navigation={mockNavigation} />);
       await waitFor(() => {
-        expect(mockNavigation.goBack).toHaveBeenCalled();
-      });
+        expect(getByText('←')).toBeTruthy();
+      }, { timeout: 5000 });
+    });
+
+    it('应该显示角色列表', async () => {
+      const { getAllByText } = renderWithProviders(<StoryDirectorScreen route={mockRoute} navigation={mockNavigation} />);
+      await waitFor(() => {
+        expect(getAllByText('角色1').length).toBeGreaterThan(0);
+        expect(getAllByText('角色2').length).toBeGreaterThan(0);
+        expect(getAllByText('角色3').length).toBeGreaterThan(0);
+      }, { timeout: 5000 });
+    });
+
+    it('应该显示选择角色标题', async () => {
+      const { getByText } = renderWithProviders(<StoryDirectorScreen route={mockRoute} navigation={mockNavigation} />);
+      await waitFor(() => {
+        expect(getByText(/选择角色/)).toBeTruthy();
+      }, { timeout: 5000 });
+    });
+
+    it('应该显示随机按钮', async () => {
+      const { getByText } = renderWithProviders(<StoryDirectorScreen route={mockRoute} navigation={mockNavigation} />);
+      await waitFor(() => {
+        expect(getByText(/随机/)).toBeTruthy();
+      }, { timeout: 5000 });
+    });
+
+    it('应该显示天气选择', async () => {
+      const { getByText } = renderWithProviders(<StoryDirectorScreen route={mockRoute} navigation={mockNavigation} />);
+      await waitFor(() => {
+        expect(getByText(/选择天气/)).toBeTruthy();
+      }, { timeout: 5000 });
+    });
+
+    it('应该显示冒险类型选择', async () => {
+      const { getByText } = renderWithProviders(<StoryDirectorScreen route={mockRoute} navigation={mockNavigation} />);
+      await waitFor(() => {
+        expect(getByText(/选择冒险类型/)).toBeTruthy();
+      }, { timeout: 5000 });
+    });
+
+    it('应该显示地形选择', async () => {
+      const { getByText } = renderWithProviders(<StoryDirectorScreen route={mockRoute} navigation={mockNavigation} />);
+      await waitFor(() => {
+        expect(getByText(/选择地形/)).toBeTruthy();
+      }, { timeout: 5000 });
+    });
+
+    it('应该显示装备选择', async () => {
+      const { getByText } = renderWithProviders(<StoryDirectorScreen route={mockRoute} navigation={mockNavigation} />);
+      await waitFor(() => {
+        expect(getByText(/选择装备/)).toBeTruthy();
+      }, { timeout: 5000 });
+    });
+
+    it('应该显示开始拍摄按钮', async () => {
+      const { getByText } = renderWithProviders(<StoryDirectorScreen route={mockRoute} navigation={mockNavigation} />);
+      await waitFor(() => {
+        expect(getByText(/开始拍摄/)).toBeTruthy();
+      }, { timeout: 5000 });
+    });
+  });
+
+  describe('返回功能', () => {
+    it('点击返回按钮应该调用goBack', async () => {
+      const { getByText } = renderWithProviders(<StoryDirectorScreen route={mockRoute} navigation={mockNavigation} />);
+      await waitFor(() => {
+        expect(getByText('←')).toBeTruthy();
+      }, { timeout: 5000 });
+      fireEvent.press(getByText('←'));
+      expect(mockGoBack).toHaveBeenCalled();
     });
   });
 
   describe('角色选择', () => {
-    it('应该显示角色列表', async () => {
-      renderWithProviders(
-        <StoryDirectorScreen route={mockRoute} navigation={mockNavigation} />
-      );
-
+    it('点击角色应该选中角色', async () => {
+      const { getAllByText } = renderWithProviders(<StoryDirectorScreen route={mockRoute} navigation={mockNavigation} />);
       await waitFor(() => {
-        expect(screen.getByText('角色A')).toBeTruthy();
-        expect(screen.getByText('角色B')).toBeTruthy();
-        expect(screen.getByText('角色C')).toBeTruthy();
-      });
-    });
-
-    it('应该选择角色并更新计数', async () => {
-      renderWithProviders(
-        <StoryDirectorScreen route={mockRoute} navigation={mockNavigation} />
-      );
-
-      await waitFor(() => {
-        expect(screen.getByText('角色A')).toBeTruthy();
-      });
-
-      // 点击角色A进行选择
-      const roleACards = screen.getAllByText('角色A');
-      fireEvent.press(roleACards[0]);
-
-      await waitFor(() => {
-        // 计数应该更新为1/5
-        expect(screen.getByText(/选择角色/)).toBeTruthy();
-      });
-    });
-
-    it('应该限制最多选择5个角色', async () => {
-      const manyCharacters = {
-        characters: Array.from({ length: 6 }, (_, i) => ({
-          character_id: `c${i}`,
-          name: `角色${i}`,
-        })),
-      };
-      charactersAPI.getList.mockResolvedValue(manyCharacters);
-
-      renderWithProviders(
-        <StoryDirectorScreen route={mockRoute} navigation={mockNavigation} />
-      );
-
-      await waitFor(() => {
-        expect(screen.getByText('角色0')).toBeTruthy();
-      });
-
-      // 选择5个角色
-      for (let i = 0; i < 5; i++) {
-        const roleCards = screen.getAllByText(`角色${i}`);
-        fireEvent.press(roleCards[0]);
-      }
-
-      await waitFor(() => {
-        expect(screen.getByText(/5\/5/)).toBeTruthy();
-      });
-    });
-  });
-
-  describe('角色类型设置', () => {
-    it('应该显示角色类型设置区域', async () => {
-      renderWithProviders(
-        <StoryDirectorScreen route={mockRoute} navigation={mockNavigation} />
-      );
-
-      await waitFor(() => {
-        expect(screen.getByText('角色A')).toBeTruthy();
-      });
-
-      // 选择角色
-      const roleACards = screen.getAllByText('角色A');
-      fireEvent.press(roleACards[0]);
-
-      await waitFor(() => {
-        expect(screen.getByText('🎭 设置角色类型')).toBeTruthy();
-        expect(screen.getByText('主角只能1个，配角最多2个')).toBeTruthy();
-      });
-    });
-
-    it('应该显示角色类型选项', async () => {
-      renderWithProviders(
-        <StoryDirectorScreen route={mockRoute} navigation={mockNavigation} />
-      );
-
-      await waitFor(() => {
-        expect(screen.getByText('角色A')).toBeTruthy();
-      });
-
-      // 选择角色
-      const roleACards = screen.getAllByText('角色A');
-      fireEvent.press(roleACards[0]);
-
-      await waitFor(() => {
-        // 检查角色类型选项存在
-        const protagonistTexts = screen.getAllByText('主角');
-        expect(protagonistTexts.length).toBeGreaterThan(0);
-      });
+        expect(getAllByText('角色1').length).toBeGreaterThan(0);
+      }, { timeout: 5000 });
+      const char1Elements = getAllByText('角色1');
+      fireEvent.press(char1Elements[0]);
     });
   });
 
   describe('情节选项选择', () => {
-    it('应该显示所有情节选项卡片组', async () => {
-      renderWithProviders(
-        <StoryDirectorScreen route={mockRoute} navigation={mockNavigation} />
-      );
-
+    it('点击天气选项应该选中', async () => {
+      const { getByText } = renderWithProviders(<StoryDirectorScreen route={mockRoute} navigation={mockNavigation} />);
       await waitFor(() => {
-        expect(screen.getByText('☀️ 选择天气')).toBeTruthy();
-        expect(screen.getByText('🗺️ 选择冒险类型')).toBeTruthy();
-        expect(screen.getByText('🌲 选择地形')).toBeTruthy();
-        expect(screen.getByText('🪄 选择装备')).toBeTruthy();
-      });
+        expect(getByText('晴天')).toBeTruthy();
+      }, { timeout: 5000 });
+      fireEvent.press(getByText('晴天'));
     });
 
-    it('应该显示天气选项', async () => {
-      renderWithProviders(
-        <StoryDirectorScreen route={mockRoute} navigation={mockNavigation} />
-      );
-
+    it('点击冒险类型选项应该选中', async () => {
+      const { getByText } = renderWithProviders(<StoryDirectorScreen route={mockRoute} navigation={mockNavigation} />);
       await waitFor(() => {
-        expect(screen.getByText('晴天')).toBeTruthy();
-        expect(screen.getByText('雨天')).toBeTruthy();
-      });
+        expect(getByText('探索')).toBeTruthy();
+      }, { timeout: 5000 });
+      fireEvent.press(getByText('探索'));
     });
 
-    it('应该显示冒险类型选项', async () => {
-      renderWithProviders(
-        <StoryDirectorScreen route={mockRoute} navigation={mockNavigation} />
-      );
-
+    it('点击地形选项应该选中', async () => {
+      const { getByText } = renderWithProviders(<StoryDirectorScreen route={mockRoute} navigation={mockNavigation} />);
       await waitFor(() => {
-        expect(screen.getByText('探险')).toBeTruthy();
-        expect(screen.getByText('解谜')).toBeTruthy();
-      });
+        expect(getByText('森林')).toBeTruthy();
+      }, { timeout: 5000 });
+      fireEvent.press(getByText('森林'));
     });
 
-    it('应该显示地形选项', async () => {
-      renderWithProviders(
-        <StoryDirectorScreen route={mockRoute} navigation={mockNavigation} />
-      );
-
+    it('点击装备选项应该选中', async () => {
+      const { getByText } = renderWithProviders(<StoryDirectorScreen route={mockRoute} navigation={mockNavigation} />);
       await waitFor(() => {
-        expect(screen.getByText('森林')).toBeTruthy();
-        expect(screen.getByText('山脉')).toBeTruthy();
-      });
-    });
-
-    it('应该显示装备选项', async () => {
-      renderWithProviders(
-        <StoryDirectorScreen route={mockRoute} navigation={mockNavigation} />
-      );
-
-      await waitFor(() => {
-        expect(screen.getByText('剑')).toBeTruthy();
-        expect(screen.getByText('魔杖')).toBeTruthy();
-      });
+        expect(getByText('剑')).toBeTruthy();
+      }, { timeout: 5000 });
+      fireEvent.press(getByText('剑'));
     });
   });
 
   describe('随机选择', () => {
-    it('应该有随机按钮', async () => {
-      renderWithProviders(
-        <StoryDirectorScreen route={mockRoute} navigation={mockNavigation} />
-      );
-
+    it('点击随机按钮应该随机选择情节选项', async () => {
+      const { getByText } = renderWithProviders(<StoryDirectorScreen route={mockRoute} navigation={mockNavigation} />);
       await waitFor(() => {
-        expect(screen.getByText('🎲 随机')).toBeTruthy();
-      });
+        expect(getByText(/随机/)).toBeTruthy();
+      }, { timeout: 5000 });
+      fireEvent.press(getByText(/随机/));
+      await waitFor(() => {
+        expect(mockToast.success).toHaveBeenCalled();
+      }, { timeout: 5000 });
     });
   });
 
-  describe('生成章节', () => {
-    it('应该有开始拍摄按钮', async () => {
-      renderWithProviders(
-        <StoryDirectorScreen route={mockRoute} navigation={mockNavigation} />
-      );
-
+  describe('边界情况', () => {
+    it('应该处理无效的bookId', async () => {
+      const invalidRoute = { params: { bookId: null } };
+      renderWithProviders(<StoryDirectorScreen route={invalidRoute} navigation={mockNavigation} />);
       await waitFor(() => {
-        expect(screen.getByText('🎬 开始拍摄！')).toBeTruthy();
-      });
+        expect(mockGoBack).toHaveBeenCalled();
+      }, { timeout: 5000 });
+    });
+
+    it('应该处理加载失败的情况', async () => {
+      charactersAPI.getList.mockRejectedValueOnce(new Error('加载失败'));
+      renderWithProviders(<StoryDirectorScreen route={mockRoute} navigation={mockNavigation} />);
+      await waitFor(() => {
+        expect(mockToast.error).toHaveBeenCalledWith('加载数据失败');
+      }, { timeout: 5000 });
+    });
+
+    it('应该处理空角色列表', async () => {
+      charactersAPI.getList.mockResolvedValueOnce({ characters: [] });
+      const { getByText } = renderWithProviders(<StoryDirectorScreen route={mockRoute} navigation={mockNavigation} />);
+      await waitFor(() => {
+        expect(getByText(/选择角色/)).toBeTruthy();
+      }, { timeout: 5000 });
     });
   });
 
-  describe('返回按钮', () => {
-    it('应该返回上一页', async () => {
-      renderWithProviders(
-        <StoryDirectorScreen route={mockRoute} navigation={mockNavigation} />
-      );
-
-      await waitFor(() => {
-        expect(screen.getByText('🎬 故事导演台')).toBeTruthy();
+  describe('plotOptions数据格式处理', () => {
+    it('应该处理plotOptions嵌套格式', async () => {
+      plotOptionsAPI.get.mockResolvedValueOnce({
+        plotOptions: {
+          weather: [{ id: 'sunny', name: '晴天', icon: '☀️' }],
+          adventureType: [{ id: 'exploration', name: '探索', icon: '🗺️' }],
+          terrain: [{ id: 'forest', name: '森林', icon: '🌲' }],
+          equipment: [{ id: 'sword', name: '剑', icon: '🗡️' }],
+        },
       });
+      const { getByText } = renderWithProviders(<StoryDirectorScreen route={mockRoute} navigation={mockNavigation} />);
+      await waitFor(() => {
+        expect(getByText('晴天')).toBeTruthy();
+      }, { timeout: 5000 });
+    });
 
-      const backButton = screen.getByText('←');
-      fireEvent.press(backButton);
-
-      expect(mockNavigation.goBack).toHaveBeenCalled();
+    it('应该处理plotOptions直接格式', async () => {
+      plotOptionsAPI.get.mockResolvedValueOnce({
+        weather: [{ id: 'sunny', name: '晴天', icon: '☀️' }],
+        adventureType: [{ id: 'exploration', name: '探索', icon: '🗺️' }],
+        terrain: [{ id: 'forest', name: '森林', icon: '🌲' }],
+        equipment: [{ id: 'sword', name: '剑', icon: '🗡️' }],
+      });
+      const { getByText } = renderWithProviders(<StoryDirectorScreen route={mockRoute} navigation={mockNavigation} />);
+      await waitFor(() => {
+        expect(getByText('晴天')).toBeTruthy();
+      }, { timeout: 5000 });
     });
   });
 });

@@ -8,7 +8,6 @@ import ThemeSettingsScreen from '../ThemeSettingsScreen';
 import { ThemeProvider } from '../../../context/ThemeContext';
 import { ToastProvider } from '../../../context/ToastContext';
 
-// Mock navigation
 const mockGoBack = jest.fn();
 const mockNavigation = {
   goBack: mockGoBack,
