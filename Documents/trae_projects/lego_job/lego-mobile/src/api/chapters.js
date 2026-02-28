@@ -84,7 +84,7 @@ export const chaptersAPI = {
     if (characterIds) {
       body.characterIds = characterIds;
     }
-    return apiClient.post(`/chapters-generate/books/${bookId}`, body);
+    return apiClient.post(`/chapters-generate?bookId=${bookId}`, body);
   },
 };
 

@@ -164,6 +164,7 @@ const CharactersScreen = ({ navigation }) => {
                   <Text style={styles.presetBadgeText}>系统</Text>
                 </View>
               )}
+              <Text style={styles.cardEmoji}>{emoji}</Text>
               <Text style={styles.cardName} numberOfLines={1}>
                 {item.name}
               </Text>
@@ -371,6 +372,10 @@ const styles = StyleSheet.create({
   },
   cardWrapper: {
     marginRight: 16,
+    marginBottom: 8,
+  },
+  cardEmoji: {
+    fontSize: 48,
     marginBottom: 8,
   },
   sectionTitle: {

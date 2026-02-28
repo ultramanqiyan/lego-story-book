@@ -13,7 +13,7 @@ import { useToast } from '../../context/ToastContext';
 import { charactersAPI, chaptersAPI, plotOptionsAPI } from '../../api';
 import { Card, Button, Loading, Header, Modal, GlowOrbBackground } from '../../components/common';
 import StagePreview from '../../components/story/StagePreview';
-import { CardDeck3D } from '../../components/card3d';
+import CardSelector2D from '../../components/card2d/CardSelector2D';
 import { WeatherEffectV2 } from '../../components/weather';
 import { MagicParticles } from '../../components/particles';
 import { COLORS, CHARACTER_EMOJIS } from '../../utils/constants';
@@ -372,7 +372,7 @@ const StoryDirectorScreen = ({ route, navigation }) => {
 
         {plotOptions && (
           <>
-            <CardDeck3D
+            <CardSelector2D
               title="☀️ 选择天气"
               items={plotOptions.weather}
               selectedId={plotSelection.weather}
@@ -381,7 +381,7 @@ const StoryDirectorScreen = ({ route, navigation }) => {
               }
             />
 
-            <CardDeck3D
+            <CardSelector2D
               title="🗺️ 选择冒险类型"
               items={plotOptions.adventureType}
               selectedId={plotSelection.adventureType}
@@ -390,7 +390,7 @@ const StoryDirectorScreen = ({ route, navigation }) => {
               }
             />
 
-            <CardDeck3D
+            <CardSelector2D
               title="🌲 选择地形"
               items={plotOptions.terrain}
               selectedId={plotSelection.terrain}
@@ -399,7 +399,7 @@ const StoryDirectorScreen = ({ route, navigation }) => {
               }
             />
 
-            <CardDeck3D
+            <CardSelector2D
               title="🪄 选择装备"
               items={plotOptions.equipment}
               selectedId={plotSelection.equipment}

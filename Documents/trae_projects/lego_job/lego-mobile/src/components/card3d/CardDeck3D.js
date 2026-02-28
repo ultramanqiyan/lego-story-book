@@ -136,47 +136,33 @@ const CardDeck3D = ({
           <Text style={styles.title}>{title}</Text>
         )}
         <View style={styles.deckContainerWeb}>
-          {safeItems.map((item, index) => {
-            const isSelected = selectedId === item.id;
-            // 计算扇形位置
-            const total = safeItems.length;
-            const startAngle = -CARD_3D_CONFIG.fanAngle / 2;
-            const angleStep = total > 1 ? CARD_3D_CONFIG.fanAngle / (total - 1) : 0;
-            const angleDeg = startAngle + index * angleStep;
-            const angleRad = (angleDeg * Math.PI) / 180;
-            const translateX = Math.sin(angleRad) * CARD_3D_CONFIG.fanRadius;
-            const translateY = -Math.abs(Math.cos(angleRad) * CARD_3D_CONFIG.fanRadius * 0.3);
+          <View style={styles.cardsRow}>
+            {safeItems.map((item, index) => {
+              const isSelected = selectedId === item.id;
 
-            return (
-              <View
-                key={item.id}
-                style={[
-                  styles.cardWrapperWeb,
-                  {
-                    transform: [
-                      { translateX },
-                      { translateY: isSelected ? translateY - 20 : translateY },
-                      { rotateZ: `${angleDeg}deg` },
-                      { scale: isSelected ? 1.15 : 1 },
-                    ],
-                    zIndex: isSelected ? 100 : index,
-                  },
-                ]}
-              >
-                <Card3D
-                  icon={getIcon(item, index)}
-                  name={item[nameKey]}
-                  isSelected={isSelected}
-                  onPress={() => handleSelect(item.id)}
-                  variant={isSelected ? 'primary' : variant}
-                  width={CARD_3D_CONFIG.cardWidth}
-                  height={CARD_3D_CONFIG.cardHeight}
-                  enableTilt={false}
-                  enableFlip={false}
-                />
-              </View>
-            );
-          })}
+              return (
+                <View
+                  key={item.id}
+                  style={[
+                    styles.cardWrapperWeb,
+                    isSelected && styles.cardWrapperWebSelected,
+                  ]}
+                >
+                  <Card3D
+                    icon={getIcon(item, index)}
+                    name={item[nameKey]}
+                    isSelected={isSelected}
+                    onPress={() => handleSelect(item.id)}
+                    variant={isSelected ? 'primary' : variant}
+                    width={CARD_3D_CONFIG.cardWidth}
+                    height={CARD_3D_CONFIG.cardHeight}
+                    enableTilt={false}
+                    enableFlip={false}
+                  />
+                </View>
+              );
+            })}
+          </View>
         </View>
 
         <View style={styles.decorations}>
@@ -251,15 +237,23 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     justifyContent: 'center',
     alignItems: 'flex-end',
-    height: 140,
+    height: 160,
     position: 'relative',
   },
   deckContainerWeb: {
     flexDirection: 'row',
     justifyContent: 'center',
-    alignItems: 'flex-end',
-    height: 140,
+    alignItems: 'center',
+    height: 160,
     position: 'relative',
+    width: '100%',
+  },
+  cardsRow: {
+    flexDirection: 'row',
+    justifyContent: 'center',
+    alignItems: 'center',
+    flexWrap: 'wrap',
+    gap: 12,
   },
   cardWrapper: {
     position: 'absolute',
@@ -267,9 +261,12 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
   },
   cardWrapperWeb: {
-    position: 'absolute',
     alignItems: 'center',
     justifyContent: 'center',
+    marginHorizontal: 4,
+  },
+  cardWrapperWebSelected: {
+    transform: [{ translateY: -10 }, { scale: 1.05 }],
   },
   decorations: {
     position: 'absolute',
