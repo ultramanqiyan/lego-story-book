@@ -1,4 +1,205 @@
 import { StyleSheet } from 'react-native';
+import { COLORS } from '../utils/constants';
+
+export const FONT_FAMILIES = {
+  heading: ['Cinzel', 'Playfair Display', 'serif'],
+  body: ['Noto Sans SC', 'Nunito', 'sans-serif'],
+};
+
+export const FONT_SIZES = {
+  xs: 10,
+  sm: 12,
+  md: 14,
+  lg: 16,
+  xl: 18,
+  xxl: 24,
+  xxxl: 32,
+};
+
+export const LINE_HEIGHTS = {
+  tight: 1.2,
+  normal: 1.5,
+  relaxed: 1.75,
+  loose: 2,
+};
+
+export const FONT_WEIGHTS = {
+  light: '300',
+  normal: '400',
+  medium: '500',
+  semibold: '600',
+  bold: '700',
+};
+
+export const TABLETOP_TYPOGRAPHY = {
+  h1: {
+    fontFamily: FONT_FAMILIES.heading.join(','),
+    fontSize: 32,
+    fontWeight: FONT_WEIGHTS.bold,
+    lineHeight: 32 * LINE_HEIGHTS.tight,
+    color: '#ffffff',
+  },
+  h2: {
+    fontFamily: FONT_FAMILIES.heading.join(','),
+    fontSize: 28,
+    fontWeight: FONT_WEIGHTS.bold,
+    lineHeight: 28 * LINE_HEIGHTS.tight,
+    color: '#ffffff',
+  },
+  h3: {
+    fontFamily: FONT_FAMILIES.heading.join(','),
+    fontSize: 24,
+    fontWeight: FONT_WEIGHTS.semibold,
+    lineHeight: 24 * LINE_HEIGHTS.normal,
+    color: '#ffffff',
+  },
+  h4: {
+    fontFamily: FONT_FAMILIES.heading.join(','),
+    fontSize: 20,
+    fontWeight: FONT_WEIGHTS.semibold,
+    lineHeight: 20 * LINE_HEIGHTS.normal,
+    color: '#ffffff',
+  },
+  body: {
+    fontFamily: FONT_FAMILIES.body.join(','),
+    fontSize: 16,
+    fontWeight: FONT_WEIGHTS.normal,
+    lineHeight: 16 * LINE_HEIGHTS.relaxed,
+    color: '#ffffff',
+  },
+  bodyLarge: {
+    fontFamily: FONT_FAMILIES.body.join(','),
+    fontSize: 18,
+    fontWeight: FONT_WEIGHTS.normal,
+    lineHeight: 18 * LINE_HEIGHTS.relaxed,
+    color: '#ffffff',
+  },
+  bodySmall: {
+    fontFamily: FONT_FAMILIES.body.join(','),
+    fontSize: 14,
+    fontWeight: FONT_WEIGHTS.normal,
+    lineHeight: 14 * LINE_HEIGHTS.relaxed,
+    color: '#ffffff',
+  },
+  cardTitle: {
+    fontFamily: FONT_FAMILIES.heading.join(','),
+    fontSize: 18,
+    fontWeight: FONT_WEIGHTS.bold,
+    lineHeight: 18 * LINE_HEIGHTS.tight,
+    color: '#1a1a2e',
+  },
+  cardBody: {
+    fontFamily: FONT_FAMILIES.body.join(','),
+    fontSize: 14,
+    fontWeight: FONT_WEIGHTS.normal,
+    lineHeight: 14 * LINE_HEIGHTS.relaxed,
+    color: '#333333',
+  },
+  label: {
+    fontFamily: FONT_FAMILIES.body.join(','),
+    fontSize: 12,
+    fontWeight: FONT_WEIGHTS.medium,
+    lineHeight: 12 * LINE_HEIGHTS.normal,
+    color: '#888888',
+  },
+  caption: {
+    fontFamily: FONT_FAMILIES.body.join(','),
+    fontSize: 10,
+    fontWeight: FONT_WEIGHTS.normal,
+    lineHeight: 10 * LINE_HEIGHTS.normal,
+    color: '#888888',
+  },
+};
+
+export const getFontFamily = (type) => {
+  const families = FONT_FAMILIES[type] || FONT_FAMILIES.body;
+  return families.join(',');
+};
+
+export const getTypographyStyle = (styleName) => {
+  return TABLETOP_TYPOGRAPHY[styleName] || TABLETOP_TYPOGRAPHY.body;
+};
+
+export const colors = COLORS;
+
+export const typography = {
+  h1: {
+    fontSize: 28,
+    fontWeight: 'bold',
+    lineHeight: 36,
+  },
+  h2: {
+    fontSize: 24,
+    fontWeight: 'bold',
+    lineHeight: 32,
+  },
+  h3: {
+    fontSize: 20,
+    fontWeight: '600',
+    lineHeight: 28,
+  },
+  h4: {
+    fontSize: 18,
+    fontWeight: '600',
+    lineHeight: 24,
+  },
+  body: {
+    fontSize: 16,
+    fontWeight: 'normal',
+    lineHeight: 24,
+  },
+  bodySmall: {
+    fontSize: 14,
+    fontWeight: 'normal',
+    lineHeight: 20,
+  },
+  caption: {
+    fontSize: 12,
+    fontWeight: 'normal',
+    lineHeight: 16,
+  },
+};
+
+export const spacing = {
+  xs: 4,
+  sm: 8,
+  md: 16,
+  lg: 24,
+  xl: 32,
+  xxl: 48,
+};
+
+export const borderRadius = {
+  sm: 8,
+  md: 12,
+  lg: 16,
+  xl: 20,
+  round: 999,
+};
+
+export const shadows = {
+  sm: {
+    shadowColor: COLORS.black,
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.1,
+    shadowRadius: 4,
+    elevation: 2,
+  },
+  md: {
+    shadowColor: COLORS.black,
+    shadowOffset: { width: 0, height: 4 },
+    shadowOpacity: 0.15,
+    shadowRadius: 8,
+    elevation: 4,
+  },
+  lg: {
+    shadowColor: COLORS.black,
+    shadowOffset: { width: 0, height: 8 },
+    shadowOpacity: 0.2,
+    shadowRadius: 16,
+    elevation: 8,
+  },
+};
 
 export const commonStyles = StyleSheet.create({
   container: {
@@ -128,4 +329,10 @@ export const commonStyles = StyleSheet.create({
   text3xl: { fontSize: 30 },
 });
 
-export default commonStyles;
+export default {
+  colors,
+  typography,
+  spacing,
+  borderRadius,
+  shadows,
+};

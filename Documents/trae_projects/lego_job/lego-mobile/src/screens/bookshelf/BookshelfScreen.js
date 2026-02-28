@@ -85,6 +85,7 @@ const BookshelfScreen = ({ navigation }) => {
           numColumns={2}
           columnWrapperStyle={styles.row}
           contentContainerStyle={styles.listContent}
+          showsVerticalScrollIndicator={false}
           refreshControl={
             <RefreshControl refreshing={refreshing} onRefresh={onRefresh} />
           }
@@ -105,6 +106,9 @@ const BookshelfScreen = ({ navigation }) => {
     </View>
   );
 };
+
+const CARD_WIDTH = 160;
+const CARD_GAP = 12;
 
 const styles = StyleSheet.create({
   container: {
@@ -139,18 +143,20 @@ const styles = StyleSheet.create({
   },
   listContent: {
     padding: 16,
-    paddingTop: 0,
+    paddingTop: 8,
   },
   row: {
-    justifyContent: 'space-between',
+    justifyContent: 'flex-start',
+    marginBottom: CARD_GAP,
   },
   bookCard: {
-    flex: 1,
-    margin: 8,
-    aspectRatio: 0.8,
+    width: CARD_WIDTH,
+    height: CARD_WIDTH * 1.3,
+    marginRight: CARD_GAP,
     alignItems: 'center',
     justifyContent: 'center',
     padding: 16,
+    borderRadius: 16,
   },
   bookIcon: {
     fontSize: 48,

@@ -1,124 +1,203 @@
-/**
- * theme.js 单元测试
- */
+import {
+  TABLETOP_THEME,
+  createTabletopTheme,
+  getTabletopTheme,
+  mergeThemes,
+  createThemedStyleSheet,
+} from '../theme';
+import { TABLETOP_COLORS } from '../colors';
+import { TABLETOP_TYPOGRAPHY } from '../typography';
 
-import theme, { colors, typography, spacing, borderRadius, shadows } from '../theme';
+describe('theme - 桌游风格主题配置', () => {
+  describe('TABLETOP_THEME', () => {
+    it('应该定义colors属性', () => {
+      expect(TABLETOP_THEME.colors).toBeDefined();
+    });
 
-describe('theme', () => {
-  describe('默认导出', () => {
-    it('应该导出theme对象', () => {
+    it('应该定义typography属性', () => {
+      expect(TABLETOP_THEME.typography).toBeDefined();
+    });
+
+    it('应该定义spacing属性', () => {
+      expect(TABLETOP_THEME.spacing).toBeDefined();
+    });
+
+    it('应该定义animations属性', () => {
+      expect(TABLETOP_THEME.animations).toBeDefined();
+    });
+
+    it('应该定义shadows属性', () => {
+      expect(TABLETOP_THEME.shadows).toBeDefined();
+    });
+
+    it('应该定义borderRadius属性', () => {
+      expect(TABLETOP_THEME.borderRadius).toBeDefined();
+    });
+
+    it('colors应该包含背景色', () => {
+      expect(TABLETOP_THEME.colors.background).toBeDefined();
+    });
+
+    it('colors应该包含卡牌色', () => {
+      expect(TABLETOP_THEME.colors.card).toBeDefined();
+    });
+
+    it('typography应该包含h1样式', () => {
+      expect(TABLETOP_THEME.typography.h1).toBeDefined();
+    });
+
+    it('typography应该包含body样式', () => {
+      expect(TABLETOP_THEME.typography.body).toBeDefined();
+    });
+  });
+
+  describe('createTabletopTheme', () => {
+    it('应该创建默认主题', () => {
+      const theme = createTabletopTheme();
       expect(theme).toBeDefined();
-      expect(typeof theme).toBe('object');
-    });
-
-    it('应该包含colors属性', () => {
       expect(theme.colors).toBeDefined();
-    });
-
-    it('应该包含typography属性', () => {
       expect(theme.typography).toBeDefined();
     });
 
-    it('应该包含spacing属性', () => {
-      expect(theme.spacing).toBeDefined();
+    it('应该允许覆盖颜色', () => {
+      const customColors = {
+        background: {
+          primary: '#000000',
+        },
+      };
+      const theme = createTabletopTheme({ colors: customColors });
+      expect(theme.colors.background.primary).toBe('#000000');
     });
 
-    it('应该包含borderRadius属性', () => {
-      expect(theme.borderRadius).toBeDefined();
+    it('应该允许覆盖字体', () => {
+      const customTypography = {
+        h1: {
+          fontSize: 40,
+        },
+      };
+      const theme = createTabletopTheme({ typography: customTypography });
+      expect(theme.typography.h1.fontSize).toBe(40);
     });
 
-    it('应该包含shadows属性', () => {
-      expect(theme.shadows).toBeDefined();
-    });
-  });
-
-  describe('colors导出', () => {
-    it('应该导出colors', () => {
-      expect(colors).toBeDefined();
-    });
-  });
-
-  describe('typography', () => {
-    it('应该包含h1样式', () => {
-      expect(typography.h1).toBeDefined();
-      expect(typography.h1.fontSize).toBe(28);
-    });
-
-    it('应该包含h2样式', () => {
-      expect(typography.h2).toBeDefined();
-      expect(typography.h2.fontSize).toBe(24);
-    });
-
-    it('应该包含h3样式', () => {
-      expect(typography.h3).toBeDefined();
-      expect(typography.h3.fontSize).toBe(20);
-    });
-
-    it('应该包含body样式', () => {
-      expect(typography.body).toBeDefined();
-      expect(typography.body.fontSize).toBe(16);
-    });
-
-    it('应该包含caption样式', () => {
-      expect(typography.caption).toBeDefined();
-      expect(typography.caption.fontSize).toBe(12);
+    it('应该保留未覆盖的属性', () => {
+      const theme = createTabletopTheme({});
+      expect(theme.colors.card).toBeDefined();
+      expect(theme.typography.body).toBeDefined();
     });
   });
 
-  describe('spacing', () => {
-    it('应该包含xs间距', () => {
-      expect(spacing.xs).toBe(4);
+  describe('getTabletopTheme', () => {
+    it('应该返回默认主题', () => {
+      const theme = getTabletopTheme();
+      expect(theme).toBeDefined();
+      expect(theme.colors).toBeDefined();
     });
 
-    it('应该包含sm间距', () => {
-      expect(spacing.sm).toBe(8);
+    it('应该返回指定主题', () => {
+      const theme = getTabletopTheme('default');
+      expect(theme).toBeDefined();
     });
 
-    it('应该包含md间距', () => {
-      expect(spacing.md).toBe(16);
-    });
-
-    it('应该包含lg间距', () => {
-      expect(spacing.lg).toBe(24);
-    });
-
-    it('应该包含xl间距', () => {
-      expect(spacing.xl).toBe(32);
+    it('应该返回默认主题当主题不存在时', () => {
+      const theme = getTabletopTheme('nonexistent');
+      expect(theme).toBeDefined();
+      expect(theme.colors).toBeDefined();
     });
   });
 
-  describe('borderRadius', () => {
-    it('应该包含sm圆角', () => {
-      expect(borderRadius.sm).toBe(8);
+  describe('mergeThemes', () => {
+    it('应该合并两个主题', () => {
+      const baseTheme = {
+        colors: {
+          primary: '#ffffff',
+          secondary: '#000000',
+        },
+      };
+      const overrideTheme = {
+        colors: {
+          primary: '#ff0000',
+        },
+      };
+      const merged = mergeThemes(baseTheme, overrideTheme);
+      expect(merged.colors.primary).toBe('#ff0000');
+      expect(merged.colors.secondary).toBe('#000000');
     });
 
-    it('应该包含md圆角', () => {
-      expect(borderRadius.md).toBe(12);
+    it('应该处理嵌套对象合并', () => {
+      const baseTheme = {
+        colors: {
+          background: {
+            primary: '#1a1a2e',
+            secondary: '#16213e',
+          },
+        },
+      };
+      const overrideTheme = {
+        colors: {
+          background: {
+            primary: '#000000',
+          },
+        },
+      };
+      const merged = mergeThemes(baseTheme, overrideTheme);
+      expect(merged.colors.background.primary).toBe('#000000');
+      expect(merged.colors.background.secondary).toBe('#16213e');
     });
 
-    it('应该包含lg圆角', () => {
-      expect(borderRadius.lg).toBe(16);
-    });
-
-    it('应该包含round圆角', () => {
-      expect(borderRadius.round).toBe(999);
+    it('应该处理空覆盖主题', () => {
+      const baseTheme = {
+        colors: {
+          primary: '#ffffff',
+        },
+      };
+      const merged = mergeThemes(baseTheme, {});
+      expect(merged.colors.primary).toBe('#ffffff');
     });
   });
 
-  describe('shadows', () => {
-    it('应该包含sm阴影', () => {
-      expect(shadows.sm).toBeDefined();
-      expect(shadows.sm.shadowColor).toBeDefined();
+  describe('createThemedStyleSheet', () => {
+    it('应该创建样式表', () => {
+      const styles = createThemedStyleSheet(TABLETOP_THEME, {
+        container: {
+          flex: 1,
+          backgroundColor: theme => theme.colors.background.primary,
+        },
+      });
+      expect(styles.container).toBeDefined();
+      expect(styles.container.flex).toBe(1);
     });
 
-    it('应该包含md阴影', () => {
-      expect(shadows.md).toBeDefined();
-      expect(shadows.md.shadowColor).toBeDefined();
+    it('应该解析主题函数', () => {
+      const styles = createThemedStyleSheet(TABLETOP_THEME, {
+        card: {
+          backgroundColor: theme => theme.colors.card.primary,
+        },
+      });
+      expect(styles.card.backgroundColor).toBe(TABLETOP_COLORS.card.primary);
     });
 
-    it('应该包含lg阴影', () => {
-      expect(shadows.lg).toBeDefined();
-      expect(shadows.lg.shadowColor).toBeDefined();
+    it('应该处理静态样式', () => {
+      const styles = createThemedStyleSheet(TABLETOP_THEME, {
+        text: {
+          fontSize: 16,
+          color: '#333333',
+        },
+      });
+      expect(styles.text.fontSize).toBe(16);
+      expect(styles.text.color).toBe('#333333');
+    });
+
+    it('应该处理混合样式', () => {
+      const styles = createThemedStyleSheet(TABLETOP_THEME, {
+        mixed: {
+          flex: 1,
+          padding: 16,
+          backgroundColor: theme => theme.colors.background.primary,
+        },
+      });
+      expect(styles.mixed.flex).toBe(1);
+      expect(styles.mixed.padding).toBe(16);
+      expect(styles.mixed.backgroundColor).toBe(TABLETOP_COLORS.background.primary);
     });
   });
 });

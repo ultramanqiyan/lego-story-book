@@ -136,13 +136,16 @@ const CharactersScreen = ({ navigation }) => {
 
     return (
       <Animated.View
-        style={{
-          opacity: anim,
-          transform: [
-            { scale: anim.interpolate({ inputRange: [0, 1], outputRange: [0.5, 1] }) },
-            { translateY: anim.interpolate({ inputRange: [0, 1], outputRange: [30, 0] }) },
-          ],
-        }}
+        style={[
+          styles.cardWrapper,
+          {
+            opacity: anim,
+            transform: [
+              { scale: anim.interpolate({ inputRange: [0, 1], outputRange: [0.5, 1] }) },
+              { translateY: anim.interpolate({ inputRange: [0, 1], outputRange: [30, 0] }) },
+            ],
+          },
+        ]}
       >
         <Card3D
           icon={emoji}
@@ -150,8 +153,8 @@ const CharactersScreen = ({ navigation }) => {
           isSelected={false}
           onPress={() => openDetail(item)}
           variant={isPreset ? 'primary' : 'default'}
-          width={100}
-          height={140}
+          width={150}
+          height={200}
           enableTilt={true}
           enableFlip={true}
           frontContent={
@@ -231,6 +234,7 @@ const CharactersScreen = ({ navigation }) => {
         data={characters}
         keyExtractor={(item) => item.character_id || item.id || item.characterId || String(Math.random())}
         numColumns={2}
+        columnWrapperStyle={styles.row}
         contentContainerStyle={styles.listContent}
         showsVerticalScrollIndicator={false}
         refreshControl={
@@ -360,6 +364,14 @@ const styles = StyleSheet.create({
     padding: 16,
     paddingBottom: 100,
     zIndex: 1,
+  },
+  row: {
+    justifyContent: 'flex-start',
+    marginBottom: 16,
+  },
+  cardWrapper: {
+    marginRight: 16,
+    marginBottom: 8,
   },
   sectionTitle: {
     fontSize: 20,
