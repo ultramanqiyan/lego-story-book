@@ -1,0 +1,27 @@
+{
+  "expo": {
+    "name": "LEGO Mobile Game",
+    "slug": "lego-mobile-game",
+    "version": "1.0.0",
+    "orientation": "portrait",
+    "userInterfaceStyle": "light",
+    "splash": {
+      "backgroundColor": "#4A90D9"
+    },
+    "assetBundlePatterns": [
+      "**/*"
+    ],
+    "ios": {
+      "supportsTablet": true,
+      "bundleIdentifier": "com.legostory.mobilegame"
+    },
+    "android": {
+      "package": "com.legostory.mobilegame"
+    },
+    "web": {
+    },
+    "extra": {
+      "apiBaseUrl": "http://10.0.2.2:8788/api"
+    }
+  }
+}

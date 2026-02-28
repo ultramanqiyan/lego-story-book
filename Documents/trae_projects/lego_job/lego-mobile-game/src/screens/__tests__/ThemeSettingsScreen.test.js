@@ -1,0 +1,43 @@
+import React from 'react';
+import { render } from '@testing-library/react-native';
+import { ThemeSettingsScreen } from '../settings/ThemeSettingsScreen';
+import { Text, View } from 'react-native';
+
+const mockNavigate = jest.fn();
+
+jest.mock('@react-navigation/native', () => ({
+  useNavigation: () => ({
+    navigate: mockNavigate,
+  }),
+}));
+
+jest.mock('../../context/ThemeContext', () => ({
+  useTheme: () => ({
+    themeName: 'dark',
+    setTheme: jest.fn(),
+  }),
+}));
+
+jest.mock('../../context/ToastContext', () => ({
+  useToast: () => ({
+    showError: jest.fn(),
+    showSuccess: jest.fn(),
+  }),
+}));
+
+jest.mock('../../components', () => ({
+  Card: ({ children, testID }) => <View testID={testID}>{children}</View>,
+}));
+
+describe('ThemeSettingsScreen', () => {
+  beforeEach(() => {
+    jest.clearAllMocks();
+  });
+
+  describe('基础渲染', () => {
+    it('应正确渲染主题设置屏幕', () => {
+      const { root } = render(<ThemeSettingsScreen />);
+      expect(root).toBeTruthy();
+    });
+  });
+});
