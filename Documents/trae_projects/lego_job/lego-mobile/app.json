@@ -36,7 +36,7 @@
       "expo-secure-store"
     ],
     "extra": {
-      "apiBaseUrl": "http://10.0.2.2:8788/api",
+      "apiBaseUrl": "https://lego-story-book.pages.dev/api",
       "eas": {
         "projectId": "your-project-id"
       }

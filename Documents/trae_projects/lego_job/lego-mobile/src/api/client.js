@@ -7,7 +7,7 @@ const getApiBase = () => {
     // Web 端使用相对路径或本地开发服务器地址
     return 'http://localhost:8788/api';
   }
-  return Constants.expoConfig?.extra?.apiBaseUrl || 'https://lego-story.pages.dev/api';
+  return Constants.expoConfig?.extra?.apiBaseUrl || 'https://lego-story-book.pages.dev/api';
 };
 
 const API_BASE = getApiBase();
