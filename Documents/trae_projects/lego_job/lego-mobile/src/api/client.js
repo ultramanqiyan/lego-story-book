@@ -15,10 +15,12 @@ const API_BASE = getApiBase();
 class APIClient {
   constructor() {
     this.baseURL = API_BASE;
+    console.log('[APIClient] Initialized with baseURL:', this.baseURL);
   }
 
   async request(endpoint, options = {}) {
     const url = `${this.baseURL}${endpoint}`;
+    console.log('[APIClient] Making request to:', url);
     
     const defaultHeaders = {
       'Content-Type': 'application/json',

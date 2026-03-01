@@ -30,8 +30,11 @@ export const AuthProvider = ({ children }) => {
   };
 
   const login = async (username, email = null) => {
+    console.log('[AuthContext] login called with:', { username, email });
     try {
+      console.log('[AuthContext] Calling usersAPI.createOrLogin...');
       const data = await usersAPI.createOrLogin(username, email);
+      console.log('[AuthContext] API response:', JSON.stringify(data));
       
       await storage.setUserId(data.userId);
       await storage.setUsername(username);
@@ -41,6 +44,7 @@ export const AuthProvider = ({ children }) => {
       
       return { success: true, userId: data.userId };
     } catch (error) {
+      console.error('[AuthContext] Login error:', error);
       return { success: false, error: error.message };
     }
   };

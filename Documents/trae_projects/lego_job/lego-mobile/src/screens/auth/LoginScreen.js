@@ -75,15 +75,18 @@ const LoginScreen = () => {
       return;
     }
 
+    console.log('[LoginScreen] Starting login for:', username.trim());
     setIsLoading(true);
     try {
       const result = await login(username.trim(), email.trim() || null);
+      console.log('[LoginScreen] Login result:', JSON.stringify(result));
       if (result.success) {
         toast.success(`欢迎，${username}！🎉`);
       } else {
         toast.error(`登录失败：${result.error}`);
       }
     } catch (error) {
+      console.error('[LoginScreen] Login error:', error);
       toast.error('登录失败，请重试');
     } finally {
       setIsLoading(false);

@@ -5,27 +5,56 @@ import { COLORS } from '../../utils/constants';
 const { width: SCREEN_WIDTH, height: SCREEN_HEIGHT } = Dimensions.get('window');
 
 const GlowOrbBackground = () => {
-  const goldAnim = useRef(new Animated.ValueXY({ x: 0.1, y: 0.15 })).current;
-  const purpleAnim = useRef(new Animated.ValueXY({ x: 0.85, y: 0.75 })).current;
+  const goldAnimX = useRef(new Animated.Value(0.1 * SCREEN_WIDTH)).current;
+  const goldAnimY = useRef(new Animated.Value(0.15 * SCREEN_HEIGHT)).current;
+  const purpleAnimX = useRef(new Animated.Value(0.85 * SCREEN_WIDTH)).current;
+  const purpleAnimY = useRef(new Animated.Value(0.75 * SCREEN_HEIGHT)).current;
 
   useEffect(() => {
-    Animated.loop(
+    const animateGold = () => {
       Animated.sequence([
-        Animated.timing(goldAnim, { toValue: { x: 0.6, y: 0.1 }, duration: 5000, useNativeDriver: true }),
-        Animated.timing(goldAnim, { toValue: { x: 0.8, y: 0.5 }, duration: 5000, useNativeDriver: true }),
-        Animated.timing(goldAnim, { toValue: { x: 0.3, y: 0.7 }, duration: 5500, useNativeDriver: true }),
-        Animated.timing(goldAnim, { toValue: { x: 0.1, y: 0.15 }, duration: 5500, useNativeDriver: true }),
-      ])
-    ).start();
+        Animated.parallel([
+          Animated.timing(goldAnimX, { toValue: 0.6 * SCREEN_WIDTH, duration: 5000, useNativeDriver: true }),
+          Animated.timing(goldAnimY, { toValue: 0.1 * SCREEN_HEIGHT, duration: 5000, useNativeDriver: true }),
+        ]),
+        Animated.parallel([
+          Animated.timing(goldAnimX, { toValue: 0.8 * SCREEN_WIDTH, duration: 5000, useNativeDriver: true }),
+          Animated.timing(goldAnimY, { toValue: 0.5 * SCREEN_HEIGHT, duration: 5000, useNativeDriver: true }),
+        ]),
+        Animated.parallel([
+          Animated.timing(goldAnimX, { toValue: 0.3 * SCREEN_WIDTH, duration: 5500, useNativeDriver: true }),
+          Animated.timing(goldAnimY, { toValue: 0.7 * SCREEN_HEIGHT, duration: 5500, useNativeDriver: true }),
+        ]),
+        Animated.parallel([
+          Animated.timing(goldAnimX, { toValue: 0.1 * SCREEN_WIDTH, duration: 5500, useNativeDriver: true }),
+          Animated.timing(goldAnimY, { toValue: 0.15 * SCREEN_HEIGHT, duration: 5500, useNativeDriver: true }),
+        ]),
+      ]).start(() => animateGold());
+    };
 
-    Animated.loop(
+    const animatePurple = () => {
       Animated.sequence([
-        Animated.timing(purpleAnim, { toValue: { x: 0.2, y: 0.8 }, duration: 6000, useNativeDriver: true }),
-        Animated.timing(purpleAnim, { toValue: { x: 0.1, y: 0.25 }, duration: 6000, useNativeDriver: true }),
-        Animated.timing(purpleAnim, { toValue: { x: 0.7, y: 0.15 }, duration: 6000, useNativeDriver: true }),
-        Animated.timing(purpleAnim, { toValue: { x: 0.85, y: 0.75 }, duration: 6000, useNativeDriver: true }),
-      ])
-    ).start();
+        Animated.parallel([
+          Animated.timing(purpleAnimX, { toValue: 0.2 * SCREEN_WIDTH, duration: 6000, useNativeDriver: true }),
+          Animated.timing(purpleAnimY, { toValue: 0.8 * SCREEN_HEIGHT, duration: 6000, useNativeDriver: true }),
+        ]),
+        Animated.parallel([
+          Animated.timing(purpleAnimX, { toValue: 0.1 * SCREEN_WIDTH, duration: 6000, useNativeDriver: true }),
+          Animated.timing(purpleAnimY, { toValue: 0.25 * SCREEN_HEIGHT, duration: 6000, useNativeDriver: true }),
+        ]),
+        Animated.parallel([
+          Animated.timing(purpleAnimX, { toValue: 0.7 * SCREEN_WIDTH, duration: 6000, useNativeDriver: true }),
+          Animated.timing(purpleAnimY, { toValue: 0.15 * SCREEN_HEIGHT, duration: 6000, useNativeDriver: true }),
+        ]),
+        Animated.parallel([
+          Animated.timing(purpleAnimX, { toValue: 0.85 * SCREEN_WIDTH, duration: 6000, useNativeDriver: true }),
+          Animated.timing(purpleAnimY, { toValue: 0.75 * SCREEN_HEIGHT, duration: 6000, useNativeDriver: true }),
+        ]),
+      ]).start(() => animatePurple());
+    };
+
+    animateGold();
+    animatePurple();
   }, []);
 
   return (
@@ -35,8 +64,10 @@ const GlowOrbBackground = () => {
           styles.orb,
           styles.goldOrb,
           {
-            left: goldAnim.x.interpolate({ inputRange: [0, 1], outputRange: ['0%', '100%'] }),
-            top: goldAnim.y.interpolate({ inputRange: [0, 1], outputRange: ['0%', '100%'] }),
+            transform: [
+              { translateX: goldAnimX },
+              { translateY: goldAnimY },
+            ],
           },
         ]}
       />
@@ -45,8 +76,10 @@ const GlowOrbBackground = () => {
           styles.orb,
           styles.purpleOrb,
           {
-            left: purpleAnim.x.interpolate({ inputRange: [0, 1], outputRange: ['0%', '100%'] }),
-            top: purpleAnim.y.interpolate({ inputRange: [0, 1], outputRange: ['0%', '100%'] }),
+            transform: [
+              { translateX: purpleAnimX },
+              { translateY: purpleAnimY },
+            ],
           },
         ]}
       />
