@@ -1,51 +1,104 @@
 import React from 'react';
 import { View, Text, StyleSheet } from 'react-native';
-import { COLORS, CHARACTER_EMOJIS } from '../../utils/constants';
+import { COLORS } from '../../utils/constants';
 import WeatherEffect from './WeatherEffect';
+
+const ROLE_COLORS = {
+  protagonist: '#ffd700',
+  supporting: '#c0c0c0',
+  bystander: '#cd7f32',
+  antagonist: '#ef4444',
+};
+
+const ROLE_EMOJIS = {
+  protagonist: '👑',
+  supporting: '🎭',
+  bystander: '👤',
+  antagonist: '👿',
+};
+
+const TERRAIN_EMOJIS = {
+  forest: '🌲',
+  castle: '🏰',
+  ocean: '🌊',
+  desert: '🏜️',
+  mountain: '⛰️',
+  glacier: '🧊',
+  volcano: '🌋',
+  city: '🏙️',
+};
+
+const WEATHER_EMOJIS = {
+  sunny: '☀️',
+  rainy: '🌧️',
+  thunder: '⛈️',
+  snow: '❄️',
+  foggy: '🌫️',
+  cloudy: '☁️',
+};
 
 const StagePreview = ({
   characters = [],
   weather = 'sunny',
   terrain = null,
 }) => {
-  console.log('[StagePreview] Props received:', {
-    charactersCount: characters?.length || 0,
-    characters: characters,
-    weather,
-    terrain,
-  });
-
   const getCharacterId = (char) => {
     return char.character_id || char.characterId || char.id;
   };
 
-  const getTerrainEmoji = () => {
-    const terrains = {
-      forest: '🌲',
-      castle: '🏰',
-      ocean: '🌊',
-      desert: '🏜️',
-      mountain: '⛰️',
-      glacier: '🧊',
-      volcano: '🌋',
-      city: '🏙️',
-    };
-    return terrains[terrain] || '🌿';
+  const getCharacterColor = (char) => {
+    return ROLE_COLORS[char.roleType] || COLORS.legoBlue;
   };
 
-  const getCharacterPositions = () => {
-    const positions = [
-      { x: '20%', y: '60%' },
-      { x: '50%', y: '50%' },
-      { x: '80%', y: '60%' },
-      { x: '35%', y: '75%' },
-      { x: '65%', y: '75%' },
-    ];
-    return positions.slice(0, characters.length);
+  const getCharacterEmoji = (char) => {
+    if (char.avatar) return char.avatar;
+    if (char.emoji) return char.emoji;
+    return ROLE_EMOJIS[char.roleType] || '🧑';
   };
+
+  const getTerrainEmoji = () => {
+    return TERRAIN_EMOJIS[terrain] || '🌿';
+  };
+
+  const getWeatherEmoji = () => {
+    return WEATHER_EMOJIS[weather] || '☀️';
+  };
+
+  const renderMiniCard = (char, index) => {
+    const charId = getCharacterId(char);
+    const charName = char.custom_name || char.name;
+    const charColor = getCharacterColor(char);
+    const charEmoji = getCharacterEmoji(char);
+
+    return (
+      <View
+        key={charId || index}
+        style={[styles.miniCard, { borderColor: charColor }]}
+      >
+        <View style={[styles.miniCardTopBar, { backgroundColor: charColor }]} />
+        <View style={styles.miniCardContent}>
+          <Text style={styles.miniAvatar}>{charEmoji}</Text>
+          <Text style={styles.miniName} numberOfLines={1}>
+            {charName}
+          </Text>
+        </View>
+      </View>
+    );
+  };
+
+  const renderEmptySlot = (label, icon) => (
+    <View style={styles.emptySlot}>
+      <Text style={styles.slotIcon}>{icon}</Text>
+      <Text style={styles.slotLabel}>{label}</Text>
+    </View>
+  );
 
   return (
     <View style={styles.container}>
+      <View style={styles.header}>
+        <Text style={styles.title}>🎭 舞台预览</Text>
+      </View>
+
       <WeatherEffect weather={weather}>
         <View style={styles.stage}>
           <View style={styles.background}>
@@ -53,63 +106,85 @@ const StagePreview = ({
             <Text style={styles.terrainEmoji}>{getTerrainEmoji()}</Text>
             <Text style={styles.terrainEmoji}>{getTerrainEmoji()}</Text>
           </View>
-          
-          <View style={styles.characterLayer}>
-            {characters.map((char, index) => {
-              const positions = getCharacterPositions();
-              const pos = positions[index] || { x: '50%', y: '50%' };
-              const charId = getCharacterId(char);
-              const charName = char.custom_name || char.name;
-              const charEmoji = CHARACTER_EMOJIS[index % CHARACTER_EMOJIS.length];
-              
-              console.log(`[StagePreview] Rendering character ${index}:`, {
-                charId,
-                charName,
-                charEmoji,
-                position: pos,
-              });
-              
-              return (
-                <View
-                  key={charId || index}
-                  style={[
-                    styles.characterSlot,
-                    { left: pos.x, top: pos.y },
-                  ]}
-                >
-                  <Text style={styles.characterEmoji}>
-                    {charEmoji}
-                  </Text>
-                  <Text style={styles.characterName} numberOfLines={1}>
-                    {charName}
-                  </Text>
+
+          <View style={styles.contentLayer}>
+            <View style={styles.section}>
+              <Text style={styles.sectionTitle}>👥 角色阵容</Text>
+              <View style={styles.slotsRow}>
+                {characters.length > 0 ? (
+                  characters.map((char, index) => renderMiniCard(char, index))
+                ) : (
+                  renderEmptySlot('选择角色', '👤')
+                )}
+              </View>
+            </View>
+
+            <View style={styles.section}>
+              <Text style={styles.sectionTitle}>🌍 场景设定</Text>
+              <View style={styles.slotsRow}>
+                {terrain ? (
+                  <View style={[styles.miniCard, styles.terrainCard, { borderColor: '#22c55e' }]}>
+                    <View style={[styles.miniCardTopBar, { backgroundColor: '#22c55e' }]} />
+                    <View style={styles.miniCardContent}>
+                      <Text style={styles.miniAvatar}>{getTerrainEmoji()}</Text>
+                      <Text style={styles.miniName} numberOfLines={1}>
+                        {terrain === 'forest' ? '森林' : terrain === 'castle' ? '城堡' : terrain === 'ocean' ? '海洋' : terrain === 'desert' ? '沙漠' : terrain === 'mountain' ? '山脉' : terrain === 'glacier' ? '冰川' : terrain === 'volcano' ? '火山' : '城市'}
+                      </Text>
+                    </View>
+                  </View>
+                ) : (
+                  renderEmptySlot('地形', '🏔️')
+                )}
+                <View style={[styles.miniCard, styles.weatherCard, { borderColor: '#3b82f6' }]}>
+                  <View style={[styles.miniCardTopBar, { backgroundColor: '#3b82f6' }]} />
+                  <View style={styles.miniCardContent}>
+                    <Text style={styles.miniAvatar}>{getWeatherEmoji()}</Text>
+                    <Text style={styles.miniName} numberOfLines={1}>
+                      {weather === 'sunny' ? '晴天' : weather === 'rainy' ? '雨天' : weather === 'thunder' ? '雷雨' : weather === 'snow' ? '雪天' : weather === 'foggy' ? '雾天' : '多云'}
+                    </Text>
+                  </View>
                 </View>
-              );
-            })}
+              </View>
+            </View>
+
+            <View style={styles.previewTextContainer}>
+              <Text style={styles.previewText} numberOfLines={2}>
+                {characters.length > 0
+                  ? `${characters.map(c => c.custom_name || c.name).join('、')}的故事即将开始...`
+                  : '选择卡牌来构建你的故事...'}
+              </Text>
+            </View>
           </View>
         </View>
       </WeatherEffect>
-      
-      <View style={styles.labelContainer}>
-        <Text style={styles.label}>🎬 舞台预览</Text>
-      </View>
     </View>
   );
 };
 
 const styles = StyleSheet.create({
   container: {
-    height: 200,
     marginHorizontal: 16,
     marginBottom: 16,
-    borderRadius: 20,
+    borderRadius: 16,
     overflow: 'hidden',
-    borderWidth: 3,
-    borderColor: COLORS.legoBlue,
+    backgroundColor: 'rgba(0,0,0,0.3)',
+    borderWidth: 2,
+    borderColor: 'rgba(255, 215, 0, 0.3)',
+  },
+  header: {
+    paddingHorizontal: 16,
+    paddingVertical: 10,
+    borderBottomWidth: 1,
+    borderBottomColor: 'rgba(255,255,255,0.1)',
+  },
+  title: {
+    fontSize: 14,
+    fontWeight: 'bold',
+    color: '#ffd700',
+    textAlign: 'center',
   },
   stage: {
-    flex: 1,
-    backgroundColor: COLORS.backgroundLight,
+    minHeight: 180,
     position: 'relative',
   },
   background: {
@@ -120,48 +195,93 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     justifyContent: 'space-around',
     paddingHorizontal: 20,
+    opacity: 0.3,
   },
   terrainEmoji: {
-    fontSize: 40,
-    opacity: 0.5,
+    fontSize: 32,
   },
-  characterLayer: {
+  contentLayer: {
     flex: 1,
-    position: 'relative',
+    padding: 12,
     zIndex: 10,
   },
-  characterSlot: {
-    position: 'absolute',
+  section: {
+    marginBottom: 10,
+  },
+  sectionTitle: {
+    fontSize: 11,
+    color: 'rgba(255,255,255,0.6)',
+    marginBottom: 6,
+  },
+  slotsRow: {
+    flexDirection: 'row',
+    flexWrap: 'wrap',
+    gap: 6,
+  },
+  miniCard: {
+    width: 52,
+    height: 70,
+    borderRadius: 6,
+    backgroundColor: 'rgba(30, 30, 50, 0.9)',
+    borderWidth: 2,
+    overflow: 'hidden',
+  },
+  miniCardTopBar: {
+    height: 3,
+    width: '100%',
+  },
+  miniCardContent: {
+    flex: 1,
     alignItems: 'center',
-    transform: [{ translateX: -25 }, { translateY: -30 }],
-    zIndex: 15,
+    justifyContent: 'center',
+    paddingHorizontal: 4,
   },
-  characterEmoji: {
-    fontSize: 36,
+  miniAvatar: {
+    fontSize: 18,
   },
-  characterName: {
-    fontSize: 10,
-    fontWeight: 'bold',
-    color: COLORS.text,
-    backgroundColor: 'rgba(255,255,255,0.8)',
-    paddingHorizontal: 6,
-    paddingVertical: 2,
-    borderRadius: 8,
+  miniName: {
+    fontSize: 8,
+    fontWeight: '600',
+    color: '#fff',
+    marginTop: 2,
+    textAlign: 'center',
+  },
+  emptySlot: {
+    width: 52,
+    height: 70,
+    borderRadius: 6,
+    borderWidth: 1,
+    borderStyle: 'dashed',
+    borderColor: 'rgba(255,255,255,0.2)',
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  slotIcon: {
+    fontSize: 14,
+    opacity: 0.4,
+  },
+  slotLabel: {
+    fontSize: 8,
+    color: 'rgba(255,255,255,0.4)',
     marginTop: 2,
   },
-  labelContainer: {
-    position: 'absolute',
-    top: 8,
-    left: 8,
-    backgroundColor: 'rgba(0,0,0,0.5)',
-    paddingHorizontal: 10,
-    paddingVertical: 4,
-    borderRadius: 12,
+  terrainCard: {
+    borderColor: '#22c55e',
   },
-  label: {
-    fontSize: 12,
-    color: COLORS.white,
-    fontWeight: 'bold',
+  weatherCard: {
+    borderColor: '#3b82f6',
+  },
+  previewTextContainer: {
+    marginTop: 'auto',
+    backgroundColor: 'rgba(255,255,255,0.05)',
+    borderRadius: 8,
+    padding: 10,
+  },
+  previewText: {
+    fontSize: 11,
+    color: 'rgba(255,255,255,0.7)',
+    fontStyle: 'italic',
+    lineHeight: 16,
   },
 });
 
