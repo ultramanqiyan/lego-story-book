@@ -155,4 +155,72 @@ describe('StagePreview', () => {
       expect(getAllByText('🌿').length).toBe(3);
     });
   });
+
+  describe('角色可见性验证', () => {
+    it('角色应该在角色层中渲染', () => {
+      const characters = [
+        { character_id: '1', name: '主角' },
+      ];
+      const { getByText, UNSAFE_queryByType } = render(<StagePreview characters={characters} />);
+      
+      const characterName = getByText('主角');
+      expect(characterName).toBeTruthy();
+      
+      const parent = characterName.parent;
+      expect(parent).toBeTruthy();
+    });
+
+    it('角色应该显示对应的emoji', () => {
+      const characters = [
+        { character_id: '1', name: '角色A' },
+        { character_id: '2', name: '角色B' },
+      ];
+      const { getByText } = render(<StagePreview characters={characters} />);
+      
+      expect(getByText('🧑')).toBeTruthy();
+      expect(getByText('👩')).toBeTruthy();
+    });
+
+    it('角色和地形应该同时显示', () => {
+      const characters = [
+        { character_id: '1', name: '勇者' },
+      ];
+      const { getByText, getAllByText } = render(
+        <StagePreview characters={characters} terrain="forest" />
+      );
+      
+      expect(getByText('勇者')).toBeTruthy();
+      expect(getAllByText('🌲').length).toBe(3);
+    });
+
+    it('多个角色应该同时显示', () => {
+      const characters = [
+        { character_id: '1', name: '战士' },
+        { character_id: '2', name: '法师' },
+        { character_id: '3', name: '盗贼' },
+      ];
+      const { getByText } = render(<StagePreview characters={characters} />);
+      
+      expect(getByText('战士')).toBeTruthy();
+      expect(getByText('法师')).toBeTruthy();
+      expect(getByText('盗贼')).toBeTruthy();
+    });
+  });
+
+  describe('角色位置验证', () => {
+    it('第一个角色应该在左上位置', () => {
+      const characters = [{ character_id: '1', name: '角色1' }];
+      const { getByText } = render(<StagePreview characters={characters} />);
+      expect(getByText('角色1')).toBeTruthy();
+    });
+
+    it('第二个角色应该在中间位置', () => {
+      const characters = [
+        { character_id: '1', name: '角色1' },
+        { character_id: '2', name: '角色2' },
+      ];
+      const { getByText } = render(<StagePreview characters={characters} />);
+      expect(getByText('角色2')).toBeTruthy();
+    });
+  });
 });

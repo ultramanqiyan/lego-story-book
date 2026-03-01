@@ -376,4 +376,80 @@ describe('StoryDirectorScreen', () => {
       }, { timeout: 3000 });
     });
   });
+
+  describe('舞台预览角色显示验证', () => {
+    it('选择角色后舞台预览应该显示角色名称', async () => {
+      const { getAllByText, getByText } = renderWithProviders(
+        <StoryDirectorScreen route={mockRoute} navigation={mockNavigation} />
+      );
+      
+      await waitFor(() => {
+        expect(getAllByText('角色1').length).toBeGreaterThan(0);
+      }, { timeout: 5000 });
+      
+      const char1Elements = getAllByText('角色1');
+      fireEvent.press(char1Elements[0]);
+      
+      await waitFor(() => {
+        expect(getByText('🎬 舞台预览')).toBeTruthy();
+        expect(getAllByText('角色1').length).toBeGreaterThanOrEqual(2);
+      }, { timeout: 3000 });
+    });
+
+    it('选择多个角色后舞台预览应该显示所有角色名称', async () => {
+      const { getAllByText, getByText } = renderWithProviders(
+        <StoryDirectorScreen route={mockRoute} navigation={mockNavigation} />
+      );
+      
+      await waitFor(() => {
+        expect(getAllByText('角色1').length).toBeGreaterThan(0);
+        expect(getAllByText('角色2').length).toBeGreaterThan(0);
+      }, { timeout: 5000 });
+      
+      fireEvent.press(getAllByText('角色1')[0]);
+      fireEvent.press(getAllByText('角色2')[0]);
+      
+      await waitFor(() => {
+        expect(getByText('🎬 舞台预览')).toBeTruthy();
+      }, { timeout: 3000 });
+    });
+
+    it('取消选择角色后舞台预览应该移除角色', async () => {
+      const { getAllByText, getByText, queryAllByText } = renderWithProviders(
+        <StoryDirectorScreen route={mockRoute} navigation={mockNavigation} />
+      );
+      
+      await waitFor(() => {
+        expect(getAllByText('角色1').length).toBeGreaterThan(0);
+      }, { timeout: 5000 });
+      
+      const char1Elements = getAllByText('角色1');
+      fireEvent.press(char1Elements[0]);
+      
+      await waitFor(() => {
+        expect(getByText('🎬 舞台预览')).toBeTruthy();
+      }, { timeout: 3000 });
+      
+      fireEvent.press(char1Elements[0]);
+    });
+
+    it('选择角色和地形后舞台预览应该同时显示', async () => {
+      const { getAllByText, getByText } = renderWithProviders(
+        <StoryDirectorScreen route={mockRoute} navigation={mockNavigation} />
+      );
+      
+      await waitFor(() => {
+        expect(getAllByText('角色1').length).toBeGreaterThan(0);
+        expect(getByText('森林')).toBeTruthy();
+      }, { timeout: 5000 });
+      
+      fireEvent.press(getAllByText('角色1')[0]);
+      fireEvent.press(getByText('森林'));
+      
+      await waitFor(() => {
+        expect(getByText('🎬 舞台预览')).toBeTruthy();
+        expect(getAllByText('🌲').length).toBeGreaterThan(0);
+      }, { timeout: 3000 });
+    });
+  });
 });

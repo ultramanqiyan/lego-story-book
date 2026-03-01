@@ -8,6 +8,13 @@ const StagePreview = ({
   weather = 'sunny',
   terrain = null,
 }) => {
+  console.log('[StagePreview] Props received:', {
+    charactersCount: characters?.length || 0,
+    characters: characters,
+    weather,
+    terrain,
+  });
+
   const getCharacterId = (char) => {
     return char.character_id || char.characterId || char.id;
   };
@@ -51,20 +58,30 @@ const StagePreview = ({
             {characters.map((char, index) => {
               const positions = getCharacterPositions();
               const pos = positions[index] || { x: '50%', y: '50%' };
+              const charId = getCharacterId(char);
+              const charName = char.custom_name || char.name;
+              const charEmoji = CHARACTER_EMOJIS[index % CHARACTER_EMOJIS.length];
+              
+              console.log(`[StagePreview] Rendering character ${index}:`, {
+                charId,
+                charName,
+                charEmoji,
+                position: pos,
+              });
               
               return (
                 <View
-                  key={getCharacterId(char) || index}
+                  key={charId || index}
                   style={[
                     styles.characterSlot,
                     { left: pos.x, top: pos.y },
                   ]}
                 >
                   <Text style={styles.characterEmoji}>
-                    {CHARACTER_EMOJIS[index % CHARACTER_EMOJIS.length]}
+                    {charEmoji}
                   </Text>
                   <Text style={styles.characterName} numberOfLines={1}>
-                    {char.custom_name || char.name}
+                    {charName}
                   </Text>
                 </View>
               );
@@ -111,11 +128,13 @@ const styles = StyleSheet.create({
   characterLayer: {
     flex: 1,
     position: 'relative',
+    zIndex: 10,
   },
   characterSlot: {
     position: 'absolute',
     alignItems: 'center',
     transform: [{ translateX: -25 }, { translateY: -30 }],
+    zIndex: 15,
   },
   characterEmoji: {
     fontSize: 36,
