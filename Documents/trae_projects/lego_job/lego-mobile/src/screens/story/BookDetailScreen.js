@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useCallback } from 'react';
 import {
   View,
   Text,
@@ -10,6 +10,7 @@ import {
   Alert,
   Share,
 } from 'react-native';
+import { useIsFocused } from '@react-navigation/native';
 import { useAuth } from '../../context/AuthContext';
 import { useToast } from '../../context/ToastContext';
 import { booksAPI, bookCharactersAPI, chaptersAPI, charactersAPI, plotOptionsAPI, shareAPI } from '../../api';
@@ -21,6 +22,7 @@ const BookDetailScreen = ({ route, navigation }) => {
   const { bookId } = route.params || {};
   const { user } = useAuth();
   const toast = useToast();
+  const isFocused = useIsFocused();
   
   const [book, setBook] = useState(null);
   const [characters, setCharacters] = useState([]);
@@ -41,16 +43,8 @@ const BookDetailScreen = ({ route, navigation }) => {
     roleType: 'supporting',
   });
 
-  useEffect(() => {
-    if (!bookId) {
-      toast.error('书籍ID无效');
-      navigation.goBack();
-      return;
-    }
-    loadData();
-  }, [bookId]);
-
-  const loadData = async () => {
+  const loadData = useCallback(async () => {
+    if (!bookId) return;
     try {
       const [bookData, charsData] = await Promise.all([
         booksAPI.getDetail(bookId, user?.userId),
@@ -66,7 +60,22 @@ const BookDetailScreen = ({ route, navigation }) => {
     } finally {
       setIsLoading(false);
     }
-  };
+  }, [bookId, user?.userId]);
+
+  useEffect(() => {
+    if (!bookId) {
+      toast.error('书籍ID无效');
+      navigation.goBack();
+      return;
+    }
+    loadData();
+  }, [bookId]);
+
+  useEffect(() => {
+    if (isFocused && bookId) {
+      loadData();
+    }
+  }, [isFocused]);
 
   const availableCharacters = allCharacters.filter(
     (c) => !characters.some((bc) => (bc.character_id || bc.characterId) === (c.character_id || c.characterId))

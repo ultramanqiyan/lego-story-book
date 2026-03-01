@@ -335,22 +335,25 @@ const ChapterScreen = ({ route, navigation }) => {
                   try {
                     const options = puzzle?.options ? JSON.parse(puzzle.options) : [];
                     if (!Array.isArray(options)) return null;
-                    return options.map((option, index) => (
-                      <TouchableOpacity
-                        key={index}
-                        style={[
-                          styles.optionButton,
-                          selectedAnswer === option?.charAt(0) && styles.optionButtonSelected,
-                        ]}
-                        onPress={() => handleAnswer(option?.charAt(0))}
-                        disabled={selectedAnswer !== null}
-                        activeOpacity={0.8}
-                      >
-                        <Text style={styles.optionText}>
-                          {String.fromCharCode(65 + index)}. {option}
-                        </Text>
-                      </TouchableOpacity>
-                    ));
+                    return options.map((option, index) => {
+                      const optionLetter = String.fromCharCode(65 + index);
+                      return (
+                        <TouchableOpacity
+                          key={index}
+                          style={[
+                            styles.optionButton,
+                            selectedAnswer === optionLetter && styles.optionButtonSelected,
+                          ]}
+                          onPress={() => handleAnswer(optionLetter)}
+                          disabled={selectedAnswer !== null}
+                          activeOpacity={0.8}
+                        >
+                          <Text style={styles.optionText}>
+                            {optionLetter}. {option}
+                          </Text>
+                        </TouchableOpacity>
+                      );
+                    });
                   } catch (e) {
                     return null;
                   }
