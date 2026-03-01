@@ -137,8 +137,9 @@ const ChapterScreen = ({ route, navigation }) => {
 
   const handleAnswer = async (answer) => {
     if (selectedAnswer || isCorrect || !puzzle) return;
-
+    
     setSelectedAnswer(answer);
+    
     try {
       const puzzleId = puzzle.puzzle_id || puzzle.id || puzzle.puzzleId;
       const result = await puzzleAPI.submit(puzzleId, user?.userId, answer);
@@ -147,44 +148,25 @@ const ChapterScreen = ({ route, navigation }) => {
       if (result.isCorrect) {
         setIsCorrect(true);
         toast.success('🎉 回答正确！');
-        if (bookId) {
-          await chaptersAPI.complete(bookId, chapterId, user?.userId);
-        }
-        
-        Animated.spring(resultAnim, {
-          toValue: 1,
-          tension: 100,
-          friction: 8,
-          useNativeDriver: true,
-        }).start();
-
-        celebrationAnims.forEach((anim, index) => {
-          Animated.timing(anim, {
-            toValue: 1,
-            duration: 800,
-            delay: index * 80,
-            easing: BOUNCE_EASING,
-            useNativeDriver: true,
-          }).start();
-        });
       } else {
-        toast.error(`❌ 答案错误，还有 ${3 - result.attempts} 次机会`);
+        const errorMsg = result.message || '答案错误，请重试';
+        toast.error(`❌ ${errorMsg}`);
+        
         if (result.hint) {
           toast.info(`💡 提示：${result.hint}`);
         }
         
-        Animated.sequence([
-          Animated.timing(shakeAnim, { toValue: 1, duration: 80, useNativeDriver: true }),
-          Animated.timing(shakeAnim, { toValue: -1, duration: 80, useNativeDriver: true }),
-          Animated.timing(shakeAnim, { toValue: 0.5, duration: 80, useNativeDriver: true }),
-          Animated.timing(shakeAnim, { toValue: 0, duration: 80, useNativeDriver: true }),
-        ]).start();
+        if (result.attempts >= 3) {
+          toast.warning('已尝试3次，请查看答案提示');
+        }
         
-        setTimeout(() => setSelectedAnswer(null), 1000);
+        setTimeout(() => setSelectedAnswer(null), 1500);
       }
     } catch (error) {
-      toast.error('提交失败');
-      setSelectedAnswer(null);
+      console.error('Puzzle submission error:', error);
+      const errorMessage = error.message || '提交失败，请重试';
+      toast.error(`❌ ${errorMessage}`);
+      setTimeout(() => setSelectedAnswer(null), 1500);
     }
   };
 

@@ -1,6 +1,5 @@
 /**
- * CardDeck3D组件 - 3D卡牌组，带扇形展开和堆叠效果（网页端风格）
- * 优化版本：修复Web端显示问题
+ * CardDeck3D组件 - 3D卡牌组，带扇形展开和堆叠效果
  */
 
 import React, { useEffect, useCallback, useState } from 'react';
@@ -9,16 +8,18 @@ import Animated, {
   useSharedValue,
   useAnimatedStyle,
   withTiming,
-  withSpring,
-  withDelay,
   interpolate,
-  Extrapolate,
 } from 'react-native-reanimated';
 import Card3D from './Card3D';
 import { COLORS } from '../../utils/constants';
 import { CARD_3D_CONFIG, EASINGS } from '../../utils/animations';
 
 const { width: SCREEN_WIDTH } = Dimensions.get('window');
+
+const clamp = (value, min, max) => {
+  'worklet';
+  return Math.min(Math.max(value, min), max);
+};
 
 const CardDeck3D = ({
   title,
@@ -36,7 +37,6 @@ const CardDeck3D = ({
   const isExpanded = useSharedValue(0);
   const [isWeb, setIsWeb] = useState(false);
 
-  // 确保 items 是数组
   const safeItems = Array.isArray(items) ? items : [];
 
   useEffect(() => {
@@ -62,48 +62,39 @@ const CardDeck3D = ({
     onPress?.(id);
   }, [onPress]);
 
-  // 计算单个卡牌的动画样式
   const useCardAnimatedStyle = (index, total, itemId) => {
     return useAnimatedStyle(() => {
       const isSelected = selectedId === itemId;
 
-      // 计算扇形角度
       const startAngle = -CARD_3D_CONFIG.fanAngle / 2;
       const angleStep = total > 1 ? CARD_3D_CONFIG.fanAngle / (total - 1) : 0;
       const targetAngle = startAngle + index * angleStep;
       const angleRad = (targetAngle * Math.PI) / 180;
 
-      // 计算位置
       const targetTranslateX = Math.sin(angleRad) * CARD_3D_CONFIG.fanRadius;
       const targetTranslateY = -Math.abs(Math.cos(angleRad) * CARD_3D_CONFIG.fanRadius * 0.3);
 
-      const rotateZ = interpolate(
-        isExpanded.value,
-        [0, 1],
-        [0, targetAngle],
-        Extrapolate.CLAMP
+      const rotateZ = clamp(
+        interpolate(isExpanded.value, [0, 1], [0, targetAngle]),
+        -90, 90
       );
 
-      const translateX = interpolate(
-        isExpanded.value,
-        [0, 1],
-        [index * stackOffset, targetTranslateX],
-        Extrapolate.CLAMP
+      const translateX = clamp(
+        interpolate(isExpanded.value, [0, 1], [index * stackOffset, targetTranslateX]),
+        -200, 200
       );
 
-      const translateY = interpolate(
-        isExpanded.value,
-        [0, 1],
-        [index * stackOffset * 0.5, targetTranslateY],
-        Extrapolate.CLAMP
+      const translateY = clamp(
+        interpolate(isExpanded.value, [0, 1], [index * stackOffset * 0.5, targetTranslateY]),
+        -100, 100
       );
 
       const elevation = isSelected
-        ? interpolate(isExpanded.value, [0, 1], [0, CARD_3D_CONFIG.selectElevation])
+        ? clamp(interpolate(isExpanded.value, [0, 1], [0, CARD_3D_CONFIG.selectElevation]), 0, 30)
         : 0;
 
       const scale = isSelected
-        ? interpolate(isExpanded.value, [0, 1], [1, 1.25])
+        ? clamp(interpolate(isExpanded.value, [0, 1], [1, 1.25]), 0.5, 2)
         : 1;
 
       return {
@@ -118,17 +109,15 @@ const CardDeck3D = ({
     });
   };
 
-  // 标题动画样式
   const titleAnimatedStyle = useAnimatedStyle(() => ({
-    opacity: interpolate(isExpanded.value, [0, 1], [0.5, 1]),
+    opacity: clamp(interpolate(isExpanded.value, [0, 1], [0.5, 1]), 0, 1),
     transform: [
       {
-        translateY: interpolate(isExpanded.value, [0, 1], [10, 0]),
+        translateY: clamp(interpolate(isExpanded.value, [0, 1], [10, 0]), -50, 50),
       },
     ],
   }));
 
-  // Web端使用简化的渲染
   if (isWeb) {
     return (
       <View style={styles.container}>
@@ -163,12 +152,6 @@ const CardDeck3D = ({
               );
             })}
           </View>
-        </View>
-
-        <View style={styles.decorations}>
-          <View style={[styles.decorationDot, styles.dot1]} />
-          <View style={[styles.decorationDot, styles.dot2]} />
-          <View style={[styles.decorationDot, styles.dot3]} />
         </View>
       </View>
     );
@@ -210,12 +193,6 @@ const CardDeck3D = ({
             </Animated.View>
           );
         })}
-      </View>
-
-      <View style={styles.decorations}>
-        <View style={[styles.decorationDot, styles.dot1]} />
-        <View style={[styles.decorationDot, styles.dot2]} />
-        <View style={[styles.decorationDot, styles.dot3]} />
       </View>
     </View>
   );
@@ -267,40 +244,6 @@ const styles = StyleSheet.create({
   },
   cardWrapperWebSelected: {
     transform: [{ translateY: -10 }, { scale: 1.05 }],
-  },
-  decorations: {
-    position: 'absolute',
-    top: 0,
-    left: 0,
-    right: 0,
-    bottom: 0,
-    pointerEvents: 'none',
-  },
-  decorationDot: {
-    position: 'absolute',
-    width: 8,
-    height: 8,
-    borderRadius: 4,
-    opacity: 0.3,
-  },
-  dot1: {
-    top: 10,
-    left: 20,
-    backgroundColor: COLORS.legoYellow,
-  },
-  dot2: {
-    top: 30,
-    right: 30,
-    backgroundColor: COLORS.legoBlue,
-    width: 6,
-    height: 6,
-  },
-  dot3: {
-    bottom: 20,
-    left: 40,
-    backgroundColor: COLORS.legoRed,
-    width: 10,
-    height: 10,
   },
 });
 

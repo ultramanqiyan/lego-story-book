@@ -1,6 +1,5 @@
 /**
  * Card3DDemoScreen - 3D卡牌效果演示页面
- * 用于验证3D卡牌翻转和扇形展开效果
  */
 
 import React, { useState } from 'react';
@@ -15,19 +14,25 @@ import {
 import { Card3D, CardDeck3D } from '../../components/card3d';
 import { COLORS } from '../../utils/constants';
 
-const DEMO_ITEMS = [
-  { id: '1', name: '法师', icon: '🧙' },
-  { id: '2', name: '战士', icon: '🦸' },
-  { id: '3', name: '精灵', icon: '🧝' },
-  { id: '4', name: '盗贼', icon: '🦹' },
-];
-
 const Card3DDemoScreen = () => {
   const [selectedId, setSelectedId] = useState(null);
-  const [activeTab, setActiveTab] = useState('single'); // 'single' | 'deck'
+  const [activeTab, setActiveTab] = useState('single'); // 'single' | 'fan'
 
   const handleSelect = (id) => {
     setSelectedId(id === selectedId ? null : id);
+  };
+
+  const getSelectedName = () => {
+    if (!selectedId) return '未选择';
+    const characters = [
+      { id: '1', name: '法师' },
+      { id: '2', name: '战士' },
+      { id: '3', name: '精灵' },
+      { id: '4', name: '盗贼' },
+      { id: '5', name: '龙骑' },
+    ];
+    const found = characters.find(c => c.id === selectedId);
+    return found ? found.name : '未选择';
   };
 
   return (
@@ -50,72 +55,65 @@ const Card3DDemoScreen = () => {
           </Text>
         </TouchableOpacity>
         <TouchableOpacity
-          style={[styles.tab, activeTab === 'deck' && styles.tabActive]}
-          onPress={() => setActiveTab('deck')}
+          style={[styles.tab, activeTab === 'fan' && styles.tabActive]}
+          onPress={() => setActiveTab('fan')}
         >
-          <Text style={[styles.tabText, activeTab === 'deck' && styles.tabTextActive]}>
+          <Text style={[styles.tabText, activeTab === 'fan' && styles.tabTextActive]}>
             扇形展开
           </Text>
         </TouchableOpacity>
       </View>
 
       <ScrollView style={styles.content} contentContainerStyle={styles.contentContainer}>
-        {activeTab === 'single' ? (
-          <View style={styles.singleCardSection}>
+        {activeTab === 'single' && (
+          <View style={styles.section}>
             <Text style={styles.sectionTitle}>单张3D卡牌</Text>
             <Text style={styles.sectionDesc}>点击卡牌查看选中效果</Text>
-
-            <View style={styles.cardContainer}>
-              <Card3D
-                icon="🧙"
-                name="法师"
-                isSelected={selectedId === 'single'}
-                onPress={() => handleSelect('single')}
-                variant={selectedId === 'single' ? 'primary' : 'default'}
-                width={100}
-                height={140}
-              />
+            
+            <View style={styles.cardRow}>
+              <Card3D icon="🔥" name="火焰" variant="primary" width={80} height={110} />
+              <Card3D icon="💧" name="水滴" variant="secondary" width={80} height={110} />
+              <Card3D icon="🌿" name="自然" variant="success" width={80} height={110} />
             </View>
 
-            <View style={styles.variantSection}>
-              <Text style={styles.sectionTitle}>不同变体样式</Text>
-              <View style={styles.variantRow}>
-                <Card3D icon="🔥" name="默认" variant="default" width={80} height={110} />
-                <Card3D icon="⭐" name="主色" variant="primary" width={80} height={110} />
-                <Card3D icon="💧" name="次要" variant="secondary" width={80} height={110} />
-              </View>
-            </View>
-          </View>
-        ) : (
-          <View style={styles.deckSection}>
-            <Text style={styles.sectionTitle}>扇形展开卡牌组</Text>
-            <Text style={styles.sectionDesc}>点击卡牌进行选择</Text>
-
-            <CardDeck3D
-              title="选择你的角色"
-              items={DEMO_ITEMS}
-              selectedId={selectedId}
-              onPress={handleSelect}
-              enableFanSpread={true}
-            />
-
-            <View style={styles.infoCard}>
-              <Text style={styles.infoTitle}>当前选择</Text>
-              <Text style={styles.infoText}>
-                {selectedId
-                  ? DEMO_ITEMS.find((item) => item.id === selectedId)?.name || '未知'
-                  : '未选择'}
-              </Text>
+            <Text style={styles.subTitle}>不同变体样式</Text>
+            <View style={styles.cardRow}>
+              <Card3D icon="⚡" name="默认" variant="default" width={70} height={100} />
+              <Card3D icon="⭐" name="主色" variant="primary" width={70} height={100} />
+              <Card3D icon="💎" name="次要" variant="secondary" width={70} height={100} />
             </View>
           </View>
         )}
 
-        {/* 平台信息 */}
+        {activeTab === 'fan' && (
+          <View style={styles.section}>
+            <Text style={styles.sectionTitle}>扇形展开卡牌组</Text>
+            <Text style={styles.sectionDesc}>点击卡牌进行选择</Text>
+            
+            <CardDeck3D
+              items={[
+                { id: '1', name: '法师', icon: '🧙' },
+                { id: '2', name: '战士', icon: '🦸' },
+                { id: '3', name: '精灵', icon: '🧝' },
+                { id: '4', name: '盗贼', icon: '🦹' },
+                { id: '5', name: '龙骑', icon: '🐉' },
+              ]}
+              selectedId={selectedId}
+              onPress={handleSelect}
+            />
+
+            <View style={styles.selectedInfo}>
+              <Text style={styles.selectedLabel}>当前选择</Text>
+              <Text style={styles.selectedValue}>{getSelectedName()}</Text>
+            </View>
+          </View>
+        )}
+
         <View style={styles.platformInfo}>
           <Text style={styles.platformTitle}>平台信息</Text>
           <Text style={styles.platformText}>OS: {Platform.OS}</Text>
           <Text style={styles.platformText}>
-            3D效果: {Platform.OS === 'web' ? 'Web简化版' : '完整版'}
+            动画引擎: React Native Reanimated
           </Text>
         </View>
       </ScrollView>
@@ -179,8 +177,9 @@ const styles = StyleSheet.create({
     padding: 20,
     paddingBottom: 100,
   },
-  singleCardSection: {
+  section: {
     alignItems: 'center',
+    marginBottom: 24,
   },
   sectionTitle: {
     fontSize: 18,
@@ -191,51 +190,43 @@ const styles = StyleSheet.create({
   sectionDesc: {
     fontSize: 14,
     color: COLORS.textLight,
-    marginBottom: 24,
+    marginBottom: 16,
   },
-  cardContainer: {
-    marginVertical: 20,
-    alignItems: 'center',
-    justifyContent: 'center',
-    height: 180,
+  subTitle: {
+    fontSize: 14,
+    fontWeight: '600',
+    color: COLORS.text,
+    marginTop: 20,
+    marginBottom: 12,
   },
-  variantSection: {
-    marginTop: 40,
-    alignItems: 'center',
-    width: '100%',
-  },
-  variantRow: {
+  cardRow: {
     flexDirection: 'row',
     justifyContent: 'center',
-    gap: 16,
-    marginTop: 16,
+    flexWrap: 'wrap',
+    gap: 12,
+    marginBottom: 16,
   },
-  deckSection: {
+  selectedInfo: {
+    flexDirection: 'row',
     alignItems: 'center',
-  },
-  infoCard: {
-    marginTop: 40,
-    padding: 20,
+    marginTop: 20,
+    padding: 12,
     backgroundColor: COLORS.white,
-    borderRadius: 16,
-    borderWidth: 2,
-    borderColor: COLORS.legoYellow,
-    alignItems: 'center',
-    width: '80%',
+    borderRadius: 12,
+    gap: 12,
   },
-  infoTitle: {
-    fontSize: 16,
+  selectedLabel: {
+    fontSize: 14,
     fontWeight: '600',
     color: COLORS.textLight,
-    marginBottom: 8,
   },
-  infoText: {
-    fontSize: 20,
+  selectedValue: {
+    fontSize: 16,
     fontWeight: 'bold',
-    color: COLORS.text,
+    color: COLORS.legoYellow,
   },
   platformInfo: {
-    marginTop: 40,
+    marginTop: 20,
     padding: 16,
     backgroundColor: COLORS.white,
     borderRadius: 12,

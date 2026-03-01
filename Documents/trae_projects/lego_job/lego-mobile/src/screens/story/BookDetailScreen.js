@@ -128,7 +128,11 @@ const BookDetailScreen = ({ route, navigation }) => {
     }
 
     const duplicateName = characters.find(
-      (c) => (c.custom_name || c.customName) === editingCharacter.customName.trim() && (c.id || c.bookCharacterId) !== editingCharacter.id
+      (c) => {
+        const existingName = c.custom_name || c.custom_name;
+        const newName = newCharacter.customName.trim();
+        return existingName && existingName === newName && (c.id || c.bookCharacterId) !== editingCharacter.id;
+      }
     );
     if (duplicateName) {
       toast.error('角色名称已存在，请使用不同的名称');

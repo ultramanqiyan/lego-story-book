@@ -9,22 +9,25 @@ import {
   withTiming,
   withSpring,
   interpolate,
-  Extrapolate,
   runOnJS,
 } from 'react-native-reanimated';
 import { Gesture } from 'react-native-gesture-handler';
 import { CARD_3D_CONFIG, EASINGS, calculateTiltAngle } from '../utils/animations';
 
+const clamp = (value, min, max) => {
+  'worklet';
+  return Math.min(Math.max(value, min), max);
+};
+
 export const use3DCard = (options = {}) => {
   const {
     onFlip,
     onTilt,
-    onPress, // 点击回调（新增）
+    onPress,
     enableTilt = true,
     enableFlip = true,
   } = options;
 
-  // 动画状态
   const flipProgress = useSharedValue(0);
   const tiltX = useSharedValue(0);
   const tiltY = useSharedValue(0);
@@ -32,10 +35,8 @@ export const use3DCard = (options = {}) => {
   const elevation = useSharedValue(3);
   const glowOpacity = useSharedValue(0);
 
-  // 卡片尺寸引用
   const cardLayout = useRef({ width: 0, height: 0, x: 0, y: 0 });
 
-  // 翻转卡片
   const flipCard = useCallback(() => {
     if (!enableFlip) return;
 
@@ -50,7 +51,6 @@ export const use3DCard = (options = {}) => {
     }
   }, [enableFlip, flipProgress, onFlip]);
 
-  // 重置倾斜
   const resetTilt = useCallback(() => {
     tiltX.value = withSpring(0, { damping: 15, stiffness: 150 });
     tiltY.value = withSpring(0, { damping: 15, stiffness: 150 });
@@ -59,21 +59,13 @@ export const use3DCard = (options = {}) => {
     glowOpacity.value = withTiming(0, { duration: 200 });
   }, [tiltX, tiltY, scale, elevation, glowOpacity]);
 
-  // 更新卡片布局
   const updateLayout = useCallback((event) => {
     const { width, height, x, y } = event.nativeEvent.layout;
     cardLayout.current = { width, height, x, y };
   }, []);
 
-  // 正面动画样式
   const frontAnimatedStyle = useAnimatedStyle(() => {
-    const rotateY = interpolate(
-      flipProgress.value,
-      [0, 1],
-      [0, 180],
-      Extrapolate.CLAMP
-    );
-
+    const rotateY = clamp(interpolate(flipProgress.value, [0, 1], [0, 180]), 0, 180);
     const frontOpacity = flipProgress.value < 0.5 ? 1 : 0;
 
     return {
@@ -88,15 +80,8 @@ export const use3DCard = (options = {}) => {
     };
   });
 
-  // 背面动画样式
   const backAnimatedStyle = useAnimatedStyle(() => {
-    const rotateY = interpolate(
-      flipProgress.value,
-      [0, 1],
-      [180, 360],
-      Extrapolate.CLAMP
-    );
-
+    const rotateY = clamp(interpolate(flipProgress.value, [0, 1], [180, 360]), 180, 360);
     const backOpacity = flipProgress.value > 0.5 ? 1 : 0;
 
     return {
@@ -111,43 +96,23 @@ export const use3DCard = (options = {}) => {
     };
   });
 
-  // 阴影动画样式
   const shadowAnimatedStyle = useAnimatedStyle(() => {
-    const shadowOffset = interpolate(
-      elevation.value,
-      [0, 10],
-      [2, 20],
-      Extrapolate.CLAMP
-    );
-
-    const shadowOpacity = interpolate(
-      elevation.value,
-      [0, 10],
-      [0.1, CARD_3D_CONFIG.shadowOpacity],
-      Extrapolate.CLAMP
-    );
+    const shadowOpacity = clamp(interpolate(elevation.value, [0, 10], [0.1, CARD_3D_CONFIG.shadowOpacity]), 0.1, CARD_3D_CONFIG.shadowOpacity);
 
     return {
       shadowOpacity,
-      shadowRadius: interpolate(
-        elevation.value,
-        [0, 10],
-        [4, CARD_3D_CONFIG.shadowBlur],
-        Extrapolate.CLAMP
-      ),
+      shadowRadius: clamp(interpolate(elevation.value, [0, 10], [4, CARD_3D_CONFIG.shadowBlur]), 4, CARD_3D_CONFIG.shadowBlur),
       elevation: elevation.value,
       transform: [{ scale: scale.value }],
     };
   });
 
-  // 发光效果样式
   const glowAnimatedStyle = useAnimatedStyle(() => {
     return {
       transform: [{ scale: scale.value }],
     };
   });
 
-  // 手势处理器
   const gesture = Gesture.Pan()
     .onBegin(() => {
       if (!enableTilt) return;
@@ -181,29 +146,41 @@ export const use3DCard = (options = {}) => {
       }
     })
     .onEnd(() => {
-      resetTilt();
+      'worklet';
+      tiltX.value = withSpring(0, { damping: 15, stiffness: 150 });
+      tiltY.value = withSpring(0, { damping: 15, stiffness: 150 });
+      scale.value = withTiming(1, { duration: 200 });
+      elevation.value = withTiming(3, { duration: 200 });
+      glowOpacity.value = withTiming(0, { duration: 200 });
     })
     .onFinalize(() => {
-      resetTilt();
+      'worklet';
+      tiltX.value = withSpring(0, { damping: 15, stiffness: 150 });
+      tiltY.value = withSpring(0, { damping: 15, stiffness: 150 });
+      scale.value = withTiming(1, { duration: 200 });
+      elevation.value = withTiming(3, { duration: 200 });
+      glowOpacity.value = withTiming(0, { duration: 200 });
     });
 
-  // 点击手势 - 根据enableFlip决定是否翻转，始终调用onPress
   const tapGesture = Gesture.Tap()
     .onEnd(() => {
-      // 调用 onPress 回调
       if (onPress) {
         runOnJS(onPress)();
       }
-      // 只有启用翻转时才翻转
       if (enableFlip && !onPress) {
-        flipCard();
+        const targetValue = flipProgress.value > 0.5 ? 0 : 1;
+        flipProgress.value = withTiming(targetValue, {
+          duration: CARD_3D_CONFIG.flipDuration,
+          easing: EASINGS.standard,
+        });
+        if (onFlip) {
+          runOnJS(onFlip)(targetValue === 1);
+        }
       }
     });
 
-  // 组合手势
   const combinedGesture = Gesture.Simultaneous(gesture, tapGesture);
 
-  // 选中状态动画 - 不再调用 onPress
   const animateSelect = useCallback((selected) => {
     if (selected) {
       scale.value = withSpring(1.1, { damping: 12, stiffness: 200 });
@@ -212,23 +189,18 @@ export const use3DCard = (options = {}) => {
     } else {
       resetTilt();
     }
-    // 注意：这里不再调用 onPress，避免重复触发
   }, [scale, elevation, glowOpacity, resetTilt]);
 
   return {
-    // 动画样式
     frontAnimatedStyle,
     backAnimatedStyle,
     shadowAnimatedStyle,
     glowAnimatedStyle,
-    // 手势
     gesture: combinedGesture,
-    // 方法
     flipCard,
     resetTilt,
     updateLayout,
     animateSelect,
-    // 状态值
     flipProgress,
     isFlipped: () => flipProgress.value > 0.5,
   };

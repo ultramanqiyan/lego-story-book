@@ -52,6 +52,8 @@ const StoryCreateScreen = ({ navigation }) => {
   };
 
   const createNewBook = async () => {
+    console.log('[StoryCreate] createNewBook called, newBookTitle:', newBookTitle);
+    
     if (!newBookTitle || !newBookTitle.trim()) {
       toast.error('请输入书籍名称');
       return;

@@ -4,3 +4,6 @@
 
 export { default as Card3D } from './Card3D';
 export { default as CardDeck3D } from './CardDeck3D';
+export { default as Card2D } from './Card2D';
+export { default as Card3DVariant } from './Card3DVariant';
+export { default as CardDeckVariants } from './CardDeckVariants';
