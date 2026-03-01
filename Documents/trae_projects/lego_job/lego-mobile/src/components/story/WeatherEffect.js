@@ -4,7 +4,16 @@ import { COLORS } from '../../utils/constants';
 
 const { width: SCREEN_WIDTH, height: SCREEN_HEIGHT } = Dimensions.get('window');
 
-const WeatherEffect = ({ weather }) => {
+const WeatherEffect = ({ weather, children }) => {
+  return (
+    <View style={styles.wrapper}>
+      {children}
+      {renderWeather(weather)}
+    </View>
+  );
+};
+
+const renderWeather = (weather) => {
   if (!weather) return null;
 
   switch (weather) {
@@ -170,6 +179,10 @@ const AnimatedSnowFlake = ({ config }) => {
 };
 
 const styles = StyleSheet.create({
+  wrapper: {
+    flex: 1,
+    position: 'relative',
+  },
   weatherContainer: {
     position: 'absolute',
     top: 0,
