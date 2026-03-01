@@ -1,0 +1,26 @@
+{
+  "extends": ["expo", "plugin:react-hooks/recommended"],
+  "plugins": ["react-native-reanimated"],
+  "rules": {
+    "react-native-reanimated/use-reanimated-default-export": "error",
+    "react-native-reanimated/js-function-in-worklet": "warn"
+  },
+  "overrides": [
+    {
+      "files": ["**/*.js", "**/*.jsx"],
+      "rules": {
+        "no-restricted-syntax": [
+          "error",
+          {
+            "selector": "CallExpression[callee.name='useAnimatedStyle'] ObjectExpression > Property[key.name='width']",
+            "message": "Reanimated: 'width' is not supported in native animated module. Use transform: [{ scaleX }] instead."
+          },
+          {
+            "selector": "CallExpression[callee.name='useAnimatedStyle'] ObjectExpression > Property[key.name='height']",
+            "message": "Reanimated: 'height' is not supported in native animated module. Use transform: [{ scaleY }] instead."
+          }
+        ]
+      }
+    }
+  ]
+}

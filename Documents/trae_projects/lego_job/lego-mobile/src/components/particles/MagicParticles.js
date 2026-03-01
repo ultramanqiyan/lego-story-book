@@ -136,7 +136,7 @@ const MagicParticle = ({ config }) => {
 
   const glowStyle = useAnimatedStyle(() => ({
     opacity: glow.value * 0.5,
-    transform: [{ scale: 1.5 + glow.value * 0.5 }],
+    transform: [{ scale: (1.5 + glow.value * 0.5) * (config.size / 10) }],
   }));
 
   return (
@@ -146,8 +146,6 @@ const MagicParticle = ({ config }) => {
         style={[
           styles.particleGlow,
           {
-            width: config.size * 3,
-            height: config.size * 3,
             backgroundColor: config.color,
           },
           glowStyle,
@@ -195,6 +193,8 @@ const styles = StyleSheet.create({
     position: 'absolute',
     borderRadius: 100,
     opacity: 0.3,
+    width: 30,
+    height: 30,
   },
 });
 

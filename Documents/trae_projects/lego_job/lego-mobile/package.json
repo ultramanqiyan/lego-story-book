@@ -8,7 +8,9 @@
     "ios": "expo run:ios",
     "web": "expo start --web",
     "test": "jest",
-    "lint": "eslint ."
+    "lint": "eslint .",
+    "lint:reanimated": "node scripts/check-reanimated.js",
+    "prebuild": "npm run lint && npm run lint:reanimated"
   },
   "dependencies": {
     "@expo/metro-runtime": "~3.2.3",

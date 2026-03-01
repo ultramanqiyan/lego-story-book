@@ -226,9 +226,9 @@ const ChapterScreen = ({ route, navigation }) => {
     return <Loading fullScreen message="加载章节..." />;
   }
 
-  const underlineWidth = underlineAnim.interpolate({
+  const underlineScale = underlineAnim.interpolate({
     inputRange: [0, 1],
-    outputRange: ['0%', '70%'],
+    outputRange: [0, 0.7],
   });
 
   const shakeTranslateX = shakeAnim.interpolate({
@@ -263,7 +263,7 @@ const ChapterScreen = ({ route, navigation }) => {
           >
             {chapter?.title}
           </Animated.Text>
-          <Animated.View style={[styles.titleUnderline, { width: underlineWidth }]} />
+          <Animated.View style={[styles.titleUnderline, { transform: [{ scaleX: underlineScale }] }]} />
         </View>
 
         <TouchableOpacity 
@@ -519,9 +519,10 @@ const styles = StyleSheet.create({
   },
   titleUnderline: {
     height: 3,
+    width: 200,
     backgroundColor: COLORS.legoYellow,
     marginTop: 8,
-    borderRadius: 2,
+    borderRadius: 1,
   },
   hintToggle: {
     paddingVertical: 8,

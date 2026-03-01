@@ -5,6 +5,7 @@ import {
   StyleSheet,
   ScrollView,
   TouchableOpacity,
+  TextInput,
 } from 'react-native';
 import { useAuth } from '../../context/AuthContext';
 import { useToast } from '../../context/ToastContext';
@@ -51,19 +52,38 @@ const StoryCreateScreen = ({ navigation }) => {
   };
 
   const createNewBook = async () => {
-    if (!newBookTitle.trim()) {
+    if (!newBookTitle || !newBookTitle.trim()) {
       toast.error('请输入书籍名称');
       return;
     }
 
+    if (!user || !user.userId) {
+      toast.error('请先登录');
+      return;
+    }
+
+    console.log('[StoryCreate] Creating book:', { userId: user.userId, title: newBookTitle.trim() });
+    
     try {
-      const data = await booksAPI.create(user?.userId, newBookTitle.trim());
+      const data = await booksAPI.create(user.userId, newBookTitle.trim());
+      console.log('[StoryCreate] Book created:', data);
+      
+      if (!data) {
+        throw new Error('创建失败：服务器未返回数据');
+      }
+      
+      if (!data.bookId) {
+        throw new Error('创建失败：未返回书籍ID');
+      }
+      
       setSelectedBook({ book_id: data.bookId, title: newBookTitle, chapter_count: 0 });
       setNewBookTitle('');
       setCurrentStep(1);
       toast.success('书籍创建成功！');
     } catch (error) {
-      toast.error(`创建失败：${error.message}`);
+      console.error('[StoryCreate] Create book error:', error);
+      const errorMessage = error && error.message ? error.message : '创建失败，请重试';
+      toast.error(errorMessage);
     }
   };
 
@@ -367,8 +387,6 @@ const StoryCreateScreen = ({ navigation }) => {
   );
 };
 
-import { TextInput } from 'react-native';
-
 const styles = StyleSheet.create({
   container: {
     flex: 1,
@@ -456,7 +474,7 @@ const styles = StyleSheet.create({
     textAlign: 'center',
   },
   newBookInput: {
-    gap: 12,
+    flexDirection: 'column',
   },
   input: {
     backgroundColor: COLORS.background,
@@ -471,7 +489,6 @@ const styles = StyleSheet.create({
   plotGrid: {
     flexDirection: 'row',
     flexWrap: 'wrap',
-    gap: 12,
   },
   plotCard: {
     width: '47%',
@@ -536,7 +553,6 @@ const styles = StyleSheet.create({
   },
   roleSelector: {
     flexDirection: 'row',
-    gap: 4,
   },
   roleOption: {
     paddingHorizontal: 8,
@@ -573,7 +589,6 @@ const styles = StyleSheet.create({
   characterGrid: {
     flexDirection: 'row',
     flexWrap: 'wrap',
-    gap: 12,
   },
   characterCard: {
     width: '47%',

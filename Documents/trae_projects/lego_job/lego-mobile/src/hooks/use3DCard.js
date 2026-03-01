@@ -74,6 +74,8 @@ export const use3DCard = (options = {}) => {
       Extrapolate.CLAMP
     );
 
+    const frontOpacity = flipProgress.value < 0.5 ? 1 : 0;
+
     return {
       transform: [
         { perspective: CARD_3D_CONFIG.perspective },
@@ -81,7 +83,7 @@ export const use3DCard = (options = {}) => {
         { rotateY: `${rotateY}deg` },
         { scale: scale.value },
       ],
-      opacity: interpolate(flipProgress.value, [0, 0.5, 1], [1, 0, 0]),
+      opacity: frontOpacity,
       zIndex: flipProgress.value > 0.5 ? 0 : 1,
     };
   });
@@ -95,6 +97,8 @@ export const use3DCard = (options = {}) => {
       Extrapolate.CLAMP
     );
 
+    const backOpacity = flipProgress.value > 0.5 ? 1 : 0;
+
     return {
       transform: [
         { perspective: CARD_3D_CONFIG.perspective },
@@ -102,7 +106,7 @@ export const use3DCard = (options = {}) => {
         { rotateY: `${rotateY}deg` },
         { scale: scale.value },
       ],
-      opacity: interpolate(flipProgress.value, [0, 0.5, 1], [0, 0, 1]),
+      opacity: backOpacity,
       zIndex: flipProgress.value > 0.5 ? 1 : 0,
     };
   });
@@ -124,7 +128,6 @@ export const use3DCard = (options = {}) => {
     );
 
     return {
-      shadowOffset: { width: 0, height: shadowOffset },
       shadowOpacity,
       shadowRadius: interpolate(
         elevation.value,
@@ -140,7 +143,6 @@ export const use3DCard = (options = {}) => {
   // 发光效果样式
   const glowAnimatedStyle = useAnimatedStyle(() => {
     return {
-      opacity: glowOpacity.value,
       transform: [{ scale: scale.value }],
     };
   });

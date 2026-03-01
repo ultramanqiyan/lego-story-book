@@ -104,7 +104,7 @@ const RainDrop = ({ config }) => {
   }));
 
   return (
-    <Animated.View
+    <View
       style={[
         styles.rainDrop,
         {
@@ -112,9 +112,10 @@ const RainDrop = ({ config }) => {
           height: config.length,
           opacity: config.opacity,
         },
-        animatedStyle,
       ]}
-    />
+    >
+      <Animated.View style={[styles.rainDropInner, animatedStyle]} />
+    </View>
   );
 };
 
@@ -295,7 +296,7 @@ const SunEffectV2 = () => {
       <View style={styles.sunContainer}>
         {/* 光晕层 */}
         {[...Array(config.glowLayers)].map((_, i) => (
-          <Animated.View
+          <View
             key={`glow_${i}`}
             style={[
               styles.sunGlow,
@@ -304,7 +305,6 @@ const SunEffectV2 = () => {
                 height: 100 + i * 40,
                 opacity: 0.3 - i * 0.1,
               },
-              coreAnimatedStyle,
             ]}
           />
         ))}
@@ -367,8 +367,6 @@ const DustParticle = ({ config }) => {
         {
           left: config.x,
           top: config.y,
-          width: config.size,
-          height: config.size,
         },
         animatedStyle,
       ]}
@@ -462,6 +460,12 @@ const styles = StyleSheet.create({
     backgroundColor: 'rgba(174, 194, 224, 0.8)',
     borderRadius: 1,
   },
+  rainDropInner: {
+    width: 2,
+    height: 20,
+    backgroundColor: 'rgba(174, 194, 224, 0.8)',
+    borderRadius: 1,
+  },
   fogOverlay: {
     position: 'absolute',
     top: 0,
@@ -552,6 +556,8 @@ const styles = StyleSheet.create({
     position: 'absolute',
     borderRadius: 10,
     backgroundColor: COLORS.legoYellow,
+    width: 5,
+    height: 5,
   },
   // 雾天样式
   fogLayer: {
