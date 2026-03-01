@@ -245,7 +245,7 @@ const StagePreview = ({
             <View style={styles.row}>
               <View style={styles.rowSection}>
                 <Text style={styles.rowTitle}>👥 角色</Text>
-                <View style={styles.slotsRow}>
+                <View style={styles.slotsRowCentered}>
                   {protagonist 
                     ? renderMiniCard(protagonist, 'protagonist', onRemoveCharacter)
                     : renderSlot('👑', '主角', true, true)
@@ -269,14 +269,20 @@ const StagePreview = ({
             <View style={styles.row}>
               <View style={styles.rowSection}>
                 <Text style={styles.rowTitle}>🌍 场景</Text>
-                <View style={styles.slotsRow}>
+                <View style={styles.slotsRowCentered}>
                   {terrain 
                     ? renderTerrainCard()
                     : renderSlot('🏔️', '地形', true, true)
                   }
                   {renderWeatherCard()}
-                  {adventureType && renderAdventureCard()}
-                  {items.length > 0 && items.slice(0, 2).map((item, index) => renderItemCard(item, index))}
+                  {adventureType 
+                    ? renderAdventureCard()
+                    : renderSlot('🎯', '冒险')
+                  }
+                  {items.length > 0 
+                    ? renderItemCard(items[0], 0)
+                    : renderSlot('🎒', '装备')
+                  }
                 </View>
               </View>
             </View>
@@ -338,6 +344,12 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     flexWrap: 'wrap',
     gap: 6,
+  },
+  slotsRowCentered: {
+    flexDirection: 'row',
+    flexWrap: 'wrap',
+    gap: 6,
+    justifyContent: 'center',
   },
   stageSlot: {
     width: 48,
