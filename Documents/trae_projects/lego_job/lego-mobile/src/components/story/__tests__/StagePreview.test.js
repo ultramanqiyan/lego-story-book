@@ -50,6 +50,24 @@ describe('StagePreview', () => {
       expect(getByText('角色1')).toBeTruthy();
     });
 
+    it('应该支持 characterId 属性（兼容性）', () => {
+      const characters = [
+        { characterId: '1', name: '角色A' },
+        { characterId: '2', name: '角色B' },
+      ];
+      const { getByText } = render(<StagePreview characters={characters} />);
+      expect(getByText('角色A')).toBeTruthy();
+      expect(getByText('角色B')).toBeTruthy();
+    });
+
+    it('应该支持 id 属性（兼容性）', () => {
+      const characters = [
+        { id: '1', name: '角色X' },
+      ];
+      const { getByText } = render(<StagePreview characters={characters} />);
+      expect(getByText('角色X')).toBeTruthy();
+    });
+
     it('应该正确处理5个角色的位置', () => {
       const characters = [
         { character_id: '1', name: '角色1' },

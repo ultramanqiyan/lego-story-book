@@ -8,6 +8,10 @@ const StagePreview = ({
   weather = 'sunny',
   terrain = null,
 }) => {
+  const getCharacterId = (char) => {
+    return char.character_id || char.characterId || char.id;
+  };
+
   const getTerrainEmoji = () => {
     const terrains = {
       forest: '🌲',
@@ -50,7 +54,7 @@ const StagePreview = ({
               
               return (
                 <View
-                  key={char.character_id || index}
+                  key={getCharacterId(char) || index}
                   style={[
                     styles.characterSlot,
                     { left: pos.x, top: pos.y },

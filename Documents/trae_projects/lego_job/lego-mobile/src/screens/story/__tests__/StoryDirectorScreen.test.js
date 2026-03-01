@@ -86,13 +86,6 @@ jest.mock('../../../context/ToastContext', () => ({
   useToast: () => mockToast,
 }));
 
-jest.mock('../../../components/story/StagePreview', () => {
-  const { Text } = require('react-native');
-  return function MockStagePreview() {
-    return <Text>StagePreview</Text>;
-  };
-});
-
 jest.mock('../../../components/card3d', () => ({
   CardDeck3D: function MockCardDeck3D({ title, items, selectedId, onPress }) {
     const { Text, TouchableOpacity, View } = require('react-native');
@@ -332,6 +325,55 @@ describe('StoryDirectorScreen', () => {
       await waitFor(() => {
         expect(getByText('晴天')).toBeTruthy();
       }, { timeout: 5000 });
+    });
+  });
+
+  describe('舞台预览集成测试', () => {
+    it('选择角色后舞台预览应该显示角色', async () => {
+      const { getAllByText, getByText } = renderWithProviders(<StoryDirectorScreen route={mockRoute} navigation={mockNavigation} />);
+      
+      await waitFor(() => {
+        expect(getAllByText('角色1').length).toBeGreaterThan(0);
+      }, { timeout: 5000 });
+      
+      const char1Elements = getAllByText('角色1');
+      fireEvent.press(char1Elements[0]);
+      
+      await waitFor(() => {
+        expect(getByText('🎬 舞台预览')).toBeTruthy();
+      }, { timeout: 3000 });
+    });
+
+    it('选择多个角色后舞台预览应该显示所有选中角色', async () => {
+      const { getAllByText, getByText } = renderWithProviders(<StoryDirectorScreen route={mockRoute} navigation={mockNavigation} />);
+      
+      await waitFor(() => {
+        expect(getAllByText('角色1').length).toBeGreaterThan(0);
+      }, { timeout: 5000 });
+      
+      const char1Elements = getAllByText('角色1');
+      const char2Elements = getAllByText('角色2');
+      
+      fireEvent.press(char1Elements[0]);
+      fireEvent.press(char2Elements[0]);
+      
+      await waitFor(() => {
+        expect(getByText('🎬 舞台预览')).toBeTruthy();
+      }, { timeout: 3000 });
+    });
+
+    it('选择地形后舞台预览应该显示对应地形', async () => {
+      const { getByText, getAllByText } = renderWithProviders(<StoryDirectorScreen route={mockRoute} navigation={mockNavigation} />);
+      
+      await waitFor(() => {
+        expect(getByText('森林')).toBeTruthy();
+      }, { timeout: 5000 });
+      
+      fireEvent.press(getByText('森林'));
+      
+      await waitFor(() => {
+        expect(getAllByText('🌲').length).toBeGreaterThan(0);
+      }, { timeout: 3000 });
     });
   });
 });
