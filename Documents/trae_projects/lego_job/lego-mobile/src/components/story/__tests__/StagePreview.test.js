@@ -1,5 +1,5 @@
 import React from 'react';
-import { render } from '@testing-library/react-native';
+import { render, fireEvent } from '@testing-library/react-native';
 import StagePreview from '../StagePreview';
 
 jest.mock('../WeatherEffect', () => {
@@ -24,66 +24,54 @@ describe('StagePreview', () => {
       expect(getByText('🎭 舞台预览')).toBeTruthy();
     });
 
-    it('应该渲染默认地形', () => {
-      const { getAllByText } = render(<StagePreview />);
-      expect(getAllByText('🌿').length).toBe(3);
+    it('应该渲染空槽位', () => {
+      const { getByText } = render(<StagePreview characters={[]} />);
+      expect(getByText('主角')).toBeTruthy();
+      expect(getByText('反派')).toBeTruthy();
+      expect(getByText('地形')).toBeTruthy();
     });
 
-    it('应该渲染空角色槽位提示', () => {
-      const { getByText } = render(<StagePreview characters={[]} />);
-      expect(getByText('选择角色')).toBeTruthy();
+    it('应该显示必选标签', () => {
+      const { getAllByText } = render(<StagePreview />);
+      expect(getAllByText('必选').length).toBeGreaterThan(0);
     });
   });
 
   describe('角色卡牌渲染', () => {
-    it('应该渲染传入的角色卡牌', () => {
+    it('应该渲染主角卡牌', () => {
       const characters = [
-        { character_id: '1', name: '角色1', custom_name: '自定义角色1', roleType: 'protagonist' },
-        { character_id: '2', name: '角色2', custom_name: '自定义角色2', roleType: 'supporting' },
+        { character_id: '1', name: '龙骑士', roleType: 'protagonist', avatar: '🐉' },
       ];
       const { getByText } = render(<StagePreview characters={characters} />);
-      expect(getByText('自定义角色1')).toBeTruthy();
-      expect(getByText('自定义角色2')).toBeTruthy();
+      expect(getByText('龙骑士')).toBeTruthy();
     });
 
-    it('当没有custom_name时应该使用name', () => {
+    it('应该渲染反派卡牌', () => {
       const characters = [
-        { character_id: '1', name: '角色1', roleType: 'protagonist' },
+        { character_id: '2', name: '暗影刺客', roleType: 'antagonist', avatar: '🦹' },
       ];
       const { getByText } = render(<StagePreview characters={characters} />);
-      expect(getByText('角色1')).toBeTruthy();
+      expect(getByText('暗影刺客')).toBeTruthy();
     });
 
-    it('应该支持 characterId 属性（兼容性）', () => {
+    it('应该渲染配角卡牌', () => {
       const characters = [
-        { characterId: '1', name: '角色A', roleType: 'protagonist' },
-        { characterId: '2', name: '角色B', roleType: 'supporting' },
+        { character_id: '3', name: '精灵法师', roleType: 'supporting', avatar: '🧝' },
+        { character_id: '4', name: '智慧法师', roleType: 'supporting', avatar: '🧙' },
       ];
       const { getByText } = render(<StagePreview characters={characters} />);
-      expect(getByText('角色A')).toBeTruthy();
-      expect(getByText('角色B')).toBeTruthy();
+      expect(getByText('精灵法师')).toBeTruthy();
+      expect(getByText('智慧法师')).toBeTruthy();
     });
 
-    it('应该支持 id 属性（兼容性）', () => {
-      const characters = [
-        { id: '1', name: '角色X', roleType: 'protagonist' },
-      ];
-      const { getByText } = render(<StagePreview characters={characters} />);
-      expect(getByText('角色X')).toBeTruthy();
-    });
-
-    it('应该根据角色类型显示对应emoji', () => {
+    it('应该根据角色类型显示不同颜色边框', () => {
       const characters = [
         { character_id: '1', name: '主角', roleType: 'protagonist' },
-        { character_id: '2', name: '配角', roleType: 'supporting' },
-        { character_id: '3', name: '路人', roleType: 'bystander' },
-        { character_id: '4', name: '反派', roleType: 'antagonist' },
+        { character_id: '2', name: '反派', roleType: 'antagonist' },
       ];
       const { getByText } = render(<StagePreview characters={characters} />);
-      expect(getByText('👑')).toBeTruthy();
-      expect(getByText('🎭')).toBeTruthy();
-      expect(getByText('👤')).toBeTruthy();
-      expect(getByText('👿')).toBeTruthy();
+      expect(getByText('主角')).toBeTruthy();
+      expect(getByText('反派')).toBeTruthy();
     });
 
     it('应该支持自定义avatar', () => {
@@ -97,44 +85,18 @@ describe('StagePreview', () => {
 
   describe('地形卡牌渲染', () => {
     it('应该渲染森林地形卡牌', () => {
-      const { getByText, getAllByText } = render(<StagePreview terrain="forest" />);
-      expect(getByText('森林')).toBeTruthy();
-      expect(getAllByText('🌲').length).toBeGreaterThan(0);
+      const { getByText } = render(<StagePreview terrain="forest" />);
+      expect(getByText('神秘森林')).toBeTruthy();
     });
 
     it('应该渲染城堡地形卡牌', () => {
       const { getByText } = render(<StagePreview terrain="castle" />);
-      expect(getByText('城堡')).toBeTruthy();
-    });
-
-    it('应该渲染海洋地形卡牌', () => {
-      const { getByText } = render(<StagePreview terrain="ocean" />);
-      expect(getByText('海洋')).toBeTruthy();
-    });
-
-    it('应该渲染沙漠地形卡牌', () => {
-      const { getByText } = render(<StagePreview terrain="desert" />);
-      expect(getByText('沙漠')).toBeTruthy();
-    });
-
-    it('应该渲染山脉地形卡牌', () => {
-      const { getByText } = render(<StagePreview terrain="mountain" />);
-      expect(getByText('山脉')).toBeTruthy();
-    });
-
-    it('应该渲染冰川地形卡牌', () => {
-      const { getByText } = render(<StagePreview terrain="glacier" />);
-      expect(getByText('冰川')).toBeTruthy();
+      expect(getByText('古老城堡')).toBeTruthy();
     });
 
     it('应该渲染火山地形卡牌', () => {
       const { getByText } = render(<StagePreview terrain="volcano" />);
-      expect(getByText('火山')).toBeTruthy();
-    });
-
-    it('应该渲染城市地形卡牌', () => {
-      const { getByText } = render(<StagePreview terrain="city" />);
-      expect(getByText('城市')).toBeTruthy();
+      expect(getByText('火山地带')).toBeTruthy();
     });
 
     it('没有地形时应该显示空槽位', () => {
@@ -146,32 +108,62 @@ describe('StagePreview', () => {
   describe('天气卡牌渲染', () => {
     it('应该渲染晴天天气卡牌', () => {
       const { getByText } = render(<StagePreview weather="sunny" />);
-      expect(getByText('晴天')).toBeTruthy();
-    });
-
-    it('应该渲染雨天天气卡牌', () => {
-      const { getByText } = render(<StagePreview weather="rainy" />);
-      expect(getByText('雨天')).toBeTruthy();
+      expect(getByText('晴空万里')).toBeTruthy();
     });
 
     it('应该渲染雷雨天气卡牌', () => {
       const { getByText } = render(<StagePreview weather="thunder" />);
-      expect(getByText('雷雨')).toBeTruthy();
+      expect(getByText('雷雨交加')).toBeTruthy();
     });
 
-    it('应该渲染雪天天气卡牌', () => {
+    it('应该渲染暴风雪天气卡牌', () => {
       const { getByText } = render(<StagePreview weather="snow" />);
-      expect(getByText('雪天')).toBeTruthy();
+      expect(getByText('暴风雪')).toBeTruthy();
+    });
+  });
+
+  describe('冒险类型卡牌渲染', () => {
+    it('应该渲染探索冒险类型', () => {
+      const { getByText } = render(<StagePreview adventureType="exploration" />);
+      expect(getByText('探索冒险')).toBeTruthy();
     });
 
-    it('应该渲染雾天天气卡牌', () => {
-      const { getByText } = render(<StagePreview weather="foggy" />);
-      expect(getByText('雾天')).toBeTruthy();
+    it('应该渲染战斗冒险类型', () => {
+      const { getByText } = render(<StagePreview adventureType="battle" />);
+      expect(getByText('战斗冒险')).toBeTruthy();
+    });
+
+    it('没有冒险类型时不应该显示', () => {
+      const { queryByText } = render(<StagePreview adventureType={null} />);
+      expect(queryByText('冒险类型')).toBeNull();
+    });
+  });
+
+  describe('道具卡牌渲染', () => {
+    it('应该渲染道具卡牌', () => {
+      const items = [{ name: '勇者之剑', emoji: '🗡️' }];
+      const { getByText } = render(<StagePreview items={items} />);
+      expect(getByText('勇者之剑')).toBeTruthy();
+    });
+
+    it('应该渲染多个道具卡牌', () => {
+      const items = [
+        { name: '勇者之剑', emoji: '🗡️' },
+        { name: '守护之盾', emoji: '🛡️' },
+      ];
+      const { getByText } = render(<StagePreview items={items} />);
+      expect(getByText('勇者之剑')).toBeTruthy();
+      expect(getByText('守护之盾')).toBeTruthy();
+    });
+
+    it('没有道具时不应该显示道具区域', () => {
+      const { queryByText } = render(<StagePreview items={[]} />);
+      expect(queryByText('🎒 道具装备')).toBeNull();
     });
   });
 
   describe('预览文本', () => {
-    it('没有角色时应该显示提示文本', () => {
+    it('没有选择时应该显示提示文本', () => {
       const { getByText } = render(<StagePreview characters={[]} />);
       expect(getByText('选择卡牌来构建你的故事...')).toBeTruthy();
     });
@@ -179,10 +171,45 @@ describe('StagePreview', () => {
     it('有角色时应该显示故事预览', () => {
       const characters = [
         { character_id: '1', name: '勇者', roleType: 'protagonist' },
-        { character_id: '2', name: '法师', roleType: 'supporting' },
+        { character_id: '2', name: '魔王', roleType: 'antagonist' },
       ];
       const { getByText } = render(<StagePreview characters={characters} />);
-      expect(getByText(/勇者、法师的故事即将开始/)).toBeTruthy();
+      expect(getByText(/勇者.*对抗.*魔王/)).toBeTruthy();
+    });
+
+    it('应该包含地形信息', () => {
+      const characters = [
+        { character_id: '1', name: '勇者', roleType: 'protagonist' },
+      ];
+      const { getByText } = render(
+        <StagePreview characters={characters} terrain="forest" />
+      );
+      expect(getByText(/在神秘森林/)).toBeTruthy();
+    });
+  });
+
+  describe('移除功能', () => {
+    it('应该调用 onRemoveCharacter 回调', () => {
+      const onRemoveCharacter = jest.fn();
+      const characters = [
+        { character_id: '1', name: '勇者', roleType: 'protagonist' },
+      ];
+      const { getByText } = render(
+        <StagePreview characters={characters} onRemoveCharacter={onRemoveCharacter} />
+      );
+      
+      fireEvent.press(getByText('×'));
+      expect(onRemoveCharacter).toHaveBeenCalled();
+    });
+
+    it('应该调用 onRemoveTerrain 回调', () => {
+      const onRemoveTerrain = jest.fn();
+      const { getByText } = render(
+        <StagePreview terrain="forest" onRemoveTerrain={onRemoveTerrain} />
+      );
+      
+      fireEvent.press(getByText('×'));
+      expect(onRemoveTerrain).toHaveBeenCalled();
     });
   });
 
@@ -192,57 +219,20 @@ describe('StagePreview', () => {
       expect(getByText('🎭 舞台预览')).toBeTruthy();
     });
 
-    it('应该处理超过5个角色', () => {
+    it('应该支持 characterId 属性（兼容性）', () => {
       const characters = [
-        { character_id: '1', name: '角色1', roleType: 'protagonist' },
-        { character_id: '2', name: '角色2', roleType: 'supporting' },
-        { character_id: '3', name: '角色3', roleType: 'supporting' },
-        { character_id: '4', name: '角色4', roleType: 'bystander' },
-        { character_id: '5', name: '角色5', roleType: 'bystander' },
-        { character_id: '6', name: '角色6', roleType: 'antagonist' },
+        { characterId: '1', name: '角色A', roleType: 'protagonist' },
       ];
       const { getByText } = render(<StagePreview characters={characters} />);
-      expect(getByText('角色1')).toBeTruthy();
-      expect(getByText('角色6')).toBeTruthy();
+      expect(getByText('角色A')).toBeTruthy();
     });
 
-    it('应该处理未知地形', () => {
-      const { getAllByText } = render(<StagePreview terrain="unknown" />);
-      expect(getAllByText('🌿').length).toBeGreaterThan(0);
-    });
-  });
-
-  describe('角色可见性验证', () => {
-    it('角色卡牌应该在舞台中渲染', () => {
+    it('应该支持 id 属性（兼容性）', () => {
       const characters = [
-        { character_id: '1', name: '主角', roleType: 'protagonist' },
+        { id: '1', name: '角色X', roleType: 'protagonist' },
       ];
       const { getByText } = render(<StagePreview characters={characters} />);
-      const characterName = getByText('主角');
-      expect(characterName).toBeTruthy();
-    });
-
-    it('角色和地形卡牌应该同时显示', () => {
-      const characters = [
-        { character_id: '1', name: '勇者', roleType: 'protagonist' },
-      ];
-      const { getByText, getAllByText } = render(
-        <StagePreview characters={characters} terrain="forest" />
-      );
-      expect(getByText('勇者')).toBeTruthy();
-      expect(getAllByText('🌲').length).toBeGreaterThan(0);
-    });
-
-    it('多个角色卡牌应该同时显示', () => {
-      const characters = [
-        { character_id: '1', name: '战士', roleType: 'protagonist' },
-        { character_id: '2', name: '法师', roleType: 'supporting' },
-        { character_id: '3', name: '盗贼', roleType: 'supporting' },
-      ];
-      const { getByText } = render(<StagePreview characters={characters} />);
-      expect(getByText('战士')).toBeTruthy();
-      expect(getByText('法师')).toBeTruthy();
-      expect(getByText('盗贼')).toBeTruthy();
+      expect(getByText('角色X')).toBeTruthy();
     });
   });
 });

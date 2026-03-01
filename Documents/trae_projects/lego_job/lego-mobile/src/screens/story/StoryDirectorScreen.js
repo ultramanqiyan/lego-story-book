@@ -258,6 +258,11 @@ const StoryDirectorScreen = ({ route, navigation }) => {
           characters={selectedCharacters}
           weather={plotSelection.weather}
           terrain={plotSelection.terrain}
+          adventureType={plotSelection.adventureType}
+          items={plotSelection.equipment ? [plotSelection.equipment] : []}
+          onRemoveCharacter={toggleCharacter}
+          onRemoveTerrain={() => setPlotSelection({ ...plotSelection, terrain: null })}
+          onRemoveWeather={() => setPlotSelection({ ...plotSelection, weather: null })}
         />
 
         <View style={styles.section}>

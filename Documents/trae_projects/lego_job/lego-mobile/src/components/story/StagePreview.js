@@ -1,5 +1,5 @@
 import React from 'react';
-import { View, Text, StyleSheet } from 'react-native';
+import { View, Text, StyleSheet, TouchableOpacity } from 'react-native';
 import { COLORS } from '../../utils/constants';
 import WeatherEffect from './WeatherEffect';
 
@@ -37,17 +37,39 @@ const WEATHER_EMOJIS = {
   cloudy: '☁️',
 };
 
+const TERRAIN_NAMES = {
+  forest: '神秘森林',
+  castle: '古老城堡',
+  ocean: '深海领域',
+  desert: '沙漠绿洲',
+  mountain: '高山之巅',
+  glacier: '冰封雪原',
+  volcano: '火山地带',
+  city: '繁华都市',
+};
+
+const WEATHER_NAMES = {
+  sunny: '晴空万里',
+  rainy: '细雨绵绵',
+  thunder: '雷雨交加',
+  snow: '暴风雪',
+  foggy: '诡异迷雾',
+  cloudy: '多云天气',
+};
+
 const StagePreview = ({
   characters = [],
   weather = 'sunny',
   terrain = null,
+  items = [],
+  adventureType = null,
+  onRemoveCharacter,
+  onRemoveTerrain,
+  onRemoveWeather,
+  onRemoveItem,
 }) => {
   const getCharacterId = (char) => {
     return char.character_id || char.characterId || char.id;
-  };
-
-  const getCharacterColor = (char) => {
-    return ROLE_COLORS[char.roleType] || COLORS.legoBlue;
   };
 
   const getCharacterEmoji = (char) => {
@@ -57,41 +79,159 @@ const StagePreview = ({
   };
 
   const getTerrainEmoji = () => {
-    return TERRAIN_EMOJIS[terrain] || '🌿';
+    return TERRAIN_EMOJIS[terrain] || '🏔️';
   };
 
   const getWeatherEmoji = () => {
     return WEATHER_EMOJIS[weather] || '☀️';
   };
 
-  const renderMiniCard = (char, index) => {
-    const charId = getCharacterId(char);
-    const charName = char.custom_name || char.name;
-    const charColor = getCharacterColor(char);
-    const charEmoji = getCharacterEmoji(char);
+  const protagonist = characters.find(c => c.roleType === 'protagonist');
+  const antagonist = characters.find(c => c.roleType === 'antagonist');
+  const supporting = characters.filter(c => c.roleType === 'supporting');
+
+  const renderMiniCard = (card, type, onRemove) => {
+    if (!card) return null;
+    
+    const borderColor = ROLE_COLORS[type] || '#666';
+    const emoji = getCharacterEmoji(card);
+    const name = card.custom_name || card.name;
 
     return (
-      <View
-        key={charId || index}
-        style={[styles.miniCard, { borderColor: charColor }]}
-      >
-        <View style={[styles.miniCardTopBar, { backgroundColor: charColor }]} />
-        <View style={styles.miniCardContent}>
-          <Text style={styles.miniAvatar}>{charEmoji}</Text>
-          <Text style={styles.miniName} numberOfLines={1}>
-            {charName}
-          </Text>
-        </View>
+      <View style={[styles.miniCard, { borderColor }]}>
+        <View style={[styles.miniCardTopBar, { backgroundColor: borderColor }]} />
+        <Text style={styles.miniAvatar}>{emoji}</Text>
+        <Text style={styles.miniName} numberOfLines={1}>{name}</Text>
+        {onRemove && (
+          <TouchableOpacity 
+            style={styles.miniRemove} 
+            onPress={() => onRemove(getCharacterId(card))}
+          >
+            <Text style={styles.miniRemoveText}>×</Text>
+          </TouchableOpacity>
+        )}
       </View>
     );
   };
 
-  const renderEmptySlot = (label, icon) => (
-    <View style={styles.emptySlot}>
+  const renderSlot = (icon, label, required = false, highlight = false) => (
+    <View style={[styles.stageSlot, required && styles.requiredSlot, highlight && styles.highlightSlot]}>
       <Text style={styles.slotIcon}>{icon}</Text>
       <Text style={styles.slotLabel}>{label}</Text>
+      {required && <Text style={styles.requiredLabel}>必选</Text>}
     </View>
   );
+
+  const renderTerrainCard = () => {
+    if (!terrain) return null;
+    
+    return (
+      <View style={[styles.miniCard, styles.terrainCard]}>
+        <View style={[styles.miniCardTopBar, { backgroundColor: '#22c55e' }]} />
+        <Text style={styles.miniAvatar}>{getTerrainEmoji()}</Text>
+        <Text style={styles.miniName} numberOfLines={1}>{TERRAIN_NAMES[terrain] || terrain}</Text>
+        {onRemoveTerrain && (
+          <TouchableOpacity 
+            style={styles.miniRemove} 
+            onPress={() => onRemoveTerrain()}
+          >
+            <Text style={styles.miniRemoveText}>×</Text>
+          </TouchableOpacity>
+        )}
+      </View>
+    );
+  };
+
+  const renderWeatherCard = () => {
+    return (
+      <View style={[styles.miniCard, styles.weatherCard]}>
+        <View style={[styles.miniCardTopBar, { backgroundColor: '#3b82f6' }]} />
+        <Text style={styles.miniAvatar}>{getWeatherEmoji()}</Text>
+        <Text style={styles.miniName} numberOfLines={1}>{WEATHER_NAMES[weather] || weather}</Text>
+      </View>
+    );
+  };
+
+  const renderItemCard = (item, index) => {
+    if (!item) return null;
+    
+    return (
+      <View key={index} style={[styles.miniCard, styles.itemCard]}>
+        <View style={[styles.miniCardTopBar, { backgroundColor: '#f59e0b' }]} />
+        <Text style={styles.miniAvatar}>{item.emoji || item.avatar || '📦'}</Text>
+        <Text style={styles.miniName} numberOfLines={1}>{item.name}</Text>
+        {onRemoveItem && (
+          <TouchableOpacity 
+            style={styles.miniRemove} 
+            onPress={() => onRemoveItem(index)}
+          >
+            <Text style={styles.miniRemoveText}>×</Text>
+          </TouchableOpacity>
+        )}
+      </View>
+    );
+  };
+
+  const renderAdventureCard = () => {
+    if (!adventureType) return null;
+    
+    const adventureEmojis = {
+      exploration: '🗺️',
+      battle: '⚔️',
+      puzzle: '🧩',
+      social: '💬',
+      stealth: '🌙',
+    };
+    
+    const adventureNames = {
+      exploration: '探索冒险',
+      battle: '战斗冒险',
+      puzzle: '解谜冒险',
+      social: '社交冒险',
+      stealth: '潜行冒险',
+    };
+
+    return (
+      <View style={[styles.miniCard, styles.adventureCard]}>
+        <View style={[styles.miniCardTopBar, { backgroundColor: '#8b5cf6' }]} />
+        <Text style={styles.miniAvatar}>{adventureEmojis[adventureType] || '🎯'}</Text>
+        <Text style={styles.miniName} numberOfLines={1}>{adventureNames[adventureType] || adventureType}</Text>
+      </View>
+    );
+  };
+
+  const getPreviewText = () => {
+    const parts = [];
+    
+    if (protagonist) {
+      parts.push(protagonist.custom_name || protagonist.name);
+    }
+    
+    if (supporting.length > 0) {
+      parts.push('与' + supporting.map(c => c.custom_name || c.name).join('、'));
+    }
+    
+    if (antagonist) {
+      parts.push('对抗' + (antagonist.custom_name || antagonist.name));
+    }
+    
+    if (terrain) {
+      parts.push('在' + (TERRAIN_NAMES[terrain] || terrain));
+    }
+    
+    if (weather && weather !== 'sunny') {
+      parts.push((WEATHER_NAMES[weather] || weather) + '中');
+    }
+    
+    if (items.length > 0) {
+      parts.push('手持' + items.map(i => i.name).join('、'));
+    }
+
+    if (parts.length > 0) {
+      return parts.join('，') + '...';
+    }
+    return '选择卡牌来构建你的故事...';
+  };
 
   return (
     <View style={styles.container}>
@@ -100,60 +240,52 @@ const StagePreview = ({
       </View>
 
       <WeatherEffect weather={weather}>
-        <View style={styles.stage}>
-          <View style={styles.background}>
-            <Text style={styles.terrainEmoji}>{getTerrainEmoji()}</Text>
-            <Text style={styles.terrainEmoji}>{getTerrainEmoji()}</Text>
-            <Text style={styles.terrainEmoji}>{getTerrainEmoji()}</Text>
-          </View>
-
-          <View style={styles.contentLayer}>
-            <View style={styles.section}>
-              <Text style={styles.sectionTitle}>👥 角色阵容</Text>
-              <View style={styles.slotsRow}>
-                {characters.length > 0 ? (
-                  characters.map((char, index) => renderMiniCard(char, index))
-                ) : (
-                  renderEmptySlot('选择角色', '👤')
-                )}
-              </View>
-            </View>
-
-            <View style={styles.section}>
-              <Text style={styles.sectionTitle}>🌍 场景设定</Text>
-              <View style={styles.slotsRow}>
-                {terrain ? (
-                  <View style={[styles.miniCard, styles.terrainCard, { borderColor: '#22c55e' }]}>
-                    <View style={[styles.miniCardTopBar, { backgroundColor: '#22c55e' }]} />
-                    <View style={styles.miniCardContent}>
-                      <Text style={styles.miniAvatar}>{getTerrainEmoji()}</Text>
-                      <Text style={styles.miniName} numberOfLines={1}>
-                        {terrain === 'forest' ? '森林' : terrain === 'castle' ? '城堡' : terrain === 'ocean' ? '海洋' : terrain === 'desert' ? '沙漠' : terrain === 'mountain' ? '山脉' : terrain === 'glacier' ? '冰川' : terrain === 'volcano' ? '火山' : '城市'}
-                      </Text>
-                    </View>
-                  </View>
-                ) : (
-                  renderEmptySlot('地形', '🏔️')
-                )}
-                <View style={[styles.miniCard, styles.weatherCard, { borderColor: '#3b82f6' }]}>
-                  <View style={[styles.miniCardTopBar, { backgroundColor: '#3b82f6' }]} />
-                  <View style={styles.miniCardContent}>
-                    <Text style={styles.miniAvatar}>{getWeatherEmoji()}</Text>
-                    <Text style={styles.miniName} numberOfLines={1}>
-                      {weather === 'sunny' ? '晴天' : weather === 'rainy' ? '雨天' : weather === 'thunder' ? '雷雨' : weather === 'snow' ? '雪天' : weather === 'foggy' ? '雾天' : '多云'}
-                    </Text>
-                  </View>
+        <View style={styles.content}>
+          <View style={styles.twoRowsContainer}>
+            <View style={styles.row}>
+              <View style={styles.rowSection}>
+                <Text style={styles.rowTitle}>👥 角色</Text>
+                <View style={styles.slotsRow}>
+                  {protagonist 
+                    ? renderMiniCard(protagonist, 'protagonist', onRemoveCharacter)
+                    : renderSlot('👑', '主角', true, true)
+                  }
+                  {supporting[0] 
+                    ? renderMiniCard(supporting[0], 'supporting', onRemoveCharacter)
+                    : renderSlot('🎭', '配角')
+                  }
+                  {supporting[1] 
+                    ? renderMiniCard(supporting[1], 'supporting', onRemoveCharacter)
+                    : renderSlot('🎭', '配角')
+                  }
+                  {antagonist 
+                    ? renderMiniCard(antagonist, 'antagonist', onRemoveCharacter)
+                    : renderSlot('👿', '反派', true, true)
+                  }
                 </View>
               </View>
             </View>
 
-            <View style={styles.previewTextContainer}>
-              <Text style={styles.previewText} numberOfLines={2}>
-                {characters.length > 0
-                  ? `${characters.map(c => c.custom_name || c.name).join('、')}的故事即将开始...`
-                  : '选择卡牌来构建你的故事...'}
-              </Text>
+            <View style={styles.row}>
+              <View style={styles.rowSection}>
+                <Text style={styles.rowTitle}>🌍 场景</Text>
+                <View style={styles.slotsRow}>
+                  {terrain 
+                    ? renderTerrainCard()
+                    : renderSlot('🏔️', '地形', true, true)
+                  }
+                  {renderWeatherCard()}
+                  {adventureType && renderAdventureCard()}
+                  {items.length > 0 && items.slice(0, 2).map((item, index) => renderItemCard(item, index))}
+                </View>
+              </View>
             </View>
+          </View>
+
+          <View style={styles.previewTextContainer}>
+            <Text style={styles.previewText} numberOfLines={2}>
+              {getPreviewText()}
+            </Text>
           </View>
         </View>
       </WeatherEffect>
@@ -167,9 +299,9 @@ const styles = StyleSheet.create({
     marginBottom: 16,
     borderRadius: 16,
     overflow: 'hidden',
-    backgroundColor: 'rgba(0,0,0,0.3)',
+    backgroundColor: 'rgba(0,0,0,0.5)',
     borderWidth: 2,
-    borderColor: 'rgba(255, 215, 0, 0.3)',
+    borderColor: 'rgba(255, 215, 0, 0.2)',
   },
   header: {
     paddingHorizontal: 16,
@@ -183,33 +315,22 @@ const styles = StyleSheet.create({
     color: '#ffd700',
     textAlign: 'center',
   },
-  stage: {
-    minHeight: 180,
-    position: 'relative',
+  content: {
+    padding: 10,
   },
-  background: {
-    position: 'absolute',
-    bottom: 0,
-    left: 0,
-    right: 0,
-    flexDirection: 'row',
-    justifyContent: 'space-around',
-    paddingHorizontal: 20,
-    opacity: 0.3,
+  twoRowsContainer: {
+    gap: 8,
   },
-  terrainEmoji: {
-    fontSize: 32,
+  row: {
+    backgroundColor: 'rgba(255,255,255,0.03)',
+    borderRadius: 10,
+    padding: 8,
   },
-  contentLayer: {
+  rowSection: {
     flex: 1,
-    padding: 12,
-    zIndex: 10,
   },
-  section: {
-    marginBottom: 10,
-  },
-  sectionTitle: {
-    fontSize: 11,
+  rowTitle: {
+    fontSize: 10,
     color: 'rgba(255,255,255,0.6)',
     marginBottom: 6,
   },
@@ -218,52 +339,84 @@ const styles = StyleSheet.create({
     flexWrap: 'wrap',
     gap: 6,
   },
-  miniCard: {
-    width: 52,
-    height: 70,
+  stageSlot: {
+    width: 48,
+    height: 66,
     borderRadius: 6,
-    backgroundColor: 'rgba(30, 30, 50, 0.9)',
     borderWidth: 2,
-    overflow: 'hidden',
-  },
-  miniCardTopBar: {
-    height: 3,
-    width: '100%',
-  },
-  miniCardContent: {
-    flex: 1,
-    alignItems: 'center',
-    justifyContent: 'center',
-    paddingHorizontal: 4,
-  },
-  miniAvatar: {
-    fontSize: 18,
-  },
-  miniName: {
-    fontSize: 8,
-    fontWeight: '600',
-    color: '#fff',
-    marginTop: 2,
-    textAlign: 'center',
-  },
-  emptySlot: {
-    width: 52,
-    height: 70,
-    borderRadius: 6,
-    borderWidth: 1,
     borderStyle: 'dashed',
     borderColor: 'rgba(255,255,255,0.2)',
     alignItems: 'center',
     justifyContent: 'center',
+    position: 'relative',
+  },
+  requiredSlot: {
+    borderColor: 'rgba(255, 215, 0, 0.4)',
+  },
+  highlightSlot: {
+    borderColor: '#ffd700',
+    backgroundColor: 'rgba(255, 215, 0, 0.1)',
   },
   slotIcon: {
     fontSize: 14,
-    opacity: 0.4,
+    opacity: 0.5,
   },
   slotLabel: {
-    fontSize: 8,
-    color: 'rgba(255,255,255,0.4)',
+    fontSize: 7,
+    color: 'rgba(255,255,255,0.5)',
     marginTop: 2,
+  },
+  requiredLabel: {
+    position: 'absolute',
+    bottom: -8,
+    fontSize: 6,
+    color: '#ffd700',
+  },
+  miniCard: {
+    width: 48,
+    height: 66,
+    borderRadius: 6,
+    backgroundColor: 'rgba(30, 30, 50, 0.9)',
+    borderWidth: 2,
+    overflow: 'hidden',
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  miniCardTopBar: {
+    position: 'absolute',
+    top: 0,
+    left: 0,
+    right: 0,
+    height: 3,
+  },
+  miniAvatar: {
+    fontSize: 16,
+    marginTop: 6,
+  },
+  miniName: {
+    fontSize: 6,
+    fontWeight: '600',
+    color: '#fff',
+    marginTop: 3,
+    textAlign: 'center',
+    paddingHorizontal: 2,
+  },
+  miniRemove: {
+    position: 'absolute',
+    top: 3,
+    right: 3,
+    width: 10,
+    height: 10,
+    borderRadius: 5,
+    backgroundColor: '#ef4444',
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  miniRemoveText: {
+    color: '#fff',
+    fontSize: 7,
+    fontWeight: 'bold',
+    marginTop: -1,
   },
   terrainCard: {
     borderColor: '#22c55e',
@@ -271,17 +424,23 @@ const styles = StyleSheet.create({
   weatherCard: {
     borderColor: '#3b82f6',
   },
+  itemCard: {
+    borderColor: '#f59e0b',
+  },
+  adventureCard: {
+    borderColor: '#8b5cf6',
+  },
   previewTextContainer: {
-    marginTop: 'auto',
-    backgroundColor: 'rgba(255,255,255,0.05)',
+    backgroundColor: 'rgba(255,255,255,0.03)',
     borderRadius: 8,
-    padding: 10,
+    padding: 8,
+    marginTop: 6,
   },
   previewText: {
-    fontSize: 11,
+    fontSize: 9,
     color: 'rgba(255,255,255,0.7)',
     fontStyle: 'italic',
-    lineHeight: 16,
+    lineHeight: 13,
   },
 });
 
