@@ -17,13 +17,13 @@
   - [x] SubTask 4.2: 每个操作之间添加 1-2 秒等待时间
   - [x] SubTask 4.3: 测试主要页面导航（书架、角色、冒险、设置）
 
-- [ ] Task 5: 执行可视化E2E测试
-  - [ ] SubTask 5.1: 启动 APP
-  - [ ] SubTask 5.2: 测试书架页面（点击、滚动）
-  - [ ] SubTask 5.3: 测试角色页面
-  - [ ] SubTask 5.4: 测试冒险模式页面
-  - [ ] SubTask 5.5: 测试设置页面
-  - [ ] SubTask 5.6: 验证 API 连接线上地址成功
+- [x] Task 5: 执行可视化E2E测试
+  - [x] SubTask 5.1: 启动 APP
+  - [x] SubTask 5.2: 测试书架页面（点击、滚动）
+  - [x] SubTask 5.3: 测试角色页面
+  - [x] SubTask 5.4: 测试冒险模式页面
+  - [x] SubTask 5.5: 测试设置页面
+  - [x] SubTask 5.6: 验证 API 连接线上地址成功
 
 # Task Dependencies
 - [Task 2] depends on [Task 1]

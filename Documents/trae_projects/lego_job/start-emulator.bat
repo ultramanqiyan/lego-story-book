@@ -1,0 +1,3 @@
+@echo off
+start "" "C:\Users\yannis\AppData\Local\Android\Sdk\emulator\emulator.exe" -avd Pixel_8_API_36
+echo Android Emulator starting...
