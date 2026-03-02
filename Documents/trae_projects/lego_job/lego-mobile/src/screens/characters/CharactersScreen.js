@@ -10,6 +10,7 @@ import {
   Easing,
   ScrollView,
   Dimensions,
+  Platform,
 } from 'react-native';
 import { useAuth } from '../../context/AuthContext';
 import { useToast } from '../../context/ToastContext';
@@ -36,6 +37,7 @@ const CharactersScreen = ({ navigation }) => {
 
   const scrollX = useRef(new Animated.Value(0)).current;
   const titleAnim = useRef(new Animated.Value(0)).current;
+  const fabScale = useRef(new Animated.Value(1)).current;
 
   useEffect(() => {
     loadCharacters();
@@ -70,8 +72,21 @@ const CharactersScreen = ({ navigation }) => {
   }, []);
 
   const handleCreate = () => {
-    setEditingCharacter(null);
-    setFormVisible(true);
+    Animated.sequence([
+      Animated.timing(fabScale, {
+        toValue: 0.9,
+        duration: 100,
+        useNativeDriver: true,
+      }),
+      Animated.timing(fabScale, {
+        toValue: 1,
+        duration: 100,
+        useNativeDriver: true,
+      }),
+    ]).start(() => {
+      setEditingCharacter(null);
+      setFormVisible(true);
+    });
   };
 
   const handleEdit = (character) => {
@@ -186,14 +201,6 @@ const CharactersScreen = ({ navigation }) => {
       <Header
         title="🎭 角色收集"
         subtitle={`共 ${characters.length} 个角色`}
-        rightButton={
-          <Button
-            title="➕ 创建"
-            variant="outline"
-            size="sm"
-            onPress={handleCreate}
-          />
-        }
       />
 
       <FlatList
@@ -232,10 +239,22 @@ const CharactersScreen = ({ navigation }) => {
         }
       />
 
+      <Animated.View style={[styles.fabContainer, { transform: [{ scale: fabScale }] }]}>
+        <TouchableOpacity
+          style={styles.fab}
+          onPress={handleCreate}
+          activeOpacity={0.9}
+        >
+          <Text style={styles.fabIcon}>+</Text>
+          <Text style={styles.fabText}>创建角色</Text>
+        </TouchableOpacity>
+      </Animated.View>
+
       <Modal
         visible={formVisible}
         onClose={() => setFormVisible(false)}
         title={editingCharacter ? '✏️ 编辑角色' : '✨ 创建新角色'}
+        size="large"
       >
         <CharacterForm
           character={editingCharacter}
@@ -247,59 +266,82 @@ const CharactersScreen = ({ navigation }) => {
       <Modal
         visible={detailVisible}
         onClose={() => setDetailVisible(false)}
-        title="📋 角色详情"
+        title="角色详情"
+        size="large"
       >
         {selectedCharacter && (
-          <ScrollView style={styles.detailScroll}>
+          <ScrollView style={styles.detailScroll} showsVerticalScrollIndicator={false}>
             <View style={styles.detailContent}>
-              <Text style={styles.detailEmoji}>
-                {CHARACTER_EMOJIS[characters.findIndex(c => c.character_id === selectedCharacter.character_id) % CHARACTER_EMOJIS.length]}
-              </Text>
-              <Text style={styles.detailName}>{selectedCharacter.name}</Text>
-              <Text style={styles.detailDesc}>
-                {selectedCharacter.description || '这个角色充满了神秘感...'}
-              </Text>
+              <View style={styles.detailHeader}>
+                <Text style={styles.detailEmoji}>
+                  {CHARACTER_EMOJIS[characters.findIndex(c => c.character_id === selectedCharacter.character_id) % CHARACTER_EMOJIS.length]}
+                </Text>
+                <View style={styles.detailTitleWrap}>
+                  <Text style={styles.detailName}>{selectedCharacter.name}</Text>
+                  {selectedCharacter.creator_id === 'system' && (
+                    <View style={styles.systemBadge}>
+                      <Text style={styles.systemBadgeText}>系统预设</Text>
+                    </View>
+                  )}
+                </View>
+              </View>
+
+              <View style={styles.detailDescCard}>
+                <Text style={styles.detailDescLabel}>📝 角色简介</Text>
+                <Text style={styles.detailDesc}>
+                  {selectedCharacter.description || '这个角色充满了神秘感...'}
+                </Text>
+              </View>
 
               <View style={styles.attributesContainer}>
+                <Text style={styles.attributesTitle}>🎭 角色属性</Text>
+                
                 {selectedCharacter.personality && (
-                  <View style={styles.attributeRow}>
-                    <Text style={styles.attributeLabel}>✨ 性格</Text>
-                    <View style={styles.attributeValue}>
-                      <Text style={styles.attributeValueText}>{selectedCharacter.personality}</Text>
+                  <View style={styles.attributeCard}>
+                    <View style={styles.attributeIconWrap}>
+                      <Text style={styles.attributeIcon}>✨</Text>
+                    </View>
+                    <View style={styles.attributeContent}>
+                      <Text style={styles.attributeLabel}>性格特点</Text>
+                      <Text style={styles.attributeValue}>{selectedCharacter.personality}</Text>
                     </View>
                   </View>
                 )}
+                
                 {selectedCharacter.speaking_style && (
-                  <View style={styles.attributeRow}>
-                    <Text style={styles.attributeLabel}>💬 说话风格</Text>
-                    <View style={styles.attributeValue}>
-                      <Text style={styles.attributeValueText}>{selectedCharacter.speaking_style}</Text>
+                  <View style={styles.attributeCard}>
+                    <View style={styles.attributeIconWrap}>
+                      <Text style={styles.attributeIcon}>💬</Text>
+                    </View>
+                    <View style={styles.attributeContent}>
+                      <Text style={styles.attributeLabel}>说话风格</Text>
+                      <Text style={styles.attributeValue}>{selectedCharacter.speaking_style}</Text>
                     </View>
                   </View>
                 )}
               </View>
 
-              <View style={styles.detailActions}>
-                {selectedCharacter.creator_id !== 'system' && (
-                  <>
-                    <Button
-                      title="✏️ 编辑"
-                      variant="outline"
-                      onPress={() => {
-                        setDetailVisible(false);
-                        handleEdit(selectedCharacter);
-                      }}
-                      style={styles.detailBtn}
-                    />
-                    <Button
-                      title="🗑️ 删除"
-                      variant="danger"
-                      onPress={() => handleDelete(selectedCharacter)}
-                      style={styles.detailBtn}
-                    />
-                  </>
-                )}
-              </View>
+              {selectedCharacter.creator_id !== 'system' && (
+                <View style={styles.detailActions}>
+                  <TouchableOpacity
+                    style={styles.editBtn}
+                    onPress={() => {
+                      setDetailVisible(false);
+                      handleEdit(selectedCharacter);
+                    }}
+                  >
+                    <Text style={styles.editBtnIcon}>✏️</Text>
+                    <Text style={styles.editBtnText}>编辑角色</Text>
+                  </TouchableOpacity>
+                  <TouchableOpacity
+                    style={styles.deleteBtn}
+                    onPress={() => handleDelete(selectedCharacter)}
+                  >
+                    <Text style={styles.deleteBtnIcon}>🗑️</Text>
+                    <Text style={styles.deleteBtnText}>删除角色</Text>
+                  </TouchableOpacity>
+                </View>
+              )}
             </View>
           </ScrollView>
         )}
@@ -315,7 +357,7 @@ const styles = StyleSheet.create({
   },
   listContent: {
     padding: 16,
-    paddingBottom: 100,
+    paddingBottom: 120,
   },
   row: {
     justifyContent: 'space-between',
@@ -326,6 +368,43 @@ const styles = StyleSheet.create({
     fontWeight: 'bold',
     color: COLORS.text,
     marginBottom: 16,
+  },
+  fabContainer: {
+    position: 'absolute',
+    right: 20,
+    bottom: 30,
+    ...Platform.select({
+      ios: {
+        shadowColor: COLORS.legoYellow,
+        shadowOffset: { width: 0, height: 4 },
+        shadowOpacity: 0.4,
+        shadowRadius: 12,
+      },
+      android: {
+        elevation: 8,
+      },
+    }),
+  },
+  fab: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    backgroundColor: COLORS.legoYellow,
+    paddingVertical: 14,
+    paddingHorizontal: 24,
+    borderRadius: 30,
+    borderWidth: 3,
+    borderColor: COLORS.legoOrange,
+  },
+  fabIcon: {
+    fontSize: 24,
+    fontWeight: 'bold',
+    color: COLORS.text,
+    marginRight: 8,
+  },
+  fabText: {
+    fontSize: 16,
+    fontWeight: 'bold',
+    color: COLORS.text,
   },
   cardContainer: {
     width: CARD_WIDTH,
@@ -414,66 +493,146 @@ const styles = StyleSheet.create({
     fontSize: 14,
   },
   detailScroll: {
-    maxHeight: 400,
+    maxHeight: 500,
   },
   detailContent: {
-    alignItems: 'center',
     padding: 16,
   },
+  detailHeader: {
+    alignItems: 'center',
+    marginBottom: 20,
+  },
   detailEmoji: {
-    fontSize: 64,
+    fontSize: 72,
     marginBottom: 12,
   },
+  detailTitleWrap: {
+    alignItems: 'center',
+  },
   detailName: {
-    fontSize: 22,
+    fontSize: 26,
+    fontWeight: 'bold',
+    color: COLORS.text,
+    marginBottom: 8,
+  },
+  systemBadge: {
+    backgroundColor: COLORS.legoYellow,
+    paddingHorizontal: 12,
+    paddingVertical: 4,
+    borderRadius: 12,
+  },
+  systemBadgeText: {
+    fontSize: 12,
+    fontWeight: 'bold',
+    color: COLORS.text,
+  },
+  detailDescCard: {
+    backgroundColor: COLORS.backgroundLight,
+    borderRadius: 16,
+    padding: 16,
+    marginBottom: 16,
+    borderWidth: 1,
+    borderColor: COLORS.border,
+  },
+  detailDescLabel: {
+    fontSize: 14,
     fontWeight: 'bold',
     color: COLORS.text,
     marginBottom: 8,
   },
   detailDesc: {
-    fontSize: 14,
+    fontSize: 15,
     color: COLORS.textLight,
-    textAlign: 'center',
-    marginBottom: 16,
-    lineHeight: 20,
+    lineHeight: 22,
   },
   attributesContainer: {
-    width: '100%',
-    backgroundColor: COLORS.backgroundLight,
-    borderRadius: 12,
-    padding: 16,
     marginBottom: 16,
   },
-  attributeRow: {
+  attributesTitle: {
+    fontSize: 16,
+    fontWeight: 'bold',
+    color: COLORS.text,
+    marginBottom: 12,
+  },
+  attributeCard: {
     flexDirection: 'row',
     alignItems: 'center',
+    backgroundColor: COLORS.backgroundLight,
+    borderRadius: 16,
+    padding: 16,
     marginBottom: 10,
+    borderWidth: 1,
+    borderColor: COLORS.border,
+  },
+  attributeIconWrap: {
+    width: 48,
+    height: 48,
+    borderRadius: 24,
+    backgroundColor: COLORS.legoYellow + '30',
+    justifyContent: 'center',
+    alignItems: 'center',
+    marginRight: 14,
+  },
+  attributeIcon: {
+    fontSize: 24,
+  },
+  attributeContent: {
+    flex: 1,
   },
   attributeLabel: {
-    fontSize: 13,
-    fontWeight: '600',
-    color: COLORS.text,
-    width: 90,
+    fontSize: 12,
+    color: COLORS.textLight,
+    marginBottom: 4,
   },
   attributeValue: {
-    flex: 1,
-    backgroundColor: COLORS.legoYellow + '30',
-    paddingHorizontal: 12,
-    paddingVertical: 6,
-    borderRadius: 8,
-  },
-  attributeValueText: {
-    fontSize: 13,
+    fontSize: 16,
+    fontWeight: '600',
     color: COLORS.text,
-    fontWeight: '500',
   },
   detailActions: {
     flexDirection: 'row',
     gap: 12,
-    width: '100%',
+    marginTop: 8,
   },
-  detailBtn: {
+  editBtn: {
     flex: 1,
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'center',
+    backgroundColor: COLORS.legoYellow,
+    paddingVertical: 14,
+    borderRadius: 14,
+    borderWidth: 2,
+    borderColor: COLORS.legoOrange,
+  },
+  editBtnIcon: {
+    fontSize: 16,
+    marginRight: 6,
+  },
+  editBtnText: {
+    fontSize: 15,
+    fontWeight: 'bold',
+    color: COLORS.text,
+  },
+  deleteBtn: {
+    flex: 1,
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'center',
+    backgroundColor: '#FFF0F0',
+    paddingVertical: 14,
+    borderRadius: 14,
+    borderWidth: 2,
+    borderColor: '#FFB3B3',
+  },
+  deleteBtnIcon: {
+    fontSize: 16,
+    marginRight: 6,
+  },
+  deleteBtnText: {
+    fontSize: 15,
+    fontWeight: '600',
+    color: '#D32F2F',
   },
 });
 
