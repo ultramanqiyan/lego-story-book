@@ -269,13 +269,56 @@ const HomeScreen = ({ navigation }) => {
                 style={styles.startButton}
               />
             </Animated.View>
-            <View style={{ marginTop: 12 }}>
-              <Button
-                title="🎴 3D卡牌演示"
-                onPress={() => navigation.navigate('Card3DDemo')}
-                variant="outline"
-                size="sm"
-              />
+            <View style={styles.demoButtonsContainer}>
+              <Text style={styles.demoSectionTitle}>🎨 卡牌展示风格Demo</Text>
+              <View style={styles.demoButtonsRow}>
+                <Button
+                  title="📋 2D网格"
+                  onPress={() => navigation.navigate('Demo6')}
+                  variant="outline"
+                  size="sm"
+                  style={styles.demoButton}
+                />
+                <Button
+                  title="🔄 3D翻转"
+                  onPress={() => navigation.navigate('Demo7')}
+                  variant="outline"
+                  size="sm"
+                  style={styles.demoButton}
+                />
+              </View>
+              <View style={styles.demoButtonsRow}>
+                <Button
+                  title="🃏 扇形展开"
+                  onPress={() => navigation.navigate('Demo8')}
+                  variant="outline"
+                  size="sm"
+                  style={styles.demoButton}
+                />
+                <Button
+                  title="👆 横向堆叠"
+                  onPress={() => navigation.navigate('Demo9')}
+                  variant="outline"
+                  size="sm"
+                  style={styles.demoButton}
+                />
+              </View>
+              <View style={styles.demoButtonsRow}>
+                <Button
+                  title="📚 纵向堆叠"
+                  onPress={() => navigation.navigate('Demo10')}
+                  variant="outline"
+                  size="sm"
+                  style={styles.demoButton}
+                />
+                <Button
+                  title="🎴 3D卡牌"
+                  onPress={() => navigation.navigate('Card3DDemo')}
+                  variant="outline"
+                  size="sm"
+                  style={styles.demoButton}
+                />
+              </View>
             </View>
           </Card>
         </Animated.View>
@@ -413,6 +456,28 @@ const styles = StyleSheet.create({
   },
   startButton: {
     marginTop: 8,
+  },
+  demoButtonsContainer: {
+    marginTop: 16,
+    paddingTop: 16,
+    borderTopWidth: 1,
+    borderTopColor: 'rgba(255,255,255,0.1)',
+  },
+  demoSectionTitle: {
+    fontSize: 16,
+    fontWeight: 'bold',
+    color: COLORS.text,
+    marginBottom: 12,
+    textAlign: 'center',
+  },
+  demoButtonsRow: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    marginBottom: 8,
+    gap: 8,
+  },
+  demoButton: {
+    flex: 1,
   },
   section: {
     marginTop: 8,

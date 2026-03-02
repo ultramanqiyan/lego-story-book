@@ -18,6 +18,11 @@ import StoryDirectorScreen from '../screens/story/StoryDirectorScreen';
 import ChapterScreen from '../screens/chapter/ChapterScreen';
 import ShareScreen from '../screens/share/ShareScreen';
 import { Card3DDemoScreen } from '../screens/demo';
+import Demo6Grid2D from '../screens/demo/Demo6Grid2D';
+import Demo7Flip3D from '../screens/demo/Demo7Flip3D';
+import Demo8FanSpread from '../screens/demo/Demo8FanSpread';
+import Demo9HorizontalStack from '../screens/demo/Demo9HorizontalStack';
+import Demo10VerticalStack from '../screens/demo/Demo10VerticalStack';
 
 const Tab = createBottomTabNavigator();
 const Stack = createNativeStackNavigator();
@@ -47,6 +52,11 @@ const HomeStack = () => {
       <Stack.Screen name="StoryDirector" component={StoryDirectorScreen} />
       <Stack.Screen name="Chapter" component={ChapterScreen} />
       <Stack.Screen name="Card3DDemo" component={Card3DDemoScreen} />
+      <Stack.Screen name="Demo6" component={Demo6Grid2D} />
+      <Stack.Screen name="Demo7" component={Demo7Flip3D} />
+      <Stack.Screen name="Demo8" component={Demo8FanSpread} />
+      <Stack.Screen name="Demo9" component={Demo9HorizontalStack} />
+      <Stack.Screen name="Demo10" component={Demo10VerticalStack} />
     </Stack.Navigator>
   );
 };
