@@ -394,10 +394,14 @@ const BookDetailScreen = ({ route, navigation }) => {
 
       {activeTab === 'chapters' ? (
         <FlatList
+          key="chapters-list"
           data={chapters}
           renderItem={renderChapterItem}
-          keyExtractor={(item) => item.chapter_id || item.chapterId || item.id || String(Math.random())}
+          keyExtractor={(item, index) => item.chapter_id || item.chapterId || item.id || `chapter_${index}`}
           contentContainerStyle={styles.listContent}
+          removeClippedSubviews={true}
+          maxToRenderPerBatch={10}
+          windowSize={5}
           ListEmptyComponent={
             <EmptyState
               icon="📚"
@@ -408,12 +412,16 @@ const BookDetailScreen = ({ route, navigation }) => {
         />
       ) : (
         <FlatList
+          key="characters-list"
           data={characters}
           renderItem={renderCharacterItem}
-          keyExtractor={(item) => item.id || item.bookCharacterId || item.character_id || String(Math.random())}
+          keyExtractor={(item, index) => item.id || item.bookCharacterId || item.character_id || `char_${index}`}
           numColumns={2}
           columnWrapperStyle={styles.characterRow}
           contentContainerStyle={styles.listContent}
+          removeClippedSubviews={true}
+          maxToRenderPerBatch={10}
+          windowSize={5}
           ListEmptyComponent={
             <EmptyState
               icon="🎭"

@@ -9,9 +9,11 @@ const GlowOrbBackground = () => {
   const goldAnimY = useRef(new Animated.Value(0.15 * SCREEN_HEIGHT)).current;
   const purpleAnimX = useRef(new Animated.Value(0.85 * SCREEN_WIDTH)).current;
   const purpleAnimY = useRef(new Animated.Value(0.75 * SCREEN_HEIGHT)).current;
+  const isMounted = useRef(true);
 
   useEffect(() => {
     const animateGold = () => {
+      if (!isMounted.current) return;
       Animated.sequence([
         Animated.parallel([
           Animated.timing(goldAnimX, { toValue: 0.6 * SCREEN_WIDTH, duration: 5000, useNativeDriver: true }),
@@ -29,10 +31,15 @@ const GlowOrbBackground = () => {
           Animated.timing(goldAnimX, { toValue: 0.1 * SCREEN_WIDTH, duration: 5500, useNativeDriver: true }),
           Animated.timing(goldAnimY, { toValue: 0.15 * SCREEN_HEIGHT, duration: 5500, useNativeDriver: true }),
         ]),
-      ]).start(() => animateGold());
+      ]).start(() => {
+        if (isMounted.current) {
+          animateGold();
+        }
+      });
     };
 
     const animatePurple = () => {
+      if (!isMounted.current) return;
       Animated.sequence([
         Animated.parallel([
           Animated.timing(purpleAnimX, { toValue: 0.2 * SCREEN_WIDTH, duration: 6000, useNativeDriver: true }),
@@ -50,11 +57,19 @@ const GlowOrbBackground = () => {
           Animated.timing(purpleAnimX, { toValue: 0.85 * SCREEN_WIDTH, duration: 6000, useNativeDriver: true }),
           Animated.timing(purpleAnimY, { toValue: 0.75 * SCREEN_HEIGHT, duration: 6000, useNativeDriver: true }),
         ]),
-      ]).start(() => animatePurple());
+      ]).start(() => {
+        if (isMounted.current) {
+          animatePurple();
+        }
+      });
     };
 
     animateGold();
     animatePurple();
+
+    return () => {
+      isMounted.current = false;
+    };
   }, []);
 
   return (

@@ -91,11 +91,15 @@ const BookshelfScreen = ({ navigation }) => {
         <FlatList
           data={books}
           renderItem={renderBookItem}
-          keyExtractor={(item) => item.book_id || item.bookId || item.id || String(Math.random())}
+          keyExtractor={(item, index) => item.book_id || item.bookId || item.id || `book_${index}`}
           numColumns={2}
           columnWrapperStyle={styles.row}
           contentContainerStyle={styles.listContent}
           showsVerticalScrollIndicator={false}
+          removeClippedSubviews={true}
+          maxToRenderPerBatch={10}
+          windowSize={5}
+          initialNumToRender={10}
           refreshControl={
             <RefreshControl refreshing={refreshing} onRefresh={onRefresh} />
           }

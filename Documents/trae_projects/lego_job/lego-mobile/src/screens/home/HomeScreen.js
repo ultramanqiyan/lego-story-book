@@ -348,10 +348,13 @@ const HomeScreen = ({ navigation }) => {
             <FlatList
               data={popularCharacters}
               renderItem={renderCharacterItem}
-              keyExtractor={(item) => item.character_id || item.characterId || item.id || String(Math.random())}
+              keyExtractor={(item, index) => item.character_id || item.characterId || item.id || `char_${index}`}
               horizontal
               showsHorizontalScrollIndicator={false}
               contentContainerStyle={styles.horizontalList}
+              removeClippedSubviews={true}
+              maxToRenderPerBatch={5}
+              windowSize={3}
             />
           ) : (
             <EmptyState
@@ -376,10 +379,13 @@ const HomeScreen = ({ navigation }) => {
             <FlatList
               data={recentBooks}
               renderItem={renderBookItem}
-              keyExtractor={(item) => item.book_id || item.bookId || item.id || String(Math.random())}
+              keyExtractor={(item, index) => item.book_id || item.bookId || item.id || `book_${index}`}
               horizontal
               showsHorizontalScrollIndicator={false}
               contentContainerStyle={styles.horizontalList}
+              removeClippedSubviews={true}
+              maxToRenderPerBatch={5}
+              windowSize={3}
             />
           ) : (
             <EmptyState

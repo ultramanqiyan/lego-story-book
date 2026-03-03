@@ -163,8 +163,6 @@ const CharactersScreen = ({ navigation }) => {
     const isPreset = item.creator_id === 'system';
     const variant = isPreset ? 'primary' : 'default';
 
-    logger.screen.action('CharactersScreen', 'renderCharacterCard', { name: item.name, variant });
-
     return (
       <View style={styles.cardContainer}>
         <Card3D
@@ -220,11 +218,15 @@ const CharactersScreen = ({ navigation }) => {
 
       <FlatList
         data={characters}
-        keyExtractor={(item) => item.character_id || item.id || item.characterId || String(Math.random())}
+        keyExtractor={(item, index) => item.character_id || item.id || item.characterId || `char_${index}`}
         numColumns={2}
         columnWrapperStyle={styles.row}
         contentContainerStyle={styles.listContent}
         showsVerticalScrollIndicator={false}
+        removeClippedSubviews={true}
+        maxToRenderPerBatch={10}
+        windowSize={5}
+        initialNumToRender={10}
         refreshControl={
           <RefreshControl refreshing={refreshing} onRefresh={onRefresh} />
         }

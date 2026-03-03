@@ -1,4 +1,4 @@
-import React, { createContext, useContext, useState, useEffect } from 'react';
+import React, { createContext, useContext, useState, useEffect, useCallback, useMemo } from 'react';
 import { storage } from '../utils/storage';
 import { usersAPI } from '../api/users';
 import logger from '../utils/logger';
@@ -15,7 +15,7 @@ export const AuthProvider = ({ children }) => {
     checkAuth();
   }, []);
 
-  const checkAuth = async () => {
+  const checkAuth = useCallback(async () => {
     logger.auth.checkAuth('checking...');
     try {
       const userId = await storage.getUserId();
@@ -33,9 +33,9 @@ export const AuthProvider = ({ children }) => {
     } finally {
       setIsLoading(false);
     }
-  };
+  }, []);
 
-  const login = async (username, email = null) => {
+  const login = useCallback(async (username, email = null) => {
     logger.auth.loginStart(username);
     try {
       const data = await usersAPI.createOrLogin(username, email);
@@ -53,9 +53,9 @@ export const AuthProvider = ({ children }) => {
       logger.auth.loginError(error);
       return { success: false, error: error.message };
     }
-  };
+  }, []);
 
-  const logout = async () => {
+  const logout = useCallback(async () => {
     logger.auth.logout();
     try {
       await storage.clearUserData();
@@ -66,16 +66,16 @@ export const AuthProvider = ({ children }) => {
       logger.error('AUTH', 'Logout failed:', error?.message || error);
       return { success: false, error: error.message };
     }
-  };
+  }, []);
 
-  const value = {
+  const value = useMemo(() => ({
     user,
     isLoading,
     isAuthenticated,
     login,
     logout,
     checkAuth,
-  };
+  }), [user, isLoading, isAuthenticated, login, logout, checkAuth]);
 
   return (
     <AuthContext.Provider value={value}>

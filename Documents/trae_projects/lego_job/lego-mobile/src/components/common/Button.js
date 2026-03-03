@@ -1,11 +1,10 @@
-import React, { useEffect } from 'react';
+import React, { useEffect, memo } from 'react';
 import {
   TouchableOpacity,
   Text,
   StyleSheet,
   ActivityIndicator,
   View,
-  Platform,
 } from 'react-native';
 import Animated, {
   useSharedValue,
@@ -18,7 +17,7 @@ import { MICRO_INTERACTION_CONFIG } from '../../utils/animations';
 
 const AnimatedTouchable = Animated.createAnimatedComponent(TouchableOpacity);
 
-const Button = ({
+const Button = memo(({
   title,
   onPress,
   variant = 'primary',
@@ -148,7 +147,7 @@ const Button = ({
       )}
     </AnimatedTouchable>
   );
-};
+});
 
 const styles = StyleSheet.create({
   button: {

@@ -9,6 +9,7 @@ const PARTICLE_COLORS = [COLORS.legoYellow, COLORS.legoPurple, COLORS.legoBlue, 
 const ParticleBackground = () => {
   const particles = useRef([]);
   const animations = useRef([]);
+  const animationRefs = useRef([]);
 
   useEffect(() => {
     const particleCount = 25;
@@ -26,8 +27,8 @@ const ParticleBackground = () => {
       return { anim, config: p };
     });
 
-    animations.current.forEach(({ anim }, i) => {
-      Animated.loop(
+    animationRefs.current = animations.current.map(({ anim }, i) => {
+      const animation = Animated.loop(
         Animated.sequence([
           Animated.delay(particles.current[i].delay),
           Animated.timing(anim, {
@@ -37,8 +38,18 @@ const ParticleBackground = () => {
             useNativeDriver: true,
           }),
         ])
-      ).start();
+      );
+      animation.start();
+      return animation;
     });
+
+    return () => {
+      animationRefs.current.forEach(ref => {
+        if (ref && ref.stop) {
+          ref.stop();
+        }
+      });
+    };
   }, []);
 
   return (

@@ -1,8 +1,8 @@
-import React from 'react';
+import React, { memo } from 'react';
 import { View, Text, StyleSheet, TouchableOpacity } from 'react-native';
 import { COLORS } from '../../utils/constants';
 
-const Card = ({
+const Card = memo(({
   children,
   title,
   subtitle,
@@ -27,11 +27,13 @@ const Card = ({
     }
   };
 
+  const variantStyles = getVariantStyles();
+
   const cardContent = (
-    <View style={[styles.card, getVariantStyles(), style]}>
-      {title && (
+    <View style={[styles.card, variantStyles, style]}>
+      {(title || subtitle) && (
         <View style={styles.header}>
-          <Text style={styles.title}>{title}</Text>
+          {title && <Text style={styles.title}>{title}</Text>}
           {subtitle && <Text style={styles.subtitle}>{subtitle}</Text>}
         </View>
       )}
@@ -48,7 +50,7 @@ const Card = ({
   }
 
   return cardContent;
-};
+});
 
 const styles = StyleSheet.create({
   card: {
