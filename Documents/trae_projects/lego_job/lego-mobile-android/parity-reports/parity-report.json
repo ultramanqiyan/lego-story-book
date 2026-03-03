@@ -1,0 +1,641 @@
+{
+  "generated_at": "2026-03-03T02:56:48.869376",
+  "summary": {
+    "total_items": 66,
+    "matching": 30,
+    "missing": 36,
+    "partial": 0
+  },
+  "categories": {
+    "屏幕/页面": {
+      "total": 20,
+      "matching": 11,
+      "missing": 9,
+      "partial": 0,
+      "completion_rate": "55.0%",
+      "items": [
+        {
+          "name": "LoginScreen",
+          "rn_status": "exists",
+          "android_status": "exists",
+          "rn_file": "c:\\Users\\yannis\\Documents\\trae_projects\\lego_job\\lego-mobile\\src\\screens\\auth\\LoginScreen.js",
+          "android_file": "c:\\Users\\yannis\\Documents\\trae_projects\\lego_job\\lego-mobile-android\\app\\src\\main\\java\\com\\legostory\\mobile\\ui\\screens\\login\\LoginScreen.kt",
+          "differences": [],
+          "priority": "P2"
+        },
+        {
+          "name": "HomeScreen",
+          "rn_status": "exists",
+          "android_status": "exists",
+          "rn_file": "c:\\Users\\yannis\\Documents\\trae_projects\\lego_job\\lego-mobile\\src\\screens\\home\\HomeScreen.js",
+          "android_file": "c:\\Users\\yannis\\Documents\\trae_projects\\lego_job\\lego-mobile-android\\app\\src\\main\\java\\com\\legostory\\mobile\\ui\\screens\\home\\HomeScreen.kt",
+          "differences": [],
+          "priority": "P2"
+        },
+        {
+          "name": "BookshelfScreen",
+          "rn_status": "exists",
+          "android_status": "exists",
+          "rn_file": "c:\\Users\\yannis\\Documents\\trae_projects\\lego_job\\lego-mobile\\src\\screens\\bookshelf\\BookshelfScreen.js",
+          "android_file": "c:\\Users\\yannis\\Documents\\trae_projects\\lego_job\\lego-mobile-android\\app\\src\\main\\java\\com\\legostory\\mobile\\ui\\screens\\bookshelf\\BookshelfScreen.kt",
+          "differences": [],
+          "priority": "P2"
+        },
+        {
+          "name": "CharactersScreen",
+          "rn_status": "exists",
+          "android_status": "exists",
+          "rn_file": "c:\\Users\\yannis\\Documents\\trae_projects\\lego_job\\lego-mobile\\src\\screens\\characters\\CharactersScreen.js",
+          "android_file": "c:\\Users\\yannis\\Documents\\trae_projects\\lego_job\\lego-mobile-android\\app\\src\\main\\java\\com\\legostory\\mobile\\ui\\screens\\characters\\CharactersScreen.kt",
+          "differences": [],
+          "priority": "P2"
+        },
+        {
+          "name": "SettingsScreen",
+          "rn_status": "exists",
+          "android_status": "exists",
+          "rn_file": "c:\\Users\\yannis\\Documents\\trae_projects\\lego_job\\lego-mobile\\src\\screens\\settings\\SettingsScreen.js",
+          "android_file": "c:\\Users\\yannis\\Documents\\trae_projects\\lego_job\\lego-mobile-android\\app\\src\\main\\java\\com\\legostory\\mobile\\ui\\screens\\settings\\SettingsScreen.kt",
+          "differences": [],
+          "priority": "P2"
+        },
+        {
+          "name": "BookDetailScreen",
+          "rn_status": "exists",
+          "android_status": "exists",
+          "rn_file": "c:\\Users\\yannis\\Documents\\trae_projects\\lego_job\\lego-mobile\\src\\screens\\story\\BookDetailScreen.js",
+          "android_file": "c:\\Users\\yannis\\Documents\\trae_projects\\lego_job\\lego-mobile-android\\app\\src\\main\\java\\com\\legostory\\mobile\\ui\\screens\\bookdetail\\BookDetailScreen.kt",
+          "differences": [],
+          "priority": "P2"
+        },
+        {
+          "name": "ChapterScreen",
+          "rn_status": "exists",
+          "android_status": "exists",
+          "rn_file": "c:\\Users\\yannis\\Documents\\trae_projects\\lego_job\\lego-mobile\\src\\screens\\chapter\\ChapterScreen.js",
+          "android_file": "c:\\Users\\yannis\\Documents\\trae_projects\\lego_job\\lego-mobile-android\\app\\src\\main\\java\\com\\legostory\\mobile\\ui\\screens\\chapter\\ChapterScreen.kt",
+          "differences": [],
+          "priority": "P2"
+        },
+        {
+          "name": "StoryCreateScreen",
+          "rn_status": "exists",
+          "android_status": "exists",
+          "rn_file": "c:\\Users\\yannis\\Documents\\trae_projects\\lego_job\\lego-mobile\\src\\screens\\story\\StoryCreateScreen.js",
+          "android_file": "c:\\Users\\yannis\\Documents\\trae_projects\\lego_job\\lego-mobile-android\\app\\src\\main\\java\\com\\legostory\\mobile\\ui\\screens\\story\\StoryCreateScreen.kt",
+          "differences": [],
+          "priority": "P2"
+        },
+        {
+          "name": "ThemeSettingsScreen",
+          "rn_status": "exists",
+          "android_status": "exists",
+          "rn_file": "c:\\Users\\yannis\\Documents\\trae_projects\\lego_job\\lego-mobile\\src\\screens\\settings\\ThemeSettingsScreen.js",
+          "android_file": "c:\\Users\\yannis\\Documents\\trae_projects\\lego_job\\lego-mobile-android\\app\\src\\main\\java\\com\\legostory\\mobile\\ui\\screens\\settings\\ThemeSettingsScreen.kt",
+          "differences": [],
+          "priority": "P2"
+        },
+        {
+          "name": "ParentControlScreen",
+          "rn_status": "exists",
+          "android_status": "exists",
+          "rn_file": "c:\\Users\\yannis\\Documents\\trae_projects\\lego_job\\lego-mobile\\src\\screens\\settings\\ParentControlScreen.js",
+          "android_file": "c:\\Users\\yannis\\Documents\\trae_projects\\lego_job\\lego-mobile-android\\app\\src\\main\\java\\com\\legostory\\mobile\\ui\\screens\\settings\\ParentControlScreen.kt",
+          "differences": [],
+          "priority": "P2"
+        },
+        {
+          "name": "AdventureScreen",
+          "rn_status": "exists",
+          "android_status": "exists",
+          "rn_file": "c:\\Users\\yannis\\Documents\\trae_projects\\lego_job\\lego-mobile\\src\\screens\\adventure\\AdventureScreen.js",
+          "android_file": "c:\\Users\\yannis\\Documents\\trae_projects\\lego_job\\lego-mobile-android\\app\\src\\main\\java\\com\\legostory\\mobile\\ui\\screens\\adventure\\AdventureScreen.kt",
+          "differences": [],
+          "priority": "P2"
+        },
+        {
+          "name": "LoadingScreen",
+          "rn_status": "exists",
+          "android_status": "missing",
+          "rn_file": "c:\\Users\\yannis\\Documents\\trae_projects\\lego_job\\lego-mobile\\src\\screens\\LoadingScreen.js",
+          "android_file": null,
+          "differences": [],
+          "priority": "P0"
+        },
+        {
+          "name": "StoryDirectorScreen",
+          "rn_status": "exists",
+          "android_status": "missing",
+          "rn_file": "c:\\Users\\yannis\\Documents\\trae_projects\\lego_job\\lego-mobile\\src\\screens\\story\\StoryDirectorScreen.js",
+          "android_file": null,
+          "differences": [],
+          "priority": "P0"
+        },
+        {
+          "name": "ShareScreen",
+          "rn_status": "exists",
+          "android_status": "missing",
+          "rn_file": "c:\\Users\\yannis\\Documents\\trae_projects\\lego_job\\lego-mobile\\src\\screens\\share\\ShareScreen.js",
+          "android_file": null,
+          "differences": [],
+          "priority": "P1"
+        },
+        {
+          "name": "Card3DDemoScreen",
+          "rn_status": "exists",
+          "android_status": "missing",
+          "rn_file": "c:\\Users\\yannis\\Documents\\trae_projects\\lego_job\\lego-mobile\\src\\screens\\demo\\Card3DDemoScreen.js",
+          "android_file": null,
+          "differences": [],
+          "priority": "P1"
+        },
+        {
+          "name": "Demo6Grid2D",
+          "rn_status": "exists",
+          "android_status": "missing",
+          "rn_file": "c:\\Users\\yannis\\Documents\\trae_projects\\lego_job\\lego-mobile\\src\\screens\\demo\\Demo6Grid2D.js",
+          "android_file": null,
+          "differences": [],
+          "priority": "P1"
+        },
+        {
+          "name": "Demo7Flip3D",
+          "rn_status": "exists",
+          "android_status": "missing",
+          "rn_file": "c:\\Users\\yannis\\Documents\\trae_projects\\lego_job\\lego-mobile\\src\\screens\\demo\\Demo7Flip3D.js",
+          "android_file": null,
+          "differences": [],
+          "priority": "P1"
+        },
+        {
+          "name": "Demo8FanSpread",
+          "rn_status": "exists",
+          "android_status": "missing",
+          "rn_file": "c:\\Users\\yannis\\Documents\\trae_projects\\lego_job\\lego-mobile\\src\\screens\\demo\\Demo8FanSpread.js",
+          "android_file": null,
+          "differences": [],
+          "priority": "P1"
+        },
+        {
+          "name": "Demo9HorizontalStack",
+          "rn_status": "exists",
+          "android_status": "missing",
+          "rn_file": "c:\\Users\\yannis\\Documents\\trae_projects\\lego_job\\lego-mobile\\src\\screens\\demo\\Demo9HorizontalStack.js",
+          "android_file": null,
+          "differences": [],
+          "priority": "P1"
+        },
+        {
+          "name": "Demo10VerticalStack",
+          "rn_status": "exists",
+          "android_status": "missing",
+          "rn_file": "c:\\Users\\yannis\\Documents\\trae_projects\\lego_job\\lego-mobile\\src\\screens\\demo\\Demo10VerticalStack.js",
+          "android_file": null,
+          "differences": [],
+          "priority": "P1"
+        }
+      ]
+    },
+    "组件": {
+      "total": 23,
+      "matching": 7,
+      "missing": 16,
+      "partial": 0,
+      "completion_rate": "30.4%",
+      "items": [
+        {
+          "name": "Button",
+          "rn_status": "exists",
+          "android_status": "exists",
+          "rn_file": "c:\\Users\\yannis\\Documents\\trae_projects\\lego_job\\lego-mobile\\src\\components\\common\\Button.js",
+          "android_file": "c:\\Users\\yannis\\Documents\\trae_projects\\lego_job\\lego-mobile-android\\app\\src\\main\\java\\com\\legostory\\mobile\\ui\\components\\Button.kt",
+          "differences": [],
+          "priority": "P2"
+        },
+        {
+          "name": "Card",
+          "rn_status": "exists",
+          "android_status": "exists",
+          "rn_file": "c:\\Users\\yannis\\Documents\\trae_projects\\lego_job\\lego-mobile\\src\\components\\common\\Card.js",
+          "android_file": "c:\\Users\\yannis\\Documents\\trae_projects\\lego_job\\lego-mobile-android\\app\\src\\main\\java\\com\\legostory\\mobile\\ui\\components\\Card.kt",
+          "differences": [],
+          "priority": "P2"
+        },
+        {
+          "name": "Loading",
+          "rn_status": "exists",
+          "android_status": "exists",
+          "rn_file": "c:\\Users\\yannis\\Documents\\trae_projects\\lego_job\\lego-mobile\\src\\components\\common\\Loading.js",
+          "android_file": "c:\\Users\\yannis\\Documents\\trae_projects\\lego_job\\lego-mobile-android\\app\\src\\main\\java\\com\\legostory\\mobile\\ui\\components\\Loading.kt",
+          "differences": [],
+          "priority": "P2"
+        },
+        {
+          "name": "Modal",
+          "rn_status": "exists",
+          "android_status": "exists",
+          "rn_file": "c:\\Users\\yannis\\Documents\\trae_projects\\lego_job\\lego-mobile\\src\\components\\common\\Modal.js",
+          "android_file": "c:\\Users\\yannis\\Documents\\trae_projects\\lego_job\\lego-mobile-android\\app\\src\\main\\java\\com\\legostory\\mobile\\ui\\components\\Modal.kt",
+          "differences": [],
+          "priority": "P2"
+        },
+        {
+          "name": "Toast",
+          "rn_status": "exists",
+          "android_status": "exists",
+          "rn_file": "c:\\Users\\yannis\\Documents\\trae_projects\\lego_job\\lego-mobile\\src\\components\\common\\Toast.js",
+          "android_file": "c:\\Users\\yannis\\Documents\\trae_projects\\lego_job\\lego-mobile-android\\app\\src\\main\\java\\com\\legostory\\mobile\\ui\\components\\Toast.kt",
+          "differences": [],
+          "priority": "P2"
+        },
+        {
+          "name": "EmptyState",
+          "rn_status": "exists",
+          "android_status": "exists",
+          "rn_file": "c:\\Users\\yannis\\Documents\\trae_projects\\lego_job\\lego-mobile\\src\\components\\common\\EmptyState.js",
+          "android_file": "c:\\Users\\yannis\\Documents\\trae_projects\\lego_job\\lego-mobile-android\\app\\src\\main\\java\\com\\legostory\\mobile\\ui\\components\\EmptyState.kt",
+          "differences": [],
+          "priority": "P2"
+        },
+        {
+          "name": "Header",
+          "rn_status": "exists",
+          "android_status": "missing",
+          "rn_file": "c:\\Users\\yannis\\Documents\\trae_projects\\lego_job\\lego-mobile\\src\\components\\common\\Header.js",
+          "android_file": null,
+          "differences": [],
+          "priority": "P2"
+        },
+        {
+          "name": "StepIndicator",
+          "rn_status": "exists",
+          "android_status": "missing",
+          "rn_file": "c:\\Users\\yannis\\Documents\\trae_projects\\lego_job\\lego-mobile\\src\\components\\common\\StepIndicator.js",
+          "android_file": null,
+          "differences": [],
+          "priority": "P2"
+        },
+        {
+          "name": "Card3D",
+          "rn_status": "exists",
+          "android_status": "missing",
+          "rn_file": "c:\\Users\\yannis\\Documents\\trae_projects\\lego_job\\lego-mobile\\src\\components\\card3d\\Card3D.js",
+          "android_file": null,
+          "differences": [],
+          "priority": "P0"
+        },
+        {
+          "name": "Card3DVariant",
+          "rn_status": "exists",
+          "android_status": "missing",
+          "rn_file": "c:\\Users\\yannis\\Documents\\trae_projects\\lego_job\\lego-mobile\\src\\components\\card3d\\Card3DVariant.js",
+          "android_file": null,
+          "differences": [],
+          "priority": "P2"
+        },
+        {
+          "name": "CardDeck3D",
+          "rn_status": "exists",
+          "android_status": "missing",
+          "rn_file": "c:\\Users\\yannis\\Documents\\trae_projects\\lego_job\\lego-mobile\\src\\components\\card3d\\CardDeck3D.js",
+          "android_file": null,
+          "differences": [],
+          "priority": "P0"
+        },
+        {
+          "name": "CardDeckVariants",
+          "rn_status": "exists",
+          "android_status": "missing",
+          "rn_file": "c:\\Users\\yannis\\Documents\\trae_projects\\lego_job\\lego-mobile\\src\\components\\card3d\\CardDeckVariants.js",
+          "android_file": null,
+          "differences": [],
+          "priority": "P2"
+        },
+        {
+          "name": "Card2D",
+          "rn_status": "exists",
+          "android_status": "missing",
+          "rn_file": "c:\\Users\\yannis\\Documents\\trae_projects\\lego_job\\lego-mobile\\src\\components\\card3d\\Card2D.js",
+          "android_file": null,
+          "differences": [],
+          "priority": "P0"
+        },
+        {
+          "name": "CardSelector2D",
+          "rn_status": "exists",
+          "android_status": "missing",
+          "rn_file": "c:\\Users\\yannis\\Documents\\trae_projects\\lego_job\\lego-mobile\\src\\components\\card2d\\CardSelector2D.js",
+          "android_file": null,
+          "differences": [],
+          "priority": "P0"
+        },
+        {
+          "name": "StagePreview",
+          "rn_status": "exists",
+          "android_status": "missing",
+          "rn_file": "c:\\Users\\yannis\\Documents\\trae_projects\\lego_job\\lego-mobile\\src\\components\\story\\StagePreview.js",
+          "android_file": null,
+          "differences": [],
+          "priority": "P1"
+        },
+        {
+          "name": "CardDeck",
+          "rn_status": "exists",
+          "android_status": "missing",
+          "rn_file": "c:\\Users\\yannis\\Documents\\trae_projects\\lego_job\\lego-mobile\\src\\components\\story\\CardDeck.js",
+          "android_file": null,
+          "differences": [],
+          "priority": "P2"
+        },
+        {
+          "name": "WeatherEffect",
+          "rn_status": "exists",
+          "android_status": "missing",
+          "rn_file": "c:\\Users\\yannis\\Documents\\trae_projects\\lego_job\\lego-mobile\\src\\components\\story\\WeatherEffect.js",
+          "android_file": null,
+          "differences": [],
+          "priority": "P1"
+        },
+        {
+          "name": "KeywordHighlight",
+          "rn_status": "exists",
+          "android_status": "missing",
+          "rn_file": "c:\\Users\\yannis\\Documents\\trae_projects\\lego_job\\lego-mobile\\src\\components\\chapter\\KeywordHighlight.js",
+          "android_file": null,
+          "differences": [],
+          "priority": "P2"
+        },
+        {
+          "name": "PromptPanel",
+          "rn_status": "exists",
+          "android_status": "missing",
+          "rn_file": "c:\\Users\\yannis\\Documents\\trae_projects\\lego_job\\lego-mobile\\src\\components\\chapter\\PromptPanel.js",
+          "android_file": null,
+          "differences": [],
+          "priority": "P2"
+        },
+        {
+          "name": "CharacterForm",
+          "rn_status": "exists",
+          "android_status": "missing",
+          "rn_file": "c:\\Users\\yannis\\Documents\\trae_projects\\lego_job\\lego-mobile\\src\\components\\characters\\CharacterForm.js",
+          "android_file": null,
+          "differences": [],
+          "priority": "P1"
+        },
+        {
+          "name": "MagicParticles",
+          "rn_status": "exists",
+          "android_status": "missing",
+          "rn_file": "c:\\Users\\yannis\\Documents\\trae_projects\\lego_job\\lego-mobile\\src\\components\\particles\\MagicParticles.js",
+          "android_file": null,
+          "differences": [],
+          "priority": "P2"
+        },
+        {
+          "name": "ParticleBackground",
+          "rn_status": "exists",
+          "android_status": "exists",
+          "rn_file": "c:\\Users\\yannis\\Documents\\trae_projects\\lego_job\\lego-mobile\\src\\components\\common\\ParticleBackground.js",
+          "android_file": "c:\\Users\\yannis\\Documents\\trae_projects\\lego_job\\lego-mobile-android\\app\\src\\main\\java\\com\\legostory\\mobile\\ui\\components\\effects\\ParticleBackground.kt",
+          "differences": [],
+          "priority": "P2"
+        },
+        {
+          "name": "GlowOrbBackground",
+          "rn_status": "exists",
+          "android_status": "missing",
+          "rn_file": "c:\\Users\\yannis\\Documents\\trae_projects\\lego_job\\lego-mobile\\src\\components\\common\\GlowOrbBackground.js",
+          "android_file": null,
+          "differences": [],
+          "priority": "P2"
+        }
+      ]
+    },
+    "动画": {
+      "total": 14,
+      "matching": 9,
+      "missing": 5,
+      "partial": 0,
+      "completion_rate": "64.3%",
+      "items": [
+        {
+          "name": "fadeIn",
+          "rn_status": "exists",
+          "android_status": "exists",
+          "rn_file": null,
+          "android_file": null,
+          "differences": [],
+          "priority": "P2"
+        },
+        {
+          "name": "fadeOut",
+          "rn_status": "exists",
+          "android_status": "exists",
+          "rn_file": null,
+          "android_file": null,
+          "differences": [],
+          "priority": "P2"
+        },
+        {
+          "name": "slideIn",
+          "rn_status": "exists",
+          "android_status": "exists",
+          "rn_file": null,
+          "android_file": null,
+          "differences": [],
+          "priority": "P2"
+        },
+        {
+          "name": "slideOut",
+          "rn_status": "exists",
+          "android_status": "exists",
+          "rn_file": null,
+          "android_file": null,
+          "differences": [],
+          "priority": "P2"
+        },
+        {
+          "name": "scale",
+          "rn_status": "exists",
+          "android_status": "exists",
+          "rn_file": null,
+          "android_file": null,
+          "differences": [],
+          "priority": "P2"
+        },
+        {
+          "name": "shake",
+          "rn_status": "exists",
+          "android_status": "exists",
+          "rn_file": null,
+          "android_file": null,
+          "differences": [],
+          "priority": "P2"
+        },
+        {
+          "name": "pulse",
+          "rn_status": "exists",
+          "android_status": "exists",
+          "rn_file": null,
+          "android_file": null,
+          "differences": [],
+          "priority": "P2"
+        },
+        {
+          "name": "bounce",
+          "rn_status": "exists",
+          "android_status": "exists",
+          "rn_file": null,
+          "android_file": null,
+          "differences": [],
+          "priority": "P2"
+        },
+        {
+          "name": "cardFlip",
+          "rn_status": "exists",
+          "android_status": "exists",
+          "rn_file": null,
+          "android_file": null,
+          "differences": [],
+          "priority": "P1"
+        },
+        {
+          "name": "3D卡牌倾斜",
+          "rn_status": "exists",
+          "android_status": "missing",
+          "rn_file": null,
+          "android_file": null,
+          "differences": [],
+          "priority": "P0"
+        },
+        {
+          "name": "扇形卡牌布局",
+          "rn_status": "exists",
+          "android_status": "missing",
+          "rn_file": null,
+          "android_file": null,
+          "differences": [],
+          "priority": "P0"
+        },
+        {
+          "name": "粒子系统",
+          "rn_status": "exists",
+          "android_status": "missing",
+          "rn_file": null,
+          "android_file": null,
+          "differences": [],
+          "priority": "P1"
+        },
+        {
+          "name": "天气特效",
+          "rn_status": "exists",
+          "android_status": "missing",
+          "rn_file": null,
+          "android_file": null,
+          "differences": [],
+          "priority": "P1"
+        },
+        {
+          "name": "微交互配置",
+          "rn_status": "exists",
+          "android_status": "missing",
+          "rn_file": null,
+          "android_file": null,
+          "differences": [],
+          "priority": "P2"
+        }
+      ]
+    },
+    "主题配置": {
+      "total": 9,
+      "matching": 3,
+      "missing": 6,
+      "partial": 0,
+      "completion_rate": "33.3%",
+      "items": [
+        {
+          "name": "基础颜色",
+          "rn_status": "exists",
+          "android_status": "exists",
+          "rn_file": null,
+          "android_file": null,
+          "differences": [],
+          "priority": "P2"
+        },
+        {
+          "name": "排版系统",
+          "rn_status": "exists",
+          "android_status": "missing",
+          "rn_file": null,
+          "android_file": null,
+          "differences": [],
+          "priority": "P0"
+        },
+        {
+          "name": "间距系统",
+          "rn_status": "exists",
+          "android_status": "missing",
+          "rn_file": null,
+          "android_file": null,
+          "differences": [],
+          "priority": "P0"
+        },
+        {
+          "name": "阴影配置",
+          "rn_status": "exists",
+          "android_status": "missing",
+          "rn_file": null,
+          "android_file": null,
+          "differences": [],
+          "priority": "P1"
+        },
+        {
+          "name": "稀有度颜色",
+          "rn_status": "exists",
+          "android_status": "missing",
+          "rn_file": null,
+          "android_file": null,
+          "differences": [],
+          "priority": "P1"
+        },
+        {
+          "name": "角色类型颜色",
+          "rn_status": "exists",
+          "android_status": "missing",
+          "rn_file": null,
+          "android_file": null,
+          "differences": [],
+          "priority": "P1"
+        },
+        {
+          "name": "渐变预设",
+          "rn_status": "exists",
+          "android_status": "missing",
+          "rn_file": null,
+          "android_file": null,
+          "differences": [],
+          "priority": "P2"
+        },
+        {
+          "name": "主题管理器",
+          "rn_status": "exists",
+          "android_status": "exists",
+          "rn_file": null,
+          "android_file": null,
+          "differences": [],
+          "priority": "P2"
+        },
+        {
+          "name": "主题切换",
+          "rn_status": "exists",
+          "android_status": "exists",
+          "rn_file": null,
+          "android_file": null,
+          "differences": [],
+          "priority": "P2"
+        }
+      ]
+    }
+  }
+}

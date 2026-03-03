@@ -1,0 +1,546 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="UTF-8">
+    <title>Android vs React Native 一致性对比报告</title>
+    <style>
+        body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif; margin: 20px; background: #f5f5f5; }
+        .container { max-width: 1200px; margin: 0 auto; background: white; padding: 20px; border-radius: 8px; box-shadow: 0 2px 4px rgba(0,0,0,0.1); }
+        h1 { color: #333; border-bottom: 2px solid #4CAF50; padding-bottom: 10px; }
+        h2 { color: #555; margin-top: 30px; }
+        .summary { display: flex; gap: 20px; margin: 20px 0; flex-wrap: wrap; }
+        .stat { padding: 15px 25px; border-radius: 8px; font-size: 18px; font-weight: bold; }
+        .stat.total { background: #2196F3; color: white; }
+        .stat.matching { background: #4CAF50; color: white; }
+        .stat.missing { background: #f44336; color: white; }
+        .stat.partial { background: #FF9800; color: white; }
+        table { width: 100%; border-collapse: collapse; margin-top: 20px; }
+        th, td { padding: 12px; text-align: left; border-bottom: 1px solid #ddd; }
+        th { background: #4CAF50; color: white; }
+        tr:hover { background: #f5f5f5; }
+        .status-exists { color: #4CAF50; font-weight: bold; }
+        .status-missing { color: #f44336; font-weight: bold; }
+        .status-partial { color: #FF9800; font-weight: bold; }
+        .priority-P0 { background: #ffebee; }
+        .priority-P1 { background: #fff3e0; }
+        .timestamp { color: #666; font-size: 12px; }
+        .category-header { display: flex; justify-content: space-between; align-items: center; }
+        .completion-rate { font-size: 14px; color: #666; }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>Android vs React Native 一致性对比报告</h1>
+        <p class="timestamp">生成时间: 2026-03-03T02:56:48.869376</p>
+        
+        <div class="summary">
+            <div class="stat total">总计: 66</div>
+            <div class="stat matching">匹配: 30</div>
+            <div class="stat missing">缺失: 36</div>
+        </div>
+
+        <h2>屏幕/页面 <span class="completion-rate">完成率: 55.0%</span></h2>
+        <table>
+            <tr>
+                <th>名称</th>
+                <th>RN状态</th>
+                <th>Android状态</th>
+                <th>优先级</th>
+            </tr>
+
+            <tr class="priority-P2">
+                <td>LoginScreen</td>
+                <td class="status-exists">exists</td>
+                <td class="status-exists">exists</td>
+                <td>P2</td>
+            </tr>
+
+            <tr class="priority-P2">
+                <td>HomeScreen</td>
+                <td class="status-exists">exists</td>
+                <td class="status-exists">exists</td>
+                <td>P2</td>
+            </tr>
+
+            <tr class="priority-P2">
+                <td>BookshelfScreen</td>
+                <td class="status-exists">exists</td>
+                <td class="status-exists">exists</td>
+                <td>P2</td>
+            </tr>
+
+            <tr class="priority-P2">
+                <td>CharactersScreen</td>
+                <td class="status-exists">exists</td>
+                <td class="status-exists">exists</td>
+                <td>P2</td>
+            </tr>
+
+            <tr class="priority-P2">
+                <td>SettingsScreen</td>
+                <td class="status-exists">exists</td>
+                <td class="status-exists">exists</td>
+                <td>P2</td>
+            </tr>
+
+            <tr class="priority-P2">
+                <td>BookDetailScreen</td>
+                <td class="status-exists">exists</td>
+                <td class="status-exists">exists</td>
+                <td>P2</td>
+            </tr>
+
+            <tr class="priority-P2">
+                <td>ChapterScreen</td>
+                <td class="status-exists">exists</td>
+                <td class="status-exists">exists</td>
+                <td>P2</td>
+            </tr>
+
+            <tr class="priority-P2">
+                <td>StoryCreateScreen</td>
+                <td class="status-exists">exists</td>
+                <td class="status-exists">exists</td>
+                <td>P2</td>
+            </tr>
+
+            <tr class="priority-P2">
+                <td>ThemeSettingsScreen</td>
+                <td class="status-exists">exists</td>
+                <td class="status-exists">exists</td>
+                <td>P2</td>
+            </tr>
+
+            <tr class="priority-P2">
+                <td>ParentControlScreen</td>
+                <td class="status-exists">exists</td>
+                <td class="status-exists">exists</td>
+                <td>P2</td>
+            </tr>
+
+            <tr class="priority-P2">
+                <td>AdventureScreen</td>
+                <td class="status-exists">exists</td>
+                <td class="status-exists">exists</td>
+                <td>P2</td>
+            </tr>
+
+            <tr class="priority-P0">
+                <td>LoadingScreen</td>
+                <td class="status-exists">exists</td>
+                <td class="status-missing">missing</td>
+                <td>P0</td>
+            </tr>
+
+            <tr class="priority-P0">
+                <td>StoryDirectorScreen</td>
+                <td class="status-exists">exists</td>
+                <td class="status-missing">missing</td>
+                <td>P0</td>
+            </tr>
+
+            <tr class="priority-P1">
+                <td>ShareScreen</td>
+                <td class="status-exists">exists</td>
+                <td class="status-missing">missing</td>
+                <td>P1</td>
+            </tr>
+
+            <tr class="priority-P1">
+                <td>Card3DDemoScreen</td>
+                <td class="status-exists">exists</td>
+                <td class="status-missing">missing</td>
+                <td>P1</td>
+            </tr>
+
+            <tr class="priority-P1">
+                <td>Demo6Grid2D</td>
+                <td class="status-exists">exists</td>
+                <td class="status-missing">missing</td>
+                <td>P1</td>
+            </tr>
+
+            <tr class="priority-P1">
+                <td>Demo7Flip3D</td>
+                <td class="status-exists">exists</td>
+                <td class="status-missing">missing</td>
+                <td>P1</td>
+            </tr>
+
+            <tr class="priority-P1">
+                <td>Demo8FanSpread</td>
+                <td class="status-exists">exists</td>
+                <td class="status-missing">missing</td>
+                <td>P1</td>
+            </tr>
+
+            <tr class="priority-P1">
+                <td>Demo9HorizontalStack</td>
+                <td class="status-exists">exists</td>
+                <td class="status-missing">missing</td>
+                <td>P1</td>
+            </tr>
+
+            <tr class="priority-P1">
+                <td>Demo10VerticalStack</td>
+                <td class="status-exists">exists</td>
+                <td class="status-missing">missing</td>
+                <td>P1</td>
+            </tr>
+        </table>
+
+        <h2>组件 <span class="completion-rate">完成率: 30.4%</span></h2>
+        <table>
+            <tr>
+                <th>名称</th>
+                <th>RN状态</th>
+                <th>Android状态</th>
+                <th>优先级</th>
+            </tr>
+
+            <tr class="priority-P2">
+                <td>Button</td>
+                <td class="status-exists">exists</td>
+                <td class="status-exists">exists</td>
+                <td>P2</td>
+            </tr>
+
+            <tr class="priority-P2">
+                <td>Card</td>
+                <td class="status-exists">exists</td>
+                <td class="status-exists">exists</td>
+                <td>P2</td>
+            </tr>
+
+            <tr class="priority-P2">
+                <td>Loading</td>
+                <td class="status-exists">exists</td>
+                <td class="status-exists">exists</td>
+                <td>P2</td>
+            </tr>
+
+            <tr class="priority-P2">
+                <td>Modal</td>
+                <td class="status-exists">exists</td>
+                <td class="status-exists">exists</td>
+                <td>P2</td>
+            </tr>
+
+            <tr class="priority-P2">
+                <td>Toast</td>
+                <td class="status-exists">exists</td>
+                <td class="status-exists">exists</td>
+                <td>P2</td>
+            </tr>
+
+            <tr class="priority-P2">
+                <td>EmptyState</td>
+                <td class="status-exists">exists</td>
+                <td class="status-exists">exists</td>
+                <td>P2</td>
+            </tr>
+
+            <tr class="priority-P2">
+                <td>Header</td>
+                <td class="status-exists">exists</td>
+                <td class="status-missing">missing</td>
+                <td>P2</td>
+            </tr>
+
+            <tr class="priority-P2">
+                <td>StepIndicator</td>
+                <td class="status-exists">exists</td>
+                <td class="status-missing">missing</td>
+                <td>P2</td>
+            </tr>
+
+            <tr class="priority-P0">
+                <td>Card3D</td>
+                <td class="status-exists">exists</td>
+                <td class="status-missing">missing</td>
+                <td>P0</td>
+            </tr>
+
+            <tr class="priority-P2">
+                <td>Card3DVariant</td>
+                <td class="status-exists">exists</td>
+                <td class="status-missing">missing</td>
+                <td>P2</td>
+            </tr>
+
+            <tr class="priority-P0">
+                <td>CardDeck3D</td>
+                <td class="status-exists">exists</td>
+                <td class="status-missing">missing</td>
+                <td>P0</td>
+            </tr>
+
+            <tr class="priority-P2">
+                <td>CardDeckVariants</td>
+                <td class="status-exists">exists</td>
+                <td class="status-missing">missing</td>
+                <td>P2</td>
+            </tr>
+
+            <tr class="priority-P0">
+                <td>Card2D</td>
+                <td class="status-exists">exists</td>
+                <td class="status-missing">missing</td>
+                <td>P0</td>
+            </tr>
+
+            <tr class="priority-P0">
+                <td>CardSelector2D</td>
+                <td class="status-exists">exists</td>
+                <td class="status-missing">missing</td>
+                <td>P0</td>
+            </tr>
+
+            <tr class="priority-P1">
+                <td>StagePreview</td>
+                <td class="status-exists">exists</td>
+                <td class="status-missing">missing</td>
+                <td>P1</td>
+            </tr>
+
+            <tr class="priority-P2">
+                <td>CardDeck</td>
+                <td class="status-exists">exists</td>
+                <td class="status-missing">missing</td>
+                <td>P2</td>
+            </tr>
+
+            <tr class="priority-P1">
+                <td>WeatherEffect</td>
+                <td class="status-exists">exists</td>
+                <td class="status-missing">missing</td>
+                <td>P1</td>
+            </tr>
+
+            <tr class="priority-P2">
+                <td>KeywordHighlight</td>
+                <td class="status-exists">exists</td>
+                <td class="status-missing">missing</td>
+                <td>P2</td>
+            </tr>
+
+            <tr class="priority-P2">
+                <td>PromptPanel</td>
+                <td class="status-exists">exists</td>
+                <td class="status-missing">missing</td>
+                <td>P2</td>
+            </tr>
+
+            <tr class="priority-P1">
+                <td>CharacterForm</td>
+                <td class="status-exists">exists</td>
+                <td class="status-missing">missing</td>
+                <td>P1</td>
+            </tr>
+
+            <tr class="priority-P2">
+                <td>MagicParticles</td>
+                <td class="status-exists">exists</td>
+                <td class="status-missing">missing</td>
+                <td>P2</td>
+            </tr>
+
+            <tr class="priority-P2">
+                <td>ParticleBackground</td>
+                <td class="status-exists">exists</td>
+                <td class="status-exists">exists</td>
+                <td>P2</td>
+            </tr>
+
+            <tr class="priority-P2">
+                <td>GlowOrbBackground</td>
+                <td class="status-exists">exists</td>
+                <td class="status-missing">missing</td>
+                <td>P2</td>
+            </tr>
+        </table>
+
+        <h2>动画 <span class="completion-rate">完成率: 64.3%</span></h2>
+        <table>
+            <tr>
+                <th>名称</th>
+                <th>RN状态</th>
+                <th>Android状态</th>
+                <th>优先级</th>
+            </tr>
+
+            <tr class="priority-P2">
+                <td>fadeIn</td>
+                <td class="status-exists">exists</td>
+                <td class="status-exists">exists</td>
+                <td>P2</td>
+            </tr>
+
+            <tr class="priority-P2">
+                <td>fadeOut</td>
+                <td class="status-exists">exists</td>
+                <td class="status-exists">exists</td>
+                <td>P2</td>
+            </tr>
+
+            <tr class="priority-P2">
+                <td>slideIn</td>
+                <td class="status-exists">exists</td>
+                <td class="status-exists">exists</td>
+                <td>P2</td>
+            </tr>
+
+            <tr class="priority-P2">
+                <td>slideOut</td>
+                <td class="status-exists">exists</td>
+                <td class="status-exists">exists</td>
+                <td>P2</td>
+            </tr>
+
+            <tr class="priority-P2">
+                <td>scale</td>
+                <td class="status-exists">exists</td>
+                <td class="status-exists">exists</td>
+                <td>P2</td>
+            </tr>
+
+            <tr class="priority-P2">
+                <td>shake</td>
+                <td class="status-exists">exists</td>
+                <td class="status-exists">exists</td>
+                <td>P2</td>
+            </tr>
+
+            <tr class="priority-P2">
+                <td>pulse</td>
+                <td class="status-exists">exists</td>
+                <td class="status-exists">exists</td>
+                <td>P2</td>
+            </tr>
+
+            <tr class="priority-P2">
+                <td>bounce</td>
+                <td class="status-exists">exists</td>
+                <td class="status-exists">exists</td>
+                <td>P2</td>
+            </tr>
+
+            <tr class="priority-P1">
+                <td>cardFlip</td>
+                <td class="status-exists">exists</td>
+                <td class="status-exists">exists</td>
+                <td>P1</td>
+            </tr>
+
+            <tr class="priority-P0">
+                <td>3D卡牌倾斜</td>
+                <td class="status-exists">exists</td>
+                <td class="status-missing">missing</td>
+                <td>P0</td>
+            </tr>
+
+            <tr class="priority-P0">
+                <td>扇形卡牌布局</td>
+                <td class="status-exists">exists</td>
+                <td class="status-missing">missing</td>
+                <td>P0</td>
+            </tr>
+
+            <tr class="priority-P1">
+                <td>粒子系统</td>
+                <td class="status-exists">exists</td>
+                <td class="status-missing">missing</td>
+                <td>P1</td>
+            </tr>
+
+            <tr class="priority-P1">
+                <td>天气特效</td>
+                <td class="status-exists">exists</td>
+                <td class="status-missing">missing</td>
+                <td>P1</td>
+            </tr>
+
+            <tr class="priority-P2">
+                <td>微交互配置</td>
+                <td class="status-exists">exists</td>
+                <td class="status-missing">missing</td>
+                <td>P2</td>
+            </tr>
+        </table>
+
+        <h2>主题配置 <span class="completion-rate">完成率: 33.3%</span></h2>
+        <table>
+            <tr>
+                <th>名称</th>
+                <th>RN状态</th>
+                <th>Android状态</th>
+                <th>优先级</th>
+            </tr>
+
+            <tr class="priority-P2">
+                <td>基础颜色</td>
+                <td class="status-exists">exists</td>
+                <td class="status-exists">exists</td>
+                <td>P2</td>
+            </tr>
+
+            <tr class="priority-P0">
+                <td>排版系统</td>
+                <td class="status-exists">exists</td>
+                <td class="status-missing">missing</td>
+                <td>P0</td>
+            </tr>
+
+            <tr class="priority-P0">
+                <td>间距系统</td>
+                <td class="status-exists">exists</td>
+                <td class="status-missing">missing</td>
+                <td>P0</td>
+            </tr>
+
+            <tr class="priority-P1">
+                <td>阴影配置</td>
+                <td class="status-exists">exists</td>
+                <td class="status-missing">missing</td>
+                <td>P1</td>
+            </tr>
+
+            <tr class="priority-P1">
+                <td>稀有度颜色</td>
+                <td class="status-exists">exists</td>
+                <td class="status-missing">missing</td>
+                <td>P1</td>
+            </tr>
+
+            <tr class="priority-P1">
+                <td>角色类型颜色</td>
+                <td class="status-exists">exists</td>
+                <td class="status-missing">missing</td>
+                <td>P1</td>
+            </tr>
+
+            <tr class="priority-P2">
+                <td>渐变预设</td>
+                <td class="status-exists">exists</td>
+                <td class="status-missing">missing</td>
+                <td>P2</td>
+            </tr>
+
+            <tr class="priority-P2">
+                <td>主题管理器</td>
+                <td class="status-exists">exists</td>
+                <td class="status-exists">exists</td>
+                <td>P2</td>
+            </tr>
+
+            <tr class="priority-P2">
+                <td>主题切换</td>
+                <td class="status-exists">exists</td>
+                <td class="status-exists">exists</td>
+                <td>P2</td>
+            </tr>
+        </table>
+
+    </div>
+</body>
+</html>

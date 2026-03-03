@@ -1,0 +1,11 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <style name="Theme.LegoStory" parent="android:Theme.Material.Light.NoActionBar">
+        <item name="android:colorPrimary">@color/lego_yellow</item>
+        <item name="android:colorPrimaryDark">@color/lego_orange</item>
+        <item name="android:colorAccent">@color/lego_blue</item>
+        <item name="android:statusBarColor">@color/lego_purple</item>
+        <item name="android:navigationBarColor">@color/background</item>
+        <item name="android:windowBackground">@color/background</item>
+    </style>
+</resources>

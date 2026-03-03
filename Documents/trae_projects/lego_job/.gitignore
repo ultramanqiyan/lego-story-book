@@ -10,3 +10,18 @@ Thumbs.db
 .vscode/
 .idea/
 dist/
+
+# Android
+.gradle/
+build/
+*.apk
+*.aar
+local.properties
+*.class
+
+# Screenshots
+*.png
+
+# Test scripts
+*.ps1
+test-demos.bat
