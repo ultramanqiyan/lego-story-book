@@ -1,16 +1,16 @@
 /**
- * Card3D组件 - 3D翻转卡牌，带悬浮倾斜效果
- * 统一版本：Web端和移动端效果一致
+ * Card3D组件 - 3D翻转卡牌
+ * 完全使用 React Native Animated API
  */
 
-import React, { useEffect, useState, useMemo } from 'react';
-import { View, Text, StyleSheet, Dimensions, Platform, TouchableOpacity } from 'react-native';
-import Animated from 'react-native-reanimated';
-import { GestureDetector } from 'react-native-gesture-handler';
-import { use3DCard } from '../../hooks/use3DCard';
+import React, { useState, useEffect, useRef } from 'react';
+import { View, Text, StyleSheet, Dimensions, Platform, TouchableOpacity, Animated, Easing } from 'react-native';
 import { COLORS } from '../../utils/constants';
-import { CARD_3D_CONFIG } from '../../utils/animations';
 import logger from '../../utils/logger';
+
+const { width: SCREEN_WIDTH } = Dimensions.get('window');
+const CARD_SIZE = SCREEN_WIDTH * 0.4;
+const BOUNCE_EASING = Easing.bezier(0.68, -0.55, 0.265, 1.55);
 
 const Card3D = ({
   frontContent,
@@ -20,286 +20,250 @@ const Card3D = ({
   isSelected = false,
   onPress,
   onFlip,
-  width = CARD_3D_CONFIG.cardWidth,
-  height = CARD_3D_CONFIG.cardHeight,
+  width = CARD_SIZE,
+  height = CARD_SIZE * 1.3,
   style,
-  enableTilt = true,
-  enableFlip = true,
   variant = 'default',
 }) => {
-  const {
-    frontAnimatedStyle,
-    backAnimatedStyle,
-    shadowAnimatedStyle,
-    glowAnimatedStyle,
-    gesture,
-    updateLayout,
-    animateSelect,
-    flipCard,
-  } = use3DCard({
-    onFlip,
-    onPress,
-    enableTilt,
-    enableFlip,
-  });
-
-  const [isWeb, setIsWeb] = useState(false);
+  const [isFlipped, setIsFlipped] = useState(false);
+  const flipAnim = useRef(new Animated.Value(0)).current;
+  const scaleAnim = useRef(new Animated.Value(0)).current;
 
   useEffect(() => {
     logger.component.mount('Card3D', { name, variant });
+    Animated.spring(scaleAnim, {
+      toValue: 1,
+      tension: 80,
+      friction: 7,
+      useNativeDriver: true,
+    }).start();
     return () => logger.component.unmount('Card3D');
   }, []);
 
   useEffect(() => {
-    setIsWeb(Platform.OS === 'web');
-  }, []);
+    if (isSelected) {
+      Animated.spring(scaleAnim, {
+        toValue: 1.1,
+        tension: 100,
+        friction: 6,
+        useNativeDriver: true,
+      }).start();
+    }
+  }, [isSelected]);
 
-  useEffect(() => {
-    animateSelect(isSelected);
-  }, [isSelected, animateSelect]);
+  const handlePress = () => {
+    logger.component.action('Card3D', 'handlePress', { name, isFlipped });
+    
+    Animated.timing(flipAnim, {
+      toValue: isFlipped ? 0 : 1,
+      duration: 600,
+      easing: BOUNCE_EASING,
+      useNativeDriver: true,
+    }).start();
 
-  // 获取变体样式
-  const getVariantStyles = () => {
-    switch (variant) {
-      case 'primary':
-        return { borderColor: COLORS.legoYellow, backgroundColor: COLORS.legoYellow };
-      case 'secondary':
-        return { borderColor: COLORS.legoBlue, backgroundColor: COLORS.legoBlue };
-      case 'success':
-        return { borderColor: COLORS.legoGreen, backgroundColor: COLORS.legoGreen };
-      case 'danger':
-        return { borderColor: '#FF6B6B', backgroundColor: '#FF6B6B' };
-      default:
-        return { borderColor: COLORS.border, backgroundColor: COLORS.white };
+    setIsFlipped(!isFlipped);
+
+    if (onFlip) {
+      onFlip(!isFlipped);
+    }
+
+    if (onPress) {
+      onPress();
     }
   };
 
-  const variantStyles = getVariantStyles();
+  const getVariantColor = () => {
+    switch (variant) {
+      case 'primary':
+        return COLORS.legoYellow;
+      case 'secondary':
+        return COLORS.legoBlue;
+      case 'success':
+        return COLORS.legoGreen;
+      case 'danger':
+        return '#FF6B6B';
+      default:
+        return COLORS.border || '#c0c0c0';
+    }
+  };
 
-  // 卡片内容
-  const cardContent = (
-    <>
-      {/* 发光效果层 */}
-      <Animated.View
-        style={[
-          styles.glowLayer,
-          glowAnimatedStyle,
-          { width: width + 10, height: height + 10 },
-        ]}
-      >
-        <View
-          style={[
-            styles.glow,
-            { backgroundColor: variantStyles.borderColor },
-          ]}
-        />
-      </Animated.View>
+  const borderColor = getVariantColor();
 
-      {/* 阴影层 */}
-      <Animated.View
-        style={[
-          styles.shadowLayer,
-          shadowAnimatedStyle,
-          { width, height },
-        ]}
-      >
-        <View
-          style={[
-            styles.shadowCard,
-            { backgroundColor: variantStyles.borderColor },
-          ]}
-        />
-      </Animated.View>
+  const frontRotateY = flipAnim.interpolate({
+    inputRange: [0, 1],
+    outputRange: ['0deg', '180deg'],
+  });
 
-      {/* 正面 */}
-      <Animated.View
-        style={[
-          styles.cardFace,
-          styles.cardFront,
-          frontAnimatedStyle,
-          { width, height },
-        ]}
-        onLayout={updateLayout}
-      >
-        <View
-          style={[
-            styles.cardContent,
-            { backgroundColor: variantStyles.backgroundColor },
-            { borderColor: variantStyles.borderColor },
-          ]}
-        >
-          {frontContent || (
-            <>
-              <Text style={styles.cardIcon}>{icon || '🎭'}</Text>
-              <Text style={styles.cardName} numberOfLines={1}>
-                {name || 'Card'}
-              </Text>
-            </>
-          )}
-        </View>
-      </Animated.View>
+  const backRotateY = flipAnim.interpolate({
+    inputRange: [0, 1],
+    outputRange: ['180deg', '0deg'],
+  });
 
-      {/* 背面 */}
-      <Animated.View
-        style={[
-          styles.cardFace,
-          styles.cardBack,
-          backAnimatedStyle,
-          { width, height },
-        ]}
+  const frontOpacity = flipAnim.interpolate({
+    inputRange: [0.4, 0.5],
+    outputRange: [1, 0],
+  });
+
+  const backOpacity = flipAnim.interpolate({
+    inputRange: [0.5, 0.6],
+    outputRange: [0, 1],
+  });
+
+  const scale = scaleAnim.interpolate({
+    inputRange: [0, 1],
+    outputRange: [0.8, 1],
+  });
+
+  return (
+    <Animated.View
+      style={[
+        styles.container,
+        { width, height },
+        { opacity: scaleAnim, transform: [{ scale }] },
+        style,
+      ]}
+    >
+      <TouchableOpacity
+        onPress={handlePress}
+        activeOpacity={0.9}
+        style={styles.touchable}
       >
-        <View
-          style={[
-            styles.cardContent,
-            styles.cardBackContent,
-            { borderColor: variantStyles.borderColor },
-          ]}
-        >
-          {backContent || (
-            <>
-              <View style={styles.legoPattern}>
-                {[...Array(4)].map((_, i) => (
-                  <View key={i} style={styles.legoDot} />
-                ))}
+        <View style={styles.cardContainer}>
+          <Animated.View
+            style={[
+              styles.card,
+              styles.cardFront,
+              {
+                borderColor: borderColor,
+                transform: [
+                  { perspective: 1000 },
+                  { rotateY: frontRotateY },
+                ],
+                opacity: frontOpacity,
+              },
+            ]}
+          >
+            {frontContent || (
+              <View style={styles.contentWrapper}>
+                <Text style={styles.cardIcon}>{icon || '🎭'}</Text>
+                <Text style={styles.cardName}>{name || 'Card'}</Text>
+                <Text style={styles.tapHint}>点击翻转</Text>
               </View>
-              <Text style={styles.backText}>🧱</Text>
-            </>
-          )}
-        </View>
-      </Animated.View>
+            )}
+          </Animated.View>
 
-      {/* 选中标记 */}
+          <Animated.View
+            style={[
+              styles.card,
+              styles.cardBack,
+              {
+                borderColor: borderColor,
+                transform: [
+                  { perspective: 1000 },
+                  { rotateY: backRotateY },
+                ],
+                opacity: backOpacity,
+              },
+            ]}
+          >
+            {backContent || (
+              <View style={styles.contentWrapper}>
+                <Text style={styles.cardIcon}>{icon || '🎭'}</Text>
+                <Text style={styles.cardName}>{name || 'Card'}</Text>
+                <Text style={styles.cardStats}>翻转查看详情</Text>
+              </View>
+            )}
+          </Animated.View>
+        </View>
+      </TouchableOpacity>
+
       {isSelected && (
         <View style={styles.selectedBadge}>
           <Text style={styles.selectedText}>✓</Text>
         </View>
       )}
-    </>
-  );
-
-  // Web端使用TouchableOpacity处理点击
-  if (isWeb) {
-    return (
-      <TouchableOpacity 
-        style={[styles.container, { width, height }, style]}
-        onPress={onPress}
-        activeOpacity={0.9}
-      >
-        {cardContent}
-      </TouchableOpacity>
-    );
-  }
-
-  // 移动端使用GestureDetector
-  return (
-    <GestureDetector gesture={gesture}>
-      <View style={[styles.container, { width, height }, style]}>
-        {cardContent}
-      </View>
-    </GestureDetector>
+    </Animated.View>
   );
 };
 
 const styles = StyleSheet.create({
   container: {
+    alignItems: 'center',
+    justifyContent: 'center',
+    marginBottom: 20,
+  },
+  touchable: {
+    width: '100%',
+    height: '100%',
+  },
+  cardContainer: {
+    width: '100%',
+    height: '100%',
     position: 'relative',
-    alignItems: 'center',
-    justifyContent: 'center',
   },
-  glowLayer: {
+  card: {
     position: 'absolute',
-    borderRadius: 16,
-    alignItems: 'center',
-    justifyContent: 'center',
-  },
-  glow: {
     width: '100%',
     height: '100%',
-    borderRadius: 16,
-    opacity: 0.4,
-  },
-  shadowLayer: {
-    position: 'absolute',
-    borderRadius: 12,
-  },
-  shadowCard: {
-    width: '100%',
-    height: '100%',
-    borderRadius: 12,
-    opacity: 0.3,
-  },
-  cardFace: {
-    position: 'absolute',
+    borderRadius: 20,
+    borderWidth: 3,
+    alignItems: 'center',
+    justifyContent: 'center',
     backfaceVisibility: 'hidden',
-    borderRadius: 12,
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 10 },
+    shadowOpacity: 0.3,
+    shadowRadius: 12,
+    elevation: 8,
   },
   cardFront: {
-    zIndex: 2,
+    backgroundColor: '#FFF8E7',
   },
   cardBack: {
-    zIndex: 1,
+    backgroundColor: '#FFFDE7',
   },
-  cardContent: {
-    width: '100%',
-    height: '100%',
-    borderRadius: 12,
-    borderWidth: 2,
+  contentWrapper: {
     alignItems: 'center',
     justifyContent: 'center',
-    padding: 8,
-  },
-  cardBackContent: {
-    backgroundColor: COLORS.background,
+    padding: 12,
   },
   cardIcon: {
-    fontSize: 32,
-    marginBottom: 4,
-  },
-  cardName: {
-    fontSize: 11,
-    fontWeight: '700',
-    color: COLORS.text,
-    textAlign: 'center',
-  },
-  legoPattern: {
-    flexDirection: 'row',
-    flexWrap: 'wrap',
-    width: 40,
-    height: 40,
-    justifyContent: 'space-between',
-    alignContent: 'space-between',
+    fontSize: 48,
     marginBottom: 8,
   },
-  legoDot: {
-    width: 14,
-    height: 14,
-    borderRadius: 7,
-    backgroundColor: COLORS.legoYellow,
-    opacity: 0.6,
+  cardName: {
+    fontSize: 18,
+    fontWeight: 'bold',
+    color: '#5D4037',
+    marginBottom: 6,
   },
-  backText: {
-    fontSize: 24,
+  cardStats: {
+    fontSize: 13,
+    color: '#795548',
+    textAlign: 'center',
+  },
+  tapHint: {
+    fontSize: 11,
+    color: '#9E9E9E',
+    marginTop: 6,
   },
   selectedBadge: {
     position: 'absolute',
-    top: -6,
-    right: -6,
-    width: 22,
-    height: 22,
-    borderRadius: 11,
+    top: -8,
+    right: -8,
+    width: 26,
+    height: 26,
+    borderRadius: 13,
     backgroundColor: COLORS.legoGreen,
     alignItems: 'center',
     justifyContent: 'center',
     zIndex: 10,
-    shadowColor: '#000',
-    shadowOffset: { width: 0, height: 2 },
-    shadowOpacity: 0.3,
-    shadowRadius: 4,
-    elevation: 5,
+    borderWidth: 2,
+    borderColor: '#fff',
   },
   selectedText: {
     color: '#fff',
-    fontSize: 12,
+    fontSize: 14,
     fontWeight: 'bold',
   },
 });

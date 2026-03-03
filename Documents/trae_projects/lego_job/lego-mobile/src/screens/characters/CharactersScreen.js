@@ -16,12 +16,14 @@ import { useAuth } from '../../context/AuthContext';
 import { useToast } from '../../context/ToastContext';
 import { charactersAPI } from '../../api';
 import { Card, Button, Loading, EmptyState, Header, Modal, GlowOrbBackground } from '../../components/common';
+import { Card3D } from '../../components/card3d';
 import CharacterForm from '../../components/characters/CharacterForm';
 import { COLORS, CHARACTER_EMOJIS } from '../../utils/constants';
 import logger from '../../utils/logger';
 
 const { width } = Dimensions.get('window');
 const CARD_WIDTH = (width - 48) / 2;
+const CARD_HEIGHT = 200;
 const BOUNCE_EASING = Easing.bezier(0.68, -0.55, 0.265, 1.55);
 
 const CharactersScreen = ({ navigation }) => {
@@ -159,58 +161,51 @@ const CharactersScreen = ({ navigation }) => {
   const renderCharacterCard = ({ item, index }) => {
     const emoji = CHARACTER_EMOJIS[index % CHARACTER_EMOJIS.length];
     const isPreset = item.creator_id === 'system';
+    const variant = isPreset ? 'primary' : 'default';
+
+    logger.screen.action('CharactersScreen', 'renderCharacterCard', { name: item.name, variant });
 
     return (
-      <TouchableOpacity
-        style={styles.cardContainer}
-        onPress={() => openDetail(item)}
-        activeOpacity={0.85}
-      >
-        <View style={[styles.card, isPreset && styles.cardPreset]}>
-          <View style={styles.cardHeader}>
-            {isPreset && (
-              <View style={styles.presetBadge}>
-                <Text style={styles.presetBadgeText}>系统</Text>
-              </View>
-            )}
-            <Text style={styles.cardEmoji}>{emoji}</Text>
-          </View>
-          
-          <View style={styles.cardBody}>
-            <Text style={styles.cardName} numberOfLines={1}>
-              {item.name}
-            </Text>
-            <Text style={styles.cardDesc} numberOfLines={2}>
-              {item.description || '神秘角色'}
-            </Text>
-          </View>
-
-          {item.personality && (
-            <View style={styles.tagContainer}>
-              <View style={styles.personalityTag}>
-                <Text style={styles.tagText} numberOfLines={1}>✨ {item.personality}</Text>
-              </View>
+      <View style={styles.cardContainer}>
+        <Card3D
+          icon={emoji}
+          name={item.name}
+          variant={variant}
+          width={CARD_WIDTH - 16}
+          height={CARD_HEIGHT}
+          frontContent={
+            <View style={styles.card3DContent}>
+              <Text style={styles.card3DEmoji}>{emoji}</Text>
+              <Text style={styles.card3DName} numberOfLines={1}>
+                {item.name}
+              </Text>
+              {isPreset && (
+                <View style={styles.presetBadge3D}>
+                  <Text style={styles.presetBadgeText3D}>系统预设</Text>
+                </View>
+              )}
+              <Text style={styles.tapHint3D}>点击翻转查看详情</Text>
             </View>
-          )}
-
-          {!isPreset && (
-            <View style={styles.cardActions}>
-              <TouchableOpacity
-                style={styles.actionBtn}
-                onPress={() => handleEdit(item)}
-              >
-                <Text style={styles.actionBtnText}>✏️</Text>
-              </TouchableOpacity>
-              <TouchableOpacity
-                style={styles.actionBtn}
-                onPress={() => handleDelete(item)}
-              >
-                <Text style={styles.actionBtnText}>🗑️</Text>
-              </TouchableOpacity>
+          }
+          backContent={
+            <View style={styles.card3DContent}>
+              <Text style={styles.card3DEmojiSmall}>{emoji}</Text>
+              <Text style={styles.card3DNameBack} numberOfLines={1}>
+                {item.name}
+              </Text>
+              <Text style={styles.card3DDesc} numberOfLines={4}>
+                {item.description || '神秘角色'}
+              </Text>
+              {item.personality && (
+                <Text style={styles.card3DStats}>✨ {item.personality}</Text>
+              )}
+              {item.speaking_style && (
+                <Text style={styles.card3DStats}>💬 {item.speaking_style}</Text>
+              )}
             </View>
-          )}
-        </View>
-      </TouchableOpacity>
+          }
+        />
+      </View>
     );
   };
 
@@ -429,88 +424,70 @@ const styles = StyleSheet.create({
   cardContainer: {
     width: CARD_WIDTH,
     marginBottom: 4,
-  },
-  card: {
-    backgroundColor: COLORS.backgroundLight,
-    borderRadius: 16,
-    padding: 12,
-    height: 200,
-    borderWidth: 1,
-    borderColor: COLORS.border,
-  },
-  cardPreset: {
-    borderColor: COLORS.legoYellow,
-    backgroundColor: '#FFF9E6',
-  },
-  cardHeader: {
     alignItems: 'center',
-    marginBottom: 8,
   },
-  cardEmoji: {
-    fontSize: 40,
-  },
-  cardBody: {
-    alignItems: 'center',
+  card3DContent: {
     flex: 1,
+    alignItems: 'center',
+    justifyContent: 'center',
+    padding: 10,
+    width: '100%',
   },
-  cardName: {
-    fontSize: 14,
-    fontWeight: 'bold',
-    color: COLORS.text,
-    marginBottom: 4,
-    textAlign: 'center',
-  },
-  cardDesc: {
-    fontSize: 11,
-    color: COLORS.textLight,
-    textAlign: 'center',
-    lineHeight: 15,
-  },
-  presetBadge: {
+  presetBadge3D: {
     position: 'absolute',
-    top: -4,
-    right: -4,
+    top: 6,
+    right: 6,
     backgroundColor: COLORS.legoYellow,
     paddingHorizontal: 8,
-    paddingVertical: 2,
+    paddingVertical: 3,
     borderRadius: 8,
+    zIndex: 10,
   },
-  presetBadgeText: {
+  presetBadgeText3D: {
     fontSize: 9,
     fontWeight: 'bold',
     color: COLORS.text,
   },
-  tagContainer: {
-    alignItems: 'center',
-    marginBottom: 8,
+  card3DEmoji: {
+    fontSize: 40,
+    marginBottom: 6,
   },
-  personalityTag: {
-    backgroundColor: COLORS.legoYellow + '30',
-    paddingHorizontal: 10,
-    paddingVertical: 4,
-    borderRadius: 12,
+  card3DEmojiSmall: {
+    fontSize: 32,
+    marginBottom: 4,
   },
-  tagText: {
-    fontSize: 10,
-    color: COLORS.text,
-    fontWeight: '600',
+  card3DName: {
+    fontSize: 16,
+    fontWeight: 'bold',
+    color: '#5D4037',
+    textAlign: 'center',
+    marginBottom: 4,
   },
-  cardActions: {
-    flexDirection: 'row',
-    justifyContent: 'center',
-    gap: 12,
-    marginTop: 'auto',
-  },
-  actionBtn: {
-    width: 32,
-    height: 32,
-    borderRadius: 16,
-    backgroundColor: COLORS.background,
-    justifyContent: 'center',
-    alignItems: 'center',
-  },
-  actionBtnText: {
+  card3DNameBack: {
     fontSize: 14,
+    fontWeight: 'bold',
+    color: '#5D4037',
+    textAlign: 'center',
+    marginBottom: 4,
+  },
+  card3DDesc: {
+    fontSize: 11,
+    color: '#795548',
+    textAlign: 'center',
+    lineHeight: 15,
+    marginBottom: 4,
+    paddingHorizontal: 4,
+  },
+  card3DStats: {
+    fontSize: 11,
+    color: '#8D6E63',
+    textAlign: 'center',
+    marginTop: 2,
+  },
+  tapHint3D: {
+    fontSize: 10,
+    color: '#9E9E9E',
+    marginTop: 4,
   },
   detailScroll: {
     maxHeight: 500,
