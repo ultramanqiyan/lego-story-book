@@ -1,5 +1,6 @@
 import Constants from 'expo-constants';
 import { Platform } from 'react-native';
+import logger from '../utils/logger';
 
 const getApiBase = () => {
   if (Platform.OS === 'web') {
@@ -11,6 +12,8 @@ const getApiBase = () => {
 const API_BASE = getApiBase();
 const CACHE_DURATION = 30000;
 const REQUEST_TIMEOUT = 15000;
+
+logger.info('API', `API Base URL: ${API_BASE}`);
 
 class APIClient {
   constructor() {
@@ -27,14 +30,18 @@ class APIClient {
   getCached(key) {
     const cached = this.cache.get(key);
     if (cached && Date.now() - cached.timestamp < CACHE_DURATION) {
+      logger.api.cacheHit(key.split(':')[0]);
       return cached.data;
     }
-    this.cache.delete(key);
+    if (cached) {
+      this.cache.delete(key);
+    }
     return null;
   }
 
   setCache(key, data) {
     this.cache.set(key, { data, timestamp: Date.now() });
+    logger.api.cacheMiss(key.split(':')[0]);
     if (this.cache.size > 50) {
       const firstKey = this.cache.keys().next().value;
       this.cache.delete(firstKey);
@@ -51,20 +58,23 @@ class APIClient {
   }
 
   async request(endpoint, options = {}) {
+    const method = options.method || 'GET';
     const cacheKey = this.getCacheKey(endpoint, options);
     
-    if (options.method === 'GET' || !options.method) {
+    if (method === 'GET') {
       const cached = this.getCached(cacheKey);
       if (cached) {
         return cached;
       }
       
       if (this.pendingRequests.has(cacheKey)) {
+        logger.debug('API', `Reusing pending request: ${endpoint}`);
         return this.pendingRequests.get(cacheKey);
       }
     }
 
     const url = `${this.baseURL}${endpoint}`;
+    logger.api.request(method, endpoint, options.body || null);
     
     const defaultHeaders = {
       'Content-Type': 'application/json',
@@ -94,22 +104,26 @@ class APIClient {
           try {
             data = JSON.parse(text);
           } catch (parseError) {
-            console.error('Failed to parse response:', text);
+            logger.error('API', `Parse error for ${endpoint}:`, text?.substring(0, 200));
             throw new Error('服务器返回格式错误');
           }
         }
 
         if (!response.ok) {
+          logger.api.error(method, endpoint, data);
           throw new Error(data.error || data.message || '请求失败');
         }
 
-        if (options.method === 'GET' || !options.method) {
+        logger.api.response(method, endpoint, data);
+        
+        if (method === 'GET') {
           this.setCache(cacheKey, data);
         }
 
         return data;
       }).catch((error) => {
         if (error.message === 'Network request failed' || error.message.includes('Failed to fetch')) {
+          logger.api.error(method, endpoint, 'Network error');
           throw new Error('网络连接失败，请检查网络');
         }
         throw error;
@@ -119,7 +133,7 @@ class APIClient {
       REQUEST_TIMEOUT
     );
 
-    if (options.method === 'GET' || !options.method) {
+    if (method === 'GET') {
       this.pendingRequests.set(cacheKey, requestPromise);
     }
 

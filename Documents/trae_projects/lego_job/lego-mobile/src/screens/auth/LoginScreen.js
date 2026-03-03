@@ -14,6 +14,7 @@ import { useAuth } from '../../context/AuthContext';
 import { useToast } from '../../context/ToastContext';
 import { Button, Card, ParticleBackground } from '../../components/common';
 import { COLORS } from '../../utils/constants';
+import logger from '../../utils/logger';
 
 const BOUNCE_EASING = Easing.bezier(0.68, -0.55, 0.265, 1.55);
 
@@ -37,6 +38,11 @@ const LoginScreen = () => {
   const cardAnim = useRef(new Animated.Value(0)).current;
   const cardY = useRef(new Animated.Value(100)).current;
   const buttonPulse = useRef(new Animated.Value(1)).current;
+
+  useEffect(() => {
+    logger.screen.mount('LoginScreen');
+    return () => logger.screen.unmount('LoginScreen');
+  }, []);
 
   useEffect(() => {
     Animated.parallel([
@@ -75,18 +81,19 @@ const LoginScreen = () => {
       return;
     }
 
-    console.log('[LoginScreen] Starting login for:', username.trim());
+    logger.screen.action('LoginScreen', 'handleLogin', { username: username.trim() });
     setIsLoading(true);
     try {
       const result = await login(username.trim(), email.trim() || null);
-      console.log('[LoginScreen] Login result:', JSON.stringify(result));
       if (result.success) {
+        logger.screen.action('LoginScreen', 'login_success', { userId: result.userId });
         toast.success(`欢迎，${username}！🎉`);
       } else {
+        logger.screen.error('LoginScreen', 'login_failed', result.error);
         toast.error(`登录失败：${result.error}`);
       }
     } catch (error) {
-      console.error('[LoginScreen] Login error:', error);
+      logger.screen.error('LoginScreen', 'handleLogin', error);
       toast.error('登录失败，请重试');
     } finally {
       setIsLoading(false);

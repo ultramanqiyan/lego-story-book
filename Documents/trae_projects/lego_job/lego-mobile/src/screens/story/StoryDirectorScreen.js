@@ -17,6 +17,7 @@ import CardSelector2D from '../../components/card2d/CardSelector2D';
 import { WeatherEffectV2 } from '../../components/weather';
 import { MagicParticles } from '../../components/particles';
 import { COLORS, CHARACTER_EMOJIS } from '../../utils/constants';
+import logger from '../../utils/logger';
 
 const BOUNCE_EASING = Easing.bezier(0.68, -0.55, 0.265, 1.55);
 
@@ -50,7 +51,13 @@ const StoryDirectorScreen = ({ route, navigation }) => {
   const buttonPulse = useRef(new Animated.Value(1)).current;
 
   useEffect(() => {
+    logger.screen.mount('StoryDirectorScreen', { bookId, userId: user?.userId });
+    return () => logger.screen.unmount('StoryDirectorScreen');
+  }, []);
+
+  useEffect(() => {
     if (!bookId) {
+      logger.screen.error('StoryDirectorScreen', 'invalid_bookId', { bookId });
       toast.error('书籍ID无效');
       navigation.goBack();
       return;

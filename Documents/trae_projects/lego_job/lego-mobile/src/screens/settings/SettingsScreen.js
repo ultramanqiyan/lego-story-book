@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useEffect } from 'react';
 import {
   View,
   Text,
@@ -13,11 +13,17 @@ import { useToast } from '../../context/ToastContext';
 import { storage } from '../../utils/storage';
 import { Card, Button } from '../../components/common';
 import { COLORS } from '../../utils/constants';
+import logger from '../../utils/logger';
 
 const SettingsScreen = ({ navigation }) => {
   const { user, logout } = useAuth();
   const { themeId, themes, changeTheme } = useTheme();
   const toast = useToast();
+
+  useEffect(() => {
+    logger.screen.mount('SettingsScreen', { userId: user?.userId });
+    return () => logger.screen.unmount('SettingsScreen');
+  }, []);
 
   const handleLogout = () => {
     Alert.alert(
@@ -29,6 +35,7 @@ const SettingsScreen = ({ navigation }) => {
           text: '确定',
           style: 'destructive',
           onPress: async () => {
+            logger.screen.action('SettingsScreen', 'logout');
             const result = await logout();
             if (result.success) {
               toast.success('已退出登录');
@@ -48,6 +55,7 @@ const SettingsScreen = ({ navigation }) => {
         {
           text: '确定',
           onPress: async () => {
+            logger.screen.action('SettingsScreen', 'clearCache');
             await storage.clearAll();
             toast.success('缓存已清除');
           },
@@ -57,6 +65,7 @@ const SettingsScreen = ({ navigation }) => {
   };
 
   const handleThemeChange = (newThemeId) => {
+    logger.screen.action('SettingsScreen', 'changeTheme', { from: themeId, to: newThemeId });
     changeTheme(newThemeId);
     toast.success('主题已切换');
   };

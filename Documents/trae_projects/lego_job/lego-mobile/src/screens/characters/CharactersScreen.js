@@ -18,6 +18,7 @@ import { charactersAPI } from '../../api';
 import { Card, Button, Loading, EmptyState, Header, Modal, GlowOrbBackground } from '../../components/common';
 import CharacterForm from '../../components/characters/CharacterForm';
 import { COLORS, CHARACTER_EMOJIS } from '../../utils/constants';
+import logger from '../../utils/logger';
 
 const { width } = Dimensions.get('window');
 const CARD_WIDTH = (width - 48) / 2;
@@ -40,6 +41,11 @@ const CharactersScreen = ({ navigation }) => {
   const fabScale = useRef(new Animated.Value(1)).current;
 
   useEffect(() => {
+    logger.screen.mount('CharactersScreen', { userId: user?.userId });
+    return () => logger.screen.unmount('CharactersScreen');
+  }, []);
+
+  useEffect(() => {
     loadCharacters();
   }, []);
 
@@ -55,10 +61,13 @@ const CharactersScreen = ({ navigation }) => {
   }, [isLoading]);
 
   const loadCharacters = async () => {
+    logger.screen.action('CharactersScreen', 'loadCharacters', { userId: user?.userId });
     try {
       const data = await charactersAPI.getList(user?.userId);
       setCharacters(data.characters || []);
+      logger.data.fetchSuccess('characters', (data.characters || []).length);
     } catch (error) {
+      logger.screen.error('CharactersScreen', 'loadCharacters', error);
       toast.error('加载失败');
     } finally {
       setIsLoading(false);
@@ -66,12 +75,14 @@ const CharactersScreen = ({ navigation }) => {
   };
 
   const onRefresh = useCallback(async () => {
+    logger.screen.action('CharactersScreen', 'refresh');
     setRefreshing(true);
     await loadCharacters();
     setRefreshing(false);
   }, []);
 
   const handleCreate = () => {
+    logger.screen.action('CharactersScreen', 'handleCreate');
     Animated.sequence([
       Animated.timing(fabScale, {
         toValue: 0.9,
@@ -90,6 +101,7 @@ const CharactersScreen = ({ navigation }) => {
   };
 
   const handleEdit = (character) => {
+    logger.screen.action('CharactersScreen', 'handleEdit', { characterId: character.character_id || character.id });
     setEditingCharacter(character);
     setFormVisible(true);
   };
@@ -100,34 +112,42 @@ const CharactersScreen = ({ navigation }) => {
       toast.error('角色信息无效');
       return;
     }
+    logger.screen.action('CharactersScreen', 'handleDelete', { characterId: charId });
     try {
       await charactersAPI.delete(charId);
+      logger.data.delete('character', charId);
       toast.success('删除成功');
       setDetailVisible(false);
       loadCharacters();
     } catch (error) {
+      logger.screen.error('CharactersScreen', 'handleDelete', error);
       toast.error('删除失败');
     }
   };
 
   const handleFormSubmit = async (characterData) => {
+    logger.screen.action('CharactersScreen', 'handleFormSubmit', { editing: !!editingCharacter });
     try {
       const editingId = editingCharacter?.character_id || editingCharacter?.id || editingCharacter?.characterId;
       if (editingId) {
         await charactersAPI.update(editingId, characterData);
+        logger.data.update('character', editingId, characterData);
         toast.success('更新成功');
       } else {
-        await charactersAPI.create({ ...characterData, creatorId: user?.userId });
+        const result = await charactersAPI.create({ ...characterData, creatorId: user?.userId });
+        logger.data.create('character', characterData);
         toast.success('创建成功');
       }
       setFormVisible(false);
       loadCharacters();
     } catch (error) {
+      logger.screen.error('CharactersScreen', 'handleFormSubmit', error);
       toast.error(`操作失败：${error.message}`);
     }
   };
 
   const openDetail = (character) => {
+    logger.screen.action('CharactersScreen', 'openDetail', { characterId: character.character_id || character.id });
     setSelectedCharacter(character);
     setDetailVisible(true);
   };

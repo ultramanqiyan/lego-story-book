@@ -1,5 +1,6 @@
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import { Platform } from 'react-native';
+import logger from './logger';
 
 const STORAGE_KEYS = {
   USER_ID: 'userId',
@@ -12,13 +13,12 @@ const STORAGE_KEYS = {
   WEATHER_EFFECT: 'weatherEffect',
 };
 
-// Web 端使用 localStorage 作为备选
 const webStorage = {
   async getItem(key) {
     try {
       return localStorage.getItem(key);
     } catch (e) {
-      console.warn('localStorage getItem error:', e);
+      logger.error('STORAGE', `getItem error for ${key}:`, e?.message || e);
       return null;
     }
   },
@@ -27,7 +27,7 @@ const webStorage = {
       localStorage.setItem(key, value);
       return true;
     } catch (e) {
-      console.warn('localStorage setItem error:', e);
+      logger.error('STORAGE', `setItem error for ${key}:`, e?.message || e);
       return false;
     }
   },
@@ -36,7 +36,7 @@ const webStorage = {
       localStorage.removeItem(key);
       return true;
     } catch (e) {
-      console.warn('localStorage removeItem error:', e);
+      logger.error('STORAGE', `removeItem error for ${key}:`, e?.message || e);
       return false;
     }
   },
@@ -45,7 +45,7 @@ const webStorage = {
       keys.forEach(key => localStorage.removeItem(key));
       return true;
     } catch (e) {
-      console.warn('localStorage multiRemove error:', e);
+      logger.error('STORAGE', 'multiRemove error:', e?.message || e);
       return false;
     }
   },
@@ -54,7 +54,7 @@ const webStorage = {
       localStorage.clear();
       return true;
     } catch (e) {
-      console.warn('localStorage clear error:', e);
+      logger.error('STORAGE', 'clear error:', e?.message || e);
       return false;
     }
   },
@@ -62,7 +62,7 @@ const webStorage = {
     try {
       return keys.map(key => [key, localStorage.getItem(key)]);
     } catch (e) {
-      console.warn('localStorage multiGet error:', e);
+      logger.error('STORAGE', 'multiGet error:', e?.message || e);
       return keys.map(key => [key, null]);
     }
   },
@@ -71,58 +71,72 @@ const webStorage = {
       keyValuePairs.forEach(([key, value]) => localStorage.setItem(key, value));
       return true;
     } catch (e) {
-      console.warn('localStorage multiSet error:', e);
+      logger.error('STORAGE', 'multiSet error:', e?.message || e);
       return false;
     }
   },
 };
 
-// 根据平台选择存储实现
 const storageImpl = Platform.OS === 'web' ? webStorage : AsyncStorage;
 
 export const storage = {
   async getUserId() {
-    return storageImpl.getItem(STORAGE_KEYS.USER_ID);
+    const value = await storageImpl.getItem(STORAGE_KEYS.USER_ID);
+    logger.storage.get(STORAGE_KEYS.USER_ID, value);
+    return value;
   },
 
   async setUserId(userId) {
+    logger.storage.set(STORAGE_KEYS.USER_ID);
     return storageImpl.setItem(STORAGE_KEYS.USER_ID, userId);
   },
 
   async getUsername() {
-    return storageImpl.getItem(STORAGE_KEYS.USERNAME);
+    const value = await storageImpl.getItem(STORAGE_KEYS.USERNAME);
+    logger.storage.get(STORAGE_KEYS.USERNAME, value);
+    return value;
   },
 
   async setUsername(username) {
+    logger.storage.set(STORAGE_KEYS.USERNAME);
     return storageImpl.setItem(STORAGE_KEYS.USERNAME, username);
   },
 
   async getTheme() {
-    return storageImpl.getItem(STORAGE_KEYS.THEME);
+    const value = await storageImpl.getItem(STORAGE_KEYS.THEME);
+    logger.storage.get(STORAGE_KEYS.THEME, value);
+    return value;
   },
 
   async setTheme(theme) {
+    logger.storage.set(STORAGE_KEYS.THEME);
     return storageImpl.setItem(STORAGE_KEYS.THEME, theme);
   },
 
   async getFontSize() {
     const size = await storageImpl.getItem(STORAGE_KEYS.FONT_SIZE);
+    logger.storage.get(STORAGE_KEYS.FONT_SIZE, size);
     return size ? parseInt(size, 10) : 16;
   },
 
   async setFontSize(size) {
+    logger.storage.set(STORAGE_KEYS.FONT_SIZE);
     return storageImpl.setItem(STORAGE_KEYS.FONT_SIZE, size.toString());
   },
 
   async get(key) {
-    return storageImpl.getItem(key);
+    const value = await storageImpl.getItem(key);
+    logger.storage.get(key, value);
+    return value;
   },
 
   async set(key, value) {
+    logger.storage.set(key);
     return storageImpl.setItem(key, value);
   },
 
   async remove(key) {
+    logger.storage.remove(key);
     return storageImpl.removeItem(key);
   },
 
@@ -135,6 +149,7 @@ export const storage = {
   },
 
   async clearUserData() {
+    logger.storage.clear();
     await storageImpl.multiRemove([
       STORAGE_KEYS.USER_ID,
       STORAGE_KEYS.USERNAME,
@@ -142,6 +157,7 @@ export const storage = {
   },
 
   async clearAll() {
+    logger.storage.clear();
     return storageImpl.clear();
   },
 };

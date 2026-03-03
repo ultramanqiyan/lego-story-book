@@ -1,5 +1,6 @@
 import React, { createContext, useContext, useState, useEffect, useMemo } from 'react';
 import { storage } from '../utils/storage';
+import logger from '../utils/logger';
 
 const ThemeContext = createContext(null);
 
@@ -431,6 +432,7 @@ export const ThemeProvider = ({ children }) => {
   const [weatherEffect, setWeatherEffect] = useState(weatherEffects.sunny);
 
   useEffect(() => {
+    logger.context.init('ThemeProvider');
     loadTheme();
   }, []);
 
@@ -438,81 +440,97 @@ export const ThemeProvider = ({ children }) => {
     try {
       const savedThemeId = await storage.getTheme();
       if (savedThemeId && colorThemes[savedThemeId]) {
-        changeTheme(savedThemeId);
+        logger.theme.load(savedThemeId);
+        setThemeId(savedThemeId);
+        setTheme(colorThemes[savedThemeId]);
       }
       
       const savedCard2D = await storage.get('card2DStyle');
       if (savedCard2D && card2DStyles[savedCard2D]) {
+        logger.debug('THEME', `Loaded card2DStyle: ${savedCard2D}`);
         setCard2DStyle(card2DStyles[savedCard2D]);
       }
       
       const savedCard3D = await storage.get('card3DStyle');
       if (savedCard3D && card3DStyles[savedCard3D]) {
+        logger.debug('THEME', `Loaded card3DStyle: ${savedCard3D}`);
         setCard3DStyle(card3DStyles[savedCard3D]);
       }
       
       const savedParticle = await storage.get('particleEffect');
       if (savedParticle && particleEffects[savedParticle]) {
+        logger.debug('THEME', `Loaded particleEffect: ${savedParticle}`);
         setParticleEffect(particleEffects[savedParticle]);
       }
       
       const savedWeather = await storage.get('weatherEffect');
       if (savedWeather && weatherEffects[savedWeather]) {
+        logger.debug('THEME', `Loaded weatherEffect: ${savedWeather}`);
         setWeatherEffect(weatherEffects[savedWeather]);
       }
     } catch (error) {
-      console.error('Load theme failed:', error);
+      logger.error('THEME', 'Load theme failed:', error?.message || error);
     }
   };
 
   const changeTheme = async (newThemeId) => {
+    const oldThemeId = themeId;
     try {
       const newTheme = colorThemes[newThemeId] || colorThemes.default;
       setThemeId(newThemeId);
       setTheme(newTheme);
       await storage.setTheme(newThemeId);
+      logger.theme.change(oldThemeId, newThemeId);
     } catch (error) {
-      console.error('Change theme failed:', error);
+      logger.error('THEME', 'Change theme failed:', error?.message || error);
     }
   };
 
   const changeCard2DStyle = async (styleId) => {
+    const oldStyle = card2DStyle.id;
     try {
       const newStyle = card2DStyles[styleId] || card2DStyles.classicFlat;
       setCard2DStyle(newStyle);
       await storage.set('card2DStyle', styleId);
+      logger.theme.styleChange('Card2D', oldStyle, styleId);
     } catch (error) {
-      console.error('Change card 2D style failed:', error);
+      logger.error('THEME', 'Change card 2D style failed:', error?.message || error);
     }
   };
 
   const changeCard3DStyle = async (styleId) => {
+    const oldStyle = card3DStyle.id;
     try {
       const newStyle = card3DStyles[styleId] || card3DStyles.realFlip;
       setCard3DStyle(newStyle);
       await storage.set('card3DStyle', styleId);
+      logger.theme.styleChange('Card3D', oldStyle, styleId);
     } catch (error) {
-      console.error('Change card 3D style failed:', error);
+      logger.error('THEME', 'Change card 3D style failed:', error?.message || error);
     }
   };
 
   const changeParticleEffect = async (effectId) => {
+    const oldEffect = particleEffect.id;
     try {
       const newEffect = particleEffects[effectId] || particleEffects.magicParticles;
       setParticleEffect(newEffect);
       await storage.set('particleEffect', effectId);
+      logger.theme.styleChange('Particle', oldEffect, effectId);
     } catch (error) {
-      console.error('Change particle effect failed:', error);
+      logger.error('THEME', 'Change particle effect failed:', error?.message || error);
     }
   };
 
   const changeWeatherEffect = async (effectId) => {
+    const oldEffect = weatherEffect.id;
     try {
       const newEffect = weatherEffects[effectId] || weatherEffects.sunny;
       setWeatherEffect(newEffect);
       await storage.set('weatherEffect', effectId);
+      logger.theme.styleChange('Weather', oldEffect, effectId);
     } catch (error) {
-      console.error('Change weather effect failed:', error);
+      logger.error('THEME', 'Change weather effect failed:', error?.message || error);
     }
   };
 

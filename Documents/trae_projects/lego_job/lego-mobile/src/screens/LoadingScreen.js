@@ -1,8 +1,14 @@
-import React from 'react';
+import React, { useEffect } from 'react';
 import { View, Text, StyleSheet, ActivityIndicator } from 'react-native';
 import { COLORS } from '../utils/constants';
+import logger from '../utils/logger';
 
 const LoadingScreen = () => {
+  useEffect(() => {
+    logger.screen.mount('LoadingScreen');
+    return () => logger.screen.unmount('LoadingScreen');
+  }, []);
+
   return (
     <View style={styles.container}>
       <View style={styles.content}>

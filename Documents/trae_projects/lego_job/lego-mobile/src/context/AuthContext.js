@@ -1,6 +1,7 @@
 import React, { createContext, useContext, useState, useEffect } from 'react';
 import { storage } from '../utils/storage';
 import { usersAPI } from '../api/users';
+import logger from '../utils/logger';
 
 const AuthContext = createContext(null);
 
@@ -10,31 +11,35 @@ export const AuthProvider = ({ children }) => {
   const [isAuthenticated, setIsAuthenticated] = useState(false);
 
   useEffect(() => {
+    logger.context.init('AuthProvider');
     checkAuth();
   }, []);
 
   const checkAuth = async () => {
+    logger.auth.checkAuth('checking...');
     try {
       const userId = await storage.getUserId();
       const username = await storage.getUsername();
       
       if (userId && username) {
+        logger.auth.sessionRestore(userId, username);
         setUser({ userId, username });
         setIsAuthenticated(true);
+      } else {
+        logger.auth.checkAuth(false);
       }
     } catch (error) {
-      console.error('Auth check failed:', error);
+      logger.error('AUTH', 'Auth check failed:', error?.message || error);
     } finally {
       setIsLoading(false);
     }
   };
 
   const login = async (username, email = null) => {
-    console.log('[AuthContext] login called with:', { username, email });
+    logger.auth.loginStart(username);
     try {
-      console.log('[AuthContext] Calling usersAPI.createOrLogin...');
       const data = await usersAPI.createOrLogin(username, email);
-      console.log('[AuthContext] API response:', JSON.stringify(data));
+      logger.debug('AUTH', 'Login API response:', { userId: data.userId, isNewUser: data.isNewUser });
       
       await storage.setUserId(data.userId);
       await storage.setUsername(username);
@@ -42,20 +47,23 @@ export const AuthProvider = ({ children }) => {
       setUser({ userId: data.userId, username });
       setIsAuthenticated(true);
       
+      logger.auth.loginSuccess(data.userId, username);
       return { success: true, userId: data.userId };
     } catch (error) {
-      console.error('[AuthContext] Login error:', error);
+      logger.auth.loginError(error);
       return { success: false, error: error.message };
     }
   };
 
   const logout = async () => {
+    logger.auth.logout();
     try {
       await storage.clearUserData();
       setUser(null);
       setIsAuthenticated(false);
       return { success: true };
     } catch (error) {
+      logger.error('AUTH', 'Logout failed:', error?.message || error);
       return { success: false, error: error.message };
     }
   };

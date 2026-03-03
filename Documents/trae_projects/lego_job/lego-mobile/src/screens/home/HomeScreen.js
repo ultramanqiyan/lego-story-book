@@ -14,6 +14,7 @@ import { useToast } from '../../context/ToastContext';
 import { charactersAPI, booksAPI } from '../../api';
 import { Card, Button, Loading, EmptyState, GlowOrbBackground } from '../../components/common';
 import { COLORS, CHARACTER_EMOJIS } from '../../utils/constants';
+import logger from '../../utils/logger';
 
 const BOUNCE_EASING = Easing.bezier(0.68, -0.55, 0.265, 1.55);
 
@@ -34,6 +35,11 @@ const HomeScreen = ({ navigation }) => {
   const charCardAnims = useRef([...Array(4)].map(() => new Animated.Value(0))).current;
   const bookCardAnims = useRef([...Array(4)].map(() => new Animated.Value(0))).current;
   const buttonFloat = useRef(new Animated.Value(0)).current;
+
+  useEffect(() => {
+    logger.screen.mount('HomeScreen', { userId: user?.userId });
+    return () => logger.screen.unmount('HomeScreen');
+  }, []);
 
   useEffect(() => {
     loadData();
@@ -93,6 +99,7 @@ const HomeScreen = ({ navigation }) => {
   };
 
   const loadData = async () => {
+    logger.screen.action('HomeScreen', 'loadData', { userId: user?.userId });
     try {
       const [charsData, booksData] = await Promise.all([
         charactersAPI.getList(user?.userId),
@@ -103,10 +110,13 @@ const HomeScreen = ({ navigation }) => {
         .filter((c) => (c.creator_id || c.creatorId) === 'system')
         .slice(0, 4);
       setPopularCharacters(presetChars);
+      logger.data.fetchSuccess('characters', presetChars.length);
 
       const recent = (booksData.books || []).slice(0, 4);
       setRecentBooks(recent);
+      logger.data.fetchSuccess('books', recent.length);
     } catch (error) {
+      logger.screen.error('HomeScreen', 'loadData', error);
       toast.error('加载失败，请下拉刷新');
     } finally {
       setIsLoading(false);
@@ -114,6 +124,7 @@ const HomeScreen = ({ navigation }) => {
   };
 
   const onRefresh = useCallback(async () => {
+    logger.screen.action('HomeScreen', 'refresh');
     setRefreshing(true);
     await loadData();
     setRefreshing(false);

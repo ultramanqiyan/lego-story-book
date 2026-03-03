@@ -3,6 +3,7 @@ import { createBottomTabNavigator } from '@react-navigation/bottom-tabs';
 import { createNativeStackNavigator } from '@react-navigation/native-stack';
 import { Text, View } from 'react-native';
 import { COLORS } from '../utils/constants';
+import logger from '../utils/logger';
 
 import HomeScreen from '../screens/home/HomeScreen';
 import BookshelfScreen from '../screens/bookshelf/BookshelfScreen';
@@ -103,6 +104,11 @@ const SettingsStack = () => {
 const MainNavigator = () => {
   return (
     <Tab.Navigator
+      screenListeners={{
+        tabPress: (e) => {
+          logger.nav.tabChange(e.target);
+        },
+      }}
       screenOptions={({ route }) => ({
         headerShown: false,
         tabBarIcon: ({ focused, color }) => (

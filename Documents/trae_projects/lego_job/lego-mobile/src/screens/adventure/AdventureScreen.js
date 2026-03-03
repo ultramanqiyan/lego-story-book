@@ -12,6 +12,7 @@ import { booksAPI, usersAPI } from '../../api';
 import { Card, Button, Loading, EmptyState } from '../../components/common';
 import { COLORS } from '../../utils/constants';
 import { formatTime } from '../../utils/helpers';
+import logger from '../../utils/logger';
 
 const AdventureScreen = ({ navigation }) => {
   const { user } = useAuth();
@@ -23,10 +24,16 @@ const AdventureScreen = ({ navigation }) => {
   const [isLoading, setIsLoading] = useState(true);
 
   useEffect(() => {
+    logger.screen.mount('AdventureScreen', { userId: user?.userId });
+    return () => logger.screen.unmount('AdventureScreen');
+  }, []);
+
+  useEffect(() => {
     loadData();
   }, []);
 
   const loadData = async () => {
+    logger.screen.action('AdventureScreen', 'loadData', { userId: user?.userId });
     try {
       const [booksData, userData] = await Promise.all([
         booksAPI.getList(user?.userId),
@@ -35,7 +42,9 @@ const AdventureScreen = ({ navigation }) => {
       setBooks(booksData.books || []);
       setTimeUsed(userData?.user?.time_used_today || userData?.user?.timeUsedToday || 0);
       setTimeLimit(userData?.user?.daily_time_limit || userData?.user?.dailyTimeLimit || 120);
+      logger.data.fetchSuccess('adventure', { books: (booksData.books || []).length, timeUsed });
     } catch (error) {
+      logger.screen.error('AdventureScreen', 'loadData', error);
       toast.error('加载失败');
     } finally {
       setIsLoading(false);

@@ -11,6 +11,7 @@ import { useToast } from '../../context/ToastContext';
 import { booksAPI } from '../../api';
 import { Card, Button, Loading, EmptyState } from '../../components/common';
 import { COLORS } from '../../utils/constants';
+import logger from '../../utils/logger';
 
 const BookshelfScreen = ({ navigation }) => {
   const { user } = useAuth();
@@ -21,14 +22,22 @@ const BookshelfScreen = ({ navigation }) => {
   const [refreshing, setRefreshing] = useState(false);
 
   useEffect(() => {
+    logger.screen.mount('BookshelfScreen', { userId: user?.userId });
+    return () => logger.screen.unmount('BookshelfScreen');
+  }, []);
+
+  useEffect(() => {
     loadBooks();
   }, []);
 
   const loadBooks = async () => {
+    logger.screen.action('BookshelfScreen', 'loadBooks', { userId: user?.userId });
     try {
       const data = await booksAPI.getList(user?.userId);
       setBooks(data.books || []);
+      logger.data.fetchSuccess('books', (data.books || []).length);
     } catch (error) {
+      logger.screen.error('BookshelfScreen', 'loadBooks', error);
       toast.error('加载失败，请下拉刷新');
     } finally {
       setIsLoading(false);
@@ -36,6 +45,7 @@ const BookshelfScreen = ({ navigation }) => {
   };
 
   const onRefresh = useCallback(async () => {
+    logger.screen.action('BookshelfScreen', 'refresh');
     setRefreshing(true);
     await loadBooks();
     setRefreshing(false);

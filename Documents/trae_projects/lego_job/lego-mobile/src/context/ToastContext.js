@@ -1,5 +1,6 @@
 import React, { createContext, useContext, useState, useCallback } from 'react';
 import { COLORS } from '../utils/constants';
+import logger from '../utils/logger';
 
 const ToastContext = createContext(null);
 
@@ -7,6 +8,7 @@ export const ToastProvider = ({ children }) => {
   const [toast, setToast] = useState(null);
 
   const showToast = useCallback((message, type = 'info', duration = 3000) => {
+    logger.debug('TOAST', `[${type.toUpperCase()}] ${message}`);
     setToast({ message, type, visible: true });
 
     setTimeout(() => {
@@ -15,6 +17,7 @@ export const ToastProvider = ({ children }) => {
   }, []);
 
   const hideToast = useCallback(() => {
+    logger.debug('TOAST', 'Toast hidden');
     setToast((prev) => (prev ? { ...prev, visible: false } : null));
   }, []);
 

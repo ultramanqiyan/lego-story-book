@@ -17,6 +17,7 @@ import { booksAPI, bookCharactersAPI, chaptersAPI, charactersAPI, plotOptionsAPI
 import { Card, Button, Loading, EmptyState, Modal, Header, GlowOrbBackground } from '../../components/common';
 import { COLORS, CHARACTER_EMOJIS, ROLE_TYPES } from '../../utils/constants';
 import { getRoleLabel } from '../../utils/helpers';
+import logger from '../../utils/logger';
 
 const BookDetailScreen = ({ route, navigation }) => {
   const { bookId } = route.params || {};
@@ -43,8 +44,14 @@ const BookDetailScreen = ({ route, navigation }) => {
     roleType: 'supporting',
   });
 
+  useEffect(() => {
+    logger.screen.mount('BookDetailScreen', { bookId, userId: user?.userId });
+    return () => logger.screen.unmount('BookDetailScreen');
+  }, []);
+
   const loadData = useCallback(async () => {
     if (!bookId) return;
+    logger.screen.action('BookDetailScreen', 'loadData', { bookId });
     try {
       const [bookData, charsData] = await Promise.all([
         booksAPI.getDetail(bookId, user?.userId),
@@ -55,7 +62,12 @@ const BookDetailScreen = ({ route, navigation }) => {
       setCharacters(bookData.characters || []);
       setChapters(bookData.chapters || []);
       setAllCharacters(charsData.characters || []);
+      logger.data.fetchSuccess('bookDetail', { 
+        chapters: (bookData.chapters || []).length,
+        characters: (bookData.characters || []).length 
+      });
     } catch (error) {
+      logger.screen.error('BookDetailScreen', 'loadData', error);
       toast.error('加载失败');
     } finally {
       setIsLoading(false);
@@ -64,6 +76,7 @@ const BookDetailScreen = ({ route, navigation }) => {
 
   useEffect(() => {
     if (!bookId) {
+      logger.screen.error('BookDetailScreen', 'invalid_bookId', { bookId });
       toast.error('书籍ID无效');
       navigation.goBack();
       return;
@@ -73,7 +86,8 @@ const BookDetailScreen = ({ route, navigation }) => {
 
   useEffect(() => {
     if (isFocused && bookId) {
-      loadData();
+    logger.screen.focus('BookDetailScreen');
+    loadData();
     }
   }, [isFocused]);
 

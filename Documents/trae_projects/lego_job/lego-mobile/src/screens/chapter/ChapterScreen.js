@@ -14,6 +14,7 @@ import { chaptersAPI, puzzleAPI, plotOptionsAPI, booksAPI } from '../../api';
 import { Card, Button, Loading, Modal, Header, ParticleBackground } from '../../components/common';
 import KeywordHighlight from '../../components/chapter/KeywordHighlight';
 import { COLORS } from '../../utils/constants';
+import logger from '../../utils/logger';
 
 const BOUNCE_EASING = Easing.bezier(0.68, -0.55, 0.265, 1.55);
 
@@ -50,7 +51,13 @@ const ChapterScreen = ({ route, navigation }) => {
   const celebrationAnims = useRef([...Array(8)].map(() => new Animated.Value(0))).current;
 
   useEffect(() => {
+    logger.screen.mount('ChapterScreen', { chapterId, bookId });
+    return () => logger.screen.unmount('ChapterScreen');
+  }, []);
+
+  useEffect(() => {
     if (!chapterId) {
+      logger.screen.error('ChapterScreen', 'invalid_chapterId', { chapterId });
       toast.error('章节ID无效');
       navigation.goBack();
       return;
@@ -98,9 +105,11 @@ const ChapterScreen = ({ route, navigation }) => {
   };
 
   const loadChapter = async () => {
+    logger.screen.action('ChapterScreen', 'loadChapter', { chapterId, userId: user?.userId });
     try {
       const data = await chaptersAPI.getDetail(chapterId, user?.userId);
       setChapter(data.chapter);
+      logger.data.fetchSuccess('chapter', { chapterId, hasPuzzle: data.chapter.has_puzzle || data.chapter.hasPuzzle });
       const hasPuzzle = data.chapter.has_puzzle || data.chapter.hasPuzzle;
       if (hasPuzzle && data.puzzle) {
         setPuzzle(data.puzzle);

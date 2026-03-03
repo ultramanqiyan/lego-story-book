@@ -12,6 +12,7 @@ import { useToast } from '../../context/ToastContext';
 import { booksAPI, charactersAPI, bookCharactersAPI, storyAPI, chaptersAPI } from '../../api';
 import { Card, Button, Loading, EmptyState, StepIndicator, Modal } from '../../components/common';
 import { COLORS, PLOT_TYPES, CHARACTER_EMOJIS, ROLE_TYPES } from '../../utils/constants';
+import logger from '../../utils/logger';
 
 const StoryCreateScreen = ({ navigation }) => {
   const { user } = useAuth();
@@ -28,10 +29,16 @@ const StoryCreateScreen = ({ navigation }) => {
   const [isCreating, setIsCreating] = useState(false);
 
   useEffect(() => {
+    logger.screen.mount('StoryCreateScreen', { userId: user?.userId });
+    return () => logger.screen.unmount('StoryCreateScreen');
+  }, []);
+
+  useEffect(() => {
     loadData();
   }, []);
 
   const loadData = async () => {
+    logger.screen.action('StoryCreateScreen', 'loadData', { userId: user?.userId });
     try {
       const [booksData, charsData] = await Promise.all([
         booksAPI.getList(user?.userId),
@@ -39,7 +46,10 @@ const StoryCreateScreen = ({ navigation }) => {
       ]);
       setBooks(booksData.books || []);
       setCharacters(charsData.characters || []);
+      logger.data.fetchSuccess('books', (booksData.books || []).length);
+      logger.data.fetchSuccess('characters', (charsData.characters || []).length);
     } catch (error) {
+      logger.screen.error('StoryCreateScreen', 'loadData', error);
       toast.error('加载数据失败');
     } finally {
       setIsLoading(false);
@@ -47,12 +57,13 @@ const StoryCreateScreen = ({ navigation }) => {
   };
 
   const selectBook = (book) => {
+    logger.screen.action('StoryCreateScreen', 'selectBook', { bookId: book.book_id || book.bookId });
     setSelectedBook(book);
     setCurrentStep(1);
   };
 
   const createNewBook = async () => {
-    console.log('[StoryCreate] createNewBook called, newBookTitle:', newBookTitle);
+    logger.screen.action('StoryCreateScreen', 'createNewBook', { title: newBookTitle });
     
     if (!newBookTitle || !newBookTitle.trim()) {
       toast.error('请输入书籍名称');
@@ -64,11 +75,8 @@ const StoryCreateScreen = ({ navigation }) => {
       return;
     }
 
-    console.log('[StoryCreate] Creating book:', { userId: user.userId, title: newBookTitle.trim() });
-    
     try {
       const data = await booksAPI.create(user.userId, newBookTitle.trim());
-      console.log('[StoryCreate] Book created:', data);
       
       if (!data) {
         throw new Error('创建失败：服务器未返回数据');
@@ -78,18 +86,20 @@ const StoryCreateScreen = ({ navigation }) => {
         throw new Error('创建失败：未返回书籍ID');
       }
       
+      logger.data.createSuccess('book', data.bookId);
       setSelectedBook({ book_id: data.bookId, title: newBookTitle, chapter_count: 0 });
       setNewBookTitle('');
       setCurrentStep(1);
       toast.success('书籍创建成功！');
     } catch (error) {
-      console.error('[StoryCreate] Create book error:', error);
+      logger.screen.error('StoryCreateScreen', 'createNewBook', error);
       const errorMessage = error && error.message ? error.message : '创建失败，请重试';
       toast.error(errorMessage);
     }
   };
 
   const selectPlot = (plot) => {
+    logger.screen.action('StoryCreateScreen', 'selectPlot', { plot: plot?.id || plot });
     setSelectedPlot(plot);
     setCurrentStep(2);
   };

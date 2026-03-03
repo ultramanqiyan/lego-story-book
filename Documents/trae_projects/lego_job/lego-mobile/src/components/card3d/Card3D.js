@@ -10,6 +10,7 @@ import { GestureDetector } from 'react-native-gesture-handler';
 import { use3DCard } from '../../hooks/use3DCard';
 import { COLORS } from '../../utils/constants';
 import { CARD_3D_CONFIG } from '../../utils/animations';
+import logger from '../../utils/logger';
 
 const Card3D = ({
   frontContent,
@@ -17,7 +18,7 @@ const Card3D = ({
   icon,
   name,
   isSelected = false,
-  onPress, // 点击回调
+  onPress,
   onFlip,
   width = CARD_3D_CONFIG.cardWidth,
   height = CARD_3D_CONFIG.cardHeight,
@@ -37,7 +38,7 @@ const Card3D = ({
     flipCard,
   } = use3DCard({
     onFlip,
-    onPress, // 传递给 hook
+    onPress,
     enableTilt,
     enableFlip,
   });
@@ -45,10 +46,14 @@ const Card3D = ({
   const [isWeb, setIsWeb] = useState(false);
 
   useEffect(() => {
+    logger.component.mount('Card3D', { name, variant });
+    return () => logger.component.unmount('Card3D');
+  }, []);
+
+  useEffect(() => {
     setIsWeb(Platform.OS === 'web');
   }, []);
 
-  // 选中状态动画
   useEffect(() => {
     animateSelect(isSelected);
   }, [isSelected, animateSelect]);
