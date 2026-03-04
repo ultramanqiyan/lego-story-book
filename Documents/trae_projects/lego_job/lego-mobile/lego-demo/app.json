@@ -22,8 +22,6 @@
       },
       "package": "com.legostory.demo"
     },
-    "web": {
-      "favicon": "./assets/favicon.png"
-    }
+    "web": {}
   }
 }

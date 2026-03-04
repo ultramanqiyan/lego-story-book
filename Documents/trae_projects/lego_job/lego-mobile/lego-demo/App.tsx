@@ -1,15 +1,23 @@
-import React from 'react';
-import { 
-  View, 
-  Text, 
-  StyleSheet, 
-  SafeAreaView, 
-  TouchableOpacity, 
+import React, { useState, useRef, useCallback, useEffect } from 'react';
+import {
+  View,
+  Text,
+  StyleSheet,
+  SafeAreaView,
+  TouchableOpacity,
   Dimensions,
   PanResponder,
+  Animated,
+  Platform,
 } from 'react-native';
+import { GameProvider, useGame } from './src/context/GameContext';
+import { Card, Minion, CardType, GameState } from './src/types/game';
+import { logger } from './src/utils/GameLogger';
 
 const { width, height } = Dimensions.get('window');
+const CARD_WIDTH = 70;
+const CARD_HEIGHT = 100;
+const DROP_ZONE_Y = height * 0.5;
 
 const COLORS = {
   background: '#1a1a2e',
@@ -21,87 +29,13 @@ const COLORS = {
   gray: '#888888',
   cardBg: '#2a2a3a',
   minionBg: '#3a3a4a',
+  purple: '#9C27B0',
 };
-
-interface Card {
-  id: string;
-  name: string;
-  type: 'MINION' | 'SPELL';
-  cost: number;
-  attack?: number;
-  health?: number;
-  description: string;
-}
-
-interface Minion {
-  id: string;
-  name: string;
-  attack: number;
-  health: number;
-  maxHealth: number;
-  canAttack: boolean;
-}
-
-interface Hero {
-  name: string;
-  health: number;
-  maxHealth: number;
-}
-
-interface GameState {
-  playerHero: Hero;
-  opponentHero: Hero;
-  playerMana: number;
-  opponentMana: number;
-  maxMana: number;
-  playerHand: Card[];
-  opponentHand: Card[];
-  playerMinions: Minion[];
-  opponentMinions: Minion[];
-  playerDeck: number;
-  opponentDeck: number;
-  currentTurn: 'player' | 'opponent';
-  turnNumber: number;
-}
-
-const initialState: GameState = {
-  playerHero: { name: '玩家', health: 30, maxHealth: 30 },
-  opponentHero: { name: '对手', health: 30, maxHealth: 30 },
-  playerMana: 3,
-  opponentMana: 4,
-  maxMana: 10,
-  playerHand: [
-    { id: '1', name: '小精灵', type: 'MINION', cost: 1, attack: 1, health: 1, description: '可爱的小精灵' },
-    { id: '2', name: '火球术', type: 'SPELL', cost: 3, description: '造成6点伤害' },
-    { id: '3', name: '战士', type: 'MINION', cost: 2, attack: 2, health: 3, description: '勇敢的战士' },
-  ],
-  opponentHand: [
-    { id: '4', name: '未知卡牌', type: 'MINION', cost: 2, attack: 2, health: 2, description: '?' },
-    { id: '5', name: '未知卡牌', type: 'MINION', cost: 3, attack: 3, health: 3, description: '?' },
-  ],
-  playerMinions: [
-    { id: 'm1', name: '小精灵', attack: 1, health: 1, maxHealth: 1, canAttack: true },
-    { id: 'm2', name: '龙骑士', attack: 5, health: 5, maxHealth: 5, canAttack: true },
-  ],
-  opponentMinions: [
-    { id: 'm3', name: '战士', attack: 2, health: 3, maxHealth: 3, canAttack: false },
-    { id: 'm4', name: '铁甲卫士', attack: 3, health: 5, maxHealth: 5, canAttack: false },
-  ],
-  playerDeck: 5,
-  opponentDeck: 10,
-  currentTurn: 'player',
-  turnNumber: 3,
-};
-
-const CARD_WIDTH = 70;
-const CARD_HEIGHT = 100;
-const DROP_ZONE_Y = 400;
 
 interface DraggableCardProps {
   card: Card;
   index: number;
   isPlayable: boolean;
-  isDragging: boolean;
   onDragStart: (card: Card) => void;
   onDragMove: (x: number, y: number) => void;
   onDragEnd: (card: Card, y: number) => void;
@@ -111,55 +45,82 @@ const DraggableCard: React.FC<DraggableCardProps> = ({
   card,
   index,
   isPlayable,
-  isDragging,
   onDragStart,
   onDragMove,
   onDragEnd,
 }) => {
-  const panResponder = React.useMemo(() => 
+  const scaleAnim = useRef(new Animated.Value(1)).current;
+  const isDraggingRef = useRef(false);
+
+  const panResponder = useRef(
     PanResponder.create({
-      onStartShouldSetPanResponder: () => true,
-      onMoveShouldSetPanResponder: () => true,
-      onPanResponderGrant: (evt) => {
+      onStartShouldSetPanResponder: () => isPlayable,
+      onMoveShouldSetPanResponder: () => isPlayable,
+      onPanResponderGrant: () => {
+        if (!isPlayable) return;
+        isDraggingRef.current = true;
+        logger.logInteraction('开始拖拽卡牌', { cardName: card.name });
+        Animated.spring(scaleAnim, {
+          toValue: 1.1,
+          useNativeDriver: true,
+        }).start();
         onDragStart(card);
       },
-      onPanResponderMove: (evt) => {
-        onDragMove(evt.nativeEvent.pageX, evt.nativeEvent.pageY);
+      onPanResponderMove: (_, gestureState) => {
+        if (!isDraggingRef.current) return;
+        onDragMove(gestureState.moveX, gestureState.moveY);
       },
-      onPanResponderRelease: (evt) => {
-        onDragEnd(card, evt.nativeEvent.pageY);
+      onPanResponderRelease: (_, gestureState) => {
+        isDraggingRef.current = false;
+        Animated.spring(scaleAnim, {
+          toValue: 1,
+          useNativeDriver: true,
+        }).start();
+        logger.logInteraction('释放卡牌', { cardName: card.name, y: gestureState.moveY });
+        onDragEnd(card, gestureState.moveY);
       },
       onPanResponderTerminate: () => {
-        onDragEnd(card, 1000);
+        isDraggingRef.current = false;
+        Animated.spring(scaleAnim, {
+          toValue: 1,
+          useNativeDriver: true,
+        }).start();
       },
-    }),
-    [card.id]
-  );
+    })
+  ).current;
+
+  const getCardTypeIcon = () => {
+    switch (card.type) {
+      case CardType.MINION: return '⚔️';
+      case CardType.SPELL: return '✨';
+      default: return '🃏';
+    }
+  };
 
   return (
-    <View
+    <Animated.View
       style={[
         styles.cardWrapper,
-        { 
+        {
           marginLeft: index === 0 ? 0 : -20,
-          zIndex: isDragging ? 1000 : index + 100,
-          opacity: isDragging ? 0.3 : 1,
-        }
+          transform: [{ scale: scaleAnim }],
+        },
+        !isPlayable && styles.cardDisabled,
       ]}
       {...panResponder.panHandlers}
     >
       <View style={[styles.card, isPlayable && styles.cardPlayable]}>
         <View style={styles.cardHeader}>
-          <Text style={styles.cardName}>{card.name}</Text>
+          <Text style={styles.cardName} numberOfLines={1}>{card.name}</Text>
           <View style={styles.cardCost}>
             <Text style={styles.cardCostText}>{card.cost}</Text>
           </View>
         </View>
         <View style={styles.cardImage}>
-          <Text style={styles.cardIcon}>{card.type === 'MINION' ? '⚔️' : '✨'}</Text>
+          <Text style={styles.cardIcon}>{getCardTypeIcon()}</Text>
         </View>
-        <Text style={styles.cardDesc}>{card.description}</Text>
-        {card.type === 'MINION' && (
+        <Text style={styles.cardDesc} numberOfLines={2}>{card.description}</Text>
+        {card.type === CardType.MINION && (
           <View style={styles.cardStats}>
             <View style={styles.statBadge}>
               <Text style={styles.statText}>{card.attack}</Text>
@@ -170,196 +131,318 @@ const DraggableCard: React.FC<DraggableCardProps> = ({
           </View>
         )}
       </View>
-    </View>
+    </Animated.View>
   );
 };
 
-const App: React.FC = () => {
-  const [state, setState] = React.useState<GameState>(initialState);
-  const [message, setMessage] = React.useState<string>('');
-  const [draggingCard, setDraggingCard] = React.useState<Card | null>(null);
-  const [dragY, setDragY] = React.useState(0);
-  const [dragX, setDragX] = React.useState(0);
+interface MinionViewProps {
+  minion: Minion;
+  isPlayer: boolean;
+  isSelected: boolean;
+  isTargetable: boolean;
+  onPress: () => void;
+}
 
-  const handlePlayCard = (card: Card) => {
-    const logMsg = `打出卡牌: ${card.name} (费用: ${card.cost})`;
-    console.log(logMsg);
-    setMessage(logMsg);
-    
-    if (card.cost > state.playerMana) {
-      setMessage(`法力不足! 需要 ${card.cost} 法力，当前只有 ${state.playerMana} 法力`);
-      return;
+const MinionView: React.FC<MinionViewProps> = ({
+  minion,
+  isPlayer,
+  isSelected,
+  isTargetable,
+  onPress,
+}) => {
+  const scaleAnim = useRef(new Animated.Value(0)).current;
+  const glowAnim = useRef(new Animated.Value(0)).current;
+  const shakeAnim = useRef(new Animated.Value(0)).current;
+
+  useEffect(() => {
+    Animated.spring(scaleAnim, {
+      toValue: 1,
+      friction: 5,
+      tension: 100,
+      useNativeDriver: true,
+    }).start();
+    logger.logAnimation('召唤', minion.name);
+  }, []);
+
+  useEffect(() => {
+    if (minion.canAttack && isPlayer) {
+      Animated.loop(
+        Animated.sequence([
+          Animated.timing(glowAnim, {
+            toValue: 1,
+            duration: 800,
+            useNativeDriver: true,
+          }),
+          Animated.timing(glowAnim, {
+            toValue: 0,
+            duration: 800,
+            useNativeDriver: true,
+          }),
+        ])
+      ).start();
+    } else {
+      glowAnim.setValue(0);
     }
-    
-    setState(prev => ({
-      ...prev,
-      playerMana: prev.playerMana - card.cost,
-      playerHand: prev.playerHand.filter(c => c.id !== card.id),
-      playerMinions: card.type === 'MINION' 
-        ? [...prev.playerMinions, { 
-            id: `summoned_${Date.now()}`, 
-            name: card.name, 
-            attack: card.attack || 0, 
-            health: card.health || 0, 
-            maxHealth: card.health || 0,
-            canAttack: false 
-          }]
-        : prev.playerMinions,
-    }));
+  }, [minion.canAttack, isPlayer]);
+
+  const getHealthColor = () => {
+    if (minion.health < minion.maxHealth) return COLORS.red;
+    if (minion.health > minion.maxHealth) return COLORS.green;
+    return COLORS.white;
   };
 
-  const handleSelectMinion = (minion: Minion) => {
-    const logMsg = `点击随从: ${minion.name}`;
-    console.log(logMsg);
-    setMessage(logMsg);
+  return (
+    <TouchableOpacity onPress={onPress} activeOpacity={0.8}>
+      <Animated.View
+        style={[
+          styles.minion,
+          isSelected && styles.minionSelected,
+          isTargetable && styles.minionTargetable,
+          {
+            transform: [
+              { scale: scaleAnim },
+              { 
+                translateX: shakeAnim.interpolate({
+                  inputRange: [-1, 0, 1],
+                  outputRange: [-5, 0, 5],
+                }),
+              },
+            ],
+          },
+        ]}
+      >
+        {(minion.canAttack && isPlayer) && (
+          <Animated.View
+            style={[
+              styles.minionGlow,
+              { opacity: glowAnim },
+            ]}
+          />
+        )}
+        <View style={styles.minionImage}>
+          <Text style={styles.minionIcon}>👹</Text>
+        </View>
+        <Text style={styles.minionName} numberOfLines={1}>{minion.name}</Text>
+        <View style={styles.minionStats}>
+          <View style={styles.statBadge}>
+            <Text style={styles.statText}>{minion.attack}</Text>
+          </View>
+          <View style={[styles.statBadge, { backgroundColor: getHealthColor() }]}>
+            <Text style={styles.statText}>{minion.health}</Text>
+          </View>
+        </View>
+      </Animated.View>
+    </TouchableOpacity>
+  );
+};
+
+interface HeroViewProps {
+  name: string;
+  health: number;
+  maxHealth: number;
+  isPlayer: boolean;
+  isTargetable: boolean;
+  onPress: () => void;
+}
+
+const HeroView: React.FC<HeroViewProps> = ({
+  name,
+  health,
+  maxHealth,
+  isPlayer,
+  isTargetable,
+  onPress,
+}) => {
+  const getHealthColor = () => {
+    if (health < maxHealth * 0.3) return COLORS.red;
+    if (health < maxHealth * 0.6) return COLORS.gold;
+    return isPlayer ? COLORS.green : COLORS.red;
   };
 
-  const handleEndTurn = () => {
-    const logMsg = '点击结束回合按钮';
-    console.log(logMsg);
-    setMessage(logMsg);
-    const newMaxMana = Math.min(10, state.maxMana + 1);
-    setState(prev => ({
-      ...prev,
-      currentTurn: prev.currentTurn === 'player' ? 'opponent' : 'player',
-      turnNumber: prev.turnNumber + 1,
-      maxMana: newMaxMana,
-      playerMana: newMaxMana,
-      playerMinions: prev.playerMinions.map(m => ({ ...m, canAttack: true })),
-    }));
-  };
+  return (
+    <TouchableOpacity onPress={onPress} disabled={!isTargetable}>
+      <View style={styles.heroContainer}>
+        <View style={[styles.heroAvatar, isTargetable && styles.heroTargetable]}>
+          <Text style={styles.heroIcon}>{isPlayer ? '👑' : '👹'}</Text>
+        </View>
+        <View style={[styles.healthBadge, { backgroundColor: getHealthColor() }]}>
+          <Text style={styles.healthText}>{health}</Text>
+        </View>
+        <Text style={styles.heroName}>{name}</Text>
+      </View>
+    </TouchableOpacity>
+  );
+};
 
-  const handleDragStart = (card: Card) => {
+interface ManaViewProps {
+  current: number;
+  max: number;
+}
+
+const ManaView: React.FC<ManaViewProps> = ({ current, max }) => (
+  <View style={styles.manaContainer}>
+    {Array.from({ length: Math.min(max, 10) }).map((_, i) => (
+      <View
+        key={i}
+        style={[
+          styles.manaCrystal,
+          i < current ? styles.manaFull : styles.manaEmpty,
+        ]}
+      />
+    ))}
+    <Text style={styles.manaText}>{current}/{max}</Text>
+  </View>
+);
+
+const GameBoard: React.FC = () => {
+  const { state, playCard, attackMinion, attackHero, endTurn, selectMinion } = useGame();
+  const [draggingCard, setDraggingCard] = useState<Card | null>(null);
+  const [dragPosition, setDragPosition] = useState({ x: 0, y: 0 });
+  const [message, setMessage] = useState('');
+
+  const showMessage = useCallback((msg: string) => {
+    setMessage(msg);
+    setTimeout(() => setMessage(''), 2000);
+  }, []);
+
+  const handleDragStart = useCallback((card: Card) => {
     setDraggingCard(card);
-  };
+  }, []);
 
-  const handleDragMove = (x: number, y: number) => {
-    setDragX(x);
-    setDragY(y);
-  };
+  const handleDragMove = useCallback((x: number, y: number) => {
+    setDragPosition({ x, y });
+  }, []);
 
-  const handleDragEnd = (card: Card, y: number) => {
-    if (y < DROP_ZONE_Y) {
-      handlePlayCard(card);
+  const handleDragEnd = useCallback((card: Card, y: number) => {
+    if (y < DROP_ZONE_Y && card.cost <= state.player.mana) {
+      playCard(card.id);
+      showMessage(`打出: ${card.name}`);
+    } else if (card.cost > state.player.mana) {
+      showMessage('法力不足!');
     }
     setDraggingCard(null);
-    setDragX(0);
-    setDragY(0);
+  }, [state.player.mana, playCard, showMessage]);
+
+  const handleMinionPress = useCallback((minion: Minion, isPlayer: boolean) => {
+    if (isPlayer) {
+      if (state.phase === 'IDLE' && minion.canAttack) {
+        selectMinion(minion.id);
+        showMessage(`选择 ${minion.name} 攻击目标`);
+      } else if (state.phase === 'SELECTING_TARGET') {
+        selectMinion(null);
+      }
+    } else {
+      if (state.phase === 'SELECTING_TARGET' && state.selectedMinionId) {
+        attackMinion(state.selectedMinionId, minion.id);
+        showMessage('攻击成功!');
+      }
+    }
+  }, [state.phase, state.selectedMinionId, selectMinion, attackMinion, showMessage]);
+
+  const handleHeroPress = useCallback((isPlayer: boolean) => {
+    if (!isPlayer && state.phase === 'SELECTING_TARGET' && state.selectedMinionId) {
+      attackHero(state.selectedMinionId);
+      showMessage('攻击英雄!');
+    }
+  }, [state.phase, state.selectedMinionId, attackHero, showMessage]);
+
+  const handleEndTurn = useCallback(() => {
+    endTurn();
+    showMessage('结束回合');
+  }, [endTurn, showMessage]);
+
+  const isMinionTargetable = (minion: Minion) => {
+    return state.phase === 'SELECTING_TARGET' && !state.player.minions.find(m => m.id === minion.id);
   };
+
+  const isHeroTargetable = !state.player.hero.health;
 
   return (
     <SafeAreaView style={styles.container}>
       <View style={styles.gameContainer}>
+        {/* 对手区域 */}
         <View style={styles.opponentSection}>
           <View style={styles.playerInfoRow}>
-            <View style={styles.heroContainer}>
-              <View style={styles.heroAvatar}>
-                <Text style={styles.heroIcon}>👹</Text>
-              </View>
-              <View style={[styles.healthBadge, { backgroundColor: COLORS.red }]}>
-                <Text style={styles.healthText}>{state.opponentHero.health}</Text>
-              </View>
-              <Text style={styles.heroName}>{state.opponentHero.name}</Text>
-            </View>
-            <View style={styles.manaContainer}>
-              {Array.from({ length: state.maxMana }).map((_, i) => (
-                <View key={i} style={[styles.manaCrystal, i < state.opponentMana ? styles.manaFull : styles.manaEmpty]} />
-              ))}
-              <Text style={styles.manaText}>{state.opponentMana}/{state.maxMana}</Text>
-            </View>
+            <HeroView
+              name={state.opponent.hero.name}
+              health={state.opponent.hero.health}
+              maxHealth={state.opponent.hero.maxHealth}
+              isPlayer={false}
+              isTargetable={state.phase === 'SELECTING_TARGET'}
+              onPress={() => handleHeroPress(false)}
+            />
+            <ManaView current={state.opponent.mana} max={state.opponent.maxMana} />
             <View style={styles.deckArea}>
               <View style={styles.deck}>
-                <Text style={styles.deckCount}>{state.opponentDeck}</Text>
+                <Text style={styles.deckCount}>{state.opponent.deckCount}</Text>
               </View>
             </View>
           </View>
           <View style={styles.minionField}>
-            {state.opponentMinions.map(m => (
-              <TouchableOpacity 
-                key={m.id} 
-                style={styles.minion} 
-                onPress={() => handleSelectMinion(m)}
-                activeOpacity={0.8}
-              >
-                <View style={styles.minionImage}>
-                  <Text style={styles.minionIcon}>👹</Text>
-                </View>
-                <Text style={styles.minionName}>{m.name}</Text>
-                <View style={styles.minionStats}>
-                  <View style={styles.statBadge}>
-                    <Text style={styles.statText}>{m.attack}</Text>
-                  </View>
-                  <View style={[styles.statBadge, styles.healthStat]}>
-                    <Text style={styles.statText}>{m.health}</Text>
-                  </View>
-                </View>
-              </TouchableOpacity>
+            {state.opponent.minions.map(m => (
+              <MinionView
+                key={m.id}
+                minion={m}
+                isPlayer={false}
+                isSelected={false}
+                isTargetable={isMinionTargetable(m)}
+                onPress={() => handleMinionPress(m, false)}
+              />
             ))}
           </View>
         </View>
 
+        {/* 中央区域 */}
         <View style={styles.centerSection}>
           <Text style={styles.turnText}>
             {state.currentTurn === 'player' ? '你的回合' : '对手回合'}
           </Text>
           <Text style={styles.turnNumber}>第 {state.turnNumber} 回合</Text>
-          <Text style={styles.hintText}>拖拽卡牌到上方打出</Text>
+          {state.phase === 'SELECTING_TARGET' && (
+            <Text style={styles.hintText}>选择攻击目标</Text>
+          )}
+          {state.phase === 'IDLE' && (
+            <Text style={styles.hintText}>拖拽卡牌到上方打出</Text>
+          )}
         </View>
 
+        {/* 玩家区域 */}
         <View style={styles.playerSection}>
           <View style={styles.minionField}>
-            {state.playerMinions.map(m => (
-              <TouchableOpacity 
-                key={m.id} 
-                style={[styles.minion, m.canAttack && styles.minionCanAttack]} 
-                onPress={() => handleSelectMinion(m)}
-                activeOpacity={0.8}
-              >
-                <View style={styles.minionImage}>
-                  <Text style={styles.minionIcon}>👹</Text>
-                </View>
-                <Text style={styles.minionName}>{m.name}</Text>
-                <View style={styles.minionStats}>
-                  <View style={styles.statBadge}>
-                    <Text style={styles.statText}>{m.attack}</Text>
-                  </View>
-                  <View style={[styles.statBadge, styles.healthStat]}>
-                    <Text style={styles.statText}>{m.health}</Text>
-                  </View>
-                </View>
-              </TouchableOpacity>
+            {state.player.minions.map(m => (
+              <MinionView
+                key={m.id}
+                minion={m}
+                isPlayer={true}
+                isSelected={state.selectedMinionId === m.id}
+                isTargetable={false}
+                onPress={() => handleMinionPress(m, true)}
+              />
             ))}
           </View>
           <View style={styles.playerInfoRow}>
-            <View style={styles.heroContainer}>
-              <View style={styles.heroAvatar}>
-                <Text style={styles.heroIcon}>👑</Text>
-              </View>
-              <View style={[styles.healthBadge, { backgroundColor: COLORS.green }]}>
-                <Text style={styles.healthText}>{state.playerHero.health}</Text>
-              </View>
-              <Text style={styles.heroName}>{state.playerHero.name}</Text>
-            </View>
-            <View style={styles.manaContainer}>
-              {Array.from({ length: state.maxMana }).map((_, i) => (
-                <View key={i} style={[styles.manaCrystal, i < state.playerMana ? styles.manaFull : styles.manaEmpty]} />
-              ))}
-              <Text style={styles.manaText}>{state.playerMana}/{state.maxMana}</Text>
-            </View>
+            <HeroView
+              name={state.player.hero.name}
+              health={state.player.hero.health}
+              maxHealth={state.player.hero.maxHealth}
+              isPlayer={true}
+              isTargetable={false}
+              onPress={() => {}}
+            />
+            <ManaView current={state.player.mana} max={state.player.maxMana} />
             <View style={styles.deckArea}>
               <View style={styles.deck}>
-                <Text style={styles.deckCount}>{state.playerDeck}</Text>
+                <Text style={styles.deckCount}>{state.player.deckCount}</Text>
               </View>
             </View>
           </View>
           <View style={styles.handArea}>
-            {state.playerHand.map((card, i) => (
+            {state.player.hand.map((card, i) => (
               <DraggableCard
                 key={card.id}
                 card={card}
                 index={i}
-                isPlayable={card.cost <= state.playerMana}
-                isDragging={draggingCard?.id === card.id}
+                isPlayable={card.cost <= state.player.mana && state.currentTurn === 'player'}
                 onDragStart={handleDragStart}
                 onDragMove={handleDragMove}
                 onDragEnd={handleDragEnd}
@@ -371,25 +454,34 @@ const App: React.FC = () => {
               <Text style={styles.btnIcon}>⭐</Text>
               <Text style={styles.btnText}>技能</Text>
             </TouchableOpacity>
-            <TouchableOpacity style={styles.endTurnBtn} onPress={handleEndTurn} activeOpacity={0.8}>
+            <TouchableOpacity
+              style={[
+                styles.endTurnBtn,
+                state.currentTurn !== 'player' && styles.endTurnBtnDisabled,
+              ]}
+              onPress={handleEndTurn}
+              activeOpacity={0.8}
+              disabled={state.currentTurn !== 'player'}
+            >
               <Text style={styles.endTurnText}>结束回合</Text>
             </TouchableOpacity>
           </View>
         </View>
       </View>
-      
+
+      {/* 拖拽中的卡牌 */}
       {draggingCard && (
         <View
           style={[
             styles.draggingCard,
             {
-              left: dragX - CARD_WIDTH / 2,
-              top: dragY - CARD_HEIGHT / 2,
-            }
+              left: dragPosition.x - CARD_WIDTH / 2,
+              top: dragPosition.y - CARD_HEIGHT / 2,
+            },
           ]}
           pointerEvents="none"
         >
-          <View style={[styles.card, styles.cardPlayable, styles.cardDraggingStyle]}>
+          <View style={[styles.card, styles.cardPlayable, styles.cardDragging]}>
             <View style={styles.cardHeader}>
               <Text style={styles.cardName}>{draggingCard.name}</Text>
               <View style={styles.cardCost}>
@@ -397,10 +489,12 @@ const App: React.FC = () => {
               </View>
             </View>
             <View style={styles.cardImage}>
-              <Text style={styles.cardIcon}>{draggingCard.type === 'MINION' ? '⚔️' : '✨'}</Text>
+              <Text style={styles.cardIcon}>
+                {draggingCard.type === CardType.MINION ? '⚔️' : '✨'}
+              </Text>
             </View>
             <Text style={styles.cardDesc}>{draggingCard.description}</Text>
-            {draggingCard.type === 'MINION' && (
+            {draggingCard.type === CardType.MINION && (
               <View style={styles.cardStats}>
                 <View style={styles.statBadge}>
                   <Text style={styles.statText}>{draggingCard.attack}</Text>
@@ -413,15 +507,41 @@ const App: React.FC = () => {
           </View>
         </View>
       )}
-      
+
+      {/* 消息提示 */}
       {message ? (
-        <View style={styles.messageOverlay}>
+        <View style={styles.messageOverlay} pointerEvents="none">
           <View style={styles.messageBox}>
             <Text style={styles.messageText}>{message}</Text>
           </View>
         </View>
       ) : null}
+
+      {/* 游戏结束 */}
+      {state.gameOver && (
+        <View style={styles.gameOverOverlay}>
+          <View style={styles.gameOverBox}>
+            <Text style={styles.gameOverText}>
+              {state.winner === 'player' ? '🎉 胜利!' : '💔 失败!'}
+            </Text>
+            <TouchableOpacity
+              style={styles.restartBtn}
+              onPress={() => {}}
+            >
+              <Text style={styles.restartText}>再来一局</Text>
+            </TouchableOpacity>
+          </View>
+        </View>
+      )}
     </SafeAreaView>
+  );
+};
+
+const App: React.FC = () => {
+  return (
+    <GameProvider>
+      <GameBoard />
+    </GameProvider>
   );
 };
 
@@ -478,6 +598,13 @@ const styles = StyleSheet.create({
     borderColor: COLORS.gold,
     justifyContent: 'center',
     alignItems: 'center',
+  },
+  heroTargetable: {
+    borderColor: COLORS.red,
+    shadowColor: COLORS.red,
+    shadowOffset: { width: 0, height: 0 },
+    shadowOpacity: 0.8,
+    shadowRadius: 10,
   },
   heroIcon: {
     fontSize: 28,
@@ -545,12 +672,28 @@ const styles = StyleSheet.create({
     padding: 3,
     alignItems: 'center',
   },
-  minionCanAttack: {
-    borderColor: COLORS.green,
-    shadowColor: COLORS.green,
+  minionSelected: {
+    borderColor: COLORS.gold,
+    shadowColor: COLORS.gold,
     shadowOffset: { width: 0, height: 0 },
     shadowOpacity: 0.8,
     shadowRadius: 5,
+  },
+  minionTargetable: {
+    borderColor: COLORS.red,
+    shadowColor: COLORS.red,
+    shadowOffset: { width: 0, height: 0 },
+    shadowOpacity: 0.8,
+    shadowRadius: 5,
+  },
+  minionGlow: {
+    position: 'absolute',
+    top: -5,
+    left: -5,
+    right: -5,
+    bottom: -5,
+    borderRadius: 10,
+    backgroundColor: 'rgba(255, 215, 0, 0.3)',
   },
   minionImage: {
     flex: 1,
@@ -612,7 +755,10 @@ const styles = StyleSheet.create({
     shadowOpacity: 0.5,
     shadowRadius: 5,
   },
-  cardDraggingStyle: {
+  cardDisabled: {
+    opacity: 0.5,
+  },
+  cardDragging: {
     transform: [{ scale: 1.2 }],
     shadowColor: '#000',
     shadowOffset: { width: 0, height: 10 },
@@ -714,10 +860,19 @@ const styles = StyleSheet.create({
     borderColor: COLORS.white,
     marginHorizontal: 10,
   },
+  endTurnBtnDisabled: {
+    backgroundColor: COLORS.gray,
+  },
   endTurnText: {
     fontSize: 14,
     fontWeight: 'bold',
     color: COLORS.white,
+  },
+  draggingCard: {
+    position: 'absolute',
+    width: CARD_WIDTH,
+    height: CARD_HEIGHT,
+    zIndex: 9999,
   },
   messageOverlay: {
     position: 'absolute',
@@ -728,7 +883,6 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
     alignItems: 'center',
     backgroundColor: 'transparent',
-    pointerEvents: 'none',
   },
   messageBox: {
     backgroundColor: 'rgba(0, 0, 0, 0.8)',
@@ -741,11 +895,38 @@ const styles = StyleSheet.create({
     fontSize: 16,
     fontWeight: 'bold',
   },
-  draggingCard: {
+  gameOverOverlay: {
     position: 'absolute',
-    width: CARD_WIDTH,
-    height: CARD_HEIGHT,
-    zIndex: 9999,
+    top: 0,
+    left: 0,
+    right: 0,
+    bottom: 0,
+    justifyContent: 'center',
+    alignItems: 'center',
+    backgroundColor: 'rgba(0, 0, 0, 0.8)',
+  },
+  gameOverBox: {
+    backgroundColor: COLORS.cardBg,
+    padding: 30,
+    borderRadius: 15,
+    alignItems: 'center',
+  },
+  gameOverText: {
+    fontSize: 32,
+    fontWeight: 'bold',
+    color: COLORS.gold,
+    marginBottom: 20,
+  },
+  restartBtn: {
+    backgroundColor: COLORS.green,
+    paddingVertical: 12,
+    paddingHorizontal: 30,
+    borderRadius: 10,
+  },
+  restartText: {
+    fontSize: 16,
+    fontWeight: 'bold',
+    color: COLORS.white,
   },
 });
 
