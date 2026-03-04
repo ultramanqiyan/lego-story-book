@@ -1,0 +1,1006 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>炉石传说风格卡牌对战 - Web预览</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Arial', sans-serif;
+            background: linear-gradient(135deg, #1a1a2e 0%, #2d1f1f 100%);
+            color: #fff;
+            min-height: 100vh;
+            overflow-x: hidden;
+            user-select: none;
+        }
+
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 20px;
+        }
+
+        .header {
+            text-align: center;
+            margin-bottom: 20px;
+        }
+
+        .header h1 {
+            font-size: 32px;
+            color: #ffd700;
+            text-shadow: 2px 2px 4px #000;
+            margin-bottom: 10px;
+        }
+
+        .header p {
+            color: #ccc;
+            font-size: 14px;
+        }
+
+        .game-container {
+            display: flex;
+            flex-direction: column;
+            gap: 20px;
+            background: rgba(0, 0, 0, 0.3);
+            border-radius: 10px;
+            padding: 20px;
+            border: 2px solid #666;
+            position: relative;
+        }
+
+        .player-section {
+            display: flex;
+            gap: 20px;
+            align-items: center;
+        }
+
+        .opponent-section {
+            transform: rotate(180deg);
+        }
+
+        .player-info {
+            display: flex;
+            align-items: center;
+            gap: 15px;
+        }
+
+        .hero-avatar {
+            width: 80px;
+            height: 80px;
+            border-radius: 50%;
+            background: #8B4513;
+            border: 3px solid #ffd700;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 32px;
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.5);
+            cursor: pointer;
+            transition: transform 0.2s, box-shadow 0.2s;
+        }
+
+        .hero-avatar:hover {
+            transform: scale(1.1);
+            box-shadow: 0 0 20px rgba(255, 215, 0, 0.8);
+        }
+
+        .hero-avatar.highlight {
+            box-shadow: 0 0 30px rgba(255, 0, 0, 0.8);
+            animation: pulse 0.5s infinite;
+        }
+
+        @keyframes pulse {
+            0%, 100% { transform: scale(1); }
+            50% { transform: scale(1.05); }
+        }
+
+        .health-display {
+            display: flex;
+            flex-direction: column;
+            gap: 5px;
+        }
+
+        .health-bar {
+            width: 120px;
+            height: 12px;
+            background: rgba(0, 0, 0, 0.5);
+            border-radius: 6px;
+            overflow: hidden;
+            border: 1px solid #fff;
+        }
+
+        .health-bar-fill {
+            height: 100%;
+            background: #4CAF50;
+            transition: width 0.3s ease;
+        }
+
+        .health-text {
+            font-size: 18px;
+            font-weight: bold;
+        }
+
+        .mana-crystals {
+            display: flex;
+            gap: 3px;
+            flex-wrap: wrap;
+            max-width: 200px;
+        }
+
+        .crystal {
+            width: 18px;
+            height: 22px;
+            border-radius: 4px;
+            background: #2196F3;
+            border: 1px solid rgba(255, 255, 255, 0.3);
+            box-shadow: 0 0 4px rgba(33, 150, 243, 0.8);
+            transition: all 0.3s;
+        }
+
+        .crystal.empty {
+            background: rgba(100, 100, 100, 0.5);
+            box-shadow: none;
+        }
+
+        .crystal.locked {
+            background: rgba(50, 50, 50, 0.3);
+        }
+
+        .minion-field {
+            display: flex;
+            gap: 10px;
+            justify-content: center;
+            min-height: 100px;
+            padding: 10px;
+            background: rgba(0, 0, 0, 0.2);
+            border-radius: 8px;
+            transition: background 0.3s;
+        }
+
+        .minion-field.highlight {
+            background: rgba(76, 175, 80, 0.3);
+            border: 2px dashed #4CAF50;
+        }
+
+        .minion {
+            width: 70px;
+            height: 90px;
+            background: #3a3a4a;
+            border-radius: 8px;
+            border: 2px solid #666;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            padding: 5px;
+            cursor: pointer;
+            transition: transform 0.2s ease, box-shadow 0.2s ease;
+        }
+
+        .minion:hover {
+            transform: scale(1.05);
+            box-shadow: 0 0 10px rgba(255, 215, 0, 0.5);
+        }
+
+        .minion.selected {
+            border-color: #FFD700;
+            box-shadow: 0 0 15px rgba(255, 215, 0, 0.8);
+        }
+
+        .minion.highlight {
+            box-shadow: 0 0 20px rgba(255, 0, 0, 0.8);
+            border-color: #F44336;
+        }
+
+        .minion-icon {
+            font-size: 28px;
+            flex: 1;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .minion-name {
+            font-size: 9px;
+            font-weight: bold;
+            text-align: center;
+            margin-bottom: 3px;
+        }
+
+        .minion-stats {
+            display: flex;
+            gap: 5px;
+        }
+
+        .stat-badge {
+            width: 22px;
+            height: 22px;
+            border-radius: 11px;
+            background: #FFC107;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 11px;
+            font-weight: bold;
+            border: 2px solid #fff;
+        }
+
+        .stat-badge.health {
+            background: #F44336;
+        }
+
+        .hand-cards {
+            display: flex;
+            gap: 5px;
+            justify-content: center;
+            min-height: 130px;
+            padding: 10px;
+        }
+
+        .card {
+            width: 80px;
+            height: 120px;
+            background: #2a2a3a;
+            border-radius: 8px;
+            border: 2px solid #fff;
+            display: flex;
+            flex-direction: column;
+            padding: 5px;
+            cursor: grab;
+            transition: transform 0.2s ease, box-shadow 0.2s ease;
+            position: relative;
+        }
+
+        .card:hover {
+            transform: translateY(-10px) scale(1.1);
+            box-shadow: 0 10px 20px rgba(0, 0, 0, 0.5);
+            z-index: 10;
+        }
+
+        .card.dragging {
+            opacity: 0.8;
+            transform: scale(1.2);
+            cursor: grabbing;
+            z-index: 1000;
+            box-shadow: 0 20px 40px rgba(0, 0, 0, 0.8);
+        }
+
+        .card.playable {
+            border-color: #4CAF50;
+            box-shadow: 0 0 15px rgba(76, 175, 80, 0.5);
+        }
+
+        .card-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 4px;
+            background: rgba(0, 0, 0, 0.3);
+            border-radius: 4px;
+        }
+
+        .card-name {
+            font-size: 10px;
+            font-weight: bold;
+            flex: 1;
+            margin-right: 4px;
+        }
+
+        .card-cost {
+            width: 20px;
+            height: 20px;
+            border-radius: 10px;
+            background: #2196F3;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 12px;
+            font-weight: bold;
+        }
+
+        .card-image {
+            flex: 1;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 30px;
+            background: rgba(100, 100, 100, 0.3);
+            border-radius: 4px;
+            margin: 5px 0;
+        }
+
+        .card-description {
+            font-size: 8px;
+            color: #ccc;
+            text-align: center;
+            padding: 4px;
+            background: rgba(0, 0, 0, 0.3);
+            border-radius: 4px;
+        }
+
+        .card-stats {
+            display: flex;
+            justify-content: space-between;
+            padding: 4px;
+            margin-top: 5px;
+        }
+
+        .drag-preview {
+            position: fixed;
+            pointer-events: none;
+            z-index: 10000;
+            opacity: 0.9;
+            transform: scale(1.2);
+        }
+
+        .drop-zone {
+            position: absolute;
+            border: 3px dashed transparent;
+            border-radius: 8px;
+            transition: all 0.3s;
+            pointer-events: none;
+        }
+
+        .drop-zone.active {
+            border-color: #4CAF50;
+            background: rgba(76, 175, 80, 0.2);
+        }
+
+        .action-buttons {
+            display: flex;
+            gap: 20px;
+            justify-content: center;
+            padding: 10px;
+        }
+
+        .btn {
+            padding: 12px 30px;
+            border-radius: 25px;
+            border: 3px solid #fff;
+            font-size: 16px;
+            font-weight: bold;
+            cursor: pointer;
+            transition: transform 0.2s ease, box-shadow 0.2s ease;
+        }
+
+        .btn:hover {
+            transform: scale(1.05);
+        }
+
+        .btn:active {
+            transform: scale(0.95);
+        }
+
+        .btn-hero-power {
+            background: #8B4513;
+            color: #fff;
+            box-shadow: 0 0 10px rgba(255, 215, 0, 0.5);
+        }
+
+        .btn-end-turn {
+            background: #4CAF50;
+            color: #fff;
+            box-shadow: 0 0 10px rgba(76, 175, 80, 0.5);
+        }
+
+        .btn:disabled {
+            opacity: 0.5;
+            cursor: not-allowed;
+        }
+
+        .deck-area {
+            display: flex;
+            gap: 10px;
+            align-items: center;
+        }
+
+        .deck {
+            width: 50px;
+            height: 70px;
+            background: #4a4a5a;
+            border-radius: 6px;
+            border: 2px solid #666;
+            position: relative;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 14px;
+            font-weight: bold;
+        }
+
+        .deck::before,
+        .deck::after {
+            content: '';
+            position: absolute;
+            width: 50px;
+            height: 70px;
+            background: #4a4a5a;
+            border-radius: 6px;
+            border: 2px solid #666;
+        }
+
+        .deck::before {
+            top: -2px;
+            left: 1px;
+        }
+
+        .deck::after {
+            top: -4px;
+            left: 2px;
+        }
+
+        .deck-count {
+            position: absolute;
+            bottom: -8px;
+            background: rgba(0, 0, 0, 0.7);
+            padding: 2px 8px;
+            border-radius: 10px;
+            border: 1px solid #fff;
+            font-size: 12px;
+        }
+
+        .turn-indicator {
+            text-align: center;
+            font-size: 20px;
+            font-weight: bold;
+            color: #FFD700;
+            text-shadow: 2px 2px 4px #000;
+            padding: 20px;
+        }
+
+        .log-panel {
+            position: fixed;
+            top: 20px;
+            right: 20px;
+            width: 300px;
+            max-height: 400px;
+            background: rgba(0, 0, 0, 0.9);
+            border: 2px solid #666;
+            border-radius: 8px;
+            padding: 10px;
+            overflow-y: auto;
+            z-index: 1000;
+        }
+
+        .log-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 10px;
+            padding-bottom: 5px;
+            border-bottom: 1px solid #666;
+        }
+
+        .log-title {
+            font-weight: bold;
+            color: #FFD700;
+        }
+
+        .log-clear {
+            background: #F44336;
+            color: #fff;
+            border: none;
+            padding: 5px 10px;
+            border-radius: 4px;
+            cursor: pointer;
+            font-size: 12px;
+        }
+
+        .log-content {
+            font-size: 11px;
+            line-height: 1.4;
+        }
+
+        .log-entry {
+            padding: 3px 0;
+            border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+        }
+
+        .log-entry.info {
+            color: #2196F3;
+        }
+
+        .log-entry.warn {
+            color: #FFC107;
+        }
+
+        .log-entry.error {
+            color: #F44336;
+        }
+
+        .log-entry.debug {
+            color: #9E9E9E;
+        }
+
+        .log-timestamp {
+            color: #666;
+            margin-right: 5px;
+        }
+
+        .damage-popup {
+            position: fixed;
+            font-size: 32px;
+            font-weight: bold;
+            color: #F44336;
+            text-shadow: 2px 2px 4px #000;
+            pointer-events: none;
+            animation: damageFloat 1s ease-out forwards;
+            z-index: 10001;
+        }
+
+        @keyframes damageFloat {
+            0% {
+                opacity: 1;
+                transform: translateY(0) scale(1);
+            }
+            100% {
+                opacity: 0;
+                transform: translateY(-50px) scale(1.5);
+            }
+        }
+
+        .card-played {
+            animation: cardPlay 0.5s ease-out forwards;
+        }
+
+        @keyframes cardPlay {
+            0% {
+                transform: scale(1.2);
+                opacity: 1;
+            }
+            100% {
+                transform: scale(0);
+                opacity: 0;
+            }
+        }
+
+        @media (max-width: 768px) {
+            .log-panel {
+                display: none;
+            }
+
+            .game-container {
+                padding: 10px;
+            }
+
+            .card {
+                width: 60px;
+                height: 90px;
+            }
+
+            .minion {
+                width: 55px;
+                height: 70px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>炉石传说风格卡牌对战</h1>
+            <p>Web预览模式 - 支持拖拽卡牌到战场</p>
+        </div>
+
+        <div class="game-container" id="gameContainer">
+            <div class="opponent-section player-section">
+                <div class="player-info">
+                    <div class="hero-avatar" id="opponentHero">👹</div>
+                    <div class="health-display">
+                        <div class="health-bar">
+                            <div class="health-bar-fill" id="opponentHealthBar" style="width: 100%"></div>
+                        </div>
+                        <div class="health-text" id="opponentHealth">30/30</div>
+                    </div>
+                </div>
+                <div class="mana-crystals" id="opponentMana">
+                    <div class="crystal"></div>
+                    <div class="crystal"></div>
+                    <div class="crystal"></div>
+                    <div class="crystal"></div>
+                    <div class="crystal empty"></div>
+                    <div class="crystal locked"></div>
+                </div>
+                <div class="deck-area">
+                    <div class="deck">
+                        <span class="deck-count" id="opponentDeckCount">5</span>
+                    </div>
+                </div>
+            </div>
+
+            <div class="minion-field" id="opponentField">
+                <div class="minion" data-id="opp_minion_1">
+                    <div class="minion-icon">👹</div>
+                    <div class="minion-name">战士</div>
+                    <div class="minion-stats">
+                        <div class="stat-badge">2</div>
+                        <div class="stat-badge health">3</div>
+                    </div>
+                </div>
+                <div class="minion" data-id="opp_minion_2">
+                    <div class="minion-icon">👹</div>
+                    <div class="minion-name">铁甲卫士</div>
+                    <div class="minion-stats">
+                        <div class="stat-badge">3</div>
+                        <div class="stat-badge health">5</div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="turn-indicator" id="turnIndicator">
+                你的回合
+            </div>
+
+            <div class="minion-field" id="playerField">
+                <div class="minion" data-id="player_minion_1">
+                    <div class="minion-icon">👹</div>
+                    <div class="minion-name">小精灵</div>
+                    <div class="minion-stats">
+                        <div class="stat-badge">1</div>
+                        <div class="stat-badge health">1</div>
+                    </div>
+                </div>
+                <div class="minion" data-id="player_minion_2">
+                    <div class="minion-icon">👹</div>
+                    <div class="minion-name">龙骑士</div>
+                    <div class="minion-stats">
+                        <div class="stat-badge">5</div>
+                        <div class="stat-badge health">5</div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="player-section">
+                <div class="deck-area">
+                    <div class="deck">
+                        <span class="deck-count" id="playerDeckCount">2</span>
+                    </div>
+                </div>
+                <div class="mana-crystals" id="playerMana">
+                    <div class="crystal"></div>
+                    <div class="crystal"></div>
+                    <div class="crystal"></div>
+                    <div class="crystal empty"></div>
+                    <div class="crystal empty"></div>
+                    <div class="crystal locked"></div>
+                </div>
+                <div class="player-info">
+                    <div class="hero-avatar" id="playerHero">👑</div>
+                    <div class="health-display">
+                        <div class="health-bar">
+                            <div class="health-bar-fill" id="playerHealthBar" style="width: 100%"></div>
+                        </div>
+                        <div class="health-text" id="playerHealth">30/30</div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="hand-cards" id="handCards">
+                <div class="card playable" draggable="true" data-id="card_1" data-cost="1" data-type="minion">
+                    <div class="card-header">
+                        <span class="card-name">小精灵</span>
+                        <span class="card-cost">1</span>
+                    </div>
+                    <div class="card-image">⚔️</div>
+                    <div class="card-description">一个可爱的小精灵</div>
+                    <div class="card-stats">
+                        <div class="stat-badge">1</div>
+                        <div class="stat-badge health">1</div>
+                    </div>
+                </div>
+                <div class="card" draggable="true" data-id="card_2" data-cost="3" data-type="spell">
+                    <div class="card-header">
+                        <span class="card-name">火球术</span>
+                        <span class="card-cost">3</span>
+                    </div>
+                    <div class="card-image">✨</div>
+                    <div class="card-description">造成6点伤害</div>
+                </div>
+                <div class="card playable" draggable="true" data-id="card_3" data-cost="2" data-type="minion">
+                    <div class="card-header">
+                        <span class="card-name">战士</span>
+                        <span class="card-cost">2</span>
+                    </div>
+                    <div class="card-image">⚔️</div>
+                    <div class="card-description">勇敢的战士</div>
+                    <div class="card-stats">
+                        <div class="stat-badge">2</div>
+                        <div class="stat-badge health">3</div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="action-buttons">
+                <button class="btn btn-hero-power" id="heroPowerBtn">⭐ 英雄技能 (2)</button>
+                <button class="btn btn-end-turn" id="endTurnBtn">结束回合</button>
+            </div>
+        </div>
+    </div>
+
+    <div class="log-panel">
+        <div class="log-header">
+            <span class="log-title">游戏日志</span>
+            <button class="log-clear" onclick="clearLogs()">清空</button>
+        </div>
+        <div class="log-content" id="logContent">
+        </div>
+    </div>
+
+    <script>
+        let currentMana = 3;
+        let maxMana = 3;
+        let selectedMinion = null;
+        let draggedCard = null;
+        let dragPreview = null;
+
+        function clearLogs() {
+            document.getElementById('logContent').innerHTML = '';
+            addLog('info', '日志已清空');
+        }
+
+        function addLog(level, message) {
+            const logContent = document.getElementById('logContent');
+            const timestamp = new Date().toISOString().slice(0, 19).replace('T', ' ');
+            const entry = document.createElement('div');
+            entry.className = `log-entry ${level}`;
+            entry.innerHTML = `<span class="log-timestamp">${timestamp}</span>${message}`;
+            logContent.appendChild(entry);
+            logContent.scrollTop = logContent.scrollHeight;
+            console.log(`[${level.toUpperCase()}] ${message}`);
+        }
+
+        function showDamage(x, y, damage) {
+            const popup = document.createElement('div');
+            popup.className = 'damage-popup';
+            popup.textContent = `-${damage}`;
+            popup.style.left = `${x}px`;
+            popup.style.top = `${y}px`;
+            document.body.appendChild(popup);
+            setTimeout(() => popup.remove(), 1000);
+        }
+
+        function updateMana(newCurrent) {
+            currentMana = newCurrent;
+            const crystals = document.querySelectorAll('#playerMana .crystal');
+            crystals.forEach((crystal, index) => {
+                crystal.classList.remove('empty');
+                if (index >= currentMana) {
+                    crystal.classList.add('empty');
+                }
+            });
+            
+            document.querySelectorAll('.card').forEach(card => {
+                const cost = parseInt(card.dataset.cost);
+                if (cost <= currentMana) {
+                    card.classList.add('playable');
+                } else {
+                    card.classList.remove('playable');
+                }
+            });
+        }
+
+        function playCard(card, targetElement) {
+            const cost = parseInt(card.dataset.cost);
+            if (cost > currentMana) {
+                addLog('warn', `法力不足！需要 ${cost} 法力，当前 ${currentMana} 法力`);
+                card.style.animation = 'shake 0.3s';
+                setTimeout(() => card.style.animation = '', 300);
+                return false;
+            }
+
+            const cardName = card.querySelector('.card-name').textContent;
+            const cardType = card.dataset.type;
+            
+            addLog('info', `[GAME_ACTION] 打出卡牌: ${cardName} (消耗 ${cost} 法力)`);
+            
+            updateMana(currentMana - cost);
+            
+            card.classList.add('card-played');
+            
+            setTimeout(() => {
+                if (cardType === 'minion') {
+                    const playerField = document.getElementById('playerField');
+                    const minionId = `summoned_${Date.now()}`;
+                    const attack = card.querySelector('.stat-badge')?.textContent || '1';
+                    const health = card.querySelectorAll('.stat-badge')[1]?.textContent || '1';
+                    
+                    const newMinion = document.createElement('div');
+                    newMinion.className = 'minion';
+                    newMinion.dataset.id = minionId;
+                    newMinion.innerHTML = `
+                        <div class="minion-icon">👹</div>
+                        <div class="minion-name">${cardName}</div>
+                        <div class="minion-stats">
+                            <div class="stat-badge">${attack}</div>
+                            <div class="stat-badge health">${health}</div>
+                        </div>
+                    `;
+                    playerField.appendChild(newMinion);
+                    addMinionListeners(newMinion);
+                    addLog('info', `[GAME_ACTION] 召唤随从: ${cardName}`);
+                } else if (cardType === 'spell') {
+                    if (targetElement && targetElement.classList.contains('minion')) {
+                        const targetName = targetElement.querySelector('.minion-name').textContent;
+                        showDamage(
+                            targetElement.getBoundingClientRect().left + 35,
+                            targetElement.getBoundingClientRect().top + 45,
+                            6
+                        );
+                        addLog('info', `[GAME_ACTION] 火球术对 ${targetName} 造成 6 点伤害`);
+                    } else {
+                        addLog('info', `[GAME_ACTION] 施放法术: ${cardName}`);
+                    }
+                }
+                card.remove();
+            }, 500);
+            
+            return true;
+        }
+
+        function addMinionListeners(minion) {
+            minion.addEventListener('click', function() {
+                const minionName = this.querySelector('.minion-name').textContent;
+                const minionId = this.dataset.id;
+                
+                if (selectedMinion) {
+                    if (selectedMinion !== this) {
+                        const attackerName = selectedMinion.querySelector('.minion-name').textContent;
+                        addLog('info', `[GAME_ACTION] ${attackerName} 攻击 ${minionName}`);
+                        
+                        showDamage(
+                            this.getBoundingClientRect().left + 35,
+                            this.getBoundingClientRect().top + 45,
+                            2
+                        );
+                        
+                        selectedMinion.classList.remove('selected');
+                        selectedMinion = null;
+                    } else {
+                        this.classList.remove('selected');
+                        selectedMinion = null;
+                        addLog('debug', '取消选择随从');
+                    }
+                } else {
+                    this.classList.add('selected');
+                    selectedMinion = this;
+                    addLog('info', `[USER_INTERACTION] 选择随从: ${minionName}`);
+                }
+            });
+        }
+
+        document.querySelectorAll('.card').forEach(card => {
+            card.addEventListener('dragstart', function(e) {
+                const cost = parseInt(this.dataset.cost);
+                if (cost > currentMana) {
+                    addLog('warn', `法力不足，无法拖拽此卡牌`);
+                    e.preventDefault();
+                    return;
+                }
+                
+                draggedCard = this;
+                this.classList.add('dragging');
+                
+                dragPreview = this.cloneNode(true);
+                dragPreview.classList.add('drag-preview');
+                document.body.appendChild(dragPreview);
+                
+                const cardName = this.querySelector('.card-name').textContent;
+                addLog('debug', `[USER_INTERACTION] 开始拖拽卡牌: ${cardName}`);
+                
+                e.dataTransfer.effectAllowed = 'move';
+                e.dataTransfer.setData('text/plain', this.dataset.id);
+            });
+
+            card.addEventListener('dragend', function(e) {
+                this.classList.remove('dragging');
+                if (dragPreview) {
+                    dragPreview.remove();
+                    dragPreview = null;
+                }
+                draggedCard = null;
+                
+                document.querySelectorAll('.highlight').forEach(el => el.classList.remove('highlight'));
+                addLog('debug', '拖拽结束');
+            });
+
+            card.addEventListener('click', function() {
+                const cardName = this.querySelector('.card-name').textContent;
+                addLog('info', `[USER_INTERACTION] 点击卡牌: ${cardName}`);
+            });
+        });
+
+        document.addEventListener('dragover', function(e) {
+            if (dragPreview) {
+                dragPreview.style.left = `${e.clientX - 40}px`;
+                dragPreview.style.top = `${e.clientY - 60}px`;
+            }
+            
+            if (draggedCard) {
+                e.preventDefault();
+                
+                const playerField = document.getElementById('playerField');
+                const opponentField = document.getElementById('opponentField');
+                const opponentHero = document.getElementById('opponentHero');
+                
+                playerField.classList.add('highlight');
+                
+                if (draggedCard.dataset.type === 'spell') {
+                    opponentField.classList.add('highlight');
+                    opponentHero.classList.add('highlight');
+                }
+            }
+        });
+
+        document.getElementById('playerField').addEventListener('drop', function(e) {
+            e.preventDefault();
+            if (draggedCard && draggedCard.dataset.type === 'minion') {
+                playCard(draggedCard, this);
+            }
+            this.classList.remove('highlight');
+        });
+
+        document.getElementById('opponentField').addEventListener('drop', function(e) {
+            e.preventDefault();
+            if (draggedCard && draggedCard.dataset.type === 'spell') {
+                const target = e.target.closest('.minion');
+                if (target) {
+                    playCard(draggedCard, target);
+                }
+            }
+            this.classList.remove('highlight');
+        });
+
+        document.getElementById('opponentHero').addEventListener('drop', function(e) {
+            e.preventDefault();
+            if (draggedCard && draggedCard.dataset.type === 'spell') {
+                playCard(draggedCard, this);
+                showDamage(
+                    this.getBoundingClientRect().left + 40,
+                    this.getBoundingClientRect().top + 40,
+                    6
+                );
+            }
+            this.classList.remove('highlight');
+        });
+
+        document.querySelectorAll('.minion').forEach(addMinionListeners);
+
+        document.getElementById('endTurnBtn').addEventListener('click', function() {
+            addLog('info', '[USER_INTERACTION] 结束回合');
+            
+            maxMana = Math.min(10, maxMana + 1);
+            currentMana = maxMana;
+            updateMana(currentMana);
+            
+            document.querySelectorAll('.minion').forEach(m => {
+                m.style.pointerEvents = 'auto';
+            });
+            
+            addLog('info', `[GAME_ACTION] 新回合开始，法力恢复到 ${currentMana}`);
+        });
+
+        document.getElementById('heroPowerBtn').addEventListener('click', function() {
+            if (currentMana >= 2) {
+                updateMana(currentMana - 2);
+                addLog('info', '[USER_INTERACTION] 使用英雄技能');
+                addLog('info', '[GAME_ACTION] 英雄技能已使用，消耗 2 法力');
+            } else {
+                addLog('warn', '法力不足，无法使用英雄技能');
+            }
+        });
+
+        addLog('info', '游戏应用启动');
+        addLog('info', '平台信息: web');
+        addLog('info', '拖拽卡牌到战场可以打出卡牌');
+        addLog('info', '点击随从可以选择攻击目标');
+
+        console.log('Web预览模式已启动');
+        console.log('支持拖拽卡牌到战场');
+    </script>
+</body>
+</html>
