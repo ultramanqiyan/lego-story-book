@@ -8,49 +8,194 @@ import {
   Dimensions,
   PanResponder,
   Animated,
-  Platform,
+  ScrollView,
+  Modal,
 } from 'react-native';
 import { GameProvider, useGame } from './src/context/GameContext';
+import { StyleProvider, useStyle } from './src/context/StyleContext';
 import { Card, Minion, CardType, GameState } from './src/types/game';
+import { CardStyleType, AnimationType, CARD_STYLES, ANIMATION_CONFIGS } from './src/types/styles';
 import { logger } from './src/utils/GameLogger';
+import {
+  useBounceAnimation,
+  useFlipAnimation,
+  useSlideAnimation,
+  useSpinAnimation,
+  useFadeBlinkAnimation,
+  usePulseAnimation,
+  useShakeAnimation,
+  useWaveAnimation,
+  useParticleBurstAnimation,
+  useGlowRingAnimation,
+} from './src/utils/AnimationEffects';
 
 const { width, height } = Dimensions.get('window');
 const CARD_WIDTH = 70;
 const CARD_HEIGHT = 100;
 const DROP_ZONE_Y = height * 0.5;
 
-const COLORS = {
-  background: '#1a1a2e',
-  gold: '#ffd700',
-  blue: '#2196F3',
-  green: '#4CAF50',
-  red: '#F44336',
-  white: '#ffffff',
-  gray: '#888888',
-  cardBg: '#2a2a3a',
-  minionBg: '#3a3a4a',
-  purple: '#9C27B0',
+const getCardStyleColors = (styleType: CardStyleType) => {
+  return CARD_STYLES[styleType].colors;
 };
 
-interface DraggableCardProps {
+interface StyleSelectorProps {
+  visible: boolean;
+  onClose: () => void;
+}
+
+const StyleSelector: React.FC<StyleSelectorProps> = ({ visible, onClose }) => {
+  const { currentStyle, currentAnimation, setStyle, setAnimation, allStyles, allAnimations } = useStyle();
+
+  return (
+    <Modal visible={visible} transparent animationType="slide">
+      <View style={styles.modalOverlay}>
+        <View style={styles.modalContent}>
+          <Text style={styles.modalTitle}>风格与动画设置</Text>
+          
+          <Text style={styles.sectionTitle}>卡牌风格 (当前: {CARD_STYLES[currentStyle].name})</Text>
+          <ScrollView horizontal showsHorizontalScrollIndicator={false} style={styles.styleScroll}>
+            {allStyles.map((style) => {
+              const styleConfig = CARD_STYLES[style];
+              return (
+                <TouchableOpacity
+                  key={style}
+                  style={[
+                    styles.styleItem,
+                    { borderColor: styleConfig.colors.border },
+                    currentStyle === style && styles.styleItemSelected,
+                  ]}
+                  onPress={() => setStyle(style)}
+                >
+                  <View style={[styles.stylePreview, { backgroundColor: styleConfig.colors.primary }]}>
+                    <View style={[styles.stylePreviewInner, { backgroundColor: styleConfig.colors.secondary }]} />
+                  </View>
+                  <Text style={[styles.styleName, { color: styleConfig.colors.accent }]}>{styleConfig.name}</Text>
+                </TouchableOpacity>
+              );
+            })}
+          </ScrollView>
+
+          <Text style={styles.sectionTitle}>动画效果 (当前: {ANIMATION_CONFIGS[currentAnimation].name})</Text>
+          <ScrollView horizontal showsHorizontalScrollIndicator={false} style={styles.styleScroll}>
+            {allAnimations.map((anim) => {
+              const animConfig = ANIMATION_CONFIGS[anim];
+              return (
+                <TouchableOpacity
+                  key={anim}
+                  style={[
+                    styles.animItem,
+                    currentAnimation === anim && styles.animItemSelected,
+                  ]}
+                  onPress={() => setAnimation(anim)}
+                >
+                  <Text style={styles.animIcon}>
+                    {anim === AnimationType.BOUNCE && '⬆️'}
+                    {anim === AnimationType.FLIP && '🔄'}
+                    {anim === AnimationType.SLIDE && '➡️'}
+                    {anim === AnimationType.SPIN && '🌀'}
+                    {anim === AnimationType.FADE_BLINK && '💫'}
+                    {anim === AnimationType.PULSE && '💓'}
+                    {anim === AnimationType.SHAKE && '📳'}
+                    {anim === AnimationType.WAVE && '🌊'}
+                    {anim === AnimationType.PARTICLE_BURST && '✨'}
+                    {anim === AnimationType.GLOW_RING && '⭕'}
+                  </Text>
+                  <Text style={styles.animName}>{animConfig.name}</Text>
+                </TouchableOpacity>
+              );
+            })}
+          </ScrollView>
+
+          <TouchableOpacity style={styles.closeButton} onPress={onClose}>
+            <Text style={styles.closeButtonText}>关闭</Text>
+          </TouchableOpacity>
+        </View>
+      </View>
+    </Modal>
+  );
+};
+
+interface StyledCardProps {
   card: Card;
   index: number;
   isPlayable: boolean;
+  animationType: AnimationType;
+  styleType: CardStyleType;
   onDragStart: (card: Card) => void;
   onDragMove: (x: number, y: number) => void;
   onDragEnd: (card: Card, y: number) => void;
 }
 
-const DraggableCard: React.FC<DraggableCardProps> = ({
+const StyledCard: React.FC<StyledCardProps> = ({
   card,
   index,
   isPlayable,
+  animationType,
+  styleType,
   onDragStart,
   onDragMove,
   onDragEnd,
 }) => {
+  const styleConfig = CARD_STYLES[styleType];
+  const bounceAnim = useBounceAnimation();
+  const flipAnim = useFlipAnimation();
+  const slideAnim = useSlideAnimation();
+  const spinAnim = useSpinAnimation();
+  const fadeBlinkAnim = useFadeBlinkAnimation();
+  const pulseAnim = usePulseAnimation();
+  const shakeAnim = useShakeAnimation();
+  const waveAnim = useWaveAnimation();
+  const particleBurstAnim = useParticleBurstAnimation();
+  const glowRingAnim = useGlowRingAnimation();
+
   const scaleAnim = useRef(new Animated.Value(1)).current;
   const isDraggingRef = useRef(false);
+  const hasAnimatedRef = useRef(false);
+
+  useEffect(() => {
+    if (!hasAnimatedRef.current) {
+      hasAnimatedRef.current = true;
+      switch (animationType) {
+        case AnimationType.BOUNCE:
+          bounceAnim.animate();
+          break;
+        case AnimationType.FLIP:
+          flipAnim.animate();
+          break;
+        case AnimationType.SLIDE:
+          slideAnim.animate();
+          break;
+        case AnimationType.SPIN:
+          spinAnim.animate();
+          break;
+        case AnimationType.PARTICLE_BURST:
+          particleBurstAnim.animate();
+          break;
+      }
+    }
+  }, [animationType]);
+
+  useEffect(() => {
+    if (animationType === AnimationType.FADE_BLINK) {
+      fadeBlinkAnim.start();
+    } else if (animationType === AnimationType.PULSE) {
+      pulseAnim.start();
+    } else if (animationType === AnimationType.SHAKE) {
+      shakeAnim.start();
+    } else if (animationType === AnimationType.WAVE) {
+      waveAnim.start();
+    } else if (animationType === AnimationType.GLOW_RING) {
+      glowRingAnim.start();
+    }
+
+    return () => {
+      fadeBlinkAnim.stop();
+      pulseAnim.stop();
+      shakeAnim.stop();
+      waveAnim.stop();
+      glowRingAnim.stop();
+    };
+  }, [animationType]);
 
   const panResponder = useRef(
     PanResponder.create({
@@ -97,32 +242,120 @@ const DraggableCard: React.FC<DraggableCardProps> = ({
     }
   };
 
+  const getAnimationStyle = () => {
+    const baseStyle: any = {};
+    
+    switch (animationType) {
+      case AnimationType.BOUNCE:
+        baseStyle.transform = [
+          { scale: bounceAnim.scaleAnim },
+          { translateY: bounceAnim.translateYAnim },
+        ];
+        break;
+      case AnimationType.FLIP:
+        baseStyle.transform = [
+          { rotateY: flipAnim.rotateY },
+          { scale: flipAnim.scaleAnim },
+        ];
+        break;
+      case AnimationType.SLIDE:
+        baseStyle.transform = [
+          { translateX: slideAnim.translateXAnim },
+        ];
+        baseStyle.opacity = slideAnim.opacityAnim;
+        break;
+      case AnimationType.SPIN:
+        baseStyle.transform = [
+          { rotate: spinAnim.rotate },
+          { scale: spinAnim.scaleAnim },
+        ];
+        break;
+      case AnimationType.FADE_BLINK:
+        baseStyle.opacity = fadeBlinkAnim.opacityAnim;
+        baseStyle.transform = [{ scale: scaleAnim }];
+        break;
+      case AnimationType.PULSE:
+        baseStyle.transform = [{ scale: pulseAnim.scaleAnim }];
+        break;
+      case AnimationType.SHAKE:
+        baseStyle.transform = [{ translateX: shakeAnim.translateXAnim }, { scale: scaleAnim }];
+        break;
+      case AnimationType.WAVE:
+        baseStyle.transform = [
+          { translateY: waveAnim.translateYAnim },
+          { rotate: waveAnim.rotate },
+        ];
+        break;
+      case AnimationType.GLOW_RING:
+        baseStyle.transform = [{ scale: scaleAnim }];
+        break;
+      default:
+        baseStyle.transform = [{ scale: scaleAnim }];
+    }
+    
+    return baseStyle;
+  };
+
+  const cardStyle = [
+    styles.card,
+    {
+      backgroundColor: styleConfig.colors.primary,
+      borderColor: styleConfig.colors.border,
+      borderWidth: styleConfig.borderWidth,
+      borderRadius: styleConfig.borderRadius,
+      shadowColor: styleConfig.shadowConfig.color,
+      shadowOffset: styleConfig.shadowConfig.offset,
+      shadowOpacity: styleConfig.shadowConfig.opacity,
+      shadowRadius: styleConfig.shadowConfig.radius,
+    },
+    isPlayable && {
+      borderColor: styleConfig.colors.accent,
+      shadowColor: styleConfig.colors.glow || styleConfig.colors.accent,
+      shadowOpacity: 0.6,
+      shadowRadius: 8,
+    },
+    !isPlayable && styles.cardDisabled,
+  ];
+
   return (
     <Animated.View
       style={[
         styles.cardWrapper,
-        {
-          marginLeft: index === 0 ? 0 : -20,
-          transform: [{ scale: scaleAnim }],
-        },
-        !isPlayable && styles.cardDisabled,
+        { marginLeft: index === 0 ? 0 : -20 },
+        getAnimationStyle(),
       ]}
       {...panResponder.panHandlers}
     >
-      <View style={[styles.card, isPlayable && styles.cardPlayable]}>
+      <View style={cardStyle}>
+        {animationType === AnimationType.GLOW_RING && (
+          <Animated.View
+            style={[
+              styles.glowRing,
+              {
+                transform: [{ scale: glowRingAnim.scaleAnim }],
+                opacity: glowRingAnim.opacityAnim,
+                borderColor: styleConfig.colors.glow || styleConfig.colors.accent,
+              },
+            ]}
+          />
+        )}
         <View style={styles.cardHeader}>
-          <Text style={styles.cardName} numberOfLines={1}>{card.name}</Text>
-          <View style={styles.cardCost}>
+          <Text style={[styles.cardName, { color: styleConfig.colors.text }]} numberOfLines={1}>
+            {card.name}
+          </Text>
+          <View style={[styles.cardCost, { backgroundColor: styleConfig.colors.accent }]}>
             <Text style={styles.cardCostText}>{card.cost}</Text>
           </View>
         </View>
         <View style={styles.cardImage}>
           <Text style={styles.cardIcon}>{getCardTypeIcon()}</Text>
         </View>
-        <Text style={styles.cardDesc} numberOfLines={2}>{card.description}</Text>
+        <Text style={[styles.cardDesc, { color: styleConfig.colors.text + '99' }]} numberOfLines={2}>
+          {card.description}
+        </Text>
         {card.type === CardType.MINION && (
           <View style={styles.cardStats}>
-            <View style={styles.statBadge}>
+            <View style={[styles.statBadge, { backgroundColor: '#FFC107' }]}>
               <Text style={styles.statText}>{card.attack}</Text>
             </View>
             <View style={[styles.statBadge, styles.healthStat]}>
@@ -135,24 +368,26 @@ const DraggableCard: React.FC<DraggableCardProps> = ({
   );
 };
 
-interface MinionViewProps {
+interface StyledMinionProps {
   minion: Minion;
   isPlayer: boolean;
   isSelected: boolean;
   isTargetable: boolean;
+  styleType: CardStyleType;
   onPress: () => void;
 }
 
-const MinionView: React.FC<MinionViewProps> = ({
+const StyledMinion: React.FC<StyledMinionProps> = ({
   minion,
   isPlayer,
   isSelected,
   isTargetable,
+  styleType,
   onPress,
 }) => {
+  const styleConfig = CARD_STYLES[styleType];
   const scaleAnim = useRef(new Animated.Value(0)).current;
   const glowAnim = useRef(new Animated.Value(0)).current;
-  const shakeAnim = useRef(new Animated.Value(0)).current;
 
   useEffect(() => {
     Animated.spring(scaleAnim, {
@@ -186,9 +421,9 @@ const MinionView: React.FC<MinionViewProps> = ({
   }, [minion.canAttack, isPlayer]);
 
   const getHealthColor = () => {
-    if (minion.health < minion.maxHealth) return COLORS.red;
-    if (minion.health > minion.maxHealth) return COLORS.green;
-    return COLORS.white;
+    if (minion.health < minion.maxHealth) return '#F44336';
+    if (minion.health > minion.maxHealth) return '#4CAF50';
+    return styleConfig.colors.text;
   };
 
   return (
@@ -196,35 +431,35 @@ const MinionView: React.FC<MinionViewProps> = ({
       <Animated.View
         style={[
           styles.minion,
+          {
+            backgroundColor: styleConfig.colors.minionBg || styleConfig.colors.primary,
+            borderColor: isSelected ? styleConfig.colors.accent : isTargetable ? '#F44336' : styleConfig.colors.border,
+            borderRadius: styleConfig.borderRadius,
+            transform: [{ scale: scaleAnim }],
+          },
           isSelected && styles.minionSelected,
           isTargetable && styles.minionTargetable,
-          {
-            transform: [
-              { scale: scaleAnim },
-              { 
-                translateX: shakeAnim.interpolate({
-                  inputRange: [-1, 0, 1],
-                  outputRange: [-5, 0, 5],
-                }),
-              },
-            ],
-          },
         ]}
       >
         {(minion.canAttack && isPlayer) && (
           <Animated.View
             style={[
               styles.minionGlow,
-              { opacity: glowAnim },
+              {
+                opacity: glowAnim,
+                backgroundColor: styleConfig.colors.glow || styleConfig.colors.accent + '4D',
+              },
             ]}
           />
         )}
         <View style={styles.minionImage}>
           <Text style={styles.minionIcon}>👹</Text>
         </View>
-        <Text style={styles.minionName} numberOfLines={1}>{minion.name}</Text>
+        <Text style={[styles.minionName, { color: styleConfig.colors.text }]} numberOfLines={1}>
+          {minion.name}
+        </Text>
         <View style={styles.minionStats}>
-          <View style={styles.statBadge}>
+          <View style={[styles.statBadge, { backgroundColor: '#FFC107' }]}>
             <Text style={styles.statText}>{minion.attack}</Text>
           </View>
           <View style={[styles.statBadge, { backgroundColor: getHealthColor() }]}>
@@ -236,69 +471,13 @@ const MinionView: React.FC<MinionViewProps> = ({
   );
 };
 
-interface HeroViewProps {
-  name: string;
-  health: number;
-  maxHealth: number;
-  isPlayer: boolean;
-  isTargetable: boolean;
-  onPress: () => void;
-}
-
-const HeroView: React.FC<HeroViewProps> = ({
-  name,
-  health,
-  maxHealth,
-  isPlayer,
-  isTargetable,
-  onPress,
-}) => {
-  const getHealthColor = () => {
-    if (health < maxHealth * 0.3) return COLORS.red;
-    if (health < maxHealth * 0.6) return COLORS.gold;
-    return isPlayer ? COLORS.green : COLORS.red;
-  };
-
-  return (
-    <TouchableOpacity onPress={onPress} disabled={!isTargetable}>
-      <View style={styles.heroContainer}>
-        <View style={[styles.heroAvatar, isTargetable && styles.heroTargetable]}>
-          <Text style={styles.heroIcon}>{isPlayer ? '👑' : '👹'}</Text>
-        </View>
-        <View style={[styles.healthBadge, { backgroundColor: getHealthColor() }]}>
-          <Text style={styles.healthText}>{health}</Text>
-        </View>
-        <Text style={styles.heroName}>{name}</Text>
-      </View>
-    </TouchableOpacity>
-  );
-};
-
-interface ManaViewProps {
-  current: number;
-  max: number;
-}
-
-const ManaView: React.FC<ManaViewProps> = ({ current, max }) => (
-  <View style={styles.manaContainer}>
-    {Array.from({ length: Math.min(max, 10) }).map((_, i) => (
-      <View
-        key={i}
-        style={[
-          styles.manaCrystal,
-          i < current ? styles.manaFull : styles.manaEmpty,
-        ]}
-      />
-    ))}
-    <Text style={styles.manaText}>{current}/{max}</Text>
-  </View>
-);
-
 const GameBoard: React.FC = () => {
   const { state, playCard, attackMinion, attackHero, endTurn, selectMinion } = useGame();
+  const { currentStyle, currentAnimation, cycleStyle, cycleAnimation } = useStyle();
   const [draggingCard, setDraggingCard] = useState<Card | null>(null);
   const [dragPosition, setDragPosition] = useState({ x: 0, y: 0 });
   const [message, setMessage] = useState('');
+  const [showStyleSelector, setShowStyleSelector] = useState(false);
 
   const showMessage = useCallback((msg: string) => {
     setMessage(msg);
@@ -351,98 +530,118 @@ const GameBoard: React.FC = () => {
     showMessage('结束回合');
   }, [endTurn, showMessage]);
 
-  const isMinionTargetable = (minion: Minion) => {
-    return state.phase === 'SELECTING_TARGET' && !state.player.minions.find(m => m.id === minion.id);
-  };
-
-  const isHeroTargetable = !state.player.hero.health;
+  const styleConfig = CARD_STYLES[currentStyle];
 
   return (
-    <SafeAreaView style={styles.container}>
+    <SafeAreaView style={[styles.container, { backgroundColor: styleConfig.colors.background }]}>
       <View style={styles.gameContainer}>
-        {/* 对手区域 */}
         <View style={styles.opponentSection}>
           <View style={styles.playerInfoRow}>
-            <HeroView
-              name={state.opponent.hero.name}
-              health={state.opponent.hero.health}
-              maxHealth={state.opponent.hero.maxHealth}
-              isPlayer={false}
-              isTargetable={state.phase === 'SELECTING_TARGET'}
-              onPress={() => handleHeroPress(false)}
-            />
-            <ManaView current={state.opponent.mana} max={state.opponent.maxMana} />
+            <TouchableOpacity onPress={() => handleHeroPress(false)}>
+              <View style={[styles.heroContainer]}>
+                <View style={[styles.heroAvatar, { borderColor: styleConfig.colors.accent }]}>
+                  <Text style={styles.heroIcon}>👹</Text>
+                </View>
+                <View style={[styles.healthBadge, { backgroundColor: '#F44336' }]}>
+                  <Text style={styles.healthText}>{state.opponent.hero.health}</Text>
+                </View>
+                <Text style={[styles.heroName, { color: styleConfig.colors.accent }]}>{state.opponent.hero.name}</Text>
+              </View>
+            </TouchableOpacity>
+            <View style={styles.manaContainer}>
+              {Array.from({ length: Math.min(state.opponent.maxMana, 10) }).map((_, i) => (
+                <View
+                  key={i}
+                  style={[
+                    styles.manaCrystal,
+                    { backgroundColor: i < state.opponent.mana ? styleConfig.colors.accent : '#333' },
+                  ]}
+                />
+              ))}
+            </View>
             <View style={styles.deckArea}>
-              <View style={styles.deck}>
-                <Text style={styles.deckCount}>{state.opponent.deckCount}</Text>
+              <View style={[styles.deck, { backgroundColor: styleConfig.colors.primary, borderColor: styleConfig.colors.border }]}>
+                <Text style={[styles.deckCount, { color: styleConfig.colors.text }]}>{state.opponent.deckCount}</Text>
               </View>
             </View>
           </View>
           <View style={styles.minionField}>
             {state.opponent.minions.map(m => (
-              <MinionView
+              <StyledMinion
                 key={m.id}
                 minion={m}
                 isPlayer={false}
                 isSelected={false}
-                isTargetable={isMinionTargetable(m)}
+                isTargetable={state.phase === 'SELECTING_TARGET'}
+                styleType={currentStyle}
                 onPress={() => handleMinionPress(m, false)}
               />
             ))}
           </View>
         </View>
 
-        {/* 中央区域 */}
         <View style={styles.centerSection}>
-          <Text style={styles.turnText}>
+          <Text style={[styles.turnText, { color: styleConfig.colors.accent }]}>
             {state.currentTurn === 'player' ? '你的回合' : '对手回合'}
           </Text>
-          <Text style={styles.turnNumber}>第 {state.turnNumber} 回合</Text>
+          <Text style={[styles.turnNumber, { color: styleConfig.colors.text }]}>第 {state.turnNumber} 回合</Text>
           {state.phase === 'SELECTING_TARGET' && (
             <Text style={styles.hintText}>选择攻击目标</Text>
           )}
-          {state.phase === 'IDLE' && (
-            <Text style={styles.hintText}>拖拽卡牌到上方打出</Text>
-          )}
         </View>
 
-        {/* 玩家区域 */}
         <View style={styles.playerSection}>
           <View style={styles.minionField}>
             {state.player.minions.map(m => (
-              <MinionView
+              <StyledMinion
                 key={m.id}
                 minion={m}
                 isPlayer={true}
                 isSelected={state.selectedMinionId === m.id}
                 isTargetable={false}
+                styleType={currentStyle}
                 onPress={() => handleMinionPress(m, true)}
               />
             ))}
           </View>
           <View style={styles.playerInfoRow}>
-            <HeroView
-              name={state.player.hero.name}
-              health={state.player.hero.health}
-              maxHealth={state.player.hero.maxHealth}
-              isPlayer={true}
-              isTargetable={false}
-              onPress={() => {}}
-            />
-            <ManaView current={state.player.mana} max={state.player.maxMana} />
+            <TouchableOpacity onPress={() => handleHeroPress(true)}>
+              <View style={styles.heroContainer}>
+                <View style={[styles.heroAvatar, { borderColor: styleConfig.colors.accent }]}>
+                  <Text style={styles.heroIcon}>👑</Text>
+                </View>
+                <View style={[styles.healthBadge, { backgroundColor: '#4CAF50' }]}>
+                  <Text style={styles.healthText}>{state.player.hero.health}</Text>
+                </View>
+                <Text style={[styles.heroName, { color: styleConfig.colors.accent }]}>{state.player.hero.name}</Text>
+              </View>
+            </TouchableOpacity>
+            <View style={styles.manaContainer}>
+              {Array.from({ length: Math.min(state.player.maxMana, 10) }).map((_, i) => (
+                <View
+                  key={i}
+                  style={[
+                    styles.manaCrystal,
+                    { backgroundColor: i < state.player.mana ? styleConfig.colors.accent : '#333' },
+                  ]}
+                />
+              ))}
+            </View>
             <View style={styles.deckArea}>
-              <View style={styles.deck}>
-                <Text style={styles.deckCount}>{state.player.deckCount}</Text>
+              <View style={[styles.deck, { backgroundColor: styleConfig.colors.primary, borderColor: styleConfig.colors.border }]}>
+                <Text style={[styles.deckCount, { color: styleConfig.colors.text }]}>{state.player.deckCount}</Text>
               </View>
             </View>
           </View>
           <View style={styles.handArea}>
             {state.player.hand.map((card, i) => (
-              <DraggableCard
+              <StyledCard
                 key={card.id}
                 card={card}
                 index={i}
                 isPlayable={card.cost <= state.player.mana && state.currentTurn === 'player'}
+                animationType={currentAnimation}
+                styleType={currentStyle}
                 onDragStart={handleDragStart}
                 onDragMove={handleDragMove}
                 onDragEnd={handleDragEnd}
@@ -450,13 +649,14 @@ const GameBoard: React.FC = () => {
             ))}
           </View>
           <View style={styles.actionButtons}>
-            <TouchableOpacity style={styles.heroPowerBtn} activeOpacity={0.8}>
-              <Text style={styles.btnIcon}>⭐</Text>
-              <Text style={styles.btnText}>技能</Text>
+            <TouchableOpacity style={styles.styleBtn} onPress={() => setShowStyleSelector(true)}>
+              <Text style={styles.btnIcon}>🎨</Text>
+              <Text style={styles.btnText}>风格</Text>
             </TouchableOpacity>
             <TouchableOpacity
               style={[
                 styles.endTurnBtn,
+                { backgroundColor: styleConfig.colors.accent },
                 state.currentTurn !== 'player' && styles.endTurnBtnDisabled,
               ]}
               onPress={handleEndTurn}
@@ -465,11 +665,14 @@ const GameBoard: React.FC = () => {
             >
               <Text style={styles.endTurnText}>结束回合</Text>
             </TouchableOpacity>
+            <TouchableOpacity style={styles.styleBtn} onPress={cycleAnimation}>
+              <Text style={styles.btnIcon}>✨</Text>
+              <Text style={styles.btnText}>动画</Text>
+            </TouchableOpacity>
           </View>
         </View>
       </View>
 
-      {/* 拖拽中的卡牌 */}
       {draggingCard && (
         <View
           style={[
@@ -481,10 +684,10 @@ const GameBoard: React.FC = () => {
           ]}
           pointerEvents="none"
         >
-          <View style={[styles.card, styles.cardPlayable, styles.cardDragging]}>
+          <View style={[styles.card, { backgroundColor: styleConfig.colors.primary, borderColor: styleConfig.colors.accent }]}>
             <View style={styles.cardHeader}>
-              <Text style={styles.cardName}>{draggingCard.name}</Text>
-              <View style={styles.cardCost}>
+              <Text style={[styles.cardName, { color: styleConfig.colors.text }]}>{draggingCard.name}</Text>
+              <View style={[styles.cardCost, { backgroundColor: styleConfig.colors.accent }]}>
                 <Text style={styles.cardCostText}>{draggingCard.cost}</Text>
               </View>
             </View>
@@ -493,10 +696,10 @@ const GameBoard: React.FC = () => {
                 {draggingCard.type === CardType.MINION ? '⚔️' : '✨'}
               </Text>
             </View>
-            <Text style={styles.cardDesc}>{draggingCard.description}</Text>
+            <Text style={[styles.cardDesc, { color: styleConfig.colors.text }]}>{draggingCard.description}</Text>
             {draggingCard.type === CardType.MINION && (
               <View style={styles.cardStats}>
-                <View style={styles.statBadge}>
+                <View style={[styles.statBadge, { backgroundColor: '#FFC107' }]}>
                   <Text style={styles.statText}>{draggingCard.attack}</Text>
                 </View>
                 <View style={[styles.statBadge, styles.healthStat]}>
@@ -508,31 +711,21 @@ const GameBoard: React.FC = () => {
         </View>
       )}
 
-      {/* 消息提示 */}
       {message ? (
         <View style={styles.messageOverlay} pointerEvents="none">
-          <View style={styles.messageBox}>
-            <Text style={styles.messageText}>{message}</Text>
+          <View style={[styles.messageBox, { backgroundColor: styleConfig.colors.primary }]}>
+            <Text style={[styles.messageText, { color: styleConfig.colors.text }]}>{message}</Text>
           </View>
         </View>
       ) : null}
 
-      {/* 游戏结束 */}
-      {state.gameOver && (
-        <View style={styles.gameOverOverlay}>
-          <View style={styles.gameOverBox}>
-            <Text style={styles.gameOverText}>
-              {state.winner === 'player' ? '🎉 胜利!' : '💔 失败!'}
-            </Text>
-            <TouchableOpacity
-              style={styles.restartBtn}
-              onPress={() => {}}
-            >
-              <Text style={styles.restartText}>再来一局</Text>
-            </TouchableOpacity>
-          </View>
-        </View>
-      )}
+      <StyleSelector visible={showStyleSelector} onClose={() => setShowStyleSelector(false)} />
+
+      <View style={styles.styleIndicator}>
+        <Text style={[styles.styleIndicatorText, { color: styleConfig.colors.text }]}>
+          风格: {styleConfig.name} | 动画: {ANIMATION_CONFIGS[currentAnimation].name}
+        </Text>
+      </View>
     </SafeAreaView>
   );
 };
@@ -540,7 +733,9 @@ const GameBoard: React.FC = () => {
 const App: React.FC = () => {
   return (
     <GameProvider>
-      <GameBoard />
+      <StyleProvider>
+        <GameBoard />
+      </StyleProvider>
     </GameProvider>
   );
 };
@@ -548,7 +743,6 @@ const App: React.FC = () => {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: COLORS.background,
   },
   gameContainer: {
     flex: 1,
@@ -573,16 +767,15 @@ const styles = StyleSheet.create({
   turnText: {
     fontSize: 20,
     fontWeight: 'bold',
-    color: COLORS.gold,
   },
   turnNumber: {
     fontSize: 14,
-    color: COLORS.gray,
+    color: '#888',
     marginTop: 5,
   },
   hintText: {
     fontSize: 12,
-    color: COLORS.green,
+    color: '#4CAF50',
     marginTop: 5,
   },
   heroContainer: {
@@ -595,16 +788,8 @@ const styles = StyleSheet.create({
     borderRadius: 30,
     backgroundColor: '#8B4513',
     borderWidth: 3,
-    borderColor: COLORS.gold,
     justifyContent: 'center',
     alignItems: 'center',
-  },
-  heroTargetable: {
-    borderColor: COLORS.red,
-    shadowColor: COLORS.red,
-    shadowOffset: { width: 0, height: 0 },
-    shadowOpacity: 0.8,
-    shadowRadius: 10,
   },
   heroIcon: {
     fontSize: 28,
@@ -618,17 +803,16 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
     alignItems: 'center',
     borderWidth: 2,
-    borderColor: COLORS.white,
+    borderColor: '#fff',
   },
   healthText: {
     fontSize: 12,
     fontWeight: 'bold',
-    color: COLORS.white,
+    color: '#fff',
   },
   heroName: {
     marginTop: 10,
     fontSize: 12,
-    color: COLORS.gold,
     fontWeight: 'bold',
   },
   manaContainer: {
@@ -642,18 +826,6 @@ const styles = StyleSheet.create({
     borderRadius: 2,
     marginHorizontal: 1,
   },
-  manaFull: {
-    backgroundColor: COLORS.blue,
-  },
-  manaEmpty: {
-    backgroundColor: '#333',
-  },
-  manaText: {
-    marginLeft: 5,
-    fontSize: 12,
-    color: COLORS.blue,
-    fontWeight: 'bold',
-  },
   minionField: {
     flexDirection: 'row',
     justifyContent: 'center',
@@ -664,24 +836,19 @@ const styles = StyleSheet.create({
   minion: {
     width: 60,
     height: 75,
-    backgroundColor: COLORS.minionBg,
-    borderRadius: 6,
     borderWidth: 2,
-    borderColor: '#666',
     marginHorizontal: 3,
     padding: 3,
     alignItems: 'center',
   },
   minionSelected: {
-    borderColor: COLORS.gold,
-    shadowColor: COLORS.gold,
+    shadowColor: '#FFD700',
     shadowOffset: { width: 0, height: 0 },
     shadowOpacity: 0.8,
     shadowRadius: 5,
   },
   minionTargetable: {
-    borderColor: COLORS.red,
-    shadowColor: COLORS.red,
+    shadowColor: '#F44336',
     shadowOffset: { width: 0, height: 0 },
     shadowOpacity: 0.8,
     shadowRadius: 5,
@@ -693,7 +860,6 @@ const styles = StyleSheet.create({
     right: -5,
     bottom: -5,
     borderRadius: 10,
-    backgroundColor: 'rgba(255, 215, 0, 0.3)',
   },
   minionImage: {
     flex: 1,
@@ -705,7 +871,6 @@ const styles = StyleSheet.create({
   },
   minionName: {
     fontSize: 8,
-    color: COLORS.white,
     fontWeight: 'bold',
   },
   minionStats: {
@@ -715,18 +880,17 @@ const styles = StyleSheet.create({
     width: 16,
     height: 16,
     borderRadius: 8,
-    backgroundColor: '#FFC107',
     justifyContent: 'center',
     alignItems: 'center',
     marginHorizontal: 1,
   },
   healthStat: {
-    backgroundColor: COLORS.red,
+    backgroundColor: '#F44336',
   },
   statText: {
     fontSize: 9,
     fontWeight: 'bold',
-    color: COLORS.white,
+    color: '#fff',
   },
   handArea: {
     flexDirection: 'row',
@@ -742,29 +906,10 @@ const styles = StyleSheet.create({
   card: {
     width: CARD_WIDTH,
     height: CARD_HEIGHT,
-    backgroundColor: COLORS.cardBg,
-    borderRadius: 6,
-    borderWidth: 2,
-    borderColor: COLORS.white,
     padding: 4,
-  },
-  cardPlayable: {
-    borderColor: COLORS.green,
-    shadowColor: COLORS.green,
-    shadowOffset: { width: 0, height: 0 },
-    shadowOpacity: 0.5,
-    shadowRadius: 5,
   },
   cardDisabled: {
     opacity: 0.5,
-  },
-  cardDragging: {
-    transform: [{ scale: 1.2 }],
-    shadowColor: '#000',
-    shadowOffset: { width: 0, height: 10 },
-    shadowOpacity: 0.5,
-    shadowRadius: 20,
-    elevation: 10,
   },
   cardHeader: {
     flexDirection: 'row',
@@ -774,21 +919,19 @@ const styles = StyleSheet.create({
   cardName: {
     fontSize: 9,
     fontWeight: 'bold',
-    color: COLORS.white,
     flex: 1,
   },
   cardCost: {
     width: 16,
     height: 16,
     borderRadius: 8,
-    backgroundColor: COLORS.blue,
     justifyContent: 'center',
     alignItems: 'center',
   },
   cardCostText: {
     fontSize: 10,
     fontWeight: 'bold',
-    color: COLORS.white,
+    color: '#fff',
   },
   cardImage: {
     flex: 1,
@@ -800,7 +943,6 @@ const styles = StyleSheet.create({
   },
   cardDesc: {
     fontSize: 7,
-    color: COLORS.gray,
     textAlign: 'center',
   },
   cardStats: {
@@ -815,17 +957,13 @@ const styles = StyleSheet.create({
   deck: {
     width: 40,
     height: 55,
-    backgroundColor: '#4a4a5a',
-    borderRadius: 4,
     borderWidth: 2,
-    borderColor: '#666',
     justifyContent: 'center',
     alignItems: 'center',
   },
   deckCount: {
     fontSize: 14,
     fontWeight: 'bold',
-    color: COLORS.white,
   },
   actionButtons: {
     flexDirection: 'row',
@@ -833,13 +971,13 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     paddingVertical: 5,
   },
-  heroPowerBtn: {
+  styleBtn: {
     width: 50,
     height: 50,
     borderRadius: 25,
     backgroundColor: '#8B4513',
     borderWidth: 2,
-    borderColor: COLORS.gold,
+    borderColor: '#FFD700',
     justifyContent: 'center',
     alignItems: 'center',
     marginHorizontal: 10,
@@ -849,24 +987,23 @@ const styles = StyleSheet.create({
   },
   btnText: {
     fontSize: 8,
-    color: COLORS.white,
+    color: '#fff',
   },
   endTurnBtn: {
-    backgroundColor: COLORS.green,
     paddingVertical: 8,
     paddingHorizontal: 20,
     borderRadius: 15,
     borderWidth: 2,
-    borderColor: COLORS.white,
+    borderColor: '#fff',
     marginHorizontal: 10,
   },
   endTurnBtnDisabled: {
-    backgroundColor: COLORS.gray,
+    backgroundColor: '#888',
   },
   endTurnText: {
     fontSize: 14,
     fontWeight: 'bold',
-    color: COLORS.white,
+    color: '#fff',
   },
   draggingCard: {
     position: 'absolute',
@@ -885,48 +1022,128 @@ const styles = StyleSheet.create({
     backgroundColor: 'transparent',
   },
   messageBox: {
-    backgroundColor: 'rgba(0, 0, 0, 0.8)',
     paddingHorizontal: 20,
     paddingVertical: 10,
     borderRadius: 10,
   },
   messageText: {
-    color: COLORS.white,
     fontSize: 16,
     fontWeight: 'bold',
   },
-  gameOverOverlay: {
+  glowRing: {
     position: 'absolute',
-    top: 0,
-    left: 0,
-    right: 0,
-    bottom: 0,
-    justifyContent: 'center',
-    alignItems: 'center',
+    top: -10,
+    left: -10,
+    right: -10,
+    bottom: -10,
+    borderRadius: 20,
+    borderWidth: 2,
+  },
+  modalOverlay: {
+    flex: 1,
     backgroundColor: 'rgba(0, 0, 0, 0.8)',
+    justifyContent: 'flex-end',
   },
-  gameOverBox: {
-    backgroundColor: COLORS.cardBg,
-    padding: 30,
-    borderRadius: 15,
-    alignItems: 'center',
+  modalContent: {
+    backgroundColor: '#1a1a2e',
+    borderTopLeftRadius: 20,
+    borderTopRightRadius: 20,
+    padding: 20,
+    maxHeight: height * 0.6,
   },
-  gameOverText: {
-    fontSize: 32,
+  modalTitle: {
+    fontSize: 20,
     fontWeight: 'bold',
-    color: COLORS.gold,
+    color: '#FFD700',
+    textAlign: 'center',
     marginBottom: 20,
   },
-  restartBtn: {
-    backgroundColor: COLORS.green,
-    paddingVertical: 12,
-    paddingHorizontal: 30,
-    borderRadius: 10,
+  sectionTitle: {
+    fontSize: 14,
+    fontWeight: 'bold',
+    color: '#fff',
+    marginBottom: 10,
   },
-  restartText: {
+  styleScroll: {
+    marginBottom: 20,
+  },
+  styleItem: {
+    width: 80,
+    height: 100,
+    marginRight: 10,
+    borderRadius: 8,
+    borderWidth: 2,
+    padding: 5,
+    alignItems: 'center',
+    backgroundColor: '#2a2a3a',
+  },
+  styleItemSelected: {
+    borderWidth: 3,
+    borderColor: '#FFD700',
+  },
+  stylePreview: {
+    width: 60,
+    height: 60,
+    borderRadius: 4,
+    justifyContent: 'center',
+    alignItems: 'center',
+  },
+  stylePreviewInner: {
+    width: 40,
+    height: 40,
+    borderRadius: 4,
+  },
+  styleName: {
+    fontSize: 10,
+    fontWeight: 'bold',
+    marginTop: 5,
+  },
+  animItem: {
+    width: 70,
+    height: 80,
+    marginRight: 10,
+    borderRadius: 8,
+    borderWidth: 1,
+    borderColor: '#444',
+    padding: 5,
+    alignItems: 'center',
+    justifyContent: 'center',
+    backgroundColor: '#2a2a3a',
+  },
+  animItemSelected: {
+    borderWidth: 2,
+    borderColor: '#FFD700',
+  },
+  animIcon: {
+    fontSize: 24,
+    marginBottom: 5,
+  },
+  animName: {
+    fontSize: 10,
+    color: '#fff',
+    textAlign: 'center',
+  },
+  closeButton: {
+    backgroundColor: '#4CAF50',
+    paddingVertical: 12,
+    borderRadius: 10,
+    alignItems: 'center',
+  },
+  closeButtonText: {
     fontSize: 16,
     fontWeight: 'bold',
-    color: COLORS.white,
+    color: '#fff',
+  },
+  styleIndicator: {
+    position: 'absolute',
+    bottom: 5,
+    left: 0,
+    right: 0,
+    alignItems: 'center',
+  },
+  styleIndicatorText: {
+    fontSize: 10,
+    opacity: 0.7,
   },
 });
 
