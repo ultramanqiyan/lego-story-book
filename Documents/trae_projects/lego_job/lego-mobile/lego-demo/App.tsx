@@ -1,251 +1,596 @@
 import React from 'react';
-import { View, StyleSheet, Text, Modal, Pressable, ScrollView, SafeAreaView } from 'react-native';
-import Battlefield from './src/components/Battlefield';
-import PlayerInfo from './src/components/PlayerInfo';
-import HandCards from './src/components/HandCards';
-import MinionField from './src/components/MinionField';
-import DeckArea from './src/components/DeckArea';
-import ActionButtons from './src/components/ActionButtons';
-import { GameProvider, useGame } from './src/context/GameState';
-import { logger } from './src/utils/Logger';
-import { Card, Minion as MinionType } from './src/types';
+import { View, Text, StyleSheet, SafeAreaView, TouchableOpacity, Dimensions } from 'react-native';
 
-const GameScreen: React.FC = () => {
-  const { state, playCard, attackMinion, attackHero, endTurn, useHeroPower } = useGame();
-  const [selectedCard, setSelectedCard] = React.useState<Card | null>(null);
-  const [selectedMinion, setSelectedMinion] = React.useState<MinionType | null>(null);
+const { width, height } = Dimensions.get('window');
 
-  const handleCardPlay = (card: Card, position?: { x: number; y: number }) => {
-    if (card.cost <= state.player.mana.current) {
-      playCard(card.id);
-      setSelectedCard(null);
-    } else {
-      logger.warn('法力不足，无法打出卡牌', { cardName: card.name, cost: card.cost, currentMana: state.player.mana.current });
-    }
-  };
+const COLORS = {
+  background: '#1a1a2e',
+  gold: '#ffd700',
+  blue: '#2196F3',
+  green: '#4CAF50',
+  red: '#F44336',
+  white: '#ffffff',
+  gray: '#888888',
+  cardBg: '#2a2a3a',
+  minionBg: '#3a3a4a',
+};
 
-  const handleMinionSelect = (minion: MinionType) => {
-    if (selectedMinion) {
-      if (selectedMinion.id !== minion.id) {
-        attackMinion(selectedMinion.id, minion.id);
-      }
-      setSelectedMinion(null);
-    } else {
-      setSelectedMinion(minion);
-    }
-  };
+interface Card {
+  id: string;
+  name: string;
+  type: 'MINION' | 'SPELL';
+  cost: number;
+  attack?: number;
+  health?: number;
+  description: string;
+}
 
-  const handleMinionAttack = (minionId: string) => {
-    const minion = state.player.minions.find(m => m.id === minionId);
-    if (minion) {
-      setSelectedMinion(minion);
-    }
-  };
+interface Minion {
+  id: string;
+  name: string;
+  attack: number;
+  health: number;
+  maxHealth: number;
+  canAttack: boolean;
+}
 
-  const handleHeroAttack = () => {
-    if (selectedMinion) {
-      attackHero(selectedMinion.id);
-      setSelectedMinion(null);
-    }
-  };
+interface Hero {
+  name: string;
+  health: number;
+  maxHealth: number;
+}
 
-  const handleEndTurn = () => {
-    setSelectedMinion(null);
-    endTurn();
-  };
+interface GameState {
+  playerHero: Hero;
+  opponentHero: Hero;
+  playerMana: number;
+  opponentMana: number;
+  maxMana: number;
+  playerHand: Card[];
+  opponentHand: Card[];
+  playerMinions: Minion[];
+  opponentMinions: Minion[];
+  playerDeck: number;
+  opponentDeck: number;
+  currentTurn: 'player' | 'opponent';
+  turnNumber: number;
+}
 
-  return (
-    <Battlefield>
-      <View style={styles.gameContainer}>
-        <View style={styles.opponentSection}>
-          <PlayerInfo
-            player={state.opponent}
-            isPlayer={false}
-            onHeroAttack={handleHeroAttack}
-          />
-          <MinionField
-            minions={state.opponent.minions}
-            isPlayerField={false}
-            onMinionSelect={handleMinionSelect}
-          />
-          <DeckArea
-            deckCount={state.opponent.deck.length}
-            graveyardCount={state.opponent.graveyard.length}
-            isPlayer={false}
-          />
-        </View>
-
-        <View style={styles.centerSection}>
-          <Text style={styles.turnIndicator}>
-            {state.currentTurn === 'player' ? '你的回合' : '对手回合'}
-          </Text>
-          {state.gameOver && (
-            <Text style={styles.gameOverText}>
-              {state.winner === 'player' ? '你赢了！' : '你输了！'}
-            </Text>
-          )}
-        </View>
-
-        <View style={styles.playerSection}>
-          <DeckArea
-            deckCount={state.player.deck.length}
-            graveyardCount={state.player.graveyard.length}
-            isPlayer={true}
-          />
-          <MinionField
-            minions={state.player.minions}
-            isPlayerField={true}
-            onMinionSelect={handleMinionSelect}
-            onMinionAttack={handleMinionAttack}
-          />
-          <HandCards
-            cards={state.player.hand}
-            isPlayer={true}
-            onCardPlay={handleCardPlay}
-            onCardSelect={setSelectedCard}
-          />
-          <PlayerInfo
-            player={state.player}
-            isPlayer={true}
-          />
-          <ActionButtons
-            onHeroPower={useHeroPower}
-            onEndTurn={handleEndTurn}
-            isPlayerTurn={state.currentTurn === 'player'}
-            heroPowerAvailable={true}
-            heroPowerCost={2}
-            currentMana={state.player.mana.current}
-          />
-        </View>
-      </View>
-
-      {selectedCard && (
-        <Modal
-          visible={!!selectedCard}
-          transparent
-          animationType="fade"
-          onRequestClose={() => setSelectedCard(null)}
-        >
-          <Pressable
-            style={styles.modalOverlay}
-            onPress={() => setSelectedCard(null)}
-          >
-            <View style={styles.cardDetail}>
-              <Text style={styles.cardName}>{selectedCard.name}</Text>
-              <Text style={styles.cardCost}>法力消耗: {selectedCard.cost}</Text>
-              <Text style={styles.cardDescription}>{selectedCard.description}</Text>
-              {selectedCard.type === 'MINION' && (
-                <>
-                  <Text style={styles.cardStats}>攻击力: {selectedCard.attack}</Text>
-                  <Text style={styles.cardStats}>生命值: {selectedCard.health}</Text>
-                </>
-              )}
-              <Pressable
-                style={styles.closeButton}
-                onPress={() => setSelectedCard(null)}
-              >
-                <Text style={styles.closeButtonText}>关闭</Text>
-              </Pressable>
-            </View>
-          </Pressable>
-        </Modal>
-      )}
-    </Battlefield>
-  );
+const initialState: GameState = {
+  playerHero: { name: '玩家', health: 30, maxHealth: 30 },
+  opponentHero: { name: '对手', health: 30, maxHealth: 30 },
+  playerMana: 3,
+  opponentMana: 4,
+  maxMana: 10,
+  playerHand: [
+    { id: '1', name: '小精灵', type: 'MINION', cost: 1, attack: 1, health: 1, description: '可爱的小精灵' },
+    { id: '2', name: '火球术', type: 'SPELL', cost: 3, description: '造成6点伤害' },
+    { id: '3', name: '战士', type: 'MINION', cost: 2, attack: 2, health: 3, description: '勇敢的战士' },
+  ],
+  opponentHand: [
+    { id: '4', name: '未知卡牌', type: 'MINION', cost: 2, attack: 2, health: 2, description: '?' },
+    { id: '5', name: '未知卡牌', type: 'MINION', cost: 3, attack: 3, health: 3, description: '?' },
+  ],
+  playerMinions: [
+    { id: 'm1', name: '小精灵', attack: 1, health: 1, maxHealth: 1, canAttack: true },
+    { id: 'm2', name: '龙骑士', attack: 5, health: 5, maxHealth: 5, canAttack: true },
+  ],
+  opponentMinions: [
+    { id: 'm3', name: '战士', attack: 2, health: 3, maxHealth: 3, canAttack: false },
+    { id: 'm4', name: '铁甲卫士', attack: 3, health: 5, maxHealth: 5, canAttack: false },
+  ],
+  playerDeck: 5,
+  opponentDeck: 10,
+  currentTurn: 'player',
+  turnNumber: 3,
 };
 
 const App: React.FC = () => {
+  const [state, setState] = React.useState<GameState>(initialState);
+  const [message, setMessage] = React.useState<string>('');
+
+  const handlePlayCard = (card: Card) => {
+    const logMsg = `点击卡牌: ${card.name} (费用: ${card.cost})`;
+    console.log(logMsg);
+    setMessage(logMsg);
+    
+    if (card.cost > state.playerMana) {
+      setMessage(`法力不足! 需要 ${card.cost} 法力，当前只有 ${state.playerMana} 法力`);
+      return;
+    }
+    
+    setState(prev => ({
+      ...prev,
+      playerMana: prev.playerMana - card.cost,
+      playerHand: prev.playerHand.filter(c => c.id !== card.id),
+      playerMinions: card.type === 'MINION' 
+        ? [...prev.playerMinions,            { 
+              id: `summoned_${Date.now()}`, 
+              name: card.name, 
+              attack: card.attack || 0, 
+              health: card.health || 0, 
+              maxHealth: card.health || 0,
+              canAttack: false 
+            }]
+        : prev.playerMinions,
+    }));
+  };
+
+  const handleSelectMinion = (minion: Minion) => {
+    const logMsg = `点击随从: ${minion.name}`;
+    console.log(logMsg);
+    setMessage(logMsg);
+  };
+
+  const handleEndTurn = () => {
+    const logMsg = '点击结束回合按钮';
+    console.log(logMsg);
+    setMessage(logMsg);
+    const newMaxMana = Math.min(10, state.maxMana + 1);
+    setState(prev => ({
+      ...prev,
+      currentTurn: prev.currentTurn === 'player' ? 'opponent' : 'player',
+      turnNumber: prev.turnNumber + 1,
+      maxMana: newMaxMana,
+      playerMana: newMaxMana,
+      playerMinions: prev.playerMinions.map(m => ({ ...m, canAttack: true })),
+    }));
+  };
+
   return (
-    <GameProvider>
-      <SafeAreaView style={styles.container}>
-        <GameScreen />
-      </SafeAreaView>
-    </GameProvider>
+    <SafeAreaView style={styles.container}>
+      <View style={styles.gameContainer}>
+        <View style={styles.opponentSection}>
+          <View style={styles.playerInfoRow}>
+            <View style={styles.heroContainer}>
+              <View style={styles.heroAvatar}>
+                <Text style={styles.heroIcon}>👹</Text>
+              </View>
+              <View style={[styles.healthBadge, { backgroundColor: COLORS.red }]}>
+                <Text style={styles.healthText}>{state.opponentHero.health}</Text>
+              </View>
+              <Text style={styles.heroName}>{state.opponentHero.name}</Text>
+            </View>
+            <View style={styles.manaContainer}>
+              {Array.from({ length: state.maxMana }).map((_, i) => (
+                <View key={i} style={[styles.manaCrystal, i < state.opponentMana ? styles.manaFull : styles.manaEmpty]} />
+              ))}
+              <Text style={styles.manaText}>{state.opponentMana}/{state.maxMana}</Text>
+            </View>
+            <View style={styles.deckArea}>
+              <View style={styles.deck}>
+                <Text style={styles.deckCount}>{state.opponentDeck}</Text>
+              </View>
+            </View>
+          </View>
+          <View style={styles.minionField}>
+            {state.opponentMinions.map(m => (
+              <TouchableOpacity 
+                key={m.id} 
+                style={styles.minion} 
+                onPress={() => handleSelectMinion(m)}
+                activeOpacity={0.8}
+              >
+                <View style={styles.minionImage}>
+                  <Text style={styles.minionIcon}>👹</Text>
+                </View>
+                <Text style={styles.minionName}>{m.name}</Text>
+                <View style={styles.minionStats}>
+                  <View style={styles.statBadge}>
+                    <Text style={styles.statText}>{m.attack}</Text>
+                  </View>
+                  <View style={[styles.statBadge, styles.healthStat]}>
+                    <Text style={styles.statText}>{m.health}</Text>
+                  </View>
+                </View>
+              </TouchableOpacity>
+            ))}
+          </View>
+        </View>
+
+        <View style={styles.centerSection}>
+          <Text style={styles.turnText}>
+            {state.currentTurn === 'player' ? '你的回合' : '对手回合'}
+          </Text>
+          <Text style={styles.turnNumber}>第 {state.turnNumber} 回合</Text>
+        </View>
+
+        <View style={styles.playerSection}>
+          <View style={styles.minionField}>
+            {state.playerMinions.map(m => (
+              <TouchableOpacity 
+                key={m.id} 
+                style={[styles.minion, m.canAttack && styles.minionCanAttack]} 
+                onPress={() => handleSelectMinion(m)}
+                activeOpacity={0.8}
+              >
+                <View style={styles.minionImage}>
+                  <Text style={styles.minionIcon}>👹</Text>
+                </View>
+                <Text style={styles.minionName}>{m.name}</Text>
+                <View style={styles.minionStats}>
+                  <View style={styles.statBadge}>
+                    <Text style={styles.statText}>{m.attack}</Text>
+                  </View>
+                  <View style={[styles.statBadge, styles.healthStat]}>
+                    <Text style={styles.statText}>{m.health}</Text>
+                  </View>
+                </View>
+              </TouchableOpacity>
+            ))}
+          </View>
+          <View style={styles.playerInfoRow}>
+            <View style={styles.heroContainer}>
+              <View style={styles.heroAvatar}>
+                <Text style={styles.heroIcon}>👑</Text>
+              </View>
+              <View style={[styles.healthBadge, { backgroundColor: COLORS.green }]}>
+                <Text style={styles.healthText}>{state.playerHero.health}</Text>
+              </View>
+              <Text style={styles.heroName}>{state.playerHero.name}</Text>
+            </View>
+            <View style={styles.manaContainer}>
+              {Array.from({ length: state.maxMana }).map((_, i) => (
+                <View key={i} style={[styles.manaCrystal, i < state.playerMana ? styles.manaFull : styles.manaEmpty]} />
+              ))}
+              <Text style={styles.manaText}>{state.playerMana}/{state.maxMana}</Text>
+            </View>
+            <View style={styles.deckArea}>
+              <View style={styles.deck}>
+                <Text style={styles.deckCount}>{state.playerDeck}</Text>
+              </View>
+            </View>
+          </View>
+          <View style={styles.handArea}>
+            {state.playerHand.map((card, i) => (
+              <TouchableOpacity 
+                key={card.id} 
+                style={[
+                  styles.card, 
+                  { 
+                    marginLeft: i === 0 ? 0 : -20,
+                    zIndex: i + 100,
+                  }
+                ]} 
+                onPress={() => handlePlayCard(card)}
+                activeOpacity={0.8}
+              >
+                <View style={styles.cardHeader}>
+                  <Text style={styles.cardName}>{card.name}</Text>
+                  <View style={styles.cardCost}>
+                    <Text style={styles.cardCostText}>{card.cost}</Text>
+                  </View>
+                </View>
+                <View style={styles.cardImage}>
+                  <Text style={styles.cardIcon}>{card.type === 'MINION' ? '⚔️' : '✨'}</Text>
+                </View>
+                <Text style={styles.cardDesc}>{card.description}</Text>
+                {card.type === 'MINION' && (
+                  <View style={styles.cardStats}>
+                    <View style={styles.statBadge}>
+                      <Text style={styles.statText}>{card.attack}</Text>
+                    </View>
+                    <View style={[styles.statBadge, styles.healthStat]}>
+                      <Text style={styles.statText}>{card.health}</Text>
+                    </View>
+                  </View>
+                )}
+              </TouchableOpacity>
+            ))}
+          </View>
+          <View style={styles.actionButtons}>
+            <TouchableOpacity style={styles.heroPowerBtn} activeOpacity={0.8}>
+              <Text style={styles.btnIcon}>⭐</Text>
+              <Text style={styles.btnText}>技能</Text>
+            </TouchableOpacity>
+            <TouchableOpacity style={styles.endTurnBtn} onPress={handleEndTurn} activeOpacity={0.8}>
+              <Text style={styles.endTurnText}>结束回合</Text>
+            </TouchableOpacity>
+          </View>
+        </View>
+      </View>
+      
+      {message ? (
+        <View style={styles.messageOverlay}>
+          <View style={styles.messageBox}>
+            <Text style={styles.messageText}>{message}</Text>
+          </View>
+        </View>
+      ) : null}
+    </SafeAreaView>
   );
 };
 
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: '#1a1a2e',
+    backgroundColor: COLORS.background,
   },
   gameContainer: {
     flex: 1,
     justifyContent: 'space-between',
   },
   opponentSection: {
-    paddingVertical: 10,
+    padding: 10,
   },
   playerSection: {
-    paddingVertical: 10,
+    padding: 10,
+  },
+  playerInfoRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'center',
+    paddingHorizontal: 10,
   },
   centerSection: {
-    flex: 1,
-    justifyContent: 'center',
     alignItems: 'center',
+    paddingVertical: 10,
   },
-  turnIndicator: {
+  turnText: {
     fontSize: 20,
     fontWeight: 'bold',
-    color: '#FFD700',
-    textShadowColor: '#000',
-    textShadowOffset: { width: 2, height: 2 },
-    textShadowRadius: 3,
+    color: COLORS.gold,
   },
-  gameOverText: {
-    fontSize: 32,
-    fontWeight: 'bold',
-    color: '#FFD700',
-    marginTop: 10,
-    textShadowColor: '#000',
-    textShadowOffset: { width: 2, height: 2 },
-    textShadowRadius: 3,
+  turnNumber: {
+    fontSize: 14,
+    color: COLORS.gray,
+    marginTop: 5,
   },
-  modalOverlay: {
-    flex: 1,
-    backgroundColor: 'rgba(0, 0, 0, 0.7)',
+  heroContainer: {
+    alignItems: 'center',
+    marginHorizontal: 10,
+  },
+  heroAvatar: {
+    width: 60,
+    height: 60,
+    borderRadius: 30,
+    backgroundColor: '#8B4513',
+    borderWidth: 3,
+    borderColor: COLORS.gold,
     justifyContent: 'center',
     alignItems: 'center',
   },
-  cardDetail: {
-    backgroundColor: '#2a2a3a',
-    padding: 20,
-    borderRadius: 10,
-    width: '80%',
-    maxWidth: 300,
+  heroIcon: {
+    fontSize: 28,
+  },
+  healthBadge: {
+    position: 'absolute',
+    bottom: -5,
+    width: 28,
+    height: 28,
+    borderRadius: 14,
+    justifyContent: 'center',
+    alignItems: 'center',
     borderWidth: 2,
-    borderColor: '#FFD700',
+    borderColor: COLORS.white,
   },
-  cardName: {
-    fontSize: 24,
+  healthText: {
+    fontSize: 12,
     fontWeight: 'bold',
-    color: '#FFD700',
-    marginBottom: 10,
+    color: COLORS.white,
   },
-  cardCost: {
-    fontSize: 16,
-    color: '#2196F3',
-    marginBottom: 10,
-  },
-  cardDescription: {
-    fontSize: 14,
-    color: '#fff',
-    marginBottom: 10,
-  },
-  cardStats: {
-    fontSize: 14,
-    color: '#fff',
-    marginBottom: 5,
-  },
-  closeButton: {
-    backgroundColor: '#4CAF50',
-    padding: 10,
-    borderRadius: 5,
+  heroName: {
     marginTop: 10,
+    fontSize: 12,
+    color: COLORS.gold,
+    fontWeight: 'bold',
+  },
+  manaContainer: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    marginHorizontal: 10,
+  },
+  manaCrystal: {
+    width: 10,
+    height: 14,
+    borderRadius: 2,
+    marginHorizontal: 1,
+  },
+  manaFull: {
+    backgroundColor: COLORS.blue,
+  },
+  manaEmpty: {
+    backgroundColor: '#333',
+  },
+  manaText: {
+    marginLeft: 5,
+    fontSize: 12,
+    color: COLORS.blue,
+    fontWeight: 'bold',
+  },
+  minionField: {
+    flexDirection: 'row',
+    justifyContent: 'center',
+    alignItems: 'center',
+    paddingVertical: 10,
+    minHeight: 80,
+  },
+  minion: {
+    width: 60,
+    height: 75,
+    backgroundColor: COLORS.minionBg,
+    borderRadius: 6,
+    borderWidth: 2,
+    borderColor: '#666',
+    marginHorizontal: 3,
+    padding: 3,
     alignItems: 'center',
   },
-  closeButtonText: {
-    color: '#fff',
+  minionCanAttack: {
+    borderColor: COLORS.green,
+    shadowColor: COLORS.green,
+    shadowOffset: { width: 0, height: 0 },
+    shadowOpacity: 0.8,
+    shadowRadius: 5,
+  },
+  minionImage: {
+    flex: 1,
+    justifyContent: 'center',
+    alignItems: 'center',
+  },
+  minionIcon: {
+    fontSize: 22,
+  },
+  minionName: {
+    fontSize: 8,
+    color: COLORS.white,
+    fontWeight: 'bold',
+  },
+  minionStats: {
+    flexDirection: 'row',
+  },
+  statBadge: {
+    width: 16,
+    height: 16,
+    borderRadius: 8,
+    backgroundColor: '#FFC107',
+    justifyContent: 'center',
+    alignItems: 'center',
+    marginHorizontal: 1,
+  },
+  healthStat: {
+    backgroundColor: COLORS.red,
+  },
+  statText: {
+    fontSize: 9,
+    fontWeight: 'bold',
+    color: COLORS.white,
+  },
+  handArea: {
+    flexDirection: 'row',
+    justifyContent: 'center',
+    alignItems: 'center',
+    paddingVertical: 5,
+    minHeight: 100,
+  },
+  card: {
+    width: 70,
+    height: 100,
+    backgroundColor: COLORS.cardBg,
+    borderRadius: 6,
+    borderWidth: 2,
+    borderColor: COLORS.white,
+    padding: 4,
+  },
+  cardHeader: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+  },
+  cardName: {
+    fontSize: 9,
+    fontWeight: 'bold',
+    color: COLORS.white,
+    flex: 1,
+  },
+  cardCost: {
+    width: 16,
+    height: 16,
+    borderRadius: 8,
+    backgroundColor: COLORS.blue,
+    justifyContent: 'center',
+    alignItems: 'center',
+  },
+  cardCostText: {
+    fontSize: 10,
+    fontWeight: 'bold',
+    color: COLORS.white,
+  },
+  cardImage: {
+    flex: 1,
+    justifyContent: 'center',
+    alignItems: 'center',
+  },
+  cardIcon: {
+    fontSize: 24,
+  },
+  cardDesc: {
+    fontSize: 7,
+    color: COLORS.gray,
+    textAlign: 'center',
+  },
+  cardStats: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    marginTop: 2,
+  },
+  deckArea: {
+    alignItems: 'center',
+    marginHorizontal: 10,
+  },
+  deck: {
+    width: 40,
+    height: 55,
+    backgroundColor: '#4a4a5a',
+    borderRadius: 4,
+    borderWidth: 2,
+    borderColor: '#666',
+    justifyContent: 'center',
+    alignItems: 'center',
+  },
+  deckCount: {
+    fontSize: 14,
+    fontWeight: 'bold',
+    color: COLORS.white,
+  },
+  actionButtons: {
+    flexDirection: 'row',
+    justifyContent: 'center',
+    alignItems: 'center',
+    paddingVertical: 5,
+  },
+  heroPowerBtn: {
+    width: 50,
+    height: 50,
+    borderRadius: 25,
+    backgroundColor: '#8B4513',
+    borderWidth: 2,
+    borderColor: COLORS.gold,
+    justifyContent: 'center',
+    alignItems: 'center',
+    marginHorizontal: 10,
+  },
+  btnIcon: {
+    fontSize: 18,
+  },
+  btnText: {
+    fontSize: 8,
+    color: COLORS.white,
+  },
+  endTurnBtn: {
+    backgroundColor: COLORS.green,
+    paddingVertical: 8,
+    paddingHorizontal: 20,
+    borderRadius: 15,
+    borderWidth: 2,
+    borderColor: COLORS.white,
+    marginHorizontal: 10,
+  },
+  endTurnText: {
+    fontSize: 14,
+    fontWeight: 'bold',
+    color: COLORS.white,
+  },
+  messageOverlay: {
+    position: 'absolute',
+    top: 0,
+    left: 0,
+    right: 0,
+    bottom: 0,
+    justifyContent: 'center',
+    alignItems: 'center',
+    backgroundColor: 'transparent',
+    pointerEvents: 'none',
+  },
+  messageBox: {
+    backgroundColor: 'rgba(0, 0, 0, 0.8)',
+    paddingHorizontal: 20,
+    paddingVertical: 10,
+    borderRadius: 10,
+  },
+  messageText: {
+    color: COLORS.white,
+    fontSize: 16,
     fontWeight: 'bold',
   },
 });
