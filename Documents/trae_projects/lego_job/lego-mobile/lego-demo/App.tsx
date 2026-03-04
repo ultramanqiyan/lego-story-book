@@ -665,7 +665,7 @@ const GameBoard: React.FC = () => {
             >
               <Text style={styles.endTurnText}>结束回合</Text>
             </TouchableOpacity>
-            <TouchableOpacity style={styles.styleBtn} onPress={cycleAnimation}>
+            <TouchableOpacity style={styles.styleBtn} onPress={() => setShowStyleSelector(true)}>
               <Text style={styles.btnIcon}>✨</Text>
               <Text style={styles.btnText}>动画</Text>
             </TouchableOpacity>
@@ -972,22 +972,29 @@ const styles = StyleSheet.create({
     paddingVertical: 5,
   },
   styleBtn: {
-    width: 50,
-    height: 50,
-    borderRadius: 25,
+    width: 70,
+    height: 70,
+    borderRadius: 35,
     backgroundColor: '#8B4513',
-    borderWidth: 2,
+    borderWidth: 3,
     borderColor: '#FFD700',
     justifyContent: 'center',
     alignItems: 'center',
-    marginHorizontal: 10,
+    marginHorizontal: 15,
+    shadowColor: '#FFD700',
+    shadowOffset: { width: 0, height: 0 },
+    shadowOpacity: 0.8,
+    shadowRadius: 10,
+    elevation: 8,
   },
   btnIcon: {
-    fontSize: 18,
+    fontSize: 28,
   },
   btnText: {
-    fontSize: 8,
+    fontSize: 10,
     color: '#fff',
+    fontWeight: 'bold',
+    marginTop: 2,
   },
   endTurnBtn: {
     paddingVertical: 8,
