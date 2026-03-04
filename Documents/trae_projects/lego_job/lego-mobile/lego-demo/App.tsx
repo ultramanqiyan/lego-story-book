@@ -7,8 +7,6 @@ import {
   TouchableOpacity, 
   Dimensions,
   PanResponder,
-  Animated,
-  LayoutRectangle,
 } from 'react-native';
 
 const { width, height } = Dimensions.get('window');
@@ -97,75 +95,91 @@ const initialState: GameState = {
 
 const CARD_WIDTH = 70;
 const CARD_HEIGHT = 100;
+const DROP_ZONE_Y = 400;
+
+interface DraggableCardProps {
+  card: Card;
+  index: number;
+  isPlayable: boolean;
+  isDragging: boolean;
+  onDragStart: (card: Card) => void;
+  onDragMove: (x: number, y: number) => void;
+  onDragEnd: (card: Card, y: number) => void;
+}
+
+const DraggableCard: React.FC<DraggableCardProps> = ({
+  card,
+  index,
+  isPlayable,
+  isDragging,
+  onDragStart,
+  onDragMove,
+  onDragEnd,
+}) => {
+  const panResponder = React.useMemo(() => 
+    PanResponder.create({
+      onStartShouldSetPanResponder: () => true,
+      onMoveShouldSetPanResponder: () => true,
+      onPanResponderGrant: (evt) => {
+        onDragStart(card);
+      },
+      onPanResponderMove: (evt) => {
+        onDragMove(evt.nativeEvent.pageX, evt.nativeEvent.pageY);
+      },
+      onPanResponderRelease: (evt) => {
+        onDragEnd(card, evt.nativeEvent.pageY);
+      },
+      onPanResponderTerminate: () => {
+        onDragEnd(card, 1000);
+      },
+    }),
+    [card.id]
+  );
+
+  return (
+    <View
+      style={[
+        styles.cardWrapper,
+        { 
+          marginLeft: index === 0 ? 0 : -20,
+          zIndex: isDragging ? 1000 : index + 100,
+          opacity: isDragging ? 0.3 : 1,
+        }
+      ]}
+      {...panResponder.panHandlers}
+    >
+      <View style={[styles.card, isPlayable && styles.cardPlayable]}>
+        <View style={styles.cardHeader}>
+          <Text style={styles.cardName}>{card.name}</Text>
+          <View style={styles.cardCost}>
+            <Text style={styles.cardCostText}>{card.cost}</Text>
+          </View>
+        </View>
+        <View style={styles.cardImage}>
+          <Text style={styles.cardIcon}>{card.type === 'MINION' ? '⚔️' : '✨'}</Text>
+        </View>
+        <Text style={styles.cardDesc}>{card.description}</Text>
+        {card.type === 'MINION' && (
+          <View style={styles.cardStats}>
+            <View style={styles.statBadge}>
+              <Text style={styles.statText}>{card.attack}</Text>
+            </View>
+            <View style={[styles.statBadge, styles.healthStat]}>
+              <Text style={styles.statText}>{card.health}</Text>
+            </View>
+          </View>
+        )}
+      </View>
+    </View>
+  );
+};
 
 const App: React.FC = () => {
   const [state, setState] = React.useState<GameState>(initialState);
   const [message, setMessage] = React.useState<string>('');
-  
-  const dragPosition = React.useRef(new Animated.ValueXY()).current;
-  const draggingCardId = React.useRef<string | null>(null);
-  const dragStartPos = React.useRef({ x: 0, y: 0 });
-  const cardLayouts = React.useRef<{ [key: string]: LayoutRectangle }>({});
-  const dropZoneLayout = React.useRef<LayoutRectangle | null>(null);
-  
-  const panResponder = React.useRef(
-    PanResponder.create({
-      onStartShouldSetPanResponder: () => false,
-      onMoveShouldSetPanResponder: (evt, gestureState) => {
-        return Math.abs(gestureState.dx) > 10 || Math.abs(gestureState.dy) > 10;
-      },
-      onPanResponderGrant: (evt, gestureState) => {
-        dragPosition.setOffset({
-          x: dragStartPos.current.x,
-          y: dragStartPos.current.y,
-        });
-        dragPosition.setValue({ x: 0, y: 0 });
-      },
-      onPanResponderMove: Animated.event(
-        [null, { dx: dragPosition.x, dy: dragPosition.y }],
-        { useNativeDriver: false }
-      ),
-      onPanResponderRelease: (evt, gestureState) => {
-        const cardId = draggingCardId.current;
-        if (cardId) {
-          const card = state.playerHand.find(c => c.id === cardId);
-          if (card) {
-            const dropY = dragStartPos.current.y + gestureState.dy;
-            if (dropZoneLayout.current && dropY < dropZoneLayout.current.y + 50) {
-              handlePlayCard(card);
-            }
-          }
-        }
-        
-        Animated.spring(dragPosition, {
-          toValue: { x: 0, y: 0 },
-          useNativeDriver: false,
-          tension: 100,
-          friction: 10,
-        }).start(() => {
-          dragPosition.setOffset({ x: 0, y: 0 });
-          draggingCardId.current = null;
-        });
-      },
-      onPanResponderTerminate: () => {
-        Animated.spring(dragPosition, {
-          toValue: { x: 0, y: 0 },
-          useNativeDriver: false,
-        }).start(() => {
-          dragPosition.setOffset({ x: 0, y: 0 });
-          draggingCardId.current = null;
-        });
-      },
-    })
-  ).current;
-
-  const handleCardTouchStart = (cardId: string, layout: LayoutRectangle) => {
-    draggingCardId.current = cardId;
-    dragStartPos.current = { 
-      x: layout.x + layout.width / 2, 
-      y: layout.y + layout.height / 2 
-    };
-  };
+  const [draggingCard, setDraggingCard] = React.useState<Card | null>(null);
+  const [dragY, setDragY] = React.useState(0);
+  const [dragX, setDragX] = React.useState(0);
 
   const handlePlayCard = (card: Card) => {
     const logMsg = `打出卡牌: ${card.name} (费用: ${card.cost})`;
@@ -215,8 +229,23 @@ const App: React.FC = () => {
     }));
   };
 
-  const isDragging = draggingCardId.current !== null;
-  const draggedCard = state.playerHand.find(c => c.id === draggingCardId.current);
+  const handleDragStart = (card: Card) => {
+    setDraggingCard(card);
+  };
+
+  const handleDragMove = (x: number, y: number) => {
+    setDragX(x);
+    setDragY(y);
+  };
+
+  const handleDragEnd = (card: Card, y: number) => {
+    if (y < DROP_ZONE_Y) {
+      handlePlayCard(card);
+    }
+    setDraggingCard(null);
+    setDragX(0);
+    setDragY(0);
+  };
 
   return (
     <SafeAreaView style={styles.container}>
@@ -278,12 +307,7 @@ const App: React.FC = () => {
         </View>
 
         <View style={styles.playerSection}>
-          <View 
-            style={styles.minionField}
-            onLayout={(e) => {
-              dropZoneLayout.current = e.nativeEvent.layout;
-            }}
-          >
+          <View style={styles.minionField}>
             {state.playerMinions.map(m => (
               <TouchableOpacity 
                 key={m.id} 
@@ -329,69 +353,18 @@ const App: React.FC = () => {
             </View>
           </View>
           <View style={styles.handArea}>
-            {state.playerHand.map((card, i) => {
-              const isThisDragging = draggingCardId.current === card.id;
-              const isPlayable = card.cost <= state.playerMana;
-              
-              return (
-                <View
-                  key={card.id}
-                  style={[
-                    styles.cardWrapper,
-                    { 
-                      marginLeft: i === 0 ? 0 : -20,
-                      zIndex: isThisDragging ? 1000 : i + 100,
-                    }
-                  ]}
-                  onLayout={(e) => {
-                    cardLayouts.current[card.id] = e.nativeEvent.layout;
-                  }}
-                  {...panResponder.panHandlers}
-                  onTouchStart={() => {
-                    const layout = cardLayouts.current[card.id];
-                    if (layout) {
-                      handleCardTouchStart(card.id, layout);
-                    }
-                  }}
-                >
-                  <Animated.View 
-                    style={[
-                      styles.card, 
-                      isPlayable && styles.cardPlayable,
-                      isThisDragging && styles.cardDragging,
-                      isThisDragging && {
-                        transform: [
-                          { translateX: dragPosition.x },
-                          { translateY: dragPosition.y },
-                          { scale: 1.2 },
-                        ],
-                      }
-                    ]}
-                  >
-                    <View style={styles.cardHeader}>
-                      <Text style={styles.cardName}>{card.name}</Text>
-                      <View style={styles.cardCost}>
-                        <Text style={styles.cardCostText}>{card.cost}</Text>
-                      </View>
-                    </View>
-                    <View style={styles.cardImage}>
-                      <Text style={styles.cardIcon}>{card.type === 'MINION' ? '⚔️' : '✨'}</Text>
-                    </View>
-                    <Text style={styles.cardDesc}>{card.description}</Text>
-                    {card.type === 'MINION' && (
-                      <View style={styles.cardStats}>
-                        <View style={styles.statBadge}>
-                          <Text style={styles.statText}>{card.attack}</Text>
-                        </View>
-                        <View style={[styles.statBadge, styles.healthStat]}>
-                          <Text style={styles.statText}>{card.health}</Text>
-                        </View>
-                      </View>
-                    )}
-                  </Animated.View>
-                </View>
-              );
-            })}
+            {state.playerHand.map((card, i) => (
+              <DraggableCard
+                key={card.id}
+                card={card}
+                index={i}
+                isPlayable={card.cost <= state.playerMana}
+                isDragging={draggingCard?.id === card.id}
+                onDragStart={handleDragStart}
+                onDragMove={handleDragMove}
+                onDragEnd={handleDragEnd}
+              />
+            ))}
           </View>
           <View style={styles.actionButtons}>
             <TouchableOpacity style={styles.heroPowerBtn} activeOpacity={0.8}>
@@ -404,6 +377,42 @@ const App: React.FC = () => {
           </View>
         </View>
       </View>
+      
+      {draggingCard && (
+        <View
+          style={[
+            styles.draggingCard,
+            {
+              left: dragX - CARD_WIDTH / 2,
+              top: dragY - CARD_HEIGHT / 2,
+            }
+          ]}
+          pointerEvents="none"
+        >
+          <View style={[styles.card, styles.cardPlayable, styles.cardDraggingStyle]}>
+            <View style={styles.cardHeader}>
+              <Text style={styles.cardName}>{draggingCard.name}</Text>
+              <View style={styles.cardCost}>
+                <Text style={styles.cardCostText}>{draggingCard.cost}</Text>
+              </View>
+            </View>
+            <View style={styles.cardImage}>
+              <Text style={styles.cardIcon}>{draggingCard.type === 'MINION' ? '⚔️' : '✨'}</Text>
+            </View>
+            <Text style={styles.cardDesc}>{draggingCard.description}</Text>
+            {draggingCard.type === 'MINION' && (
+              <View style={styles.cardStats}>
+                <View style={styles.statBadge}>
+                  <Text style={styles.statText}>{draggingCard.attack}</Text>
+                </View>
+                <View style={[styles.statBadge, styles.healthStat]}>
+                  <Text style={styles.statText}>{draggingCard.health}</Text>
+                </View>
+              </View>
+            )}
+          </View>
+        </View>
+      )}
       
       {message ? (
         <View style={styles.messageOverlay}>
@@ -603,8 +612,8 @@ const styles = StyleSheet.create({
     shadowOpacity: 0.5,
     shadowRadius: 5,
   },
-  cardDragging: {
-    opacity: 0.9,
+  cardDraggingStyle: {
+    transform: [{ scale: 1.2 }],
     shadowColor: '#000',
     shadowOffset: { width: 0, height: 10 },
     shadowOpacity: 0.5,
@@ -731,6 +740,12 @@ const styles = StyleSheet.create({
     color: COLORS.white,
     fontSize: 16,
     fontWeight: 'bold',
+  },
+  draggingCard: {
+    position: 'absolute',
+    width: CARD_WIDTH,
+    height: CARD_HEIGHT,
+    zIndex: 9999,
   },
 });
 
