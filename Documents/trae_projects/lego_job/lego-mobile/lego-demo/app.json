@@ -22,6 +22,9 @@
       },
       "package": "com.legostory.demo"
     },
-    "web": {}
+    "web": {},
+    "plugins": [
+      "expo-build-properties"
+    ]
   }
 }

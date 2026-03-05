@@ -146,14 +146,6 @@ android {
     }
 }
 
-// Force specific versions of androidx.core to avoid version conflicts
-configurations.all {
-    resolutionStrategy {
-        force 'androidx.core:core:1.12.0'
-        force 'androidx.core:core-ktx:1.12.0'
-    }
-}
-
 // Apply static values from `gradle.properties` to the `android.packagingOptions`
 // Accepts values in comma delimited lists, example:
 // android.packagingOptions.pickFirsts=/LICENSE,**/picasa.ini
@@ -177,10 +169,6 @@ configurations.all {
 dependencies {
     // The version of react-native is set by the React Native Gradle Plugin
     implementation("com.facebook.react:react-android")
-    
-    // Force specific versions of androidx.core to avoid version conflicts
-    implementation('androidx.core:core:1.12.0')
-    implementation('androidx.core:core-ktx:1.12.0')
 
     def isGifEnabled = (findProperty('expo.gif.enabled') ?: "") == "true";
     def isWebpEnabled = (findProperty('expo.webp.enabled') ?: "") == "true";
