@@ -366,9 +366,398 @@ particleAnims.forEach((anim) => {
 2. 检查NDK版本匹配
 3. 使用一键构建脚本提高效率
 
+### 问题8：测试脚本未检测APP状态导致测试失败
+
+**问题描述：**
+- 测试脚本直接开始测试，未检测APP是否在前台运行
+- APP未启动或未在前台时，测试失败
+- 浪费时间等待超时
+
+**根本原因：**
+- 测试脚本缺少APP状态检测步骤
+- 没有在测试前确保APP已启动并处于前台
+
+**解决方案：**
+```javascript
+// 1. 检测APP进程是否存在
+async function checkAppProcess() {
+    try {
+        const result = execSync(
+            'adb -s emulator-5554 shell "ps | grep legostory"',
+            { encoding: 'utf8', timeout: 3000 }
+        );
+        return result && result.trim().length > 0;
+    } catch (e) {
+        return false;
+    }
+}
+
+// 2. 检测APP是否在前台运行
+async function checkAppInForeground() {
+    try {
+        const result = execSync(
+            'adb -s emulator-5554 shell "dumpsys activity activities | grep mResumedActivity"',
+            { encoding: 'utf8', timeout: 3000 }
+        );
+        return result && result.includes('com.legostory.demo');
+    } catch (e) {
+        return false;
+    }
+}
+
+// 3. 启动APP
+async function launchApp() {
+    try {
+        execSync(
+            'adb -s emulator-5554 shell am start -n com.legostory.demo/.MainActivity',
+            { encoding: 'utf8', timeout: 5000 }
+        );
+        await driver.pause(1000);  // 等待APP启动
+        return true;
+    } catch (e) {
+        return false;
+    }
+}
+
+// 4. 测试开始前检测并启动APP
+async function ensureAppRunning() {
+    console.log('🔍 检测APP状态...');
+    
+    // 检测APP进程
+    const processExists = await checkAppProcess();
+    if (!processExists) {
+        console.log('⚠️ APP进程不存在，正在启动APP...');
+        await launchApp();
+    } else {
+        // 检测APP是否在前台
+        const inForeground = await checkAppInForeground();
+        if (!inForeground) {
+            console.log('⚠️ APP不在前台，正在切换到前台...');
+            await launchApp();
+        } else {
+            console.log('✅ APP已在前台运行');
+        }
+    }
+}
+```
+
+**经验教训：**
+1. **测试脚本第一步必须检测APP状态**
+2. 检测APP进程是否存在：`adb shell "ps | grep <package>"`
+3. 检测APP是否在前台：`adb shell "dumpsys activity activities | grep mResumedActivity"`
+4. 如果APP未运行，先启动APP再开始测试
+5. 避免在APP未启动时直接运行测试，浪费时间等待超时
+
+---
+
+### 问题9：React Native代码修改后未生效
+
+**问题描述：**
+- 修改了React Native代码，但APP中没有看到修改效果
+- 弹窗仍然只显示3种舞台风格，而不是7种
+- 重新构建APK失败，提示Java虚拟机配置文件找不到
+
+**根本原因：**
+1. **React Native代码修改需要重新构建APK才能生效**
+   - React Native的JavaScript代码打包在APK中
+   - 修改代码后需要重新打包和构建
+   
+2. **热重载只在开发模式下有效**
+   - 开发模式下，APP连接到Metro Bundler
+   - Metro Bundler可以实时推送代码更新
+   - 但这需要APP处于开发模式且连接到开发服务器
+
+3. **构建失败的原因**
+   - Java虚拟机配置文件路径错误
+   - 可能是Android Studio或Java环境配置问题
+
+**解决方案：**
+
+**方案1：使用热重载（推荐）**
+```bash
+# 1. 确保前端服务正在运行
+npm run dev  # 或 npx expo start
+
+# 2. 在模拟器中打开开发者菜单
+# 方法1：摇晃设备（Ctrl+M 或 Cmd+M）
+# 方法2：adb命令
+adb -s emulator-5554 shell input keyevent 82
+
+# 3. 选择"Reload"重新加载
+# 或者选择"Enable Fast Refresh"启用快速刷新
+```
+
+**方案2：重新构建APK**
+```bash
+# 1. 修复Java环境配置
+# 检查JAVA_HOME环境变量
+echo $JAVA_HOME
+
+# 2. 检查Android Studio路径
+# 确保Android Studio安装在正确路径
+
+# 3. 重新构建
+npx expo run:android
+```
+
+**方案3：清除缓存后重新构建**
+```bash
+# 1. 清除缓存
+npx expo start --clear
+
+# 2. 清除Android构建缓存
+cd android
+./gradlew clean
+cd ..
+
+# 3. 重新构建
+npx expo run:android
+```
+
+**经验教训：**
+1. **React Native代码修改后需要重新构建APK**
+2. **开发模式下可以使用热重载加速开发**
+3. **确保前端服务正在运行，Metro Bundler正常工作**
+4. **在模拟器中使用开发者菜单重新加载APP**
+5. **如果构建失败，检查Java和Android环境配置**
+6. **记录构建失败的原因和解决方案，方便后续排查**
+
+---
+
 ### 问题排查流程
-1. **先查看日志** - `adb logcat -d | findstr /i "ReactNativeJS\|Error\|FATAL"`
-2. **检查崩溃** - 搜索 `FATAL` 或 `Exception`
-3. **检查错误** - 搜索 "is not supported" 或 "Error:"
-4. **定位代码** - 根据堆栈信息定位问题代码
-5. **修复验证** - 修复后重新构建测试
+1. **检测APP状态** - 确保APP已启动并处于前台
+2. **先查看日志** - `adb logcat -d | findstr /i "ReactNativeJS\|Error\|FATAL"`
+3. **检查崩溃** - 搜索 `FATAL` 或 `Exception`
+4. **检查错误** - 搜索 "is not supported" 或 "Error:"
+5. **定位代码** - 根据堆栈信息定位问题代码
+6. **修复验证** - 修复后重新构建测试
+
+---
+
+### 问题10：Gradle缓存损坏导致构建失败
+
+**问题描述：**
+- 运行构建脚本时，Gradle构建失败
+- 错误信息：`Could not read workspace metadata from .../metadata.bin`
+- 构建过程中断，无法生成APK
+
+**根本原因：**
+1. **Gradle缓存损坏**
+   - `.gradle` 目录中的元数据文件损坏
+   - 可能是之前的构建过程被中断导致
+   
+2. **缓存文件不完整**
+   - `dependencies-accessors` 目录中的 `metadata.bin` 文件损坏
+   - Gradle无法读取工作空间元数据
+
+**解决方案：**
+
+**方案1：清除Gradle缓存（推荐）**
+```powershell
+# 清除Gradle缓存
+Remove-Item -Recurse -Force "android\.gradle" -ErrorAction SilentlyContinue
+Remove-Item -Recurse -Force "android\app\build" -ErrorAction SilentlyContinue
+Remove-Item -Recurse -Force "android\app\src\main\assets\index.android.bundle" -ErrorAction SilentlyContinue
+
+# 重新构建
+.\run-app.ps1
+```
+
+**方案2：使用Gradle命令清除**
+```bash
+cd android
+.\gradlew clean
+cd ..
+.\run-app.ps1
+```
+
+**方案3：完全清除所有缓存**
+```powershell
+# 清除所有缓存
+Remove-Item -Recurse -Force "$env:TEMP\metro-*" -ErrorAction SilentlyContinue
+Remove-Item -Recurse -Force "$env:TEMP\react-*" -ErrorAction SilentlyContinue
+Remove-Item -Recurse -Force ".expo" -ErrorAction SilentlyContinue
+Remove-Item -Recurse -Force "node_modules\.cache" -ErrorAction SilentlyContinue
+Remove-Item -Recurse -Force "android\.gradle" -ErrorAction SilentlyContinue
+Remove-Item -Recurse -Force "android\app\build" -ErrorAction SilentlyContinue
+
+# 重新构建
+.\run-app.ps1
+```
+
+**经验教训：**
+1. **Gradle缓存损坏是常见问题** - 构建失败时首先检查缓存
+2. **清除缓存可以解决大部分构建问题**
+3. **记录构建失败的错误信息** - 方便快速定位问题
+4. **使用PowerShell脚本替代批处理文件** - 兼容性更好
+5. **添加进度条显示** - 方便了解构建进度
+
+---
+
+### 问题11：PowerShell与批处理文件兼容性问题
+
+**问题描述：**
+- 在PowerShell中运行 `.bat` 批处理文件时出现解析错误
+- 错误信息：`'ocal' 不是内部或外部命令`
+- 批处理文件中的命令被错误解析
+
+**根本原因：**
+1. **PowerShell与CMD的语法差异**
+   - PowerShell对批处理文件的解析方式不同
+   - 批处理文件中的某些语法在PowerShell中不支持
+   
+2. **编码问题**
+   - 批处理文件中的特殊字符在PowerShell中显示乱码
+   - 中文字符无法正确显示
+
+**解决方案：**
+
+**方案1：创建PowerShell版本的脚本（推荐）**
+```powershell
+# run-app.ps1 - PowerShell版本的构建脚本
+
+function Show-Progress {
+    param(
+        [int]$Percent,
+        [string]$Message
+    )
+    
+    $Filled = [Math]::Floor($Percent / 5)
+    $Empty = 20 - $Filled
+    $Bar = ("=" * $Filled) + ("-" * $Empty)
+    
+    Write-Host ""
+    Write-Host "  [$Bar] $Percent%" -ForegroundColor Cyan
+    Write-Host "  $Message" -ForegroundColor Yellow
+    Write-Host ""
+}
+
+# 设置环境变量
+$env:JAVA_HOME = "D:\Program Files\Java\jdk-17"
+$env:PATH = "$env:JAVA_HOME\bin;$env:PATH"
+$env:ANDROID_HOME = "C:\Users\yannis\AppData\Local\Android\Sdk"
+$env:ANDROID_SDK_ROOT = $env:ANDROID_HOME
+
+# 构建步骤...
+```
+
+**方案2：使用CMD运行批处理文件**
+```powershell
+# 在PowerShell中调用CMD运行批处理文件
+cmd /c run-app.bat
+```
+
+**方案3：直接在CMD中运行**
+```bash
+# 打开CMD终端，然后运行
+run-app.bat
+```
+
+**经验教训：**
+1. **PowerShell脚本比批处理文件更强大** - 支持更好的错误处理和进度显示
+2. **使用ASCII字符创建进度条** - 避免编码问题
+3. **为不同shell创建不同版本的脚本** - 提高兼容性
+4. **记录脚本语法差异** - 方便后续开发
+
+---
+
+### 问题12：React Native代码修改后需要重新构建APK
+
+**问题描述：**
+- 修改了React Native代码后，APP中没有看到修改效果
+- 弹窗仍然只显示3种舞台风格，而不是7种
+- 热重载没有生效
+
+**根本原因：**
+1. **React Native代码打包在APK中**
+   - 生产模式下，JavaScript代码被打包到APK中
+   - 修改代码后需要重新打包和构建
+   
+2. **热重载只在开发模式下有效**
+   - 开发模式下，APP连接到Metro Bundler
+   - Metro Bundler可以实时推送代码更新
+   - 但需要APP处于开发模式且连接到开发服务器
+
+3. **APP使用的是旧的打包代码**
+   - 没有连接到Metro Bundler
+   - 使用的是APK中打包的旧代码
+
+**解决方案：**
+
+**方案1：重新构建APK（推荐）**
+```powershell
+# 清除缓存
+Remove-Item -Recurse -Force "android\.gradle" -ErrorAction SilentlyContinue
+Remove-Item -Recurse -Force "android\app\build" -ErrorAction SilentlyContinue
+
+# 重新构建
+.\run-app.ps1
+```
+
+**方案2：使用开发模式**
+```bash
+# 1. 启动Metro Bundler
+npm start
+
+# 2. 在模拟器中打开APP
+adb shell am start -n com.legostory.demo/.MainActivity
+
+# 3. 摇晃设备打开开发者菜单
+adb shell input keyevent 82
+
+# 4. 选择"Reload"重新加载
+```
+
+**方案3：使用热重载**
+```bash
+# 1. 确保Metro Bundler正在运行
+npm start
+
+# 2. 在开发者菜单中启用"Enable Fast Refresh"
+# 3. 修改代码后会自动刷新
+```
+
+**经验教训：**
+1. **React Native代码修改后必须重新构建APK**
+2. **开发模式下可以使用热重载加速开发**
+3. **生产模式使用打包的代码，不会实时更新**
+4. **记录构建流程和常见问题** - 提高开发效率
+
+---
+
+## 构建成功案例
+
+### 案例：舞台风格扩展功能构建
+
+**构建时间：** 2026-03-05  
+**构建耗时：** 11分20秒  
+**构建状态：** ✅ 成功
+
+**构建过程：**
+1. ✅ 初始化 - 设置环境变量
+2. ✅ 检查设备 - emulator-5554已连接
+3. ✅ 创建资源目录 - assets目录已创建
+4. ✅ 生成JS Bundle - Metro Bundler成功打包
+5. ✅ 构建APK - Gradle成功编译（381个任务）
+6. ✅ 安装APK - 成功安装到模拟器
+7. ✅ 启动APP - APP已成功启动
+
+**遇到的问题：**
+1. Gradle缓存损坏 - 已解决（清除缓存）
+2. PowerShell兼容性问题 - 已解决（创建PowerShell脚本）
+3. 代码修改未生效 - 已解决（重新构建APK）
+
+**关键经验：**
+1. **清除缓存是解决构建问题的第一步**
+2. **PowerShell脚本比批处理文件更可靠**
+3. **进度条显示提高用户体验**
+4. **记录构建过程方便问题排查**
+
+**最终结果：**
+- ✅ 7种舞台风格全部显示
+- ✅ 新增4种风格正常工作
+- ✅ APP运行稳定无崩溃
+
+---
+
+*最后更新：2026-03-05 14:30*

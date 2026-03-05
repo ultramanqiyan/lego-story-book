@@ -50,12 +50,23 @@ const FAKE_EQUIPMENTS = [
   { id: 'scroll', name: '卷轴', emoji: '📜' },
 ];
 
-type StageStyleType = '3d-perspective' | 'battle-arena' | 'immersive-scene';
+type StageStyleType = 
+  | '3d-perspective' 
+  | 'battle-arena' 
+  | 'immersive-scene'
+  | 'pixel-art'
+  | 'glassmorphism'
+  | 'carousel-wheel'
+  | 'side-scroller';
 
 const STAGE_STYLE_NAMES: Record<StageStyleType, string> = {
   '3d-perspective': '🎭 3D透视舞台',
   'battle-arena': '⚔️ 游戏战斗界面',
   'immersive-scene': '🌲 沉浸式场景',
+  'pixel-art': '👾 像素艺术风格',
+  'glassmorphism': '💎 玻璃拟态风格',
+  'carousel-wheel': '🎡 转盘风格',
+  'side-scroller': '🎮 横版过关风格',
 };
 
 interface StoryDirectorDemoProps {
@@ -851,6 +862,269 @@ const StoryDirectorDemo: React.FC<StoryDirectorDemoProps> = ({ onBack }) => {
     );
   };
 
+  const renderPixelArtStage = () => {
+    const selectedCharData = FAKE_CHARACTERS.filter((c) =>
+      selectedCharacters.includes(c.id)
+    );
+    const bgColors = getWeatherBgColors();
+
+    return (
+      <Animated.View style={[styles.pixelArtContainer, { opacity: stageAnim, transform: [{ scale: stageAnim }] }]}>
+        <View style={[styles.pixelArtBackground, { backgroundColor: '#87CEEB' }]} />
+        
+        <View style={styles.pixelArtGrid}>
+          {Array(8).fill(null).map((_, row) => (
+            <View key={row} style={styles.pixelArtRow}>
+              {Array(10).fill(null).map((_, col) => (
+                <View key={col} style={styles.pixelArtCell} />
+              ))}
+            </View>
+          ))}
+        </View>
+
+        <View style={styles.pixelArtCharacters}>
+          {selectedCharData.length === 0 ? (
+            <Text style={[styles.pixelArtHint, { color: '#000' }]}>
+              选择角色开始导演你的故事
+            </Text>
+          ) : (
+            selectedCharData.map((char, index) => {
+              const charIndex = FAKE_CHARACTERS.findIndex((c) => c.id === char.id);
+              const anim = stageCharAnims[charIndex];
+              const floatAnim = floatAnims[charIndex];
+              const translateY = floatAnim.interpolate({
+                inputRange: [0, 1],
+                outputRange: [0, -4],
+              });
+
+              return (
+                <Animated.View
+                  key={char.id}
+                  style={[
+                    styles.pixelArtCharacter,
+                    {
+                      transform: [
+                        { translateY: anim.y },
+                        { translateY: translateY },
+                        { scale: anim.scale },
+                      ],
+                      opacity: anim.opacity,
+                    },
+                  ]}
+                >
+                  <Text style={styles.pixelArtEmoji}>{char.emoji}</Text>
+                </Animated.View>
+              );
+            })
+          )}
+        </View>
+
+        <View style={styles.pixelArtUI}>
+          <View style={styles.pixelArtHealthBar}>
+            <Text style={styles.pixelArtHealthText}>❤️❤️❤️♡♡</Text>
+          </View>
+          <View style={styles.pixelArtStats}>
+            <Text style={styles.pixelArtStatText}>LV.5</Text>
+            <Text style={styles.pixelArtStatText}>EXP: 340/500</Text>
+          </View>
+        </View>
+
+        <View style={styles.pixelArtLabel}>
+          <Text style={styles.pixelArtLabelText}>👾 像素艺术风格</Text>
+        </View>
+      </Animated.View>
+    );
+  };
+
+  const renderGlassmorphismStage = () => {
+    const selectedCharData = FAKE_CHARACTERS.filter((c) =>
+      selectedCharacters.includes(c.id)
+    );
+    const bgColors = getWeatherBgColors();
+
+    return (
+      <Animated.View style={[styles.glassmorphismContainer, { opacity: stageAnim, transform: [{ scale: stageAnim }] }]}>
+        <View style={[styles.glassmorphismBgGradient, { backgroundColor: '#667eea' }]}>
+          <View style={[styles.glassmorphismBgLayer, { backgroundColor: '#764ba2', opacity: 0.5 }]} />
+        </View>
+
+        <View style={styles.glassmorphismCard}>
+          <View style={styles.glassmorphismCardContent}>
+            {selectedCharData.length === 0 ? (
+              <Text style={[styles.glassmorphismHint, { color: '#fff' }]}>
+                选择角色开始导演你的故事
+              </Text>
+            ) : (
+              selectedCharData.map((char, index) => {
+                const charIndex = FAKE_CHARACTERS.findIndex((c) => c.id === char.id);
+                const anim = stageCharAnims[charIndex];
+                const floatAnim = floatAnims[charIndex];
+                const translateY = floatAnim.interpolate({
+                  inputRange: [0, 1],
+                  outputRange: [0, -6],
+                });
+
+                return (
+                  <Animated.View
+                    key={char.id}
+                    style={[
+                      styles.glassmorphismCharacter,
+                      {
+                        transform: [
+                          { translateY: anim.y },
+                          { translateY: translateY },
+                          { scale: anim.scale },
+                        ],
+                        opacity: anim.opacity,
+                      },
+                    ]}
+                  >
+                    <Text style={styles.glassmorphismEmoji}>{char.emoji}</Text>
+                  </Animated.View>
+                );
+              })
+            )}
+          </View>
+        </View>
+
+        <View style={styles.glassmorphismLabel}>
+          <Text style={styles.glassmorphismLabelText}>💎 玻璃拟态风格</Text>
+        </View>
+      </Animated.View>
+    );
+  };
+
+  const renderCarouselWheel = () => {
+    const selectedCharData = FAKE_CHARACTERS.filter((c) =>
+      selectedCharacters.includes(c.id)
+    );
+    const bgColors = getWeatherBgColors();
+
+    return (
+      <Animated.View style={[styles.carouselContainer, { opacity: stageAnim, transform: [{ scale: stageAnim }] }]}>
+        <View style={[styles.carouselBackground, { backgroundColor: bgColors[2] }]} />
+
+        <View style={styles.carouselWheel}>
+          {selectedCharData.length === 0 ? (
+            <Text style={[styles.carouselHint, { color: '#fff' }]}>
+              选择角色开始导演你的故事
+            </Text>
+          ) : (
+            selectedCharData.map((char, index) => {
+              const charIndex = FAKE_CHARACTERS.findIndex((c) => c.id === char.id);
+              const anim = stageCharAnims[charIndex];
+              const angle = (index / selectedCharData.length) * 360;
+              const radius = 80;
+              const x = Math.cos(angle * Math.PI / 180) * radius;
+              const y = Math.sin(angle * Math.PI / 180) * radius;
+
+              return (
+                <Animated.View
+                  key={char.id}
+                  style={[
+                    styles.carouselCharacter,
+                    {
+                      transform: [
+                        { translateX: x },
+                        { translateY: y },
+                        { scale: anim.scale },
+                      ],
+                      opacity: anim.opacity,
+                    },
+                  ]}
+                >
+                  <Text style={styles.carouselEmoji}>{char.emoji}</Text>
+                </Animated.View>
+              );
+            })
+          )}
+        </View>
+
+        <View style={styles.carouselIndicator}>
+          <Text style={styles.carouselIndicatorText}>▼</Text>
+        </View>
+
+        <View style={styles.carouselLabel}>
+          <Text style={styles.carouselLabelText}>🎡 转盘风格</Text>
+        </View>
+      </Animated.View>
+    );
+  };
+
+  const renderSideScroller = () => {
+    const selectedCharData = FAKE_CHARACTERS.filter((c) =>
+      selectedCharacters.includes(c.id)
+    );
+    const bgColors = getWeatherBgColors();
+
+    return (
+      <Animated.View style={[styles.sideScrollerContainer, { opacity: stageAnim, transform: [{ scale: stageAnim }] }]}>
+        <View style={[styles.sideScrollerSky, { backgroundColor: bgColors[0] }]} />
+        
+        <View style={styles.sideScrollerClouds}>
+          <Text style={styles.sideScrollerCloud}>☁️</Text>
+          <Text style={[styles.sideScrollerCloud, { left: 100 }]}>☁️</Text>
+          <Text style={[styles.sideScrollerCloud, { left: 200 }]}>☁️</Text>
+        </View>
+
+        <View style={styles.sideScrollerGround}>
+          <ScrollView horizontal showsHorizontalScrollIndicator={false}>
+            <View style={styles.sideScrollerCharacters}>
+              {selectedCharData.length === 0 ? (
+                <Text style={[styles.sideScrollerHint, { color: '#000' }]}>
+                  选择角色开始导演你的故事
+                </Text>
+              ) : (
+                selectedCharData.map((char, index) => {
+                  const charIndex = FAKE_CHARACTERS.findIndex((c) => c.id === char.id);
+                  const anim = stageCharAnims[charIndex];
+                  const floatAnim = floatAnims[charIndex];
+                  const translateY = floatAnim.interpolate({
+                    inputRange: [0, 1],
+                    outputRange: [0, -8],
+                  });
+
+                  return (
+                    <Animated.View
+                      key={char.id}
+                      style={[
+                        styles.sideScrollerCharacter,
+                        {
+                          transform: [
+                            { translateY: anim.y },
+                            { translateY: translateY },
+                            { scale: anim.scale },
+                          ],
+                          opacity: anim.opacity,
+                        },
+                      ]}
+                    >
+                      <Text style={styles.sideScrollerEmoji}>{char.emoji}</Text>
+                    </Animated.View>
+                  );
+                })
+              )}
+            </View>
+          </ScrollView>
+        </View>
+
+        <View style={styles.sideScrollerPlatform}>
+          {Array(20).fill(null).map((_, index) => (
+            <View key={index} style={styles.sideScrollerBrick} />
+          ))}
+        </View>
+
+        <View style={styles.sideScrollerUI}>
+          <Text style={styles.sideScrollerUIText}>❤️❤️❤️♡♡  金币: 120  ⭐ 3</Text>
+        </View>
+
+        <View style={styles.sideScrollerLabel}>
+          <Text style={styles.sideScrollerLabelText}>🎮 横版过关风格</Text>
+        </View>
+      </Animated.View>
+    );
+  };
+
   const renderStage = () => {
     switch (stageStyle) {
       case '3d-perspective':
@@ -859,6 +1133,14 @@ const StoryDirectorDemo: React.FC<StoryDirectorDemoProps> = ({ onBack }) => {
         return renderBattleArena();
       case 'immersive-scene':
         return renderImmersiveScene();
+      case 'pixel-art':
+        return renderPixelArtStage();
+      case 'glassmorphism':
+        return renderGlassmorphismStage();
+      case 'carousel-wheel':
+        return renderCarouselWheel();
+      case 'side-scroller':
+        return renderSideScroller();
       default:
         return render3DStage();
     }
@@ -1022,7 +1304,15 @@ const StoryDirectorDemo: React.FC<StoryDirectorDemoProps> = ({ onBack }) => {
           <View style={[styles.modalContent, { backgroundColor: styleConfig.colors.secondary }]}>
             <Text style={[styles.modalTitle, { color: styleConfig.colors.accent }]}>选择舞台风格</Text>
             <View style={styles.stageStyleList}>
-              {(['3d-perspective', 'battle-arena', 'immersive-scene'] as StageStyleType[]).map((style) => {
+              {([
+                '3d-perspective',
+                'battle-arena',
+                'immersive-scene',
+                'pixel-art',
+                'glassmorphism',
+                'carousel-wheel',
+                'side-scroller'
+              ] as StageStyleType[]).map((style) => {
                 const isSelected = stageStyle === style;
                 return (
                   <TouchableOpacity
@@ -1494,6 +1784,309 @@ const styles = StyleSheet.create({
     textShadowColor: 'rgba(0,0,0,0.5)',
     textShadowOffset: { width: 1, height: 1 },
     textShadowRadius: 2,
+  },
+  pixelArtContainer: {
+    margin: 16,
+    height: 200,
+    borderRadius: 16,
+    overflow: 'hidden',
+    position: 'relative',
+    backgroundColor: '#87CEEB',
+    borderWidth: 4,
+    borderColor: '#000',
+  },
+  pixelArtBackground: {
+    position: 'absolute',
+    top: 0,
+    left: 0,
+    right: 0,
+    bottom: 0,
+  },
+  pixelArtGrid: {
+    position: 'absolute',
+    top: 0,
+    left: 0,
+    right: 0,
+    bottom: 0,
+    opacity: 0.1,
+  },
+  pixelArtRow: {
+    flexDirection: 'row',
+  },
+  pixelArtCell: {
+    width: 32,
+    height: 25,
+    borderWidth: 1,
+    borderColor: '#000',
+  },
+  pixelArtCharacters: {
+    position: 'absolute',
+    top: 40,
+    left: 0,
+    right: 0,
+    flexDirection: 'row',
+    justifyContent: 'center',
+    alignItems: 'center',
+  },
+  pixelArtCharacter: {
+    marginHorizontal: 8,
+  },
+  pixelArtEmoji: {
+    fontSize: 40,
+    textShadowColor: '#000',
+    textShadowOffset: { width: 2, height: 2 },
+    textShadowRadius: 0,
+  },
+  pixelArtHint: {
+    fontSize: 16,
+    fontWeight: 'bold',
+  },
+  pixelArtUI: {
+    position: 'absolute',
+    bottom: 40,
+    left: 16,
+    right: 16,
+  },
+  pixelArtHealthBar: {
+    marginBottom: 8,
+  },
+  pixelArtHealthText: {
+    fontSize: 16,
+  },
+  pixelArtStats: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+  },
+  pixelArtStatText: {
+    fontSize: 12,
+    fontWeight: 'bold',
+    color: '#000',
+  },
+  pixelArtLabel: {
+    position: 'absolute',
+    bottom: 8,
+    left: 0,
+    right: 0,
+    alignItems: 'center',
+  },
+  pixelArtLabelText: {
+    color: '#000',
+    fontSize: 12,
+    fontWeight: 'bold',
+  },
+  glassmorphismContainer: {
+    margin: 16,
+    height: 200,
+    borderRadius: 16,
+    overflow: 'hidden',
+    position: 'relative',
+  },
+  glassmorphismBgGradient: {
+    position: 'absolute',
+    top: 0,
+    left: 0,
+    right: 0,
+    bottom: 0,
+  },
+  glassmorphismBgLayer: {
+    position: 'absolute',
+    top: 0,
+    left: 0,
+    right: 0,
+    bottom: 0,
+  },
+  glassmorphismCard: {
+    position: 'absolute',
+    top: 30,
+    left: 20,
+    right: 20,
+    bottom: 50,
+    backgroundColor: 'rgba(255, 255, 255, 0.15)',
+    borderWidth: 1,
+    borderColor: 'rgba(255, 255, 255, 0.3)',
+    borderRadius: 20,
+    shadowColor: 'rgba(255, 255, 255, 0.2)',
+    shadowOpacity: 0.3,
+    shadowRadius: 20,
+    shadowOffset: { width: 0, height: 10 },
+    elevation: 5,
+  },
+  glassmorphismCardContent: {
+    flex: 1,
+    flexDirection: 'row',
+    justifyContent: 'center',
+    alignItems: 'center',
+  },
+  glassmorphismCharacter: {
+    marginHorizontal: 12,
+  },
+  glassmorphismEmoji: {
+    fontSize: 36,
+  },
+  glassmorphismHint: {
+    fontSize: 14,
+    fontWeight: 'bold',
+    textAlign: 'center',
+  },
+  glassmorphismLabel: {
+    position: 'absolute',
+    bottom: 8,
+    left: 0,
+    right: 0,
+    alignItems: 'center',
+  },
+  glassmorphismLabelText: {
+    color: '#fff',
+    fontSize: 12,
+    fontWeight: 'bold',
+    textShadowColor: 'rgba(0,0,0,0.5)',
+    textShadowOffset: { width: 1, height: 1 },
+    textShadowRadius: 2,
+  },
+  carouselContainer: {
+    margin: 16,
+    height: 200,
+    borderRadius: 16,
+    overflow: 'hidden',
+    position: 'relative',
+  },
+  carouselBackground: {
+    position: 'absolute',
+    top: 0,
+    left: 0,
+    right: 0,
+    bottom: 0,
+  },
+  carouselWheel: {
+    position: 'absolute',
+    top: 40,
+    left: 0,
+    right: 0,
+    bottom: 60,
+    justifyContent: 'center',
+    alignItems: 'center',
+  },
+  carouselCharacter: {
+    position: 'absolute',
+  },
+  carouselEmoji: {
+    fontSize: 32,
+  },
+  carouselHint: {
+    fontSize: 14,
+    fontWeight: 'bold',
+    textAlign: 'center',
+  },
+  carouselIndicator: {
+    position: 'absolute',
+    top: 20,
+    left: 0,
+    right: 0,
+    alignItems: 'center',
+  },
+  carouselIndicatorText: {
+    fontSize: 20,
+    color: '#fff',
+  },
+  carouselLabel: {
+    position: 'absolute',
+    bottom: 8,
+    left: 0,
+    right: 0,
+    alignItems: 'center',
+  },
+  carouselLabelText: {
+    color: '#fff',
+    fontSize: 12,
+    fontWeight: 'bold',
+    textShadowColor: 'rgba(0,0,0,0.5)',
+    textShadowOffset: { width: 1, height: 1 },
+    textShadowRadius: 2,
+  },
+  sideScrollerContainer: {
+    margin: 16,
+    height: 200,
+    borderRadius: 16,
+    overflow: 'hidden',
+    position: 'relative',
+  },
+  sideScrollerSky: {
+    position: 'absolute',
+    top: 0,
+    left: 0,
+    right: 0,
+    height: '70%',
+  },
+  sideScrollerClouds: {
+    position: 'absolute',
+    top: 20,
+    left: 0,
+    right: 0,
+    height: 40,
+  },
+  sideScrollerCloud: {
+    position: 'absolute',
+    fontSize: 24,
+    left: 20,
+  },
+  sideScrollerGround: {
+    position: 'absolute',
+    top: 60,
+    left: 0,
+    right: 0,
+    bottom: 50,
+  },
+  sideScrollerCharacters: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    paddingHorizontal: 20,
+    paddingVertical: 10,
+  },
+  sideScrollerCharacter: {
+    marginHorizontal: 16,
+  },
+  sideScrollerEmoji: {
+    fontSize: 36,
+  },
+  sideScrollerHint: {
+    fontSize: 14,
+    fontWeight: 'bold',
+    paddingHorizontal: 20,
+  },
+  sideScrollerPlatform: {
+    position: 'absolute',
+    bottom: 30,
+    left: 0,
+    right: 0,
+    height: 20,
+    flexDirection: 'row',
+  },
+  sideScrollerBrick: {
+    width: 32,
+    height: 20,
+    backgroundColor: '#8B4513',
+    borderWidth: 1,
+    borderColor: '#654321',
+  },
+  sideScrollerUI: {
+    position: 'absolute',
+    bottom: 8,
+    left: 16,
+  },
+  sideScrollerUIText: {
+    fontSize: 12,
+    fontWeight: 'bold',
+    color: '#000',
+  },
+  sideScrollerLabel: {
+    position: 'absolute',
+    bottom: 8,
+    right: 16,
+  },
+  sideScrollerLabelText: {
+    color: '#000',
+    fontSize: 12,
+    fontWeight: 'bold',
   },
 });
 
