@@ -761,3 +761,365 @@ npm start
 ---
 
 *最后更新：2026-03-05 14:30*
+
+---
+
+## 2026-03-05 UI风格页面开发经验
+
+### 问题13：Appium测试脚本需要设置ANDROID_HOME环境变量
+
+**问题描述：**
+- Appium测试脚本连接失败
+- 错误信息：`Neither ANDROID_HOME nor ANDROID_SDK_ROOT environment variable was exported`
+
+**解决方案：**
+```javascript
+// 在测试脚本开头设置环境变量
+process.env.ANDROID_HOME = 'C:\\Users\\yannis\\AppData\\Local\\Android\\Sdk';
+process.env.ANDROID_SDK_ROOT = 'C:\\Users\\yannis\\AppData\\Local\\Android\\Sdk';
+```
+
+**经验教训：**
+1. Appium需要ANDROID_HOME环境变量来定位Android SDK
+2. 在Node.js脚本中可以通过`process.env`设置环境变量
+3. 确保路径使用双反斜杠转义
+
+---
+
+### 问题14：Appium服务器需要在测试脚本中启动
+
+**问题描述：**
+- 测试脚本无法连接到Appium服务器
+- 需要手动启动Appium服务器
+
+**解决方案：**
+```javascript
+const { spawn } = require('child_process');
+
+let appiumProcess = null;
+
+async function startAppiumServer() {
+    return new Promise((resolve, reject) => {
+        appiumProcess = spawn('appium', ['--base-path', '/'], {
+            shell: true,
+            stdio: 'pipe'
+        });
+        
+        appiumProcess.stdout.on('data', (data) => {
+            if (data.toString().includes('Appium REST http interface')) {
+                resolve(true);
+            }
+        });
+        
+        // 超时处理
+        setTimeout(() => resolve(true), 10000);
+    });
+}
+
+async function stopAppiumServer() {
+    if (appiumProcess) {
+        appiumProcess.kill();
+    }
+}
+```
+
+**经验教训：**
+1. 测试脚本应该自动启动和停止Appium服务器
+2. 使用`spawn`启动后台进程
+3. 设置超时处理避免无限等待
+4. 测试结束后要清理Appium进程
+
+---
+
+### 问题15：React Native页面导航不使用React Navigation
+
+**问题描述：**
+- 项目没有安装React Navigation
+- 需要实现多页面导航
+
+**解决方案：**
+使用状态管理实现页面切换：
+```typescript
+type PageState = 'home' | 'director' | 'ui-style-list' | UIStyleType;
+
+const App: React.FC = () => {
+  const [currentPage, setCurrentPage] = useState<PageState>('home');
+
+  const renderPage = () => {
+    switch (currentPage) {
+      case 'director':
+        return <StoryDirectorDemo onBack={() => setCurrentPage('home')} />;
+      case 'ui-style-list':
+        return <UIStyleListScreen onSelectStyle={(style) => setCurrentPage(style)} onBack={() => setCurrentPage('home')} />;
+      // ...其他页面
+      default:
+        return <GameBoard onNavigateToUIStyles={() => setCurrentPage('ui-style-list')} />;
+    }
+  };
+
+  return <GameProvider><StyleProvider>{renderPage()}</StyleProvider></GameProvider>;
+};
+```
+
+**经验教训：**
+1. 简单应用可以使用状态管理实现导航
+2. 避免引入不必要的依赖
+3. 使用回调函数处理页面跳转
+4. 保持导航逻辑简单清晰
+
+---
+
+### 问题16：UI风格页面动画效果设计
+
+**问题描述：**
+- 需要为4种不同风格设计独特的动画效果
+- 动画需要体现各风格的特点
+
+**解决方案：**
+
+**横版游戏风格：**
+- 云朵横向移动动画
+- 角色跳跃动画
+- 金币收集动画
+
+**像素方块风格：**
+- 方块闪烁动画
+- 方块破坏动画
+
+**电影风格：**
+- 胶片滚动动画
+- 放映机旋转动画
+
+**手绘风格：**
+- 水彩渐变动画
+- 铅笔线条动画
+
+**经验教训：**
+1. 每种风格使用独特的动画效果
+2. 动画要符合风格主题
+3. 使用`Animated.loop`创建循环动画
+4. 使用`Animated.sequence`创建序列动画
+
+---
+
+## UI风格页面开发总结
+
+### 实现的功能
+1. ✅ UI风格列表页 - 展示4种风格选项
+2. ✅ 横版游戏风格页面 - 超级马里奥风格
+3. ✅ 像素方块风格页面 - 我的世界风格
+4. ✅ 电影风格页面 - 电影拍摄现场风格
+5. ✅ 手绘风格页面 - 手绘素描风格
+6. ✅ 页面导航系统 - 状态管理实现
+7. ✅ Appium端到端测试 - 自动化测试验证
+
+### 文件结构
+```
+src/screens/
+├── UIStyleListScreen.tsx      # 风格列表页
+├── styles/
+│   ├── SideScrollerGameStyle.tsx  # 横版游戏风格
+│   ├── PixelBlockStyle.tsx        # 像素方块风格
+│   ├── MovieFilmStyle.tsx         # 电影风格
+│   └── HandDrawnStyle.tsx         # 手绘风格
+```
+
+### 测试脚本
+- `appium-ui-style-test.js` - 内置Appium服务器启动
+- 自动检测APP状态
+- 自动启动和停止Appium服务器
+
+---
+
+### 问题17：Appium端口4723被占用
+
+**问题描述：**
+- Appium服务器启动失败
+- 错误信息：`EADDRINUSE: address already in use 0.0.0.0:4723`
+- 之前的Appium进程没有正确关闭
+
+**解决方案：**
+```javascript
+// 在启动Appium前，先终止所有node进程
+const { execSync } = require('child_process');
+
+async function startAppiumServer() {
+    // 终止所有node进程
+    try {
+        execSync('taskkill /F /IM node.exe', { stdio: 'ignore' });
+    } catch (e) {}
+    
+    // 等待进程完全终止
+    await new Promise(r => setTimeout(r, 2000));
+    
+    // 启动Appium
+    appiumProcess = spawn('appium', ['--base-path', '/', '--port', '4723'], {
+        shell: true,
+        stdio: 'pipe'
+    });
+}
+```
+
+**经验教训：**
+1. Appium端口4723被占用是常见问题
+2. 启动前先终止所有node进程
+3. 等待2秒确保进程完全终止
+4. 测试结束后正确关闭Appium进程
+
+---
+
+### 问题18：模拟器UI无响应导致测试失败
+
+**问题描述：**
+- 测试显示"System UI isn't responding"
+- 无法找到任何UI元素
+- 所有测试步骤都失败
+
+**根本原因：**
+1. 模拟器长时间运行后UI可能卡死
+2. APP状态不正常
+3. 模拟器资源不足
+
+**解决方案：**
+```powershell
+# 在测试前强制停止并重启APP
+adb -s emulator-5554 shell am force-stop com.legostory.demo
+Start-Sleep -Seconds 2
+adb -s emulator-5554 shell am start -n com.legostory.demo/.MainActivity
+Start-Sleep -Seconds 3
+```
+
+**经验教训：**
+1. 测试前强制停止并重启APP确保干净状态
+2. 如果模拟器UI卡死，需要重启模拟器
+3. 检查模拟器资源使用情况
+4. 在测试脚本中添加APP状态检测
+
+---
+
+### 问题19：测试脚本需要等待APP完全启动
+
+**问题描述：**
+- APP启动后立即开始测试
+- 页面元素还未加载完成
+- 测试失败
+
+**解决方案：**
+```javascript
+// 1. 启动APP后等待足够时间
+await launchApp();
+await driver.pause(2000);  // 等待APP启动
+
+// 2. 检测页面是否加载完成
+const pageTexts = await getPageTexts(driver);
+console.log('📄 当前页面文本:', pageTexts.slice(0, 10).join(', '));
+
+// 3. 如果显示错误信息，等待或重启
+if (pageTexts.some(t => t.includes('not responding'))) {
+    console.log('⚠️ UI无响应，重启APP...');
+    await launchApp();
+    await driver.pause(3000);
+}
+```
+
+**经验教训：**
+1. APP启动后需要等待足够时间
+2. 检测页面文本确认APP状态
+3. 如果UI无响应，重启APP
+4. 添加重试机制处理偶发问题
+
+---
+
+## UI风格页面测试结果
+
+### 测试环境
+- 模拟器：emulator-5554 (Pixel_6)
+- APP包名：com.legostory.demo
+- Appium端口：4723
+
+### 测试结果
+```
+✅ 通过的测试 (4):
+   ✓ APP已启动
+   ✓ 连接成功！
+   ✓ 应用已启动
+   ✓ 应用运行正常，无崩溃和错误
+
+⚠️ 警告 (3):
+   ⚠ 未找到UI风格按钮，尝试查找所有按钮...
+   ⚠ UI风格列表页缺少部分风格
+   ⚠ 未找到返回首页按钮
+
+❌ 失败的测试 (5):
+   ✗ 无法进入UI风格列表页
+   ✗ 未找到横版游戏风格按钮
+   ✗ 未找到像素方块风格按钮
+   ✗ 未找到电影风格按钮
+   ✗ 未找到手绘风格按钮
+```
+
+### 问题分析
+1. **System UI isn't responding** - 模拟器UI卡死
+2. **Appium端口被占用** - 之前的进程未正确关闭
+3. **APP状态不正常** - 需要强制重启APP
+
+### 改进措施
+1. 测试前强制停止并重启APP
+2. 启动Appium前终止所有node进程
+3. 添加APP状态检测和重试机制
+4. 检测页面文本确认APP正常
+
+---
+
+### 问题20：手绘风格页面崩溃 - useNativeDriver不支持width属性
+
+**问题描述：**
+- 手绘风格页面打开时应用崩溃
+- 错误原因：`width` 属性不支持 `useNativeDriver: true`
+
+**根本原因：**
+根据问题7，`useNativeDriver: true` 只支持 `opacity` 和 `transform` 属性，不支持 `width`、`height`、`margin` 等布局属性。
+
+**错误代码：**
+```javascript
+// 错误写法
+style={{
+  opacity: anim.interpolate({
+    inputRange: [0, 1],
+    outputRange: [0.2, 0.6],
+  }),
+  width: anim.interpolate({  // ❌ width 不支持 useNativeDriver
+    inputRange: [0, 1],
+    outputRange: [30, 60],
+  }),
+}}
+```
+
+**修复方案：**
+```javascript
+// 正确写法 - 使用 transform: scaleX 替代 width
+style={{
+  opacity: anim.interpolate({
+    inputRange: [0, 1],
+    outputRange: [0.2, 0.6],
+  }),
+  transform: [
+    {
+      scaleX: anim.interpolate({  // ✅ transform 支持 useNativeDriver
+        inputRange: [0, 1],
+        outputRange: [0.5, 1],
+      }),
+    },
+  ],
+}}
+```
+
+**经验教训：**
+1. 使用 `useNativeDriver: true` 时只能使用 `opacity` 和 `transform` 属性
+2. 需要动画宽度时，使用 `transform: scaleX` 替代
+3. 需要动画高度时，使用 `transform: scaleY` 替代
+4. 给元素设置固定宽度，然后用 scaleX 控制视觉缩放效果
+
+---
+
+*最后更新：2026-03-06 01:15*

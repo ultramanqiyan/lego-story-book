@@ -29,6 +29,11 @@ import {
   useGlowRingAnimation,
 } from './src/utils/AnimationEffects';
 import StoryDirectorDemo from './src/screens/StoryDirectorDemo';
+import UIStyleListScreen, { UIStyleType } from './src/screens/UIStyleListScreen';
+import SideScrollerGameStyle from './src/screens/styles/SideScrollerGameStyle';
+import PixelBlockStyle from './src/screens/styles/PixelBlockStyle';
+import MovieFilmStyle from './src/screens/styles/MovieFilmStyle';
+import HandDrawnStyle from './src/screens/styles/HandDrawnStyle';
 
 const { width, height } = Dimensions.get('window');
 const CARD_WIDTH = 70;
@@ -474,9 +479,10 @@ const StyledMinion: React.FC<StyledMinionProps> = ({
 
 interface GameBoardProps {
   onNavigateToDirector: () => void;
+  onNavigateToUIStyles: () => void;
 }
 
-const GameBoard: React.FC<GameBoardProps> = ({ onNavigateToDirector }) => {
+const GameBoard: React.FC<GameBoardProps> = ({ onNavigateToDirector, onNavigateToUIStyles }) => {
   const { state, playCard, attackMinion, attackHero, endTurn, selectMinion } = useGame();
   const { currentStyle, currentAnimation, cycleStyle, cycleAnimation } = useStyle();
   const [draggingCard, setDraggingCard] = useState<Card | null>(null);
@@ -674,6 +680,10 @@ const GameBoard: React.FC<GameBoardProps> = ({ onNavigateToDirector }) => {
               <Text style={styles.btnIcon}>🎬</Text>
               <Text style={styles.btnText}>导演台</Text>
             </TouchableOpacity>
+            <TouchableOpacity style={styles.styleBtn} onPress={onNavigateToUIStyles}>
+              <Text style={styles.btnIcon}>🖼️</Text>
+              <Text style={styles.btnText}>UI风格</Text>
+            </TouchableOpacity>
           </View>
         </View>
       </View>
@@ -735,18 +745,43 @@ const GameBoard: React.FC<GameBoardProps> = ({ onNavigateToDirector }) => {
   );
 };
 
+type PageState = 'home' | 'director' | 'ui-style-list' | UIStyleType;
+
 const App: React.FC = () => {
-  const [showDirectorDemo, setShowDirectorDemo] = useState(false);
+  const [currentPage, setCurrentPage] = useState<PageState>('home');
+
+  const renderPage = () => {
+    switch (currentPage) {
+      case 'director':
+        return <StoryDirectorDemo onBack={() => setCurrentPage('home')} />;
+      case 'ui-style-list':
+        return (
+          <UIStyleListScreen
+            onSelectStyle={(style) => setCurrentPage(style)}
+            onBack={() => setCurrentPage('home')}
+          />
+        );
+      case 'side-scroller-game':
+        return <SideScrollerGameStyle onBack={() => setCurrentPage('ui-style-list')} />;
+      case 'pixel-block':
+        return <PixelBlockStyle onBack={() => setCurrentPage('ui-style-list')} />;
+      case 'movie-film':
+        return <MovieFilmStyle onBack={() => setCurrentPage('ui-style-list')} />;
+      case 'hand-drawn':
+        return <HandDrawnStyle onBack={() => setCurrentPage('ui-style-list')} />;
+      default:
+        return (
+          <GameBoard
+            onNavigateToDirector={() => setCurrentPage('director')}
+            onNavigateToUIStyles={() => setCurrentPage('ui-style-list')}
+          />
+        );
+    }
+  };
 
   return (
     <GameProvider>
-      <StyleProvider>
-        {showDirectorDemo ? (
-          <StoryDirectorDemo onBack={() => setShowDirectorDemo(false)} />
-        ) : (
-          <GameBoard onNavigateToDirector={() => setShowDirectorDemo(true)} />
-        )}
-      </StyleProvider>
+      <StyleProvider>{renderPage()}</StyleProvider>
     </GameProvider>
   );
 };
