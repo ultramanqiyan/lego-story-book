@@ -28,6 +28,7 @@ import {
   useParticleBurstAnimation,
   useGlowRingAnimation,
 } from './src/utils/AnimationEffects';
+import StoryDirectorDemo from './src/screens/StoryDirectorDemo';
 
 const { width, height } = Dimensions.get('window');
 const CARD_WIDTH = 70;
@@ -471,7 +472,11 @@ const StyledMinion: React.FC<StyledMinionProps> = ({
   );
 };
 
-const GameBoard: React.FC = () => {
+interface GameBoardProps {
+  onNavigateToDirector: () => void;
+}
+
+const GameBoard: React.FC<GameBoardProps> = ({ onNavigateToDirector }) => {
   const { state, playCard, attackMinion, attackHero, endTurn, selectMinion } = useGame();
   const { currentStyle, currentAnimation, cycleStyle, cycleAnimation } = useStyle();
   const [draggingCard, setDraggingCard] = useState<Card | null>(null);
@@ -665,9 +670,9 @@ const GameBoard: React.FC = () => {
             >
               <Text style={styles.endTurnText}>结束回合</Text>
             </TouchableOpacity>
-            <TouchableOpacity style={styles.styleBtn} onPress={() => setShowStyleSelector(true)}>
-              <Text style={styles.btnIcon}>✨</Text>
-              <Text style={styles.btnText}>动画</Text>
+            <TouchableOpacity style={styles.styleBtn} onPress={onNavigateToDirector}>
+              <Text style={styles.btnIcon}>🎬</Text>
+              <Text style={styles.btnText}>导演台</Text>
             </TouchableOpacity>
           </View>
         </View>
@@ -731,10 +736,16 @@ const GameBoard: React.FC = () => {
 };
 
 const App: React.FC = () => {
+  const [showDirectorDemo, setShowDirectorDemo] = useState(false);
+
   return (
     <GameProvider>
       <StyleProvider>
-        <GameBoard />
+        {showDirectorDemo ? (
+          <StoryDirectorDemo onBack={() => setShowDirectorDemo(false)} />
+        ) : (
+          <GameBoard onNavigateToDirector={() => setShowDirectorDemo(true)} />
+        )}
       </StyleProvider>
     </GameProvider>
   );
