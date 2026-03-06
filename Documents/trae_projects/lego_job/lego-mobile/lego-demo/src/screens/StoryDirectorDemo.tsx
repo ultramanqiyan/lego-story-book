@@ -104,13 +104,26 @@ const StoryDirectorDemo: React.FC<StoryDirectorDemoProps> = ({ bookId, onBack })
       setIsLoading(false);
     }
   };
-  const shakeAnims = useRef(characters.map(() => new Animated.Value(0))).current;
 
-  const stageCharAnims = useRef(characters.map(() => ({
-    y: new Animated.Value(-50),
-    scale: new Animated.Value(0),
-    opacity: new Animated.Value(0),
-  }))).current;
+  const shakeAnims = useRef<Animated.Value[]>([]).current;
+  const stageCharAnims = useRef<{ y: Animated.Value; scale: Animated.Value; opacity: Animated.Value }[]>([]).current;
+  const floatAnims = useRef<Animated.Value[]>([]).current;
+
+  useEffect(() => {
+    shakeAnims.length = 0;
+    stageCharAnims.length = 0;
+    floatAnims.length = 0;
+    
+    characters.forEach(() => {
+      shakeAnims.push(new Animated.Value(0));
+      stageCharAnims.push({
+        y: new Animated.Value(-50),
+        scale: new Animated.Value(0),
+        opacity: new Animated.Value(0),
+      });
+      floatAnims.push(new Animated.Value(0));
+    });
+  }, [characters]);
 
   const particleAnims = useRef(Array(20).fill(null).map(() => ({
     x: new Animated.Value(Math.random() * width),
@@ -118,8 +131,6 @@ const StoryDirectorDemo: React.FC<StoryDirectorDemoProps> = ({ bookId, onBack })
     opacity: new Animated.Value(Math.random() * 0.5 + 0.3),
     scale: new Animated.Value(Math.random() * 0.5 + 0.5),
   }))).current;
-
-  const floatAnims = useRef(characters.map(() => new Animated.Value(0))).current;
 
   useEffect(() => {
     Animated.timing(pageAnim, {
@@ -426,12 +437,12 @@ const StoryDirectorDemo: React.FC<StoryDirectorDemoProps> = ({ bookId, onBack })
   };
 
   const renderCharacterCard = (char: Character, index: number) => {
-    const isSelected = selectedCharacters.includes(char.id);
+    const isSelected = selectedCharacters.includes(char.characterId);
     const anim = characterAnims[index];
 
     return (
       <Animated.View
-        key={char.id}
+        key={char.characterId}
         style={{
           opacity: anim,
           transform: [{ scale: anim }],
@@ -447,7 +458,7 @@ const StoryDirectorDemo: React.FC<StoryDirectorDemoProps> = ({ bookId, onBack })
             },
             isSelected && styles.cardSelected,
           ]}
-          onPress={() => toggleCharacter(char.id)}
+          onPress={() => toggleCharacter(char.characterId)}
           activeOpacity={0.8}
         >
           <Text style={styles.cardEmoji}>{char.emoji}</Text>
@@ -455,7 +466,7 @@ const StoryDirectorDemo: React.FC<StoryDirectorDemoProps> = ({ bookId, onBack })
           {isSelected && (
             <View style={[styles.selectedBadge, { backgroundColor: styleConfig.colors.accent }]}>
               <Text style={styles.selectedBadgeText}>
-                {selectedCharacters.indexOf(char.id) + 1}
+                {selectedCharacters.indexOf(char.characterId) + 1}
               </Text>
             </View>
           )}
@@ -465,7 +476,7 @@ const StoryDirectorDemo: React.FC<StoryDirectorDemoProps> = ({ bookId, onBack })
   };
 
   const renderAdventureCard = (adv: PlotElement, index: number) => {
-    const isSelected = selectedAdventure === adv.id;
+    const isSelected = selectedAdventure === adv.elementId;
     const anim = adventureAnims[index];
     const rotateY = anim.interpolate({
       inputRange: [0, 1],
@@ -474,7 +485,7 @@ const StoryDirectorDemo: React.FC<StoryDirectorDemoProps> = ({ bookId, onBack })
 
     return (
       <Animated.View
-        key={adv.id}
+        key={adv.elementId}
         style={{
           opacity: anim,
           transform: [{ rotateY }, { scale: anim }],
@@ -489,7 +500,7 @@ const StoryDirectorDemo: React.FC<StoryDirectorDemoProps> = ({ bookId, onBack })
             },
             isSelected && styles.cardSelected,
           ]}
-          onPress={() => setSelectedAdventure(adv.id)}
+          onPress={() => setSelectedAdventure(adv.elementId)}
           activeOpacity={0.8}
         >
           <Text style={styles.cardEmoji}>{adv.emoji}</Text>
@@ -500,13 +511,13 @@ const StoryDirectorDemo: React.FC<StoryDirectorDemoProps> = ({ bookId, onBack })
   };
 
   const renderWeatherCard = (weather: PlotElement, index: number) => {
-    const isSelected = selectedWeather === weather.id;
+    const isSelected = selectedWeather === weather.elementId;
     const anim = weatherAnims[index];
     const glowAnim = glowAnims[index];
 
     return (
       <Animated.View
-        key={weather.id}
+        key={weather.elementId}
         style={{
           opacity: anim,
           transform: [{ scale: anim }],
@@ -521,7 +532,7 @@ const StoryDirectorDemo: React.FC<StoryDirectorDemoProps> = ({ bookId, onBack })
             },
             isSelected && styles.cardSelected,
           ]}
-          onPress={() => setSelectedWeather(weather.id)}
+          onPress={() => setSelectedWeather(weather.elementId)}
           activeOpacity={0.8}
         >
           {isSelected && (
@@ -544,13 +555,13 @@ const StoryDirectorDemo: React.FC<StoryDirectorDemoProps> = ({ bookId, onBack })
   };
 
   const renderTerrainCard = (terrain: PlotElement, index: number) => {
-    const isSelected = selectedTerrain === terrain.id;
+    const isSelected = selectedTerrain === terrain.elementId;
     const anim = terrainAnims[index];
     const pulseAnim = pulseAnims[index];
 
     return (
       <Animated.View
-        key={terrain.id}
+        key={terrain.elementId}
         style={{
           opacity: anim,
           transform: [{ scale: isSelected ? pulseAnim : anim }],
@@ -565,7 +576,7 @@ const StoryDirectorDemo: React.FC<StoryDirectorDemoProps> = ({ bookId, onBack })
             },
             isSelected && styles.cardSelected,
           ]}
-          onPress={() => setSelectedTerrain(terrain.id)}
+          onPress={() => setSelectedTerrain(terrain.elementId)}
           activeOpacity={0.8}
         >
           <Text style={styles.cardEmoji}>{terrain.emoji}</Text>
@@ -576,7 +587,7 @@ const StoryDirectorDemo: React.FC<StoryDirectorDemoProps> = ({ bookId, onBack })
   };
 
   const renderEquipmentCard = (equip: PlotElement, index: number) => {
-    const isSelected = selectedEquipment === equip.id;
+    const isSelected = selectedEquipment === equip.elementId;
     const anim = equipmentAnims[index];
     const waveAnim = waveAnims[index];
     const rotate = waveAnim.rotate.interpolate({
@@ -586,7 +597,7 @@ const StoryDirectorDemo: React.FC<StoryDirectorDemoProps> = ({ bookId, onBack })
 
     return (
       <Animated.View
-        key={equip.id}
+        key={equip.elementId}
         style={{
           opacity: anim,
           transform: [
@@ -604,7 +615,7 @@ const StoryDirectorDemo: React.FC<StoryDirectorDemoProps> = ({ bookId, onBack })
             },
             isSelected && styles.cardSelected,
           ]}
-          onPress={() => setSelectedEquipment(equip.id)}
+          onPress={() => setSelectedEquipment(equip.elementId)}
           activeOpacity={0.8}
         >
           <Text style={styles.cardEmoji}>{equip.emoji}</Text>
@@ -641,6 +652,9 @@ const StoryDirectorDemo: React.FC<StoryDirectorDemoProps> = ({ bookId, onBack })
               const charIndex = characters.findIndex((c) => c.characterId === char.characterId);
               const anim = stageCharAnims[charIndex];
               const floatAnim = floatAnims[charIndex];
+              
+              if (!anim || !floatAnim) return null;
+              
               const translateY = floatAnim.interpolate({
                 inputRange: [0, 1],
                 outputRange: [0, -8],
@@ -648,7 +662,7 @@ const StoryDirectorDemo: React.FC<StoryDirectorDemoProps> = ({ bookId, onBack })
 
               return (
                 <Animated.View
-                  key={char.id}
+                  key={char.characterId}
                   style={[
                     styles.stage3DCharacter,
                     {
@@ -714,6 +728,9 @@ const StoryDirectorDemo: React.FC<StoryDirectorDemoProps> = ({ bookId, onBack })
               const charIndex = characters.findIndex((c) => c.characterId === char.characterId);
               const anim = stageCharAnims[charIndex];
               const floatAnim = floatAnims[charIndex];
+              
+              if (!anim || !floatAnim) return null;
+              
               const translateY = floatAnim.interpolate({
                 inputRange: [0, 1],
                 outputRange: [0, -5],
@@ -721,7 +738,7 @@ const StoryDirectorDemo: React.FC<StoryDirectorDemoProps> = ({ bookId, onBack })
 
               return (
                 <Animated.View
-                  key={char.id}
+                  key={char.characterId}
                   style={[
                     styles.battleCharacterFrame,
                     {
@@ -742,7 +759,7 @@ const StoryDirectorDemo: React.FC<StoryDirectorDemoProps> = ({ bookId, onBack })
                       style={[
                         styles.battleEnergyFill, 
                         { 
-                          width: `${char.energy}%`,
+                          width: '80%',
                           backgroundColor: styleConfig.colors.accent 
                         }
                       ]} 
@@ -821,6 +838,9 @@ const StoryDirectorDemo: React.FC<StoryDirectorDemoProps> = ({ bookId, onBack })
               const charIndex = characters.findIndex((c) => c.characterId === char.characterId);
               const anim = stageCharAnims[charIndex];
               const floatAnim = floatAnims[charIndex];
+              
+              if (!anim || !floatAnim) return null;
+              
               const translateY = floatAnim.interpolate({
                 inputRange: [0, 1],
                 outputRange: [0, -6],
@@ -835,7 +855,7 @@ const StoryDirectorDemo: React.FC<StoryDirectorDemoProps> = ({ bookId, onBack })
 
               return (
                 <Animated.View
-                  key={char.id}
+                  key={char.characterId}
                   style={[
                     styles.immersiveCharacter,
                     positions[index] || positions[0],
@@ -898,6 +918,9 @@ const StoryDirectorDemo: React.FC<StoryDirectorDemoProps> = ({ bookId, onBack })
               const charIndex = characters.findIndex((c) => c.characterId === char.characterId);
               const anim = stageCharAnims[charIndex];
               const floatAnim = floatAnims[charIndex];
+              
+              if (!anim || !floatAnim) return null;
+              
               const translateY = floatAnim.interpolate({
                 inputRange: [0, 1],
                 outputRange: [0, -4],
@@ -905,7 +928,7 @@ const StoryDirectorDemo: React.FC<StoryDirectorDemoProps> = ({ bookId, onBack })
 
               return (
                 <Animated.View
-                  key={char.id}
+                  key={char.characterId}
                   style={[
                     styles.pixelArtCharacter,
                     {
@@ -965,6 +988,9 @@ const StoryDirectorDemo: React.FC<StoryDirectorDemoProps> = ({ bookId, onBack })
                 const charIndex = characters.findIndex((c) => c.characterId === char.characterId);
                 const anim = stageCharAnims[charIndex];
                 const floatAnim = floatAnims[charIndex];
+                
+                if (!anim || !floatAnim) return null;
+                
                 const translateY = floatAnim.interpolate({
                   inputRange: [0, 1],
                   outputRange: [0, -6],
@@ -972,7 +998,7 @@ const StoryDirectorDemo: React.FC<StoryDirectorDemoProps> = ({ bookId, onBack })
 
                 return (
                   <Animated.View
-                    key={char.id}
+                    key={char.characterId}
                     style={[
                       styles.glassmorphismCharacter,
                       {
@@ -1019,6 +1045,9 @@ const StoryDirectorDemo: React.FC<StoryDirectorDemoProps> = ({ bookId, onBack })
             selectedCharData.map((char, index) => {
               const charIndex = characters.findIndex((c) => c.characterId === char.characterId);
               const anim = stageCharAnims[charIndex];
+              
+              if (!anim) return null;
+              
               const angle = (index / selectedCharData.length) * 360;
               const radius = 80;
               const x = Math.cos(angle * Math.PI / 180) * radius;
@@ -1026,7 +1055,7 @@ const StoryDirectorDemo: React.FC<StoryDirectorDemoProps> = ({ bookId, onBack })
 
               return (
                 <Animated.View
-                  key={char.id}
+                  key={char.characterId}
                   style={[
                     styles.carouselCharacter,
                     {
@@ -1085,6 +1114,9 @@ const StoryDirectorDemo: React.FC<StoryDirectorDemoProps> = ({ bookId, onBack })
                   const charIndex = characters.findIndex((c) => c.characterId === char.characterId);
                   const anim = stageCharAnims[charIndex];
                   const floatAnim = floatAnims[charIndex];
+                  
+                  if (!anim || !floatAnim) return null;
+                  
                   const translateY = floatAnim.interpolate({
                     inputRange: [0, 1],
                     outputRange: [0, -8],
@@ -1092,7 +1124,7 @@ const StoryDirectorDemo: React.FC<StoryDirectorDemoProps> = ({ bookId, onBack })
 
                   return (
                     <Animated.View
-                      key={char.id}
+                      key={char.characterId}
                       style={[
                         styles.sideScrollerCharacter,
                         {
