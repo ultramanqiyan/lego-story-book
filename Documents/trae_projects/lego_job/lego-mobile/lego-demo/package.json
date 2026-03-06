@@ -33,9 +33,14 @@
   },
   "devDependencies": {
     "@babel/core": "^7.24.0",
+    "@testing-library/jest-native": "^5.4.3",
+    "@testing-library/react-native": "^13.3.3",
+    "@types/jest": "^30.0.0",
     "@types/react": "^18.3.28",
     "@types/three": "^0.183.1",
     "@wdio/cli": "^9.24.0",
+    "jest": "^30.2.0",
+    "ts-jest": "^29.4.6",
     "typescript": "^5.3.0",
     "webdriverio": "^9.24.0"
   },

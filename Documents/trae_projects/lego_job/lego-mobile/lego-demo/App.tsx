@@ -34,6 +34,7 @@ import SideScrollerGameStyle from './src/screens/styles/SideScrollerGameStyle';
 import PixelBlockStyle from './src/screens/styles/PixelBlockStyle';
 import MovieFilmStyle from './src/screens/styles/MovieFilmStyle';
 import HandDrawnStyle from './src/screens/styles/HandDrawnStyle';
+import BookDetailDemo from './src/screens/BookDetailDemo';
 
 const { width, height } = Dimensions.get('window');
 const CARD_WIDTH = 70;
@@ -480,9 +481,10 @@ const StyledMinion: React.FC<StyledMinionProps> = ({
 interface GameBoardProps {
   onNavigateToDirector: () => void;
   onNavigateToUIStyles: () => void;
+  onNavigateToBookDetail: () => void;
 }
 
-const GameBoard: React.FC<GameBoardProps> = ({ onNavigateToDirector, onNavigateToUIStyles }) => {
+const GameBoard: React.FC<GameBoardProps> = ({ onNavigateToDirector, onNavigateToUIStyles, onNavigateToBookDetail }) => {
   const { state, playCard, attackMinion, attackHero, endTurn, selectMinion } = useGame();
   const { currentStyle, currentAnimation, cycleStyle, cycleAnimation } = useStyle();
   const [draggingCard, setDraggingCard] = useState<Card | null>(null);
@@ -680,9 +682,9 @@ const GameBoard: React.FC<GameBoardProps> = ({ onNavigateToDirector, onNavigateT
               <Text style={styles.btnIcon}>🎬</Text>
               <Text style={styles.btnText}>导演台</Text>
             </TouchableOpacity>
-            <TouchableOpacity style={styles.styleBtn} onPress={onNavigateToUIStyles}>
-              <Text style={styles.btnIcon}>🖼️</Text>
-              <Text style={styles.btnText}>UI风格</Text>
+            <TouchableOpacity style={styles.styleBtn} onPress={onNavigateToBookDetail}>
+              <Text style={styles.btnIcon}>📖</Text>
+              <Text style={styles.btnText}>书籍</Text>
             </TouchableOpacity>
           </View>
         </View>
@@ -745,7 +747,7 @@ const GameBoard: React.FC<GameBoardProps> = ({ onNavigateToDirector, onNavigateT
   );
 };
 
-type PageState = 'home' | 'director' | 'ui-style-list' | UIStyleType;
+type PageState = 'home' | 'director' | 'ui-style-list' | 'book-detail' | UIStyleType;
 
 const App: React.FC = () => {
   const [currentPage, setCurrentPage] = useState<PageState>('home');
@@ -754,6 +756,8 @@ const App: React.FC = () => {
     switch (currentPage) {
       case 'director':
         return <StoryDirectorDemo onBack={() => setCurrentPage('home')} />;
+      case 'book-detail':
+        return <BookDetailDemo onBack={() => setCurrentPage('home')} />;
       case 'ui-style-list':
         return (
           <UIStyleListScreen
@@ -774,6 +778,7 @@ const App: React.FC = () => {
           <GameBoard
             onNavigateToDirector={() => setCurrentPage('director')}
             onNavigateToUIStyles={() => setCurrentPage('ui-style-list')}
+            onNavigateToBookDetail={() => setCurrentPage('book-detail')}
           />
         );
     }
