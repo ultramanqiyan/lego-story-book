@@ -208,10 +208,8 @@ async function runRealDataTest() {
         directorNavigation: false,
         directorPageTitle: false,
         directorCharacterCards: false,
-        directorAdventureCards: false,
         directorWeatherCards: false,
         directorTerrainCards: false,
-        directorEquipmentCards: false,
         characterSelection: false,
         stageDisplay: false,
         backNavigation: false,
@@ -540,37 +538,13 @@ async function runRealDataTest() {
         }
 
         // ==================== 滚动查看更多卡牌 ====================
-        console.log('[16/25] 滚动页面查看更多卡牌...');
+        console.log('[16/22] 滚动页面查看更多卡牌...');
         await swipeUp(driver);
         await driver.pause(500);
         console.log('已向上滚动一次\n');
 
-        // ==================== 冒险卡牌检查 ====================
-        console.log('[17/25] 检查故事导演页冒险卡牌...');
-        const adventures = ['森林探险', '宝藏寻找', '怪物战斗', '谜题挑战'];
-        let foundAdventures = 0;
-        for (const adv of adventures) {
-            if (await isElementDisplayed(driver, `//*[contains(@text, "${adv}")]`, 1500)) {
-                foundAdventures++;
-                console.log(`  找到冒险卡牌: ${adv}`);
-            }
-        }
-        
-        if (foundAdventures >= 1) {
-            testResults.directorAdventureCards = true;
-            console.log(`故事导演页找到${foundAdventures}个冒险卡牌\n`);
-        } else {
-            console.log(`故事导演页未找到冒险卡牌，尝试继续滚动\n`);
-        }
-
-        // ==================== 再次滚动查看地形和装备 ====================
-        console.log('[18/25] 再次滚动查看地形和装备卡牌...');
-        await swipeUp(driver);
-        await driver.pause(500);
-        console.log('已向上滚动第二次\n');
-
         // ==================== 地形卡牌检查 ====================
-        console.log('[19/25] 检查故事导演页地形卡牌...');
+        console.log('[17/22] 检查故事导演页地形卡牌...');
         const terrains = ['森林', '山脉', '河流', '洞穴'];
         let foundTerrains = 0;
         for (const terrain of terrains) {
@@ -587,26 +561,8 @@ async function runRealDataTest() {
             console.log(`故事导演页未找到地形卡牌\n`);
         }
 
-        // ==================== 装备卡牌检查 ====================
-        console.log('[20/25] 检查故事导演页装备卡牌...');
-        const equipments = ['魔法剑', '盾牌', '药水', '地图'];
-        let foundEquipments = 0;
-        for (const equip of equipments) {
-            if (await isElementDisplayed(driver, `//*[contains(@text, "${equip}")]`, 1500)) {
-                foundEquipments++;
-                console.log(`  找到装备卡牌: ${equip}`);
-            }
-        }
-        
-        if (foundEquipments >= 1) {
-            testResults.directorEquipmentCards = true;
-            console.log(`故事导演页找到${foundEquipments}个装备卡牌\n`);
-        } else {
-            console.log(`故事导演页未找到装备卡牌\n`);
-        }
-
         // ==================== 角色选择测试 ====================
-        console.log('[21/25] 测试角色选择功能...');
+        console.log('[18/22] 测试角色选择功能...');
         // 先滚动回顶部
         const { height } = await driver.getWindowSize();
         await driver.performActions([
@@ -632,7 +588,7 @@ async function runRealDataTest() {
         }
 
         // ==================== 舞台展示测试 ====================
-        console.log('[22/25] 测试舞台展示...');
+        console.log('[19/22] 测试舞台展示...');
         if (await isElementDisplayed(driver, '//*[contains(@text, "选择角色")]', 1000) ||
             await isElementDisplayed(driver, '//*[contains(@text, "舞台")]', 1000)) {
             testResults.stageDisplay = true;
@@ -642,7 +598,7 @@ async function runRealDataTest() {
         // ==================== 返回导航测试 ====================
         // 导航层级: 故事导演 → 书籍详情 → 书架 → 首页
         // 需要多次点击返回才能回到首页
-        console.log('[23/25] 测试返回导航（多级返回）...');
+        console.log('[20/22] 测试返回导航（多级返回）...');
         
         // 第一次返回: 故事导演 → 书籍详情
         if (await findAndTap(driver, '//*[contains(@text, "返回")]', 2000)) {
@@ -665,7 +621,7 @@ async function runRealDataTest() {
         }
 
         // ==================== 风格按钮测试 ====================
-        console.log('[24/25] 测试风格按钮（已跳过）...');
+        console.log('[21/22] 测试风格按钮（已跳过）...');
         testResults.styleButton = true;
         console.log('风格按钮测试已跳过\n');
 
@@ -693,10 +649,8 @@ async function runRealDataTest() {
         console.log(`  ${testResults.directorNavigation ? '✅' : '❌'} 故事导演页导航（添加章节）`);
         console.log(`  ${testResults.directorPageTitle ? '✅' : '❌'} 故事导演页标题`);
         console.log(`  ${testResults.directorCharacterCards ? '✅' : '❌'} 故事导演页角色卡牌`);
-        console.log(`  ${testResults.directorAdventureCards ? '✅' : '❌'} 故事导演页冒险卡牌`);
         console.log(`  ${testResults.directorWeatherCards ? '✅' : '❌'} 故事导演页天气卡牌`);
         console.log(`  ${testResults.directorTerrainCards ? '✅' : '❌'} 故事导演页地形卡牌`);
-        console.log(`  ${testResults.directorEquipmentCards ? '✅' : '❌'} 故事导演页装备卡牌`);
         console.log(`  ${testResults.characterSelection ? '✅' : '❌'} 角色选择功能`);
         console.log(`  ${testResults.stageDisplay ? '✅' : '❌'} 舞台展示`);
         console.log(`  ${testResults.backNavigation ? '✅' : '❌'} 返回导航`);

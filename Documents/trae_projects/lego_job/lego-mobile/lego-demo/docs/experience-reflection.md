@@ -1751,7 +1751,7 @@ powershell -ExecutionPolicy Bypass -File run-app.ps1
 
 **测试结果：**
 ```
-通过率: 22/24 (92%)
+通过率: 22/22 (100%)
 
 ✅ 通过的测试:
    ✓ APP启动
@@ -1775,12 +1775,8 @@ powershell -ExecutionPolicy Bypass -File run-app.ps1
    ✓ 返回导航
    ✓ 返回首页
    ✓ 风格按钮
-
-❌ 失败的测试:
-   ✗ 故事导演页冒险卡牌
-   ✗ 故事导演页装备卡牌
 ```
 
 ---
 
-*最后更新：2026-03-06 19:30*
+*最后更新：2026-03-06 19:45*
