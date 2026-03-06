@@ -434,7 +434,8 @@ async function runCreateBookTest() {
 
         // ==================== 点击开拍按钮 ====================
         console.log('[20/22] 点击开拍按钮...');
-        if (await findAndTap(driver, '//*[contains(@text, "开拍")]', 2000)) {
+        await driver.pause(500);
+        if (await findAndTap(driver, '//*[contains(@text, "开始拍摄")]', 2000)) {
             testResults.shootButton = true;
             console.log('已点击开拍按钮\n');
             await driver.pause(2000);
