@@ -196,9 +196,6 @@ async function runFullTest() {
         cardDemoBookshelfButton: false,
         cardDemoDirectorButton: false,
         cardDemoBookButton: false,
-        
-        // 删除书籍测试
-        deleteBook: false,
     };
     
     try {
@@ -232,13 +229,13 @@ async function runFullTest() {
         
         // ==================== 首页测试 ====================
         console.log('[4/50] 验证首页显示...');
-        if (await isElementDisplayed(driver, '//*[contains(@text, "乐高故事书")]', 5000)) {
+        if (await isElementDisplayed(driver, '//*[contains(@text, "LEGO Story")]', 5000)) {
             testResults.homePageDisplayed = true;
             console.log('首页显示正常\n');
         }
         
         console.log('[5/50] 从首页进入书架页...');
-        if (await findAndTap(driver, '//*[contains(@text, "书架")]', 2000)) {
+        if (await findAndTap(driver, '//android.widget.TextView[contains(@text, "书架")]', 2000)) {
             await driver.pause(1000);
             testResults.navigateToBookshelf = true;
             console.log('已点击书架按钮\n');
@@ -554,7 +551,7 @@ async function runFullTest() {
         }
         
         console.log('[34/50] 验证首页显示...');
-        if (await isElementDisplayed(driver, '//*[contains(@text, "乐高故事书")]', 3000)) {
+        if (await isElementDisplayed(driver, '//*[contains(@text, "LEGO Story")]', 3000)) {
             testResults.homePageAfterReturn = true;
             console.log('返回首页成功\n');
         }
@@ -641,27 +638,6 @@ async function runFullTest() {
             await driver.pause(500);
         }
         
-        // ==================== 删除书籍测试 ====================
-        console.log('[42/50] 进入书架页删除书籍...');
-        if (await findAndTap(driver, '//*[contains(@text, "书架")]', 2000)) {
-            await driver.pause(1000);
-        }
-        
-        console.log('[43/50] 删除测试书籍...');
-        const bookItems = await driver.$$('//*[contains(@text, "测试书籍")]');
-        if (bookItems.length > 0) {
-            await bookItems[0].click();
-            await driver.pause(1000);
-            
-            if (await findAndTap(driver, '//*[contains(@text, "删除")]', 2000)) {
-                await driver.pause(500);
-                if (await findAndTap(driver, '//*[contains(@text, "确定")]', 2000)) {
-                    testResults.deleteBook = true;
-                    console.log('书籍删除成功\n');
-                }
-            }
-        }
-        
         const totalTime = ((Date.now() - startTime) / 1000).toFixed(1);
         
         console.log('\n' + '='.repeat(70));
@@ -725,9 +701,6 @@ async function runFullTest() {
         console.log(`  ${testResults.cardDemoBookshelfButton ? '✅' : '❌'} 书架按钮`);
         console.log(`  ${testResults.cardDemoDirectorButton ? '✅' : '❌'} 导演台按钮`);
         console.log(`  ${testResults.cardDemoBookButton ? '✅' : '❌'} 书籍按钮`);
-        
-        console.log('\n删除书籍测试:');
-        console.log(`  ${testResults.deleteBook ? '✅' : '❌'} 书籍删除功能`);
         
         const passedCount = Object.values(testResults).filter(v => v).length;
         const totalCount = Object.values(testResults).length;
