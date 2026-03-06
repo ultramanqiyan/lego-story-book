@@ -73,6 +73,10 @@ const StoryDirectorDemo: React.FC<StoryDirectorDemoProps> = ({ bookId, onBack })
   const pulseAnims = useRef<Animated.Value[]>([]).current;
   const glowAnims = useRef<{ scale: Animated.Value; opacity: Animated.Value }[]>([]).current;
   const waveAnims = useRef<{ y: Animated.Value; rotate: Animated.Value }[]>([]).current;
+  
+  const shakeAnims = useRef<Animated.Value[]>([]).current;
+  const stageCharAnims = useRef<{ y: Animated.Value; scale: Animated.Value; opacity: Animated.Value }[]>([]).current;
+  const floatAnims = useRef<Animated.Value[]>([]).current;
 
   useEffect(() => {
     loadData();
@@ -81,21 +85,28 @@ const StoryDirectorDemo: React.FC<StoryDirectorDemoProps> = ({ bookId, onBack })
   const loadData = async () => {
     setIsLoading(true);
     try {
+      console.log('[StoryDirector] Loading data for bookId:', bookId);
       const book = await getBookById(bookId);
+      console.log('[StoryDirector] Book loaded:', book);
       if (book) {
         const chars = await getCharactersByBookId(bookId);
+        console.log('[StoryDirector] Characters loaded:', chars.length, chars);
         setCharacters(chars);
         
         const adventureData = await getPlotElementsByTypeId(book.typeId, 'adventure');
+        console.log('[StoryDirector] Adventures loaded:', adventureData.length, adventureData);
         setAdventures(adventureData);
         
         const weatherData = await getPlotElementsByTypeId(book.typeId, 'weather');
+        console.log('[StoryDirector] Weathers loaded:', weatherData.length, weatherData);
         setWeathers(weatherData);
         
         const terrainData = await getPlotElementsByTypeId(book.typeId, 'terrain');
+        console.log('[StoryDirector] Terrains loaded:', terrainData.length, terrainData);
         setTerrains(terrainData);
         
         const equipmentData = await getPlotElementsByTypeId(book.typeId, 'equipment');
+        console.log('[StoryDirector] Equipments loaded:', equipmentData.length, equipmentData);
         setEquipments(equipmentData);
         
         // Initialize animation arrays immediately after loading data
@@ -146,6 +157,69 @@ const StoryDirectorDemo: React.FC<StoryDirectorDemoProps> = ({ bookId, onBack })
             rotate: new Animated.Value(0),
           });
         });
+        
+        // Start animations after initializing arrays
+        Animated.timing(pageAnim, {
+          toValue: 1,
+          duration: 400,
+          easing: Easing.out(Easing.cubic),
+          useNativeDriver: true,
+        }).start();
+
+        characterAnims.forEach((anim, index) => {
+          Animated.spring(anim, {
+            toValue: 1,
+            tension: 100,
+            friction: 5,
+            delay: index * 80,
+            useNativeDriver: true,
+          }).start();
+        });
+
+        adventureAnims.forEach((anim, index) => {
+          Animated.timing(anim, {
+            toValue: 1,
+            duration: 500,
+            delay: 200 + index * 100,
+            useNativeDriver: true,
+          }).start();
+        });
+
+        setTimeout(() => {
+          Animated.spring(stageAnim, {
+            toValue: 1,
+            tension: 50,
+            friction: 8,
+            useNativeDriver: true,
+          }).start();
+        }, 300);
+
+        weatherAnims.forEach((anim, index) => {
+          Animated.timing(anim, {
+            toValue: 1,
+            duration: 400,
+            delay: 400 + index * 80,
+            useNativeDriver: true,
+          }).start();
+        });
+
+        terrainAnims.forEach((anim, index) => {
+          Animated.timing(anim, {
+            toValue: 1,
+            duration: 400,
+            delay: 600 + index * 80,
+            useNativeDriver: true,
+          }).start();
+        });
+
+        equipmentAnims.forEach((anim, index) => {
+          Animated.timing(anim, {
+            toValue: 1,
+            duration: 400,
+            delay: 800 + index * 80,
+            useNativeDriver: true,
+          }).start();
+        });
       }
     } catch (error) {
       console.error('Failed to load director data:', error);
@@ -154,80 +228,12 @@ const StoryDirectorDemo: React.FC<StoryDirectorDemoProps> = ({ bookId, onBack })
     }
   };
 
-  const shakeAnims = useRef<Animated.Value[]>([]).current;
-  const stageCharAnims = useRef<{ y: Animated.Value; scale: Animated.Value; opacity: Animated.Value }[]>([]).current;
-  const floatAnims = useRef<Animated.Value[]>([]).current;
-
   const particleAnims = useRef(Array(20).fill(null).map(() => ({
     x: new Animated.Value(Math.random() * width),
     y: new Animated.Value(Math.random() * 200),
     opacity: new Animated.Value(Math.random() * 0.5 + 0.3),
     scale: new Animated.Value(Math.random() * 0.5 + 0.5),
   }))).current;
-
-  useEffect(() => {
-    Animated.timing(pageAnim, {
-      toValue: 1,
-      duration: 400,
-      easing: Easing.out(Easing.cubic),
-      useNativeDriver: true,
-    }).start();
-
-    characterAnims.forEach((anim, index) => {
-      Animated.spring(anim, {
-        toValue: 1,
-        tension: 100,
-        friction: 5,
-        delay: index * 80,
-        useNativeDriver: true,
-      }).start();
-    });
-
-    adventureAnims.forEach((anim, index) => {
-      Animated.timing(anim, {
-        toValue: 1,
-        duration: 500,
-        delay: 200 + index * 100,
-        useNativeDriver: true,
-      }).start();
-    });
-
-    setTimeout(() => {
-      Animated.spring(stageAnim, {
-        toValue: 1,
-        tension: 50,
-        friction: 8,
-        useNativeDriver: true,
-      }).start();
-    }, 300);
-
-    weatherAnims.forEach((anim, index) => {
-      Animated.timing(anim, {
-        toValue: 1,
-        duration: 400,
-        delay: 400 + index * 80,
-        useNativeDriver: true,
-      }).start();
-    });
-
-    terrainAnims.forEach((anim, index) => {
-      Animated.timing(anim, {
-        toValue: 1,
-        duration: 400,
-        delay: 600 + index * 80,
-        useNativeDriver: true,
-      }).start();
-    });
-
-    equipmentAnims.forEach((anim, index) => {
-      Animated.timing(anim, {
-        toValue: 1,
-        duration: 400,
-        delay: 800 + index * 80,
-        useNativeDriver: true,
-      }).start();
-    });
-  }, []);
 
   useEffect(() => {
     pulseAnims.forEach((anim) => {
