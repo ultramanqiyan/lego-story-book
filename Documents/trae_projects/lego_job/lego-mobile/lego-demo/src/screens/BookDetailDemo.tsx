@@ -788,37 +788,39 @@ const BookDetailDemo: React.FC<BookDetailDemoProps> = ({ onBack, onNavigateToDir
   };
 
   const renderCharactersTab = () => {
-    const renderCharacterCard = (character: Character) => (
-      <TouchableOpacity
-        key={character.id}
-        style={[
-          styles.characterCard,
-          selectedCharacterId === character.id && styles.characterCardActive,
-        ]}
-        onPress={() => handleCharacterSelect(character.id)}
-      >
-        <Text style={styles.characterCardEmoji}>{character.emoji}</Text>
-        <View style={styles.characterCardDivider} />
-        <Text style={styles.characterCardName}>{character.customName}</Text>
-        <Text style={[styles.characterCardRole, { color: getRoleColor(character.roleType) }]}>
-          {character.roleType === 'protagonist' ? '主角' : character.roleType === 'supporting' ? '配角' : '反派'}
-        </Text>
-      </TouchableOpacity>
-    );
-    
-    const rows: Character[][] = [];
-    for (let i = 0; i < FAKE_CHARACTERS.length; i += 2) {
-      rows.push(FAKE_CHARACTERS.slice(i, i + 2));
-    }
+    const renderCharacterCard = (character: Character, index: number) => {
+      const isSelected = selectedCharacterId === character.id;
+      
+      return (
+        <TouchableOpacity
+          key={character.id}
+          style={[
+            styles.characterCard,
+            isSelected && styles.cardSelected,
+          ]}
+          onPress={() => handleCharacterSelect(character.id)}
+          activeOpacity={0.8}
+        >
+          {isSelected && (
+            <View style={[styles.glowRing, { borderColor: getRoleColor(character.roleType) }]} />
+          )}
+          <Text style={styles.cardEmoji}>{character.emoji}</Text>
+          <Text style={styles.cardName}>{character.customName}</Text>
+          <Text style={[styles.cardRole, { color: getRoleColor(character.roleType) }]}>
+            {character.roleType === 'protagonist' ? '主角' : character.roleType === 'supporting' ? '配角' : '反派'}
+          </Text>
+        </TouchableOpacity>
+      );
+    };
     
     return (
       <ScrollView style={styles.cardGridContainer}>
-        {rows.map((row, rowIndex) => (
-          <View key={rowIndex} style={styles.cardRow}>
-            {row.map(renderCharacterCard)}
-            {row.length === 1 && <View style={styles.emptyCardSlot} />}
+        <Text style={styles.sectionTitle}>👥 角色列表</Text>
+        <ScrollView horizontal showsHorizontalScrollIndicator={false}>
+          <View style={styles.cardRow}>
+            {FAKE_CHARACTERS.map((character, index) => renderCharacterCard(character, index))}
           </View>
-        ))}
+        </ScrollView>
       </ScrollView>
     );
   };
@@ -831,34 +833,38 @@ const BookDetailDemo: React.FC<BookDetailDemoProps> = ({ onBack, onNavigateToDir
       { key: 'equipment', title: '🪄 装备', data: FAKE_PLOT_CARDS.equipment },
     ];
     
-    const renderPlotCard = (card: PlotCard) => (
-      <TouchableOpacity
-        key={card.id}
-        style={[
-          styles.plotCard,
-          selectedPlotCardId === card.id && styles.plotCardActive,
-        ]}
-        onPress={() => handlePlotCardSelect(card.id)}
-      >
-        <Text style={styles.plotCardEmoji}>{card.emoji}</Text>
-        <View style={styles.plotCardDivider} />
-        <Text style={styles.plotCardName}>{card.name}</Text>
-        <Text style={styles.plotCardDesc} numberOfLines={2}>{card.description}</Text>
-      </TouchableOpacity>
-    );
+    const renderPlotCard = (card: PlotCard, index: number) => {
+      const isSelected = selectedPlotCardId === card.id;
+      
+      return (
+        <TouchableOpacity
+          key={card.id}
+          style={[
+            styles.plotCard,
+            isSelected && styles.cardSelected,
+          ]}
+          onPress={() => handlePlotCardSelect(card.id)}
+          activeOpacity={0.8}
+        >
+          {isSelected && (
+            <View style={[styles.glowRing, { borderColor: '#FFD700' }]} />
+          )}
+          <Text style={styles.cardEmoji}>{card.emoji}</Text>
+          <Text style={styles.cardName}>{card.name}</Text>
+        </TouchableOpacity>
+      );
+    };
     
     return (
       <ScrollView style={styles.cardGridContainer}>
         {categories.map(category => (
           <View key={category.key} style={styles.plotCategory}>
-            <Text style={styles.plotCategoryTitle}>{category.title}</Text>
-            <View style={styles.plotCategoryDivider} />
-            <View style={styles.cardRow}>
-              {category.data.slice(0, 2).map(renderPlotCard)}
-            </View>
-            <View style={styles.cardRow}>
-              {category.data.slice(2, 4).map(renderPlotCard)}
-            </View>
+            <Text style={styles.sectionTitle}>{category.title}</Text>
+            <ScrollView horizontal showsHorizontalScrollIndicator={false}>
+              <View style={styles.cardRow}>
+                {category.data.map((card, index) => renderPlotCard(card, index))}
+              </View>
+            </ScrollView>
           </View>
         ))}
       </ScrollView>
@@ -1158,93 +1164,74 @@ const styles = StyleSheet.create({
     flex: 1,
     padding: 10,
   },
-  cardRow: {
-    flexDirection: 'row',
-    justifyContent: 'space-between',
-    marginBottom: 10,
-  },
-  characterCard: {
-    width: '48%',
-    backgroundColor: '#FFF8DC',
-    borderRadius: 10,
-    padding: 15,
-    alignItems: 'center',
-    borderWidth: 2,
-    borderColor: '#D2B48C',
-  },
-  characterCardActive: {
-    borderColor: '#8B4513',
-    backgroundColor: '#FFF',
-  },
-  characterCardEmoji: {
-    fontSize: 36,
-    marginBottom: 8,
-  },
-  characterCardDivider: {
-    width: '80%',
-    height: 1,
-    backgroundColor: '#D2B48C',
-    marginBottom: 8,
-  },
-  characterCardName: {
-    fontSize: 14,
-    fontWeight: 'bold',
-    color: '#4A3728',
-    marginBottom: 4,
-  },
-  characterCardRole: {
-    fontSize: 12,
-  },
-  emptyCardSlot: {
-    width: '48%',
-  },
-  plotCategory: {
-    marginBottom: 20,
-  },
-  plotCategoryTitle: {
+  sectionTitle: {
     fontSize: 16,
     fontWeight: 'bold',
     color: '#4A3728',
-    marginBottom: 5,
+    marginBottom: 12,
+    paddingHorizontal: 5,
   },
-  plotCategoryDivider: {
-    height: 1,
-    backgroundColor: '#D2B48C',
-    marginBottom: 10,
+  cardRow: {
+    flexDirection: 'row',
+    gap: 12,
+    paddingHorizontal: 5,
   },
-  plotCard: {
-    width: '48%',
-    backgroundColor: '#FFF8DC',
-    borderRadius: 10,
-    padding: 12,
+  characterCard: {
+    width: 80,
+    height: 100,
+    borderRadius: 12,
     alignItems: 'center',
+    justifyContent: 'center',
     borderWidth: 2,
     borderColor: '#D2B48C',
+    backgroundColor: '#FFF8DC',
+    padding: 8,
   },
-  plotCardActive: {
+  cardSelected: {
+    shadowColor: '#FFD700',
+    shadowOffset: { width: 0, height: 0 },
+    shadowOpacity: 0.8,
+    shadowRadius: 10,
+    elevation: 8,
     borderColor: '#8B4513',
     backgroundColor: '#FFF',
   },
-  plotCardEmoji: {
+  glowRing: {
+    position: 'absolute',
+    top: -8,
+    left: -8,
+    right: -8,
+    bottom: -8,
+    borderRadius: 20,
+    borderWidth: 2,
+  },
+  cardEmoji: {
     fontSize: 32,
-    marginBottom: 6,
-  },
-  plotCardDivider: {
-    width: '80%',
-    height: 1,
-    backgroundColor: '#D2B48C',
-    marginBottom: 6,
-  },
-  plotCardName: {
-    fontSize: 13,
-    fontWeight: 'bold',
-    color: '#4A3728',
     marginBottom: 4,
   },
-  plotCardDesc: {
-    fontSize: 11,
-    color: '#6B4423',
+  cardName: {
+    fontSize: 12,
+    fontWeight: 'bold',
+    color: '#4A3728',
     textAlign: 'center',
+  },
+  cardRole: {
+    fontSize: 10,
+    marginTop: 2,
+  },
+  plotCategory: {
+    marginBottom: 15,
+  },
+  plotCard: {
+    width: 80,
+    height: 100,
+    borderRadius: 12,
+    alignItems: 'center',
+    justifyContent: 'center',
+    borderWidth: 2,
+    borderColor: '#D2B48C',
+    backgroundColor: '#FFF8DC',
+    padding: 8,
   },
   footer: {
     alignItems: 'center',
