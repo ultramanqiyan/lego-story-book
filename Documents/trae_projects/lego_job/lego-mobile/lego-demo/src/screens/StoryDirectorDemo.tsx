@@ -1465,7 +1465,12 @@ const styles = StyleSheet.create({
     marginTop: 40,
   },
   backButton: {
-    padding: 8,
+    padding: 12,
+    paddingHorizontal: 16,
+    minWidth: 80,
+    minHeight: 44,
+    justifyContent: 'center',
+    alignItems: 'center',
   },
   backButtonText: {
     fontSize: 16,

@@ -28,13 +28,18 @@ export const DataProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
 
   const initializeData = async () => {
     try {
+      console.log('[DataContext] Starting initialization...');
       await DatabaseService.initDatabase();
+      console.log('[DataContext] Database initialized');
       const types = await DatabaseService.getBookTypes();
+      console.log('[DataContext] Book types loaded:', types.length);
       const allBooks = await DatabaseService.getAllBooks();
+      console.log('[DataContext] Books loaded:', allBooks.length);
       setBookTypes(types);
       setBooks(allBooks);
+      console.log('[DataContext] Initialization complete');
     } catch (error) {
-      console.error('Failed to initialize database:', error);
+      console.error('[DataContext] Failed to initialize database:', error);
     } finally {
       setIsLoading(false);
     }

@@ -152,15 +152,15 @@ const BookDetailDemo: React.FC<BookDetailDemoProps> = ({ bookId, onBack, onNavig
   };
 
   const handlePuzzleAnswer = (optionIndex: number, chapter: Chapter) => {
-    if (!chapter.puzzle || puzzleAttempts >= chapter.puzzle.maxAttempts) return;
+    if (!chapter.puzzleQuestion || !chapter.puzzleOptions || puzzleAttempts >= 3) return;
     
     setPuzzleAnswer(optionIndex);
     const newAttempts = puzzleAttempts + 1;
     setPuzzleAttempts(newAttempts);
     
-    if (optionIndex === chapter.puzzle.correctIndex) {
+    if (optionIndex === chapter.puzzleCorrectIndex) {
       setPuzzleResult('correct');
-    } else if (newAttempts >= chapter.puzzle.maxAttempts) {
+    } else if (newAttempts >= 3) {
       setPuzzleResult('wrong');
     } else {
       setPuzzleResult('wrong');
@@ -203,6 +203,9 @@ const BookDetailDemo: React.FC<BookDetailDemoProps> = ({ bookId, onBack, onNavig
   const renderChapterContentView = () => {
     if (!selectedChapter) return null;
     
+    console.log(`[UI] renderChapterContentView: chapter=${selectedChapter.chapterNumber}, title=${selectedChapter.title}`);
+    console.log(`[UI] Puzzle check: hasPuzzle=${selectedChapter.hasPuzzle}, puzzleQuestion=${selectedChapter.puzzleQuestion}, puzzleOptions=${JSON.stringify(selectedChapter.puzzleOptions)}`);
+    
     const currentIndex = chapters.findIndex(c => c.chapterId === selectedChapterId);
     const hasPrev = currentIndex > 0;
     const hasNext = currentIndex < chapters.length - 1;
@@ -221,22 +224,22 @@ const BookDetailDemo: React.FC<BookDetailDemoProps> = ({ bookId, onBack, onNavig
           <View style={styles.chapterDivider} />
           <Text style={styles.chapterContent}>{selectedChapter.content}</Text>
           
-          {selectedChapter.puzzle && (
+          {selectedChapter.hasPuzzle && selectedChapter.puzzleQuestion && selectedChapter.puzzleOptions && (
             <View style={styles.puzzleBox}>
               <Text style={styles.puzzleTitle}>❓ 谜题</Text>
-              <Text style={styles.puzzleQuestion}>{selectedChapter.puzzle.question}</Text>
+              <Text style={styles.puzzleQuestion}>{selectedChapter.puzzleQuestion}</Text>
               <View style={styles.puzzleOptions}>
-                {selectedChapter.puzzle.options.map((option, index) => (
+                {selectedChapter.puzzleOptions.map((option, index) => (
                   <TouchableOpacity
                     key={index}
                     style={[
                       styles.puzzleOption,
                       puzzleAnswer === index && styles.puzzleOptionSelected,
-                      puzzleResult === 'correct' && index === selectedChapter.puzzle!.correctIndex && styles.puzzleOptionCorrect,
+                      puzzleResult === 'correct' && index === selectedChapter.puzzleCorrectIndex && styles.puzzleOptionCorrect,
                       puzzleResult === 'wrong' && puzzleAnswer === index && styles.puzzleOptionWrong,
                     ]}
                     onPress={() => handlePuzzleAnswer(index, selectedChapter)}
-                    disabled={puzzleResult === 'correct' || puzzleAttempts >= selectedChapter.puzzle!.maxAttempts}
+                    disabled={puzzleResult === 'correct' || puzzleAttempts >= 3}
                   >
                     <Text style={styles.puzzleOptionText}>
                       {String.fromCharCode(65 + index)}. {option}
@@ -244,13 +247,13 @@ const BookDetailDemo: React.FC<BookDetailDemoProps> = ({ bookId, onBack, onNavig
                   </TouchableOpacity>
                 ))}
               </View>
-              <Text style={styles.puzzleAttempts}>尝试次数: {puzzleAttempts}/{selectedChapter.puzzle.maxAttempts}</Text>
+              <Text style={styles.puzzleAttempts}>尝试次数: {puzzleAttempts}/3</Text>
               {puzzleResult === 'correct' && (
                 <Text style={styles.puzzleResultCorrect}>✅ 正确！</Text>
               )}
-              {puzzleResult === 'wrong' && puzzleAttempts >= selectedChapter.puzzle.maxAttempts && (
+              {puzzleResult === 'wrong' && puzzleAttempts >= 3 && (
                 <Text style={styles.puzzleResultWrong}>
-                  ❌ 正确答案: {String.fromCharCode(65 + selectedChapter.puzzle.correctIndex)}. {selectedChapter.puzzle.options[selectedChapter.puzzle.correctIndex]}
+                  ❌ 正确答案: {String.fromCharCode(65 + (selectedChapter.puzzleCorrectIndex ?? 0))}. {selectedChapter.puzzleOptions[selectedChapter.puzzleCorrectIndex ?? 0]}
                 </Text>
               )}
             </View>
@@ -512,7 +515,12 @@ const styles = StyleSheet.create({
     borderBottomColor: '#4A3728',
   },
   backButton: {
-    padding: 5,
+    padding: 12,
+    paddingHorizontal: 16,
+    minWidth: 80,
+    minHeight: 44,
+    justifyContent: 'center',
+    alignItems: 'center',
   },
   backButtonText: {
     color: '#F5DEB3',

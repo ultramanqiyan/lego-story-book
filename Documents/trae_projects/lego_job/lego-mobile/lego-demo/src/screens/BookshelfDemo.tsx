@@ -280,7 +280,12 @@ const styles = StyleSheet.create({
     borderBottomColor: '#654321',
   },
   backButton: {
-    padding: 5,
+    padding: 12,
+    paddingHorizontal: 16,
+    minWidth: 80,
+    minHeight: 44,
+    justifyContent: 'center',
+    alignItems: 'center',
   },
   backButtonText: {
     color: '#FFF8DC',

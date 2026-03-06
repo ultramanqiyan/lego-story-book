@@ -111,9 +111,11 @@ export const DatabaseService = {
   },
 
   async createTables(database: SQLite.SQLiteDatabase): Promise<void> {
+    console.log('[DB] Creating tables...');
+    
+    await database.execAsync('PRAGMA journal_mode = WAL');
+    
     await database.execAsync(`
-      PRAGMA journal_mode = WAL;
-      
       CREATE TABLE IF NOT EXISTS book_types (
         type_id TEXT PRIMARY KEY,
         type_name TEXT NOT NULL,
@@ -122,8 +124,10 @@ export const DatabaseService = {
         primary_color TEXT,
         secondary_color TEXT,
         accent_color TEXT
-      );
-      
+      )
+    `);
+    
+    await database.execAsync(`
       CREATE TABLE IF NOT EXISTS characters (
         character_id TEXT PRIMARY KEY,
         type_id TEXT NOT NULL,
@@ -135,8 +139,10 @@ export const DatabaseService = {
         health INTEGER DEFAULT 100,
         intimacy INTEGER DEFAULT 100,
         personality TEXT
-      );
-      
+      )
+    `);
+    
+    await database.execAsync(`
       CREATE TABLE IF NOT EXISTS plot_elements (
         element_id TEXT PRIMARY KEY,
         type_id TEXT NOT NULL,
@@ -144,8 +150,10 @@ export const DatabaseService = {
         name TEXT NOT NULL,
         emoji TEXT,
         extra_config TEXT
-      );
-      
+      )
+    `);
+    
+    await database.execAsync(`
       CREATE TABLE IF NOT EXISTS books (
         book_id TEXT PRIMARY KEY,
         title TEXT NOT NULL,
@@ -158,8 +166,10 @@ export const DatabaseService = {
         is_user_created INTEGER DEFAULT 0,
         character_ids TEXT,
         protagonist_id TEXT
-      );
-      
+      )
+    `);
+    
+    await database.execAsync(`
       CREATE TABLE IF NOT EXISTS chapters (
         chapter_id TEXT PRIMARY KEY,
         book_id TEXT NOT NULL,
@@ -172,8 +182,10 @@ export const DatabaseService = {
         puzzle_options TEXT,
         puzzle_correct_index INTEGER,
         character_ids TEXT
-      );
-      
+      )
+    `);
+    
+    await database.execAsync(`
       CREATE TABLE IF NOT EXISTS book_characters (
         id INTEGER PRIMARY KEY AUTOINCREMENT,
         book_id TEXT NOT NULL,
@@ -182,8 +194,10 @@ export const DatabaseService = {
         current_health INTEGER,
         current_intimacy INTEGER,
         UNIQUE(book_id, character_id)
-      );
+      )
     `);
+    
+    console.log('[DB] Tables created successfully');
   },
 
   async seedData(database: SQLite.SQLiteDatabase): Promise<void> {
@@ -191,7 +205,12 @@ export const DatabaseService = {
       'SELECT COUNT(*) as count FROM book_types'
     );
     
-    if (typeCount && typeCount.count > 0) return;
+    if (typeCount && typeCount.count > 0) {
+      console.log('[DB] Data already exists, skipping seed');
+      return;
+    }
+    
+    console.log('[DB] Seeding data...');
 
     for (const type of bookTypesData.bookTypes) {
       await database.runAsync(
@@ -226,6 +245,7 @@ export const DatabaseService = {
 
       for (const chapter of book.chapters) {
         const chapterId = `${book.bookId}-chapter-${chapter.chapterNumber}`;
+        console.log(`[DB] Inserting chapter ${chapter.chapterNumber}: hasPuzzle=${chapter.hasPuzzle}, puzzleQuestion=${chapter.puzzleQuestion}`);
         await database.runAsync(
           `INSERT INTO chapters (chapter_id, book_id, chapter_number, title, content, word_count, has_puzzle, puzzle_question, puzzle_options, puzzle_correct_index, character_ids)
            VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
@@ -328,19 +348,24 @@ export const DatabaseService = {
       'SELECT * FROM chapters WHERE book_id = ? ORDER BY chapter_number',
       [bookId]
     );
-    return results.map(r => ({
-      chapterId: r.chapter_id,
-      bookId: r.book_id,
-      chapterNumber: r.chapter_number,
-      title: r.title,
-      content: r.content,
-      wordCount: r.word_count,
-      hasPuzzle: r.has_puzzle === 1,
-      puzzleQuestion: r.puzzle_question,
-      puzzleOptions: r.puzzle_options ? JSON.parse(r.puzzle_options) : undefined,
-      puzzleCorrectIndex: r.puzzle_correct_index,
-      characterIds: r.character_ids ? JSON.parse(r.character_ids) : undefined,
-    }));
+    const chapters = results.map(r => {
+      const chapter = {
+        chapterId: r.chapter_id,
+        bookId: r.book_id,
+        chapterNumber: r.chapter_number,
+        title: r.title,
+        content: r.content,
+        wordCount: r.word_count,
+        hasPuzzle: r.has_puzzle === 1,
+        puzzleQuestion: r.puzzle_question,
+        puzzleOptions: r.puzzle_options ? JSON.parse(r.puzzle_options) : undefined,
+        puzzleCorrectIndex: r.puzzle_correct_index,
+        characterIds: r.character_ids ? JSON.parse(r.character_ids) : undefined,
+      };
+      console.log(`[DB] Chapter ${r.chapter_number}: hasPuzzle=${chapter.hasPuzzle}, puzzleQuestion=${chapter.puzzleQuestion}, puzzleOptions=${JSON.stringify(chapter.puzzleOptions)}`);
+      return chapter;
+    });
+    return chapters;
   },
 
   async getCharactersByTypeId(typeId: string): Promise<Character[]> {

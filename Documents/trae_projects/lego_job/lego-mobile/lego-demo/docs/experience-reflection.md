@@ -1477,3 +1477,233 @@ const loadData = async () => {
 ---
 
 *最后更新：2026-03-06 16:10*
+
+---
+
+## 2026-03-06 真实书籍数据系统开发经验
+
+### 问题25：返回按钮无响应问题
+
+**问题描述：**
+- 书籍详情页的返回按钮点击后没有反应
+- 按钮使用 TouchableOpacity 实现
+- 控制台没有报错
+
+**根本原因分析：**
+1. **TouchableOpacity 的 onPress 使用了内联箭头函数**
+2. **函数内部调用了异步函数，但没有正确处理**
+3. **React 可能无法正确识别内联函数的变化**
+
+**错误代码：**
+```typescript
+// 错误写法：内联箭头函数
+<TouchableOpacity 
+  onPress={() => {
+    if (chapterViewMode === 'content') {
+      setChapterViewMode('directory');
+    } else {
+      onBack();
+    }
+  }}
+>
+  <Text>← 返回</Text>
+</TouchableOpacity>
+```
+
+**解决方案：使用 useCallback 或提取函数**
+```typescript
+// 方案1：提取函数
+const handleBackPress = () => {
+  if (chapterViewMode === 'content') {
+    setChapterViewMode('directory');
+  } else {
+    onBack();
+  }
+};
+
+<TouchableOpacity onPress={handleBackPress}>
+  <Text>← 返回</Text>
+</TouchableOpacity>
+
+// 方案2：使用 useCallback
+const handleBackPress = useCallback(() => {
+  if (chapterViewMode === 'content') {
+    setChapterViewMode('directory');
+  } else {
+    onBack();
+  }
+}, [chapterViewMode, onBack]);
+```
+
+**经验教训：**
+1. **避免在 TouchableOpacity 的 onPress 中使用内联箭头函数**
+2. **提取函数或使用 useCallback 确保函数引用稳定**
+3. **调试时检查函数是否被正确调用**
+
+---
+
+### 问题26：SQLite数据库路径问题
+
+**问题描述：**
+- 使用 `adb shell "run-as com.legostory.demo sqlite3 lego_story.db"` 检查数据库
+- 显示数据库文件大小为 0 字节
+- 误以为数据库没有正确初始化
+
+**根本原因分析：**
+1. **expo-sqlite 将数据库存储在 `files/SQLite/` 目录下**
+2. **不是在应用根目录**
+3. **检查的路径错误导致误判**
+
+**正确的数据库路径：**
+```
+/data/user/0/com.legostory.demo/files/SQLite/lego_story.db
+```
+
+**正确的检查命令：**
+```bash
+# 检查数据库文件
+adb shell "run-as com.legostory.demo ls -laR files/SQLite/"
+
+# 查看数据库表
+adb shell "run-as com.legostory.demo sqlite3 files/SQLite/lego_story.db '.tables'"
+
+# 查询数据
+adb shell "run-as com.legostory.demo sqlite3 files/SQLite/lego_story.db 'SELECT * FROM books LIMIT 5;'"
+```
+
+**经验教训：**
+1. **expo-sqlite 的数据库存储路径是 `files/SQLite/`**
+2. **检查数据库时要使用正确的路径**
+3. **数据库文件可能包含 `-wal` 和 `-shm` 临时文件，这是正常的**
+
+---
+
+### 问题27：解谜功能测试失败 - 测试脚本章节名称错误
+
+**问题描述：**
+- 解谜功能测试失败
+- 测试脚本点击"迷路的蝴蝶"章节，但未检测到谜题元素
+
+**根本原因分析：**
+1. **测试脚本中的章节名称与数据不匹配**
+2. **需要检查 books.json 中的实际章节名称和谜题数据**
+
+**正确的章节谜题数据：**
+```
+第2章 迷路的蝴蝶 - 谜题：蝴蝶的家在哪个方向？
+第3章 智慧猫头鹰的考验 - 谜题：森林中最珍贵的是什么？
+第5章 花园的秘密 - 谜题：小明应该问什么问题？
+```
+
+**解决方案：**
+1. 检查 books.json 中的实际章节名称
+2. 确保测试脚本使用正确的章节名称
+3. 添加日志追踪数据加载过程
+
+**经验教训：**
+1. **测试脚本中的数据要与实际数据保持一致**
+2. **使用日志追踪数据加载过程**
+3. **检查数据库中的实际数据验证假设**
+
+---
+
+### 问题28：调试效率低 - 缺少日志追踪
+
+**问题描述：**
+- 问题排查花费大量时间
+- 多次猜测原因但未验证
+- 没有系统性的调试方法
+
+**根本原因分析：**
+1. **没有在关键位置添加日志**
+2. **没有使用 systematic-debugging 技能**
+3. **猜测原因而不是验证假设**
+
+**解决方案：添加日志追踪数据流**
+```typescript
+// DatabaseService.ts
+async getChaptersByBookId(bookId: string): Promise<Chapter[]> {
+  const results = await db!.getAllAsync<any>(
+    'SELECT * FROM chapters WHERE book_id = ? ORDER BY chapter_number',
+    [bookId]
+  );
+  const chapters = results.map(r => {
+    const chapter = {
+      // ... 映射字段
+    };
+    console.log(`[DB] Chapter ${r.chapter_number}: hasPuzzle=${chapter.hasPuzzle}, puzzleQuestion=${chapter.puzzleQuestion}`);
+    return chapter;
+  });
+  return chapters;
+}
+
+// BookDetailDemo.tsx
+const renderChapterContentView = () => {
+  console.log(`[UI] renderChapterContentView: chapter=${selectedChapter.chapterNumber}, title=${selectedChapter.title}`);
+  console.log(`[UI] Puzzle check: hasPuzzle=${selectedChapter.hasPuzzle}, puzzleQuestion=${selectedChapter.puzzleQuestion}`);
+  // ...
+};
+```
+
+**调试流程（systematic-debugging）：**
+1. **Phase 1: Root Cause Investigation** - 添加日志追踪数据流
+2. **Phase 2: Pattern Analysis** - 分析数据加载和显示的差异
+3. **Phase 3: Hypothesis and Testing** - 形成假设并验证
+4. **Phase 4: Implementation** - 实现修复
+
+**经验教训：**
+1. **使用 systematic-debugging 技能进行系统性调试**
+2. **在关键位置添加日志追踪数据流**
+3. **验证假设而不是猜测原因**
+4. **检查数据库中的实际数据**
+
+---
+
+## 测试结果汇总
+
+### 2026-03-06 真实书籍数据系统测试
+
+**测试环境：**
+- 模拟器：emulator-5554 (Pixel_6)
+- APP包名：com.legostory.demo
+- 数据库：files/SQLite/lego_story.db
+
+**测试结果：**
+```
+通过率: 21/24 (88%)
+
+✅ 通过的测试:
+   ✓ APP启动
+   ✓ 书架按钮入口
+   ✓ 书架页标题
+   ✓ 真实书籍数据加载（8本书）
+   ✓ 书籍卡片点击
+   ✓ 书籍详情页章节Tab
+   ✓ 章节数据（10章）
+   ✓ 章节内容阅读
+   ✓ 角色数据（每本书4个角色）
+   ✓ 情节元素数据
+   ✓ 故事导演页导航
+   ✓ 故事导演页标题
+   ✓ 故事导演页角色卡牌
+   ✓ 故事导演页天气卡牌
+   ✓ 故事导演页地形卡牌
+   ✓ 角色选择功能
+   ✓ 舞台展示
+   ✓ 返回导航
+   ✓ 返回首页
+   ✓ 风格按钮
+
+❌ 失败的测试:
+   ✗ 解谜功能
+   ✗ 故事导演页冒险卡牌
+   ✗ 故事导演页装备卡牌
+```
+
+**改进措施：**
+1. 修复解谜功能测试
+2. 检查冒险卡牌和装备卡牌数据
+
+---
+
+*最后更新：2026-03-06 18:00*
