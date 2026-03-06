@@ -1,0 +1,742 @@
+{
+  "books": [
+    {
+      "bookId": "book-children-1",
+      "title": "小勇者的森林奇遇",
+      "typeId": "children",
+      "coverEmoji": "👦",
+      "description": "小勇者小明和魔法兔子一起探索神秘森林，寻找传说中的宝藏。",
+      "characterIds": ["char-children-1", "char-children-2", "char-children-3", "char-children-4"],
+      "protagonistId": "char-children-1",
+      "chapters": [
+        {
+          "chapterNumber": 1,
+          "title": "神秘森林入口",
+          "content": "阳光透过树叶的缝隙洒下，小明站在森林入口前。一只会说话的兔子跳到他面前，'你好，勇敢的孩子！我是魔法兔子，愿意带你探索这片神奇的森林。'小明惊讶地看着兔子，点了点头，跟着它走进了森林。",
+          "hasPuzzle": false,
+          "characterIds": ["char-children-1", "char-children-2"]
+        },
+        {
+          "chapterNumber": 2,
+          "title": "迷路的蝴蝶",
+          "content": "森林深处，一只美丽的蝴蝶在哭泣。'我找不到回家的路了，'蝴蝶说，'我的家在彩虹花丛中。'小明和魔法兔子决定帮助蝴蝶。他们需要选择正确的方向前进。",
+          "hasPuzzle": true,
+          "puzzleQuestion": "蝴蝶的家在哪个方向？",
+          "puzzleOptions": ["东方", "南方", "西方", "北方"],
+          "puzzleCorrectIndex": 1,
+          "characterIds": ["char-children-1", "char-children-2"]
+        },
+        {
+          "chapterNumber": 3,
+          "title": "智慧猫头鹰的考验",
+          "content": "一棵大树上，智慧猫头鹰正在等待他们。'要继续前进，你们必须回答我的问题，'猫头鹰说，'森林中最珍贵的是什么？'小明思考了一会儿，给出了答案。",
+          "hasPuzzle": true,
+          "puzzleQuestion": "森林中最珍贵的是什么？",
+          "puzzleOptions": ["黄金", "友谊", "宝石", "魔法"],
+          "puzzleCorrectIndex": 1,
+          "characterIds": ["char-children-1", "char-children-2", "char-children-3"]
+        },
+        {
+          "chapterNumber": 4,
+          "title": "小狐狸的恶作剧",
+          "content": "一只调皮的小狐狸跳出来，偷走了魔法兔子的魔法棒！'想要回去就来追我吧！'小狐狸笑着跑进了灌木丛。小明和兔子追了上去，但小狐狸设下了陷阱。",
+          "hasPuzzle": false,
+          "characterIds": ["char-children-1", "char-children-2", "char-children-4"]
+        },
+        {
+          "chapterNumber": 5,
+          "title": "花园的秘密",
+          "content": "他们来到了一个美丽的花园，花园中央有一口古井。魔法兔子说，'这口井可以告诉你任何问题的答案。'小明决定问一个关于宝藏的问题。",
+          "hasPuzzle": true,
+          "puzzleQuestion": "小明应该问什么问题？",
+          "puzzleOptions": ["宝藏在哪里？", "宝藏是什么？", "如何找到宝藏？", "谁藏了宝藏？"],
+          "puzzleCorrectIndex": 0,
+          "characterIds": ["char-children-1", "char-children-2"]
+        },
+        {
+          "chapterNumber": 6,
+          "title": "小溪的挑战",
+          "content": "一条清澈的小溪挡住了去路。小溪上没有桥，但有一些漂浮的荷叶。'我们需要跳过荷叶才能过河，'魔法兔子说，'但要小心，有些荷叶会沉下去！'",
+          "hasPuzzle": true,
+          "puzzleQuestion": "应该选择哪种颜色的荷叶？",
+          "puzzleOptions": ["绿色的", "黄色的", "紫色的", "红色的"],
+          "puzzleCorrectIndex": 0,
+          "characterIds": ["char-children-1", "char-children-2"]
+        },
+        {
+          "chapterNumber": 7,
+          "title": "星空下的露营",
+          "content": "夜幕降临，星星布满天空。小明和朋友们在草地上露营。智慧猫头鹰飞来，告诉他们明天就能到达宝藏所在地。'但要小心，'猫头鹰警告说，'最后的考验是最难的。'",
+          "hasPuzzle": false,
+          "characterIds": ["char-children-1", "char-children-2", "char-children-3"]
+        },
+        {
+          "chapterNumber": 8,
+          "title": "小狐狸的道歉",
+          "content": "小狐狸悄悄来到营地，把魔法棒还给了兔子。'对不起，'小狐狸说，'我只是想和你们一起玩。'小明邀请小狐狸加入他们的冒险队伍。",
+          "hasPuzzle": false,
+          "characterIds": ["char-children-1", "char-children-2", "char-children-4"]
+        },
+        {
+          "chapterNumber": 9,
+          "title": "宝藏洞穴",
+          "content": "他们终于找到了宝藏洞穴！洞穴入口被一块巨大的石头挡住。石头上刻着谜题：'只有最勇敢的心才能打开这扇门。'小明需要证明自己的勇气。",
+          "hasPuzzle": true,
+          "puzzleQuestion": "小明应该怎么做来证明勇气？",
+          "puzzleOptions": ["大声喊叫", "闭上眼睛向前走", "帮助朋友们", "承认自己的恐惧"],
+          "puzzleCorrectIndex": 3,
+          "characterIds": ["char-children-1", "char-children-2", "char-children-3", "char-children-4"]
+        },
+        {
+          "chapterNumber": 10,
+          "title": "真正的宝藏",
+          "content": "洞穴打开了，里面不是金银财宝，而是一面镜子。镜子里映出小明和他的朋友们。智慧猫头鹰说：'真正的宝藏是你在冒险中结交的朋友和学到的勇气。'小明微笑着，他知道这是最珍贵的礼物。",
+          "hasPuzzle": false,
+          "characterIds": ["char-children-1", "char-children-2", "char-children-3", "char-children-4"]
+        }
+      ]
+    },
+    {
+      "bookId": "book-children-2",
+      "title": "魔法兔子的寻宝记",
+      "typeId": "children",
+      "coverEmoji": "🐰",
+      "description": "魔法兔子带领小伙伴们寻找传说中的彩虹宝藏。",
+      "characterIds": ["char-children-1", "char-children-2", "char-children-3", "char-children-4"],
+      "protagonistId": "char-children-2",
+      "chapters": [
+        {
+          "chapterNumber": 1,
+          "title": "古老的地图",
+          "content": "魔法兔子在树洞里发现了一张古老的地图。地图上标记着彩虹宝藏的位置。'这是传说中的彩虹宝藏！'兔子兴奋地说，'我们一起去找吧！'",
+          "hasPuzzle": false,
+          "characterIds": ["char-children-2", "char-children-1"]
+        },
+        {
+          "chapterNumber": 2,
+          "title": "出发的准备",
+          "content": "为了这次冒险，他们需要准备装备。智慧猫头鹰给了他们一个指南针，小狐狸带来了一根魔法棒。",
+          "hasPuzzle": true,
+          "puzzleQuestion": "他们还需要什么最重要的东西？",
+          "puzzleOptions": ["食物和水", "更多的金币", "更大的背包", "更快的鞋子"],
+          "puzzleCorrectIndex": 0,
+          "characterIds": ["char-children-2", "char-children-1", "char-children-3", "char-children-4"]
+        },
+        {
+          "chapterNumber": 3,
+          "title": "彩虹桥",
+          "content": "他们来到了一座彩虹桥前。桥上闪烁着七种颜色的光芒。'只有回答正确的问题，桥才会出现，'魔法兔子说。",
+          "hasPuzzle": true,
+          "puzzleQuestion": "彩虹有几种颜色？",
+          "puzzleOptions": ["五种", "六种", "七种", "八种"],
+          "puzzleCorrectIndex": 2,
+          "characterIds": ["char-children-2", "char-children-1"]
+        },
+        {
+          "chapterNumber": 4,
+          "title": "花朵迷宫",
+          "content": "彩虹桥的另一端是一个由花朵组成的迷宫。每一朵花都有不同的颜色和香味。他们需要找到正确的路径。",
+          "hasPuzzle": false,
+          "characterIds": ["char-children-2", "char-children-1", "char-children-4"]
+        },
+        {
+          "chapterNumber": 5,
+          "title": "歌唱的溪流",
+          "content": "一条会唱歌的小溪挡住了去路。溪水唱着：'想要过去，就要和我一起唱！'他们需要猜出溪流唱的歌的下一句。",
+          "hasPuzzle": true,
+          "puzzleQuestion": "溪流唱的是关于什么的歌？",
+          "puzzleOptions": ["关于太阳", "关于月亮", "关于友谊", "关于冒险"],
+          "puzzleCorrectIndex": 2,
+          "characterIds": ["char-children-2", "char-children-1"]
+        },
+        {
+          "chapterNumber": 6,
+          "title": "星星的指引",
+          "content": "夜幕降临，他们迷失了方向。智慧猫头鹰飞来说：'看天上的星星，它们会指引你们前进的方向。'",
+          "hasPuzzle": false,
+          "characterIds": ["char-children-2", "char-children-1", "char-children-3"]
+        },
+        {
+          "chapterNumber": 7,
+          "title": "魔法森林",
+          "content": "他们进入了魔法森林，树木会移动，花朵会说话。魔法兔子用它的魔法棒保护着大家。",
+          "hasPuzzle": true,
+          "puzzleQuestion": "在魔法森林中应该相信什么？",
+          "puzzleOptions": ["自己的眼睛", "自己的心", "别人的话", "魔法棒"],
+          "puzzleCorrectIndex": 1,
+          "characterIds": ["char-children-2", "char-children-1", "char-children-4"]
+        },
+        {
+          "chapterNumber": 8,
+          "title": "彩虹守护者",
+          "content": "一个由彩虹组成的守护者出现在他们面前。'想要得到宝藏，必须证明你们配得上它，'守护者说。",
+          "hasPuzzle": false,
+          "characterIds": ["char-children-2", "char-children-1", "char-children-3", "char-children-4"]
+        },
+        {
+          "chapterNumber": 9,
+          "title": "最后的考验",
+          "content": "守护者给出了最后的考验：'彩虹宝藏属于最善良的人。告诉我，你们在冒险中帮助过多少人？'",
+          "hasPuzzle": true,
+          "puzzleQuestion": "彩虹宝藏的真正条件是什么？",
+          "puzzleOptions": ["最勇敢", "最聪明", "最善良", "最强壮"],
+          "puzzleCorrectIndex": 2,
+          "characterIds": ["char-children-2", "char-children-1", "char-children-3", "char-children-4"]
+        },
+        {
+          "chapterNumber": 10,
+          "title": "彩虹宝藏",
+          "content": "守护者微笑着消失了，一道彩虹从天而降。彩虹的尽头是一个装满魔法种子的宝箱。'这些种子可以种出任何你们想要的花朵，'魔法兔子说，'让我们把它们种在森林里吧！'",
+          "hasPuzzle": false,
+          "characterIds": ["char-children-2", "char-children-1", "char-children-3", "char-children-4"]
+        }
+      ]
+    },
+    {
+      "bookId": "book-magic-1",
+      "title": "龙之谷的召唤",
+      "typeId": "magic",
+      "coverEmoji": "🐉",
+      "description": "年轻法师被神秘力量召唤到龙之谷，开始了一段传奇冒险。",
+      "characterIds": ["char-magic-1", "char-magic-2", "char-magic-3", "char-magic-4"],
+      "protagonistId": "char-magic-1",
+      "chapters": [
+        {
+          "chapterNumber": 1,
+          "title": "神秘的召唤",
+          "content": "月圆之夜，年轻法师艾尔文感受到了一股强大的召唤力量。他跟随这股力量，来到了传说中的龙之谷入口。",
+          "hasPuzzle": false,
+          "characterIds": ["char-magic-1"]
+        },
+        {
+          "chapterNumber": 2,
+          "title": "精灵向导",
+          "content": "一位精灵出现在艾尔文面前。'我是莉莉，龙之谷的守护精灵。你被召唤来是因为谷中出现了危机。'",
+          "hasPuzzle": true,
+          "puzzleQuestion": "精灵莉莉是什么种族？",
+          "puzzleOptions": ["人类", "精灵", "矮人", "兽人"],
+          "puzzleCorrectIndex": 1,
+          "characterIds": ["char-magic-1", "char-magic-2"]
+        },
+        {
+          "chapterNumber": 3,
+          "title": "迷雾森林",
+          "content": "他们进入了被迷雾笼罩的森林。艾尔文需要使用魔法来驱散迷雾，找到前进的道路。",
+          "hasPuzzle": false,
+          "characterIds": ["char-magic-1", "char-magic-2"]
+        },
+        {
+          "chapterNumber": 4,
+          "title": "水晶洞穴",
+          "content": "在水晶洞穴中，他们发现了一块古老的预言石。预言石上刻着关于龙之谷命运的文字。",
+          "hasPuzzle": true,
+          "puzzleQuestion": "预言石是什么材质？",
+          "puzzleOptions": ["黄金", "白银", "水晶", "黑曜石"],
+          "puzzleCorrectIndex": 2,
+          "characterIds": ["char-magic-1", "char-magic-2"]
+        },
+        {
+          "chapterNumber": 5,
+          "title": "巨龙的考验",
+          "content": "古老的守护巨龙出现了。'年轻人，你想要进入龙之谷深处，必须通过我的考验。'",
+          "hasPuzzle": false,
+          "characterIds": ["char-magic-1", "char-magic-2", "char-magic-3"]
+        },
+        {
+          "chapterNumber": 6,
+          "title": "魔法试炼",
+          "content": "巨龙给出了魔法试炼：用最纯净的魔法能量创造一个光球。艾尔文集中精神，开始施法。",
+          "hasPuzzle": true,
+          "puzzleQuestion": "最纯净的魔法能量来自哪里？",
+          "puzzleOptions": ["太阳", "月亮", "内心", "宝石"],
+          "puzzleCorrectIndex": 2,
+          "characterIds": ["char-magic-1", "char-magic-3"]
+        },
+        {
+          "chapterNumber": 7,
+          "title": "独角兽的帮助",
+          "content": "一只独角兽出现在他们面前，它的角散发着柔和的光芒。'我可以帮助你们净化被污染的魔法源泉。'",
+          "hasPuzzle": false,
+          "characterIds": ["char-magic-1", "char-magic-2", "char-magic-4"]
+        },
+        {
+          "chapterNumber": 8,
+          "title": "黑暗魔法师",
+          "content": "他们终于找到了造成龙之谷危机的源头——一个堕落的黑暗魔法师。他正在吸取谷中的魔法能量。",
+          "hasPuzzle": true,
+          "puzzleQuestion": "黑暗魔法师的力量来源是什么？",
+          "puzzleOptions": ["恐惧", "愤怒", "贪婪", "悲伤"],
+          "puzzleCorrectIndex": 0,
+          "characterIds": ["char-magic-1", "char-magic-2", "char-magic-3", "char-magic-4"]
+        },
+        {
+          "chapterNumber": 9,
+          "title": "最终对决",
+          "content": "艾尔文与黑暗魔法师展开了激烈的对决。在精灵、巨龙和独角兽的帮助下，他逐渐占据了上风。",
+          "hasPuzzle": false,
+          "characterIds": ["char-magic-1", "char-magic-2", "char-magic-3", "char-magic-4"]
+        },
+        {
+          "chapterNumber": 10,
+          "title": "龙之谷的守护者",
+          "content": "黑暗魔法师被打败了，龙之谷恢复了平静。巨龙宣布艾尔文成为龙之谷新的守护者，他将永远保护这片神奇的土地。",
+          "hasPuzzle": false,
+          "characterIds": ["char-magic-1", "char-magic-2", "char-magic-3", "char-magic-4"]
+        }
+      ]
+    },
+    {
+      "bookId": "book-magic-2",
+      "title": "魔法学院的秘密",
+      "typeId": "magic",
+      "coverEmoji": "🏰",
+      "description": "魔法学院深处隐藏着古老的秘密，年轻学徒们开始了探索之旅。",
+      "characterIds": ["char-magic-1", "char-magic-2", "char-magic-3", "char-magic-4"],
+      "protagonistId": "char-magic-1",
+      "chapters": [
+        {
+          "chapterNumber": 1,
+          "title": "入学第一天",
+          "content": "艾尔文来到了著名的魔法学院。宏伟的塔楼高耸入云，无数魔法生物在空中飞舞。",
+          "hasPuzzle": false,
+          "characterIds": ["char-magic-1"]
+        },
+        {
+          "chapterNumber": 2,
+          "title": "神秘的图书馆",
+          "content": "学院的图书馆据说藏有世界上最古老的魔法书籍。艾尔文在书架间发现了一本发光的书。",
+          "hasPuzzle": true,
+          "puzzleQuestion": "发光的书是什么颜色的光芒？",
+          "puzzleOptions": ["红色", "蓝色", "金色", "紫色"],
+          "puzzleCorrectIndex": 2,
+          "characterIds": ["char-magic-1", "char-magic-2"]
+        },
+        {
+          "chapterNumber": 3,
+          "title": "隐藏的密室",
+          "content": "发光的书指引他们找到了一个隐藏的密室。密室中有一幅古老的壁画，描绘着学院创始人的故事。",
+          "hasPuzzle": false,
+          "characterIds": ["char-magic-1", "char-magic-2"]
+        },
+        {
+          "chapterNumber": 4,
+          "title": "创始人的预言",
+          "content": "壁画上的文字揭示了一个预言：当黑暗再次降临，只有拥有纯净心灵的法师才能拯救学院。",
+          "hasPuzzle": true,
+          "puzzleQuestion": "预言中提到需要什么品质？",
+          "puzzleOptions": ["强大的力量", "纯净的心灵", "古老的血统", "无尽的财富"],
+          "puzzleCorrectIndex": 1,
+          "characterIds": ["char-magic-1", "char-magic-2"]
+        },
+        {
+          "chapterNumber": 5,
+          "title": "魔法试炼场",
+          "content": "为了验证预言，艾尔文需要通过魔法试炼场的考验。这里有各种危险的魔法陷阱和谜题。",
+          "hasPuzzle": false,
+          "characterIds": ["char-magic-1", "char-magic-2"]
+        },
+        {
+          "chapterNumber": 6,
+          "title": "巨龙的警告",
+          "content": "守护学院的巨龙出现了。'年轻人，你正在触碰危险的秘密。学院地下的封印正在减弱。'",
+          "hasPuzzle": false,
+          "characterIds": ["char-magic-1", "char-magic-2", "char-magic-3"]
+        },
+        {
+          "chapterNumber": 7,
+          "title": "地下迷宫",
+          "content": "艾尔文和朋友们进入了学院地下的迷宫。迷宫中充满了古老的魔法机关和守护生物。",
+          "hasPuzzle": true,
+          "puzzleQuestion": "迷宫中最危险的机关是什么？",
+          "puzzleOptions": ["火焰陷阱", "冰冻陷阱", "幻象陷阱", "所有机关都很危险"],
+          "puzzleCorrectIndex": 3,
+          "characterIds": ["char-magic-1", "char-magic-2", "char-magic-4"]
+        },
+        {
+          "chapterNumber": 8,
+          "title": "封印之室",
+          "content": "他们终于找到了封印之室。一个古老的黑暗力量正在试图突破封印。",
+          "hasPuzzle": false,
+          "characterIds": ["char-magic-1", "char-magic-2", "char-magic-3", "char-magic-4"]
+        },
+        {
+          "chapterNumber": 9,
+          "title": "加固封印",
+          "content": "艾尔文需要使用纯净的魔法能量来加固封印。他集中所有的力量，开始施法。",
+          "hasPuzzle": true,
+          "puzzleQuestion": "加固封印需要什么？",
+          "puzzleOptions": ["更多的魔法书", "纯净的魔法能量", "古老的法杖", "朋友的帮助"],
+          "puzzleCorrectIndex": 1,
+          "characterIds": ["char-magic-1", "char-magic-2", "char-magic-3", "char-magic-4"]
+        },
+        {
+          "chapterNumber": 10,
+          "title": "新的守护者",
+          "content": "封印被成功加固了。学院院长宣布艾尔文成为学院的新守护者，他将负责保护这个古老的秘密。",
+          "hasPuzzle": false,
+          "characterIds": ["char-magic-1", "char-magic-2", "char-magic-3", "char-magic-4"]
+        }
+      ]
+    },
+    {
+      "bookId": "book-urban-1",
+      "title": "创业之路",
+      "typeId": "urban",
+      "coverEmoji": "👨‍💼",
+      "description": "一个年轻人从零开始创业的故事，充满挑战与机遇。",
+      "characterIds": ["char-urban-1", "char-urban-2", "char-urban-3", "char-urban-4"],
+      "protagonistId": "char-urban-1",
+      "chapters": [
+        {
+          "chapterNumber": 1,
+          "title": "创业梦想",
+          "content": "李明坐在咖啡厅里，看着手中的商业计划书。他决定辞去稳定的工作，开始自己的创业之路。",
+          "hasPuzzle": false,
+          "characterIds": ["char-urban-1"]
+        },
+        {
+          "chapterNumber": 2,
+          "title": "组建团队",
+          "content": "李明找到了技术精湛的程序员小张和创意无限的设计师小王。他们决定一起创业。",
+          "hasPuzzle": true,
+          "puzzleQuestion": "创业团队最重要的要素是什么？",
+          "puzzleOptions": ["资金", "技术", "团队", "运气"],
+          "puzzleCorrectIndex": 2,
+          "characterIds": ["char-urban-1", "char-urban-2", "char-urban-3"]
+        },
+        {
+          "chapterNumber": 3,
+          "title": "寻找投资",
+          "content": "他们开始接触投资人。一位经验丰富的投资人陈总对他们的项目很感兴趣。",
+          "hasPuzzle": false,
+          "characterIds": ["char-urban-1", "char-urban-4"]
+        },
+        {
+          "chapterNumber": 4,
+          "title": "产品开发",
+          "content": "团队开始了紧张的产品开发。小张负责技术架构，小王负责产品设计，李明负责市场调研。",
+          "hasPuzzle": false,
+          "characterIds": ["char-urban-1", "char-urban-2", "char-urban-3"]
+        },
+        {
+          "chapterNumber": 5,
+          "title": "第一次路演",
+          "content": "李明站在投资人面前，开始了他人生中第一次正式的路演。他需要用最简洁的语言介绍他们的产品。",
+          "hasPuzzle": true,
+          "puzzleQuestion": "路演最重要的是什么？",
+          "puzzleOptions": ["华丽的PPT", "清晰的价值主张", "高估值", "名人背书"],
+          "puzzleCorrectIndex": 1,
+          "characterIds": ["char-urban-1", "char-urban-4"]
+        },
+        {
+          "chapterNumber": 6,
+          "title": "资金困境",
+          "content": "产品开发遇到了资金困难。团队需要想办法降低成本，同时保持产品质量。",
+          "hasPuzzle": false,
+          "characterIds": ["char-urban-1", "char-urban-2", "char-urban-3"]
+        },
+        {
+          "chapterNumber": 7,
+          "title": "关键谈判",
+          "content": "陈总提出了投资意向，但条件比较苛刻。李明需要与团队商量，决定是否接受。",
+          "hasPuzzle": true,
+          "puzzleQuestion": "面对苛刻的投资条件应该怎么做？",
+          "puzzleOptions": ["立即接受", "果断拒绝", "继续谈判", "放弃项目"],
+          "puzzleCorrectIndex": 2,
+          "characterIds": ["char-urban-1", "char-urban-4"]
+        },
+        {
+          "chapterNumber": 8,
+          "title": "产品上线",
+          "content": "经过几个月的努力，产品终于上线了。团队紧张地等待着用户的反馈。",
+          "hasPuzzle": false,
+          "characterIds": ["char-urban-1", "char-urban-2", "char-urban-3"]
+        },
+        {
+          "chapterNumber": 9,
+          "title": "用户增长",
+          "content": "产品获得了用户的认可，用户数量快速增长。投资人开始关注他们的下一轮融资。",
+          "hasPuzzle": false,
+          "characterIds": ["char-urban-1", "char-urban-2", "char-urban-3", "char-urban-4"]
+        },
+        {
+          "chapterNumber": 10,
+          "title": "新的开始",
+          "content": "李明站在公司新办公室的窗前，看着窗外繁忙的城市。创业之路才刚刚开始，未来还有更多的挑战等待着他们。",
+          "hasPuzzle": false,
+          "characterIds": ["char-urban-1", "char-urban-2", "char-urban-3", "char-urban-4"]
+        }
+      ]
+    },
+    {
+      "bookId": "book-urban-2",
+      "title": "职场风云",
+      "typeId": "urban",
+      "coverEmoji": "💼",
+      "description": "职场新人如何在竞争中获得成功的故事。",
+      "characterIds": ["char-urban-1", "char-urban-2", "char-urban-3", "char-urban-4"],
+      "protagonistId": "char-urban-1",
+      "chapters": [
+        {
+          "chapterNumber": 1,
+          "title": "入职第一天",
+          "content": "李明来到了新公司报到。这是一家知名的科技公司，竞争非常激烈。",
+          "hasPuzzle": false,
+          "characterIds": ["char-urban-1"]
+        },
+        {
+          "chapterNumber": 2,
+          "title": "认识同事",
+          "content": "李明认识了技术部的程序员小张和设计部的设计师小王。他们成为了好朋友。",
+          "hasPuzzle": false,
+          "characterIds": ["char-urban-1", "char-urban-2", "char-urban-3"]
+        },
+        {
+          "chapterNumber": 3,
+          "title": "第一个项目",
+          "content": "李明接到了他的第一个项目。这是一个重要的客户项目，需要在短时间内完成。",
+          "hasPuzzle": true,
+          "puzzleQuestion": "面对紧急项目最重要的是什么？",
+          "puzzleOptions": ["加班", "合理规划", "求助他人", "放弃休息"],
+          "puzzleCorrectIndex": 1,
+          "characterIds": ["char-urban-1", "char-urban-2"]
+        },
+        {
+          "chapterNumber": 4,
+          "title": "团队协作",
+          "content": "项目需要多个部门协作。李明需要学会如何与不同性格的同事合作。",
+          "hasPuzzle": false,
+          "characterIds": ["char-urban-1", "char-urban-2", "char-urban-3"]
+        },
+        {
+          "chapterNumber": 5,
+          "title": "职场挑战",
+          "content": "公司内部出现了竞争，有人试图抢走李明的项目。他需要学会如何保护自己的工作成果。",
+          "hasPuzzle": true,
+          "puzzleQuestion": "面对职场竞争最好的策略是什么？",
+          "puzzleOptions": ["对抗", "逃避", "提升自己", "抱怨"],
+          "puzzleCorrectIndex": 2,
+          "characterIds": ["char-urban-1"]
+        },
+        {
+          "chapterNumber": 6,
+          "title": "重要会议",
+          "content": "李明需要在公司高层会议上汇报项目进展。这是他展示能力的机会。",
+          "hasPuzzle": false,
+          "characterIds": ["char-urban-1", "char-urban-4"]
+        },
+        {
+          "chapterNumber": 7,
+          "title": "升职机会",
+          "content": "公司有一个升职机会，李明决定申请。他需要准备一份出色的申请材料。",
+          "hasPuzzle": false,
+          "characterIds": ["char-urban-1", "char-urban-2", "char-urban-3"]
+        },
+        {
+          "chapterNumber": 8,
+          "title": "面试考验",
+          "content": "升职面试非常严格。李明需要展示他的专业能力和领导潜质。",
+          "hasPuzzle": true,
+          "puzzleQuestion": "升职面试最看重什么？",
+          "puzzleOptions": ["学历", "经验", "能力", "关系"],
+          "puzzleCorrectIndex": 2,
+          "characterIds": ["char-urban-1", "char-urban-4"]
+        },
+        {
+          "chapterNumber": 9,
+          "title": "成功晋升",
+          "content": "李明成功晋升为项目经理。他开始带领自己的团队，面临新的挑战。",
+          "hasPuzzle": false,
+          "characterIds": ["char-urban-1", "char-urban-2", "char-urban-3"]
+        },
+        {
+          "chapterNumber": 10,
+          "title": "新的征程",
+          "content": "李明站在新的起点上，他知道职场之路永无止境。他将继续努力，追求更高的目标。",
+          "hasPuzzle": false,
+          "characterIds": ["char-urban-1", "char-urban-2", "char-urban-3", "char-urban-4"]
+        }
+      ]
+    },
+    {
+      "bookId": "book-mechanical-1",
+      "title": "机甲觉醒",
+      "typeId": "mechanical",
+      "coverEmoji": "🦾",
+      "description": "机甲战士在废墟中觉醒，开始寻找真相的旅程。",
+      "characterIds": ["char-mechanical-1", "char-mechanical-2", "char-mechanical-3", "char-mechanical-4"],
+      "protagonistId": "char-mechanical-1",
+      "chapters": [
+        {
+          "chapterNumber": 1,
+          "title": "废墟觉醒",
+          "content": "在一片废墟中，一台古老的机甲战士缓缓睁开了眼睛。它不知道自己是谁，也不知道为什么在这里。",
+          "hasPuzzle": false,
+          "characterIds": ["char-mechanical-1"]
+        },
+        {
+          "chapterNumber": 2,
+          "title": "AI助手",
+          "content": "一个AI助手出现在机甲战士的系统中。'你好，我是你的AI助手。你已经在休眠中度过了100年。'",
+          "hasPuzzle": true,
+          "puzzleQuestion": "机甲战士休眠了多久？",
+          "puzzleOptions": ["10年", "50年", "100年", "1000年"],
+          "puzzleCorrectIndex": 2,
+          "characterIds": ["char-mechanical-1", "char-mechanical-2"]
+        },
+        {
+          "chapterNumber": 3,
+          "title": "废墟探索",
+          "content": "机甲战士开始在废墟中探索，寻找关于自己身份的线索。它发现了一些古老的记录。",
+          "hasPuzzle": false,
+          "characterIds": ["char-mechanical-1", "char-mechanical-2"]
+        },
+        {
+          "chapterNumber": 4,
+          "title": "工程师的帮助",
+          "content": "一位工程师发现了机甲战士。'你是传说中的守护者机甲！让我帮你修复系统。'",
+          "hasPuzzle": false,
+          "characterIds": ["char-mechanical-1", "char-mechanical-2", "char-mechanical-3"]
+        },
+        {
+          "chapterNumber": 5,
+          "title": "记忆碎片",
+          "content": "随着系统的修复，机甲战士开始恢复一些记忆碎片。它记得自己曾经保护过一个重要的地方。",
+          "hasPuzzle": true,
+          "puzzleQuestion": "机甲战士曾经是什么身份？",
+          "puzzleOptions": ["战士", "守护者", "探险家", "工人"],
+          "puzzleCorrectIndex": 1,
+          "characterIds": ["char-mechanical-1", "char-mechanical-2", "char-mechanical-3"]
+        },
+        {
+          "chapterNumber": 6,
+          "title": "指挥官的召唤",
+          "content": "一位指挥官联系了机甲战士。'我们需要你的帮助。机械城正面临危机。'",
+          "hasPuzzle": false,
+          "characterIds": ["char-mechanical-1", "char-mechanical-2", "char-mechanical-4"]
+        },
+        {
+          "chapterNumber": 7,
+          "title": "前往机械城",
+          "content": "机甲战士和伙伴们踏上了前往机械城的旅程。路上他们遇到了各种危险和挑战。",
+          "hasPuzzle": false,
+          "characterIds": ["char-mechanical-1", "char-mechanical-2", "char-mechanical-3", "char-mechanical-4"]
+        },
+        {
+          "chapterNumber": 8,
+          "title": "机械城的危机",
+          "content": "机械城正在遭受攻击。机甲战士需要帮助城市抵御入侵者。",
+          "hasPuzzle": true,
+          "puzzleQuestion": "机械城面临的是什么危机？",
+          "puzzleOptions": ["能源危机", "入侵攻击", "系统故障", "自然灾害"],
+          "puzzleCorrectIndex": 1,
+          "characterIds": ["char-mechanical-1", "char-mechanical-2", "char-mechanical-3", "char-mechanical-4"]
+        },
+        {
+          "chapterNumber": 9,
+          "title": "最终战斗",
+          "content": "机甲战士与入侵者的首领展开了激烈的战斗。它需要发挥出全部的力量来保护机械城。",
+          "hasPuzzle": false,
+          "characterIds": ["char-mechanical-1", "char-mechanical-2", "char-mechanical-3", "char-mechanical-4"]
+        },
+        {
+          "chapterNumber": 10,
+          "title": "新的使命",
+          "content": "战斗胜利了，机甲战士找回了自己的使命。它将继续守护这片土地，保护所有需要帮助的人。",
+          "hasPuzzle": false,
+          "characterIds": ["char-mechanical-1", "char-mechanical-2", "char-mechanical-3", "char-mechanical-4"]
+        }
+      ]
+    },
+    {
+      "bookId": "book-mechanical-2",
+      "title": "星际征途",
+      "typeId": "mechanical",
+      "coverEmoji": "🚀",
+      "description": "人类踏上星际征途，探索未知宇宙的故事。",
+      "characterIds": ["char-mechanical-1", "char-mechanical-2", "char-mechanical-3", "char-mechanical-4"],
+      "protagonistId": "char-mechanical-1",
+      "chapters": [
+        {
+          "chapterNumber": 1,
+          "title": "星际飞船",
+          "content": "人类建造了第一艘星际飞船'希望号'。机甲战士被选为飞船的守护者。",
+          "hasPuzzle": false,
+          "characterIds": ["char-mechanical-1", "char-mechanical-2"]
+        },
+        {
+          "chapterNumber": 2,
+          "title": "启程",
+          "content": "'希望号'离开了地球，开始了漫长的星际旅程。船员们对未来充满期待。",
+          "hasPuzzle": true,
+          "puzzleQuestion": "星际飞船的名字是什么？",
+          "puzzleOptions": ["探索号", "希望号", "梦想号", "未来号"],
+          "puzzleCorrectIndex": 1,
+          "characterIds": ["char-mechanical-1", "char-mechanical-2", "char-mechanical-3", "char-mechanical-4"]
+        },
+        {
+          "chapterNumber": 3,
+          "title": "太空站补给",
+          "content": "飞船停靠在一个太空站进行补给。机甲战士在这里遇到了一些老朋友。",
+          "hasPuzzle": false,
+          "characterIds": ["char-mechanical-1", "char-mechanical-2", "char-mechanical-3"]
+        },
+        {
+          "chapterNumber": 4,
+          "title": "未知信号",
+          "content": "飞船接收到了一个来自未知星球的信号。指挥官决定改变航线，前往调查。",
+          "hasPuzzle": false,
+          "characterIds": ["char-mechanical-1", "char-mechanical-2", "char-mechanical-4"]
+        },
+        {
+          "chapterNumber": 5,
+          "title": "神秘星球",
+          "content": "飞船降落在一个神秘的星球上。这里有着奇异的植物和未知的生命形式。",
+          "hasPuzzle": true,
+          "puzzleQuestion": "神秘星球上有什么？",
+          "puzzleOptions": ["只有岩石", "奇异植物", "外星城市", "只有水"],
+          "puzzleCorrectIndex": 1,
+          "characterIds": ["char-mechanical-1", "char-mechanical-2", "char-mechanical-3"]
+        },
+        {
+          "chapterNumber": 6,
+          "title": "古代遗迹",
+          "content": "探索队在星球上发现了古代遗迹。这些遗迹似乎来自一个高度发达的文明。",
+          "hasPuzzle": false,
+          "characterIds": ["char-mechanical-1", "char-mechanical-2", "char-mechanical-3", "char-mechanical-4"]
+        },
+        {
+          "chapterNumber": 7,
+          "title": "能量危机",
+          "content": "飞船的能量系统出现了问题。工程师需要找到解决方案，否则他们将无法离开这个星球。",
+          "hasPuzzle": false,
+          "characterIds": ["char-mechanical-1", "char-mechanical-2", "char-mechanical-3"]
+        },
+        {
+          "chapterNumber": 8,
+          "title": "遗迹的秘密",
+          "content": "古代遗迹中隐藏着强大的能量源。机甲战士需要解开遗迹的谜题才能获得能量。",
+          "hasPuzzle": true,
+          "puzzleQuestion": "遗迹中隐藏着什么？",
+          "puzzleOptions": ["宝藏", "能量源", "武器", "地图"],
+          "puzzleCorrectIndex": 1,
+          "characterIds": ["char-mechanical-1", "char-mechanical-2", "char-mechanical-3", "char-mechanical-4"]
+        },
+        {
+          "chapterNumber": 9,
+          "title": "重返旅程",
+          "content": "获得了新的能量源，飞船重新启程。他们带着古代文明的秘密，继续向宇宙深处前进。",
+          "hasPuzzle": false,
+          "characterIds": ["char-mechanical-1", "char-mechanical-2", "char-mechanical-3", "char-mechanical-4"]
+        },
+        {
+          "chapterNumber": 10,
+          "title": "无限探索",
+          "content": "星际征途才刚刚开始。机甲战士和船员们知道，宇宙中还有无数的奥秘等待着他们去发现。",
+          "hasPuzzle": false,
+          "characterIds": ["char-mechanical-1", "char-mechanical-2", "char-mechanical-3", "char-mechanical-4"]
+        }
+      ]
+    }
+  ]
+}

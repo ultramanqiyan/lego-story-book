@@ -1,0 +1,484 @@
+{
+  "plotElements": [
+    {
+      "elementId": "weather-children-1",
+      "typeId": "children",
+      "category": "weather",
+      "name": "晴天",
+      "emoji": "☀️",
+      "extraConfig": {"bgColor": "#FFD54F"}
+    },
+    {
+      "elementId": "weather-children-2",
+      "typeId": "children",
+      "category": "weather",
+      "name": "彩虹",
+      "emoji": "🌈",
+      "extraConfig": {"bgColor": "#CE93D8"}
+    },
+    {
+      "elementId": "weather-children-3",
+      "typeId": "children",
+      "category": "weather",
+      "name": "微风",
+      "emoji": "🌸",
+      "extraConfig": {"bgColor": "#F8BBD9"}
+    },
+    {
+      "elementId": "weather-children-4",
+      "typeId": "children",
+      "category": "weather",
+      "name": "星空",
+      "emoji": "⭐",
+      "extraConfig": {"bgColor": "#7986CB"}
+    },
+    {
+      "elementId": "terrain-children-1",
+      "typeId": "children",
+      "category": "terrain",
+      "name": "森林",
+      "emoji": "🌲",
+      "extraConfig": {"decor": "🌲🌳🌿"}
+    },
+    {
+      "elementId": "terrain-children-2",
+      "typeId": "children",
+      "category": "terrain",
+      "name": "草地",
+      "emoji": "🌼",
+      "extraConfig": {"decor": "🌼🌸🦋"}
+    },
+    {
+      "elementId": "terrain-children-3",
+      "typeId": "children",
+      "category": "terrain",
+      "name": "小溪",
+      "emoji": "💧",
+      "extraConfig": {"decor": "💧🌊🐟"}
+    },
+    {
+      "elementId": "terrain-children-4",
+      "typeId": "children",
+      "category": "terrain",
+      "name": "花园",
+      "emoji": "🏡",
+      "extraConfig": {"decor": "🏡🌷🌹"}
+    },
+    {
+      "elementId": "equipment-children-1",
+      "typeId": "children",
+      "category": "equipment",
+      "name": "魔法棒",
+      "emoji": "🪄"
+    },
+    {
+      "elementId": "equipment-children-2",
+      "typeId": "children",
+      "category": "equipment",
+      "name": "小背包",
+      "emoji": "🎒"
+    },
+    {
+      "elementId": "equipment-children-3",
+      "typeId": "children",
+      "category": "equipment",
+      "name": "指南针",
+      "emoji": "🧭"
+    },
+    {
+      "elementId": "equipment-children-4",
+      "typeId": "children",
+      "category": "equipment",
+      "name": "放大镜",
+      "emoji": "🔍"
+    },
+    {
+      "elementId": "adventure-children-1",
+      "typeId": "children",
+      "category": "adventure",
+      "name": "寻宝",
+      "emoji": "💎"
+    },
+    {
+      "elementId": "adventure-children-2",
+      "typeId": "children",
+      "category": "adventure",
+      "name": "探险",
+      "emoji": "🗺️"
+    },
+    {
+      "elementId": "adventure-children-3",
+      "typeId": "children",
+      "category": "adventure",
+      "name": "解谜",
+      "emoji": "🧩"
+    },
+    {
+      "elementId": "adventure-children-4",
+      "typeId": "children",
+      "category": "adventure",
+      "name": "收集",
+      "emoji": "🌟"
+    },
+    {
+      "elementId": "weather-magic-1",
+      "typeId": "magic",
+      "category": "weather",
+      "name": "月夜",
+      "emoji": "🌙",
+      "extraConfig": {"bgColor": "#311B92"}
+    },
+    {
+      "elementId": "weather-magic-2",
+      "typeId": "magic",
+      "category": "weather",
+      "name": "迷雾",
+      "emoji": "🌫️",
+      "extraConfig": {"bgColor": "#78909C"}
+    },
+    {
+      "elementId": "weather-magic-3",
+      "typeId": "magic",
+      "category": "weather",
+      "name": "雷暴",
+      "emoji": "⛈️",
+      "extraConfig": {"bgColor": "#37474F"}
+    },
+    {
+      "elementId": "weather-magic-4",
+      "typeId": "magic",
+      "category": "weather",
+      "name": "极光",
+      "emoji": "🌌",
+      "extraConfig": {"bgColor": "#4A148C"}
+    },
+    {
+      "elementId": "terrain-magic-1",
+      "typeId": "magic",
+      "category": "terrain",
+      "name": "魔法塔",
+      "emoji": "🏰",
+      "extraConfig": {"decor": "🏰✨🔮"}
+    },
+    {
+      "elementId": "terrain-magic-2",
+      "typeId": "magic",
+      "category": "terrain",
+      "name": "禁林",
+      "emoji": "🌳",
+      "extraConfig": {"decor": "🌳🌲🌑"}
+    },
+    {
+      "elementId": "terrain-magic-3",
+      "typeId": "magic",
+      "category": "terrain",
+      "name": "龙巢",
+      "emoji": "🏔️",
+      "extraConfig": {"decor": "🏔️🐉🔥"}
+    },
+    {
+      "elementId": "terrain-magic-4",
+      "typeId": "magic",
+      "category": "terrain",
+      "name": "水晶洞",
+      "emoji": "💎",
+      "extraConfig": {"decor": "💎🔮✨"}
+    },
+    {
+      "elementId": "equipment-magic-1",
+      "typeId": "magic",
+      "category": "equipment",
+      "name": "法杖",
+      "emoji": "🪄"
+    },
+    {
+      "elementId": "equipment-magic-2",
+      "typeId": "magic",
+      "category": "equipment",
+      "name": "魔戒",
+      "emoji": "💍"
+    },
+    {
+      "elementId": "equipment-magic-3",
+      "typeId": "magic",
+      "category": "equipment",
+      "name": "魔法书",
+      "emoji": "📖"
+    },
+    {
+      "elementId": "equipment-magic-4",
+      "typeId": "magic",
+      "category": "equipment",
+      "name": "水晶球",
+      "emoji": "🔮"
+    },
+    {
+      "elementId": "adventure-magic-1",
+      "typeId": "magic",
+      "category": "adventure",
+      "name": "施法",
+      "emoji": "✨"
+    },
+    {
+      "elementId": "adventure-magic-2",
+      "typeId": "magic",
+      "category": "adventure",
+      "name": "召唤",
+      "emoji": "👻"
+    },
+    {
+      "elementId": "adventure-magic-3",
+      "typeId": "magic",
+      "category": "adventure",
+      "name": "炼金",
+      "emoji": "⚗️"
+    },
+    {
+      "elementId": "adventure-magic-4",
+      "typeId": "magic",
+      "category": "adventure",
+      "name": "飞行",
+      "emoji": "🦋"
+    },
+    {
+      "elementId": "weather-urban-1",
+      "typeId": "urban",
+      "category": "weather",
+      "name": "晴朗",
+      "emoji": "☀️",
+      "extraConfig": {"bgColor": "#64B5F6"}
+    },
+    {
+      "elementId": "weather-urban-2",
+      "typeId": "urban",
+      "category": "weather",
+      "name": "阴天",
+      "emoji": "☁️",
+      "extraConfig": {"bgColor": "#90A4AE"}
+    },
+    {
+      "elementId": "weather-urban-3",
+      "typeId": "urban",
+      "category": "weather",
+      "name": "雨天",
+      "emoji": "🌧️",
+      "extraConfig": {"bgColor": "#546E7A"}
+    },
+    {
+      "elementId": "weather-urban-4",
+      "typeId": "urban",
+      "category": "weather",
+      "name": "雾霾",
+      "emoji": "🌫️",
+      "extraConfig": {"bgColor": "#78909C"}
+    },
+    {
+      "elementId": "terrain-urban-1",
+      "typeId": "urban",
+      "category": "terrain",
+      "name": "办公室",
+      "emoji": "🏢",
+      "extraConfig": {"decor": "🏢💻📊"}
+    },
+    {
+      "elementId": "terrain-urban-2",
+      "typeId": "urban",
+      "category": "terrain",
+      "name": "咖啡厅",
+      "emoji": "☕",
+      "extraConfig": {"decor": "☕🍰🎵"}
+    },
+    {
+      "elementId": "terrain-urban-3",
+      "typeId": "urban",
+      "category": "terrain",
+      "name": "会议室",
+      "emoji": "📋",
+      "extraConfig": {"decor": "📋📊💼"}
+    },
+    {
+      "elementId": "terrain-urban-4",
+      "typeId": "urban",
+      "category": "terrain",
+      "name": "科技园",
+      "emoji": "🏗️",
+      "extraConfig": {"decor": "🏗️🏢🚀"}
+    },
+    {
+      "elementId": "equipment-urban-1",
+      "typeId": "urban",
+      "category": "equipment",
+      "name": "笔记本",
+      "emoji": "💻"
+    },
+    {
+      "elementId": "equipment-urban-2",
+      "typeId": "urban",
+      "category": "equipment",
+      "name": "名片",
+      "emoji": "💳"
+    },
+    {
+      "elementId": "equipment-urban-3",
+      "typeId": "urban",
+      "category": "equipment",
+      "name": "咖啡",
+      "emoji": "☕"
+    },
+    {
+      "elementId": "equipment-urban-4",
+      "typeId": "urban",
+      "category": "equipment",
+      "name": "手表",
+      "emoji": "⌚"
+    },
+    {
+      "elementId": "adventure-urban-1",
+      "typeId": "urban",
+      "category": "adventure",
+      "name": "谈判",
+      "emoji": "🤝"
+    },
+    {
+      "elementId": "adventure-urban-2",
+      "typeId": "urban",
+      "category": "adventure",
+      "name": "策划",
+      "emoji": "📊"
+    },
+    {
+      "elementId": "adventure-urban-3",
+      "typeId": "urban",
+      "category": "adventure",
+      "name": "研发",
+      "emoji": "🔬"
+    },
+    {
+      "elementId": "adventure-urban-4",
+      "typeId": "urban",
+      "category": "adventure",
+      "name": "投资",
+      "emoji": "💰"
+    },
+    {
+      "elementId": "weather-mechanical-1",
+      "typeId": "mechanical",
+      "category": "weather",
+      "name": "辐射风暴",
+      "emoji": "⚡",
+      "extraConfig": {"bgColor": "#00E676"}
+    },
+    {
+      "elementId": "weather-mechanical-2",
+      "typeId": "mechanical",
+      "category": "weather",
+      "name": "能量雨",
+      "emoji": "💫",
+      "extraConfig": {"bgColor": "#E040FB"}
+    },
+    {
+      "elementId": "weather-mechanical-3",
+      "typeId": "mechanical",
+      "category": "weather",
+      "name": "数据流",
+      "emoji": "📡",
+      "extraConfig": {"bgColor": "#00BCD4"}
+    },
+    {
+      "elementId": "weather-mechanical-4",
+      "typeId": "mechanical",
+      "category": "weather",
+      "name": "量子云",
+      "emoji": "🌌",
+      "extraConfig": {"bgColor": "#651FFF"}
+    },
+    {
+      "elementId": "terrain-mechanical-1",
+      "typeId": "mechanical",
+      "category": "terrain",
+      "name": "废墟城市",
+      "emoji": "🏚️",
+      "extraConfig": {"decor": "🏚️⚙️🔧"}
+    },
+    {
+      "elementId": "terrain-mechanical-2",
+      "typeId": "mechanical",
+      "category": "terrain",
+      "name": "太空站",
+      "emoji": "🛸",
+      "extraConfig": {"decor": "🛸🌟🪐"}
+    },
+    {
+      "elementId": "terrain-mechanical-3",
+      "typeId": "mechanical",
+      "category": "terrain",
+      "name": "地下基地",
+      "emoji": "🔩",
+      "extraConfig": {"decor": "🔩⚙️💡"}
+    },
+    {
+      "elementId": "terrain-mechanical-4",
+      "typeId": "mechanical",
+      "category": "terrain",
+      "name": "机械城",
+      "emoji": "🏙️",
+      "extraConfig": {"decor": "🏙️🤖⚡"}
+    },
+    {
+      "elementId": "equipment-mechanical-1",
+      "typeId": "mechanical",
+      "category": "equipment",
+      "name": "激光枪",
+      "emoji": "🔫"
+    },
+    {
+      "elementId": "equipment-mechanical-2",
+      "typeId": "mechanical",
+      "category": "equipment",
+      "name": "能量盾",
+      "emoji": "🛡️"
+    },
+    {
+      "elementId": "equipment-mechanical-3",
+      "typeId": "mechanical",
+      "category": "equipment",
+      "name": "芯片",
+      "emoji": "💾"
+    },
+    {
+      "elementId": "equipment-mechanical-4",
+      "typeId": "mechanical",
+      "category": "equipment",
+      "name": "推进器",
+      "emoji": "🚀"
+    },
+    {
+      "elementId": "adventure-mechanical-1",
+      "typeId": "mechanical",
+      "category": "adventure",
+      "name": "战斗",
+      "emoji": "⚔️"
+    },
+    {
+      "elementId": "adventure-mechanical-2",
+      "typeId": "mechanical",
+      "category": "adventure",
+      "name": "修复",
+      "emoji": "🔧"
+    },
+    {
+      "elementId": "adventure-mechanical-3",
+      "typeId": "mechanical",
+      "category": "adventure",
+      "name": "升级",
+      "emoji": "⬆️"
+    },
+    {
+      "elementId": "adventure-mechanical-4",
+      "typeId": "mechanical",
+      "category": "adventure",
+      "name": "探索",
+      "emoji": "🔭"
+    }
+  ]
+}

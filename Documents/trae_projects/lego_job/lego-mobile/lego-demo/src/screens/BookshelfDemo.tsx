@@ -11,6 +11,7 @@ import {
   Modal,
   TextInput,
 } from 'react-native';
+import { useData } from '../context/DataContext';
 
 const { width, height } = Dimensions.get('window');
 const BOOK_CARD_WIDTH = (width - 60) / 2;
@@ -22,10 +23,10 @@ interface Book {
   title: string;
   chapterCount: number;
   coverEmoji: string;
-  bookSpineColor: string;
+  typeId: string;
   lastReadTime?: string;
   progress?: number;
-  isNew?: boolean;
+  isUserCreated?: boolean;
 }
 
 interface BookshelfDemoProps {
@@ -33,104 +34,41 @@ interface BookshelfDemoProps {
   onNavigateToBookDetail: (bookId: string, bookTitle: string) => void;
 }
 
-const BOOK_COLORS = [
-  { spine: '#C0392B', cover: '#E74C3C', accent: '#FADBD8' },
-  { spine: '#2C3E50', cover: '#34495E', accent: '#D6DBDF' },
-  { spine: '#1A5276', cover: '#2980B9', accent: '#D4E6F1' },
-  { spine: '#1E8449', cover: '#27AE60', accent: '#D5F5E3' },
-  { spine: '#7D3C98', cover: '#9B59B6', accent: '#E8DAEF' },
-  { spine: '#B7950B', cover: '#F1C40F', accent: '#FCF3CF' },
-  { spine: '#A04000', cover: '#E67E22', accent: '#FAE5D3' },
-  { spine: '#6C3483', cover: '#8E44AD', accent: '#EBDEF0' },
-];
+const TYPE_COLORS: Record<string, { spine: string; cover: string; accent: string }> = {
+  children: { spine: '#E65100', cover: '#FF9800', accent: '#FFE0B2' },
+  magic: { spine: '#6A1B9A', cover: '#9C27B0', accent: '#E1BEE7' },
+  urban: { spine: '#0D47A1', cover: '#2196F3', accent: '#BBDEFB' },
+  mechanical: { spine: '#006064', cover: '#00BCD4', accent: '#B2EBF2' },
+};
 
-const FAKE_BOOKS: Book[] = [
-  {
-    bookId: 'book-1',
-    title: '勇者的冒险之旅',
-    chapterCount: 10,
-    coverEmoji: '⚔️',
-    bookSpineColor: '#C0392B',
-    lastReadTime: '2小时前',
-    progress: 65,
-  },
-  {
-    bookId: 'book-2',
-    title: '魔法学院秘闻',
-    chapterCount: 8,
-    coverEmoji: '🔮',
-    bookSpineColor: '#7D3C98',
-    lastReadTime: '昨天',
-    progress: 30,
-  },
-  {
-    bookId: 'book-3',
-    title: '精灵传说',
-    chapterCount: 5,
-    coverEmoji: '🧝',
-    bookSpineColor: '#1E8449',
-    lastReadTime: '3天前',
-    progress: 100,
-  },
-  {
-    bookId: 'book-4',
-    title: '龙之谷',
-    chapterCount: 12,
-    coverEmoji: '🐉',
-    bookSpineColor: '#A04000',
-    lastReadTime: '1周前',
-    progress: 45,
-  },
-  {
-    bookId: 'book-5',
-    title: '星际旅行',
-    chapterCount: 6,
-    coverEmoji: '🚀',
-    bookSpineColor: '#1A5276',
-    lastReadTime: '2周前',
-    progress: 20,
-  },
-  {
-    bookId: 'book-6',
-    title: '海底世界',
-    chapterCount: 7,
-    coverEmoji: '🌊',
-    bookSpineColor: '#2C3E50',
-    lastReadTime: '3周前',
-    progress: 80,
-  },
-  {
-    bookId: 'book-7',
-    title: '时间裂隙',
-    chapterCount: 9,
-    coverEmoji: '⏰',
-    bookSpineColor: '#6C3483',
-    lastReadTime: '1个月前',
-    progress: 55,
-  },
-  {
-    bookId: 'book-8',
-    title: '永恒传说',
-    chapterCount: 11,
-    coverEmoji: '💎',
-    bookSpineColor: '#B7950B',
-    lastReadTime: '2个月前',
-    progress: 10,
-  },
-];
-
-const getBookColorScheme = (index: number) => {
-  return BOOK_COLORS[index % BOOK_COLORS.length];
+const getTypeColorScheme = (typeId: string) => {
+  return TYPE_COLORS[typeId] || TYPE_COLORS.children;
 };
 
 const BookshelfDemo: React.FC<BookshelfDemoProps> = ({ onBack, onNavigateToBookDetail }) => {
-  const [books, setBooks] = useState<Book[]>(FAKE_BOOKS);
+  const { books: dataBooks, isLoading, bookTypes } = useData();
+  const [books, setBooks] = useState<Book[]>([]);
   const [showCreateModal, setShowCreateModal] = useState(false);
   const [newBookTitle, setNewBookTitle] = useState('');
   const [selectedBookId, setSelectedBookId] = useState<string | null>(null);
   
   const fadeAnim = useRef(new Animated.Value(0)).current;
   const scaleAnim = useRef(new Animated.Value(0.95)).current;
+
+  useEffect(() => {
+    if (!isLoading && dataBooks.length > 0) {
+      setBooks(dataBooks.map(b => ({
+        bookId: b.bookId,
+        title: b.title,
+        chapterCount: b.chapterCount,
+        coverEmoji: b.coverEmoji,
+        typeId: b.typeId,
+        lastReadTime: b.lastReadTime,
+        progress: b.progress,
+        isUserCreated: b.isUserCreated,
+      })));
+    }
+  }, [isLoading, dataBooks]);
 
   useEffect(() => {
     Animated.parallel([
@@ -158,12 +96,12 @@ const BookshelfDemo: React.FC<BookshelfDemoProps> = ({ onBack, onNavigateToBookD
     if (!newBookTitle.trim()) return;
     
     const newBook: Book = {
-      bookId: `book-${Date.now()}`,
+      bookId: `book-user-${Date.now()}`,
       title: newBookTitle.trim(),
       chapterCount: 0,
       coverEmoji: '📖',
-      bookSpineColor: BOOK_COLORS[books.length % BOOK_COLORS.length].spine,
-      isNew: true,
+      typeId: 'children',
+      isUserCreated: true,
     };
     
     setBooks([newBook, ...books]);
@@ -177,7 +115,7 @@ const BookshelfDemo: React.FC<BookshelfDemoProps> = ({ onBack, onNavigateToBookD
 
   const renderBookCard = (book: Book, index: number) => {
     const isSelected = selectedBookId === book.bookId;
-    const colorScheme = getBookColorScheme(index);
+    const colorScheme = getTypeColorScheme(book.typeId);
     
     return (
       <TouchableOpacity
@@ -210,7 +148,7 @@ const BookshelfDemo: React.FC<BookshelfDemoProps> = ({ onBack, onNavigateToBookD
             )}
           </View>
           
-          {book.isNew && (
+          {book.isUserCreated && (
             <View style={styles.newBadge}>
               <Text style={styles.newBadgeText}>NEW</Text>
             </View>

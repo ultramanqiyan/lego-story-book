@@ -9,6 +9,8 @@ import {
   Animated,
   Dimensions,
 } from 'react-native';
+import { useData } from '../context/DataContext';
+import { Book, Chapter, Character, PlotElement } from '../database/DatabaseService';
 
 const { width, height } = Dimensions.get('window');
 const PAGE_WIDTH = (width - 60) / 2;
@@ -18,463 +20,7 @@ const ITEMS_PER_PAGE = 6;
 type TabType = 'chapters' | 'characters' | 'plots';
 type ChapterViewMode = 'directory' | 'content';
 
-interface Chapter {
-  chapterId: string;
-  chapterNumber: number;
-  title: string;
-  content: string;
-  wordCount: number;
-  hasPuzzle: boolean;
-  puzzleResult?: 0 | 1 | null;
-  characters: string[];
-  puzzle?: {
-    question: string;
-    options: string[];
-    correctIndex: number;
-    attempts: number;
-    maxAttempts: number;
-  };
-}
 
-interface Character {
-  id: string;
-  customName: string;
-  name: string;
-  roleType: 'protagonist' | 'supporting' | 'antagonist';
-  emoji: string;
-  description: string;
-}
-
-interface PlotCard {
-  id: string;
-  type?: 'weather' | 'adventure' | 'terrain' | 'equipment';
-  name: string;
-  emoji: string;
-  description: string;
-}
-
-const FAKE_BOOK = {
-  bookId: 'book-1',
-  title: '勇者的冒险之旅',
-};
-
-const FAKE_CHAPTERS: Chapter[] = [
-  {
-    chapterId: 'ch-1',
-    chapterNumber: 1,
-    title: '神秘森林',
-    content: `在神秘的森林深处，年轻的勇士阿尔法开始了他的冒险之旅。
-
-古老的树木遮天蔽日，阳光只能透过枝叶的缝隙洒落，在地面上形成斑驳的光影。空气中弥漫着泥土和青草的芬芳，远处传来鸟儿清脆的鸣叫声。
-
-勇士阿尔法紧握着手中的宝剑，警惕地观察着四周。法师贝塔跟在他身后，手中闪烁着微弱的魔法光芒。
-
-"这里感觉有些不对劲，"阿尔法低声说道，"我们要小心。"
-
-就在这时，前方的灌木丛突然晃动起来，一个黑影从里面窜了出来...`,
-    wordCount: 150,
-    hasPuzzle: true,
-    puzzleResult: null,
-    characters: ['char-1', 'char-2'],
-    puzzle: {
-      question: '森林中出现的黑影最可能是什么？',
-      options: ['精灵', '魔兽', '迷路的旅人', '法师的幻象'],
-      correctIndex: 1,
-      attempts: 0,
-      maxAttempts: 3,
-    },
-  },
-  {
-    chapterId: 'ch-2',
-    chapterNumber: 2,
-    title: '古老城堡',
-    content: `穿过森林，一座古老的城堡出现在眼前。
-
-城堡的墙壁上爬满了藤蔓，大门紧闭着。门上刻着神秘的符文，散发着微弱的光芒。守卫伽马站在城门口，手持长矛，神情严肃。
-
-"要进入城堡，必须解开这道符文谜题，"守卫伽马说道，"只有真正的勇者才能通过。"
-
-法师贝塔走上前去，仔细研究着门上的符文。"这是古老的魔法文字，"他喃喃自语，"我需要一些时间来解读..."
-
-勇士阿尔法环顾四周，发现城堡周围还有一些奇怪的雕像，它们似乎在注视着每一个来访者。雕像的眼睛闪烁着诡异的光芒，仿佛在守护着某种古老的秘密。
-
-"这些雕像看起来不简单，"阿尔法低声说道，"我们要小心。"
-
-贝塔点点头，开始集中精神解读符文。随着时间的推移，符文的光芒越来越亮，最终发出一声清脆的响声，大门缓缓打开。
-
-"成功了！"贝塔兴奋地说道。
-
-阿尔法深吸一口气，握紧了手中的宝剑。他们踏入了城堡的大门，迎接他们的将是未知的挑战...
-
-城堡内部昏暗而神秘，走廊两侧挂满了古老的画像，每一幅画像都讲述着一个传奇故事。他们小心翼翼地前进，生怕惊动了沉睡的守护者。
-
-突然，一阵阴风吹过，画像中的人物似乎都在注视着他们...`,
-    wordCount: 500,
-    hasPuzzle: true,
-    puzzleResult: null,
-    characters: ['char-1', 'char-2', 'char-4'],
-    puzzle: {
-      question: '城堡大门上的符文代表什么元素？',
-      options: ['火焰', '水流', '大地', '风暴'],
-      correctIndex: 2,
-      attempts: 0,
-      maxAttempts: 3,
-    },
-  },
-  {
-    chapterId: 'ch-3',
-    chapterNumber: 3,
-    title: '深海领域',
-    content: `城堡的地下通道通向一片神秘的地下海洋。
-
-幽蓝色的光芒从水中透出，照亮了整个洞穴。勇士阿尔法和法师贝塔站在岸边，望着眼前一望无际的地下海洋。
-
-"我们需要一艘船，"贝塔说道，"但我感觉水下有什么东西在注视着我们。"
-
-就在这时，水面开始波动，一个巨大的身影从水中缓缓升起...那是传说中的海王，他守护着通往魔王领地的道路。`,
-    wordCount: 200,
-    hasPuzzle: false,
-    puzzleResult: null,
-    characters: ['char-1', 'char-2'],
-    puzzle: undefined,
-  },
-  {
-    chapterId: 'ch-4',
-    chapterNumber: 4,
-    title: '魔王领地',
-    content: `经过漫长的旅程，勇士阿尔法终于来到了魔王的领地。
-
-黑暗的城堡耸立在火山之上，岩浆从山壁流下，发出嘶嘶的声响。空气中充满了硫磺的味道，让人呼吸困难。
-
-魔王站在城堡的最高处，俯视着下方。"你终于来了，勇士，"他的声音如同雷鸣般回荡，"但你是否准备好面对最终的挑战？"
-
-阿尔法深吸一口气，握紧了手中的宝剑。这一刻，他等待了太久...
-
-城堡的大门缓缓打开，一股黑暗的气息扑面而来。阿尔法毫不犹豫地踏入其中，每一步都踏在滚烫的岩石上。
-
-走廊两侧是无数个牢笼，里面关押着被魔王囚禁的灵魂。他们伸出枯瘦的手臂，发出无声的哀嚎。
-
-"不要看他们，"贝塔提醒道，"这些都是魔王的陷阱。"
-
-阿尔法点点头，继续向前。终于，他们来到了魔王的大殿。
-
-大殿中央，魔王端坐在黑曜石王座上，他的眼睛闪烁着血红的光芒。"欢迎来到我的领地，勇者，"他冷笑道，"你将在这里结束你的旅程。"
-
-阿尔法举起宝剑，剑身上闪烁着圣洁的光芒。"今天，我将终结你的统治！"他大声宣布。`,
-    wordCount: 600,
-    hasPuzzle: true,
-    puzzleResult: null,
-    characters: ['char-1', 'char-3'],
-    puzzle: {
-      question: '魔王最害怕的是什么？',
-      options: ['火焰', '光明', '水', '黑暗'],
-      correctIndex: 1,
-      attempts: 0,
-      maxAttempts: 3,
-    },
-  },
-  {
-    chapterId: 'ch-5',
-    chapterNumber: 5,
-    title: '最终决战',
-    content: `决战开始了！
-
-勇士阿尔法冲向魔王，宝剑在空中划出一道银光。魔王挥动法杖，黑暗能量如潮水般涌来。
-
-法师贝塔在后方施展保护魔法，为阿尔法抵挡着黑暗力量的侵蚀。弓手德尔塔站在远处，不断射出光之箭，干扰魔王的施法。
-
-战斗持续了整整一天一夜。最终，在众人的配合下，阿尔法找到了魔王的弱点，一剑刺穿了他的心脏。
-
-光明重新降临这片土地，勇者们的故事将被永远传颂...`,
-    wordCount: 180,
-    hasPuzzle: false,
-    puzzleResult: null,
-    characters: ['char-1', 'char-2', 'char-3', 'char-5'],
-    puzzle: undefined,
-  },
-  {
-    chapterId: 'ch-6',
-    chapterNumber: 6,
-    title: '新的开始',
-    content: `魔王倒下后，世界迎来了久违的和平。
-
-勇士阿尔法站在城堡的废墟上，望着远方的地平线。阳光穿透云层，洒在大地上，一切都显得那么美好。
-
-"我们成功了，"法师贝塔走到他身边，"但我们的旅程还没有结束。"
-
-阿尔法点点头。他知道，虽然魔王已经倒下，但世界上还有许多需要帮助的人。
-
-就在这时，一位神秘的旅人出现在他们面前。他穿着灰色斗篷，看不清面容。
-
-"勇者们，"旅人说道，"我有重要的事情要告诉你们。在遥远的东方，有一座被遗忘的神殿，里面封印着比魔王更可怕的存在..."
-
-阿尔法和贝塔对视一眼，他们知道新的冒险即将开始。
-
-旅人继续说道："那座神殿名为'时间裂隙'，传说中它连接着过去和未来。如果封印被打破，整个世界都将陷入混乱。"
-
-"我们需要做什么？"阿尔法问道。
-
-"找到神殿的钥匙，"旅人回答，"它们散落在世界的四个角落。只有集齐四把钥匙，才能加固封印。"
-
-阿尔法握紧宝剑，眼中闪烁着坚定的光芒。"我们接受这个任务。"
-
-旅人微微点头，从斗篷下取出一张古老的地图。"这是神殿的位置，祝你们好运。"
-
-说完，旅人便消失在空气中，仿佛从未出现过。
-
-阿尔法展开地图，上面标注着四个神秘的地点：迷雾沼泽、天空之城、时间裂隙、永恒传说。
-
-"准备好了吗，老朋友？"阿尔法看向贝塔。
-
-"随时准备着，"贝塔微笑着回答。`,
-    wordCount: 550,
-    hasPuzzle: true,
-    puzzleResult: null,
-    characters: ['char-1', 'char-2'],
-    puzzle: {
-      question: '旅人提到的神殿叫什么名字？',
-      options: ['遗忘神殿', '时间裂隙', '永恒之塔', '命运之门'],
-      correctIndex: 1,
-      attempts: 0,
-      maxAttempts: 3,
-    },
-  },
-  {
-    chapterId: 'ch-7',
-    chapterNumber: 7,
-    title: '迷雾沼泽',
-    content: `根据地图的指引，阿尔法和贝塔来到了第一站——迷雾沼泽。
-
-浓雾笼罩着整片区域，能见度不足五米。空气中弥漫着腐烂的气息，脚下的泥土发出"咕噜咕噜"的声音。
-
-"小心，"贝塔警告道，"这里的雾气有毒，不要深呼吸。"
-
-阿尔法用布条蒙住口鼻，小心翼翼地前进。突然，他感觉脚下有什么东西在移动。
-
-"有东西在水下！"他大喊一声，迅速跳开。
-
-一条巨大的沼泽蟒蛇从泥水中窜出，张开血盆大口扑向他们...`,
-    wordCount: 160,
-    hasPuzzle: true,
-    puzzleResult: null,
-    characters: ['char-1', 'char-2'],
-    puzzle: {
-      question: '迷雾沼泽的雾气有什么特点？',
-      options: ['让人迷路', '有剧毒', '会燃烧', '能隐身'],
-      correctIndex: 1,
-      attempts: 0,
-      maxAttempts: 3,
-    },
-  },
-  {
-    chapterId: 'ch-8',
-    chapterNumber: 8,
-    title: '天空之城',
-    content: `穿过迷雾沼泽，阿尔法和贝塔来到了一座悬浮在云端的城市。
-
-天空之城的建筑由洁白的大理石建成，在阳光的照耀下闪闪发光。无数条锁链将城市固定在空中，风吹过时，整座城市都会轻轻摇晃。
-
-"太壮观了，"贝塔惊叹道，"这就是传说中的天空之城！"
-
-他们乘坐云梯升上城市，迎接他们的是一位身穿银甲的守护者。
-
-"欢迎来到天空之城，"守护者说道，"我是这里的守护者，你们为何而来？"
-
-"我们寻找时间裂隙的钥匙，"阿尔法回答。
-
-守护者点点头，"钥匙就在城市的最高塔中，但要得到它，你们必须通过三道试炼。"
-
-第一道试炼是智慧之门。守护者带他们来到一座巨大的迷宫前。
-
-"这座迷宫会不断变化，"守护者解释道，"只有最聪明的人才能找到出口。"
-
-阿尔法和贝塔相互配合，贝塔用魔法探测迷宫的变化，阿尔法则负责开路。经过几个小时的努力，他们终于找到了出口。
-
-第二道试炼是勇气之桥。一座透明的桥梁横跨两座塔楼，桥下是万丈深渊。
-
-"这座桥只能承载一个人的重量，"守护者说，"你们必须一个一个通过。"
-
-阿尔法率先踏上桥梁，每一步都小心翼翼。风从四面八方吹来，试图将他推下深渊。但他咬紧牙关，一步一步向前，最终成功到达对岸。
-
-第三道试炼是力量之墙。一堵巨大的石墙挡住了去路，墙上刻着古老的符文。
-
-"这堵墙只有真正的勇者才能推倒，"守护者说。
-
-阿尔法深吸一口气，将全身的力量集中在双臂上。他猛地向前推去，石墙开始震动，然后轰然倒塌。
-
-"恭喜你们，"守护者微笑着说，"你们通过了所有试炼。"
-
-他递给阿尔法一把银色的钥匙，钥匙上刻着云朵的图案。
-
-"这是天空之城的钥匙，愿它帮助你们完成使命。"`,
-    wordCount: 580,
-    hasPuzzle: true,
-    puzzleResult: null,
-    characters: ['char-1', 'char-2'],
-    puzzle: {
-      question: '天空之城的第一道试炼是什么？',
-      options: ['力量之墙', '智慧之门', '勇气之桥', '命运之塔'],
-      correctIndex: 1,
-      attempts: 0,
-      maxAttempts: 3,
-    },
-  },
-  {
-    chapterId: 'ch-9',
-    chapterNumber: 9,
-    title: '时间裂隙',
-    content: `集齐了天空之城的钥匙，阿尔法和贝塔继续向东前进。
-
-终于，他们来到了传说中的时间裂隙。这里的空间扭曲着，过去和未来的影像交织在一起。
-
-"小心，"贝塔警告道，"这里的时间流动很不稳定。"
-
-阿尔法看到自己的过去和未来在眼前闪过：他第一次拿起宝剑的样子、与魔王战斗的场景、甚至看到了一个白发苍苍的自己。
-
-"这就是时间裂隙的力量，"一个声音从虚空中传来。
-
-阿尔法转身，看到一个模糊的身影正在凝聚。那是...他自己？
-
-"我是未来的你，"身影说道，"我来是为了警告你。封印即将破碎，你必须尽快找到最后一把钥匙。"
-
-"最后一把钥匙在哪里？"阿尔法问道。
-
-"在永恒传说之地，"未来的阿尔法回答，"那里有你要找的答案。"
-
-说完，身影便消散在空气中。`,
-    wordCount: 190,
-    hasPuzzle: true,
-    puzzleResult: null,
-    characters: ['char-1', 'char-2'],
-    puzzle: {
-      question: '谁在时间裂隙中警告了阿尔法？',
-      options: ['魔王', '未来的自己', '神秘旅人', '守护者'],
-      correctIndex: 1,
-      attempts: 0,
-      maxAttempts: 3,
-    },
-  },
-  {
-    chapterId: 'ch-10',
-    chapterNumber: 10,
-    title: '永恒传说',
-    content: `阿尔法和贝塔来到了旅程的终点——永恒传说之地。
-
-这里是一片宁静的草原，鲜花盛开，蝴蝶飞舞。在草原的中央，矗立着一座古老的神殿。
-
-"就是这里了，"阿尔法深吸一口气，"最后一把钥匙就在里面。"
-
-他们走进神殿，发现里面空无一人。只有一座石台，上面放着一把金色的钥匙。
-
-但当阿尔法伸手去拿时，一个声音在神殿中回荡：
-
-"勇者，你真的想要这把钥匙吗？"
-
-阿尔法转身，看到一个光芒四射的身影正在凝聚。那是...创世神？
-
-"是的，"阿尔法坚定地回答，"我要保护这个世界。"
-
-创世神点点头，"你已经证明了自己的勇气、智慧和力量。这把钥匙属于你。"
-
-阿尔法拿起金色的钥匙，感觉一股温暖的力量涌入体内。
-
-"去吧，"创世神说，"用这四把钥匙加固时间裂隙的封印。世界的未来，就交给你了。"
-
-阿尔法和贝塔离开神殿，踏上了返回时间裂隙的路途。他们知道，最后的战斗即将来临...
-
-当他们回到时间裂隙时，封印已经开始松动。阿尔法将四把钥匙插入封印的四个凹槽中。
-
-一道耀眼的光芒闪过，封印重新变得稳固。时间裂隙恢复了平静，世界再次安全了。
-
-阿尔法望着天空，露出疲惫但满足的微笑。他的冒险，暂时告一段落。但他知道，只要有需要，他随时都会再次踏上征程。
-
-这就是勇者阿尔法的传说，一个将被永远传颂的故事。`,
-    wordCount: 520,
-    hasPuzzle: false,
-    puzzleResult: null,
-    characters: ['char-1', 'char-2'],
-    puzzle: undefined,
-  },
-];
-
-const FAKE_CHARACTERS: Character[] = [
-  {
-    id: 'char-1',
-    customName: '勇士阿尔法',
-    name: '勇士',
-    roleType: 'protagonist',
-    emoji: '👑',
-    description: '故事的主角，一位勇敢的年轻战士，肩负着拯救世界的使命。',
-  },
-  {
-    id: 'char-2',
-    customName: '法师贝塔',
-    name: '法师',
-    roleType: 'supporting',
-    emoji: '⚔️',
-    description: '智慧的魔法师，阿尔法的好友和得力助手。',
-  },
-  {
-    id: 'char-3',
-    customName: '魔王',
-    name: '魔王',
-    roleType: 'antagonist',
-    emoji: '😈',
-    description: '黑暗势力的统治者，故事的主要反派。',
-  },
-  {
-    id: 'char-4',
-    customName: '守卫伽马',
-    name: '守卫',
-    roleType: 'supporting',
-    emoji: '🛡️',
-    description: '古老城堡的守护者，考验来访者的勇气。',
-  },
-  {
-    id: 'char-5',
-    customName: '弓手德尔塔',
-    name: '弓手',
-    roleType: 'supporting',
-    emoji: '🏹',
-    description: '精灵族的弓箭手，在最终决战中提供了关键的支援。',
-  },
-];
-
-const FAKE_PLOT_CARDS: Record<string, PlotCard[]> = {
-  weather: [
-    { id: 'w-1', name: '晴天', emoji: '☀️', description: '阳光明媚，视野清晰' },
-    { id: 'w-2', name: '雨天', emoji: '🌧️', description: '细雨绵绵，行动隐蔽' },
-    { id: 'w-3', name: '雪天', emoji: '❄️', description: '白雪皑皑，留下足迹' },
-    { id: 'w-4', name: '夜晚', emoji: '🌙', description: '月黑风高，适合潜行' },
-  ],
-  adventure: [
-    { id: 'a-1', name: '战斗', emoji: '⚔️', description: '与敌人正面交锋' },
-    { id: 'a-2', name: '探索', emoji: '🔍', description: '搜寻隐藏的宝藏' },
-    { id: 'a-3', name: '寻宝', emoji: '💎', description: '寻找珍贵的宝物' },
-    { id: 'a-4', name: '解谜', emoji: '🧩', description: '破解古老的谜题' },
-  ],
-  terrain: [
-    { id: 't-1', name: '森林', emoji: '🌲', description: '茂密的树林，适合伏击' },
-    { id: 't-2', name: '山地', emoji: '⛰️', description: '崎岖的山路，视野开阔' },
-    { id: 't-3', name: '沙滩', emoji: '🏖️', description: '柔软的沙滩，行动缓慢' },
-    { id: 't-4', name: '沙漠', emoji: '🏜️', description: '干旱的沙漠，资源稀缺' },
-  ],
-  equipment: [
-    { id: 'e-1', name: '宝剑', emoji: '🗡️', description: '锋利的宝剑，攻击力+10' },
-    { id: 'e-2', name: '盾牌', emoji: '🛡️', description: '坚固的盾牌，防御力+10' },
-    { id: 'e-3', name: '戒指', emoji: '💍', description: '魔法戒指，魔力+10' },
-    { id: 'e-4', name: '卷轴', emoji: '📜', description: '古老卷轴，解锁新技能' },
-  ],
-};
-
-const getRoleColor = (roleType: string) => {
-  switch (roleType) {
-    case 'protagonist': return '#FFD700';
-    case 'supporting': return '#3B82F6';
-    case 'antagonist': return '#EF4444';
-    default: return '#888';
-  }
-};
 
 const getStatusIcon = (chapter: Chapter) => {
   if (chapter.puzzleResult === 1) return '✅';
@@ -484,11 +30,31 @@ const getStatusIcon = (chapter: Chapter) => {
 };
 
 interface BookDetailDemoProps {
+  bookId: string;
   onBack: () => void;
-  onNavigateToDirector: () => void;
+  onNavigateToDirector: (bookId: string) => void;
 }
 
-const BookDetailDemo: React.FC<BookDetailDemoProps> = ({ onBack, onNavigateToDirector }) => {
+const getRoleColor = (roleType: string) => {
+  switch (roleType) {
+    case '主角': return '#FFD700';
+    case '伙伴': return '#3B82F6';
+    case '导师': return '#10B981';
+    case '守护者': return '#8B5CF6';
+    case '小怪兽': return '#EF4444';
+    default: return '#888';
+  }
+};
+
+const BookDetailDemo: React.FC<BookDetailDemoProps> = ({ bookId, onBack, onNavigateToDirector }) => {
+  const { getBookById, getChaptersByBookId, getCharactersByBookId, getPlotElementsByTypeId, updateBookProgress } = useData();
+  
+  const [book, setBook] = useState<Book | null>(null);
+  const [chapters, setChapters] = useState<Chapter[]>([]);
+  const [characters, setCharacters] = useState<Character[]>([]);
+  const [plotElements, setPlotElements] = useState<PlotElement[]>([]);
+  const [isLoading, setIsLoading] = useState(true);
+  
   const [currentTab, setCurrentTab] = useState<TabType>('chapters');
   const [chapterViewMode, setChapterViewMode] = useState<ChapterViewMode>('directory');
   const [directoryPage, setDirectoryPage] = useState<number>(0);
@@ -506,10 +72,34 @@ const BookDetailDemo: React.FC<BookDetailDemoProps> = ({ onBack, onNavigateToDir
     plots: new Animated.Value(0),
   }).current;
 
-  const totalDirectoryPages = Math.ceil((FAKE_CHAPTERS.length + 1) / ITEMS_PER_PAGE);
+  useEffect(() => {
+    loadData();
+  }, [bookId]);
+
+  const loadData = async () => {
+    setIsLoading(true);
+    try {
+      const bookData = await getBookById(bookId);
+      if (bookData) {
+        setBook(bookData);
+        const chaptersData = await getChaptersByBookId(bookId);
+        setChapters(chaptersData);
+        const charactersData = await getCharactersByBookId(bookId);
+        setCharacters(charactersData);
+        const plotData = await getPlotElementsByTypeId(bookData.typeId);
+        setPlotElements(plotData);
+      }
+    } catch (error) {
+      console.error('Failed to load book data:', error);
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
+  const totalDirectoryPages = Math.ceil((chapters.length + 1) / ITEMS_PER_PAGE);
 
   const getDirectoryPageItems = (page: number) => {
-    const allItems: any[] = [...FAKE_CHAPTERS, { chapterId: 'add-new', isAddButton: true }];
+    const allItems: any[] = [...chapters, { chapterId: 'add-new', isAddButton: true }];
     const startIndex = page * ITEMS_PER_PAGE;
     const pageItems = allItems.slice(startIndex, startIndex + ITEMS_PER_PAGE);
     
@@ -581,9 +171,9 @@ const BookDetailDemo: React.FC<BookDetailDemoProps> = ({ onBack, onNavigateToDir
     }
   };
 
-  const selectedChapter = FAKE_CHAPTERS.find(c => c.chapterId === selectedChapterId);
-  const selectedCharacter = FAKE_CHARACTERS.find(c => c.id === selectedCharacterId);
-  const selectedPlotCard = Object.values(FAKE_PLOT_CARDS).flat().find(c => c.id === selectedPlotCardId);
+  const selectedChapter = chapters.find(c => c.chapterId === selectedChapterId);
+  const selectedCharacter = characters.find(c => c.characterId === selectedCharacterId);
+  const selectedPlotCard = plotElements.find(c => c.elementId === selectedPlotCardId);
 
   const renderBookmarkTab = () => (
     <View style={styles.bookmarkContainer}>
@@ -613,9 +203,9 @@ const BookDetailDemo: React.FC<BookDetailDemoProps> = ({ onBack, onNavigateToDir
   const renderChapterContentView = () => {
     if (!selectedChapter) return null;
     
-    const currentIndex = FAKE_CHAPTERS.findIndex(c => c.chapterId === selectedChapterId);
+    const currentIndex = chapters.findIndex(c => c.chapterId === selectedChapterId);
     const hasPrev = currentIndex > 0;
-    const hasNext = currentIndex < FAKE_CHAPTERS.length - 1;
+    const hasNext = currentIndex < chapters.length - 1;
     
     return (
       <View style={styles.contentContainer}>
@@ -672,7 +262,7 @@ const BookDetailDemo: React.FC<BookDetailDemoProps> = ({ onBack, onNavigateToDir
             style={[styles.navButton, !hasPrev && styles.navButtonDisabled]}
             onPress={() => {
               if (hasPrev) {
-                const prevChapter = FAKE_CHAPTERS[currentIndex - 1];
+                const prevChapter = chapters[currentIndex - 1];
                 handleChapterSelect(prevChapter.chapterId);
               }
             }}
@@ -684,14 +274,14 @@ const BookDetailDemo: React.FC<BookDetailDemoProps> = ({ onBack, onNavigateToDir
           </TouchableOpacity>
           
           <Text style={styles.pageIndicator}>
-            {currentIndex + 1}/{FAKE_CHAPTERS.length}
+            {currentIndex + 1}/{chapters.length}
           </Text>
           
           <TouchableOpacity
             style={[styles.navButton, !hasNext && styles.navButtonDisabled]}
             onPress={() => {
               if (hasNext) {
-                const nextChapter = FAKE_CHAPTERS[currentIndex + 1];
+                const nextChapter = chapters[currentIndex + 1];
                 handleChapterSelect(nextChapter.chapterId);
               }
             }}
@@ -789,25 +379,25 @@ const BookDetailDemo: React.FC<BookDetailDemoProps> = ({ onBack, onNavigateToDir
 
   const renderCharactersTab = () => {
     const renderCharacterCard = (character: Character, index: number) => {
-      const isSelected = selectedCharacterId === character.id;
+      const isSelected = selectedCharacterId === character.characterId;
       
       return (
         <TouchableOpacity
-          key={character.id}
+          key={character.characterId}
           style={[
             styles.characterCard,
             isSelected && styles.cardSelected,
           ]}
-          onPress={() => handleCharacterSelect(character.id)}
+          onPress={() => handleCharacterSelect(character.characterId)}
           activeOpacity={0.8}
         >
           {isSelected && (
             <View style={[styles.glowRing, { borderColor: getRoleColor(character.roleType) }]} />
           )}
           <Text style={styles.cardEmoji}>{character.emoji}</Text>
-          <Text style={styles.cardName}>{character.customName}</Text>
+          <Text style={styles.cardName}>{character.name}</Text>
           <Text style={[styles.cardRole, { color: getRoleColor(character.roleType) }]}>
-            {character.roleType === 'protagonist' ? '主角' : character.roleType === 'supporting' ? '配角' : '反派'}
+            {character.roleType}
           </Text>
         </TouchableOpacity>
       );
@@ -818,7 +408,7 @@ const BookDetailDemo: React.FC<BookDetailDemoProps> = ({ onBack, onNavigateToDir
         <Text style={styles.sectionTitle}>👥 角色列表</Text>
         <ScrollView horizontal showsHorizontalScrollIndicator={false}>
           <View style={styles.cardRow}>
-            {FAKE_CHARACTERS.map((character, index) => renderCharacterCard(character, index))}
+            {characters.map((character, index) => renderCharacterCard(character, index))}
           </View>
         </ScrollView>
       </ScrollView>
@@ -826,24 +416,29 @@ const BookDetailDemo: React.FC<BookDetailDemoProps> = ({ onBack, onNavigateToDir
   };
 
   const renderPlotsTab = () => {
+    const weatherElements = plotElements.filter(e => e.category === 'weather');
+    const adventureElements = plotElements.filter(e => e.category === 'adventure');
+    const terrainElements = plotElements.filter(e => e.category === 'terrain');
+    const equipmentElements = plotElements.filter(e => e.category === 'equipment');
+    
     const categories = [
-      { key: 'weather', title: '☀️ 天气', data: FAKE_PLOT_CARDS.weather },
-      { key: 'adventure', title: '⚔️ 冒险类型', data: FAKE_PLOT_CARDS.adventure },
-      { key: 'terrain', title: '🌲 地形', data: FAKE_PLOT_CARDS.terrain },
-      { key: 'equipment', title: '🪄 装备', data: FAKE_PLOT_CARDS.equipment },
+      { key: 'weather', title: '☀️ 天气', data: weatherElements },
+      { key: 'adventure', title: '⚔️ 冒险类型', data: adventureElements },
+      { key: 'terrain', title: '🌲 地形', data: terrainElements },
+      { key: 'equipment', title: '🪄 装备', data: equipmentElements },
     ];
     
-    const renderPlotCard = (card: PlotCard, index: number) => {
-      const isSelected = selectedPlotCardId === card.id;
+    const renderPlotCard = (card: PlotElement, index: number) => {
+      const isSelected = selectedPlotCardId === card.elementId;
       
       return (
         <TouchableOpacity
-          key={card.id}
+          key={card.elementId}
           style={[
             styles.plotCard,
             isSelected && styles.cardSelected,
           ]}
-          onPress={() => handlePlotCardSelect(card.id)}
+          onPress={() => handlePlotCardSelect(card.elementId)}
           activeOpacity={0.8}
         >
           {isSelected && (
@@ -877,7 +472,7 @@ const BookDetailDemo: React.FC<BookDetailDemoProps> = ({ onBack, onNavigateToDir
         <TouchableOpacity onPress={onBack} style={styles.backButton}>
           <Text style={styles.backButtonText}>← 返回</Text>
         </TouchableOpacity>
-        <Text style={styles.headerTitle}>📖 {FAKE_BOOK.title}</Text>
+        <Text style={styles.headerTitle}>📖 {book?.title || '加载中...'}</Text>
         <View style={styles.headerRight} />
       </View>
 
@@ -894,7 +489,7 @@ const BookDetailDemo: React.FC<BookDetailDemoProps> = ({ onBack, onNavigateToDir
       <View style={styles.footer}>
         <Text style={styles.pageNumber}>
           {currentTab === 'chapters' && selectedChapter
-            ? `${selectedChapter.chapterNumber}/${FAKE_CHAPTERS.length}`
+            ? `${selectedChapter.chapterNumber}/${chapters.length}`
             : '1/1'}
         </Text>
       </View>

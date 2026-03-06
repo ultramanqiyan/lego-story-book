@@ -11,44 +11,10 @@ import {
 } from 'react-native';
 import { useStyle } from '../context/StyleContext';
 import { CardStyleType, AnimationType, CARD_STYLES } from '../types/styles';
+import { useData } from '../context/DataContext';
+import { Character, PlotElement } from '../database/DatabaseService';
 
 const { width, height } = Dimensions.get('window');
-
-const FAKE_CHARACTERS = [
-  { id: '1', name: '勇士', emoji: '⚔️', energy: 100 },
-  { id: '2', name: '法师', emoji: '🔮', energy: 80 },
-  { id: '3', name: '弓手', emoji: '🏹', energy: 90 },
-  { id: '4', name: '牧师', emoji: '✨', energy: 70 },
-  { id: '5', name: '盗贼', emoji: '🗡️', energy: 85 },
-];
-
-const FAKE_ADVENTURES = [
-  { id: 'battle', name: '战斗', emoji: '⚔️' },
-  { id: 'explore', name: '探索', emoji: '🔍' },
-  { id: 'treasure', name: '寻宝', emoji: '💎' },
-  { id: 'puzzle', name: '解谜', emoji: '🏰' },
-];
-
-const FAKE_WEATHERS = [
-  { id: 'sunny', name: '晴天', emoji: '☀️', bgColors: ['#FFD700', '#FFA500', '#FF8C00'] },
-  { id: 'rainy', name: '雨天', emoji: '🌧️', bgColors: ['#4A90D9', '#2C5AA0', '#1E3A5F'] },
-  { id: 'snowy', name: '雪天', emoji: '❄️', bgColors: ['#87CEEB', '#B0E0E6', '#E0FFFF'] },
-  { id: 'night', name: '夜晚', emoji: '🌙', bgColors: ['#2C3E50', '#1a1a2e', '#0f0f1a'] },
-];
-
-const FAKE_TERRAINS = [
-  { id: 'forest', name: '森林', emoji: '🌲', decor: '🌲🌳🌿' },
-  { id: 'mountain', name: '山地', emoji: '⛰️', decor: '⛰️🏔️🪨' },
-  { id: 'beach', name: '沙滩', emoji: '🏖️', decor: '🏖️🌴🌊' },
-  { id: 'desert', name: '沙漠', emoji: '🏜️', decor: '🏜️🌵☀️' },
-];
-
-const FAKE_EQUIPMENTS = [
-  { id: 'sword', name: '宝剑', emoji: '🗡️' },
-  { id: 'shield', name: '盾牌', emoji: '🛡️' },
-  { id: 'ring', name: '戒指', emoji: '💍' },
-  { id: 'scroll', name: '卷轴', emoji: '📜' },
-];
 
 type StageStyleType = 
   | '3d-perspective' 
@@ -70,12 +36,21 @@ const STAGE_STYLE_NAMES: Record<StageStyleType, string> = {
 };
 
 interface StoryDirectorDemoProps {
+  bookId: string;
   onBack: () => void;
 }
 
-const StoryDirectorDemo: React.FC<StoryDirectorDemoProps> = ({ onBack }) => {
+const StoryDirectorDemo: React.FC<StoryDirectorDemoProps> = ({ bookId, onBack }) => {
   const { currentStyle, setStyle, allStyles } = useStyle();
+  const { getBookById, getCharactersByBookId, getPlotElementsByTypeId } = useData();
   const styleConfig = CARD_STYLES[currentStyle];
+
+  const [characters, setCharacters] = useState<Character[]>([]);
+  const [adventures, setAdventures] = useState<PlotElement[]>([]);
+  const [weathers, setWeathers] = useState<PlotElement[]>([]);
+  const [terrains, setTerrains] = useState<PlotElement[]>([]);
+  const [equipments, setEquipments] = useState<PlotElement[]>([]);
+  const [isLoading, setIsLoading] = useState(true);
 
   const [selectedCharacters, setSelectedCharacters] = useState<string[]>([]);
   const [selectedAdventure, setSelectedAdventure] = useState<string | null>(null);
@@ -87,20 +62,51 @@ const StoryDirectorDemo: React.FC<StoryDirectorDemoProps> = ({ onBack }) => {
   const [stageStyle, setStageStyle] = useState<StageStyleType>('3d-perspective');
 
   const pageAnim = useRef(new Animated.Value(0)).current;
-  const characterAnims = useRef(FAKE_CHARACTERS.map(() => new Animated.Value(0))).current;
-  const adventureAnims = useRef(FAKE_ADVENTURES.map(() => new Animated.Value(0))).current;
-  const weatherAnims = useRef(FAKE_WEATHERS.map(() => new Animated.Value(0))).current;
-  const terrainAnims = useRef(FAKE_TERRAINS.map(() => new Animated.Value(0))).current;
-  const equipmentAnims = useRef(FAKE_EQUIPMENTS.map(() => new Animated.Value(0))).current;
+  const characterAnims = useRef<Character[]>([]).current;
+  const adventureAnims = useRef<PlotElement[]>([]).current;
+  const weatherAnims = useRef<PlotElement[]>([]).current;
+  const terrainAnims = useRef<PlotElement[]>([]).current;
+  const equipmentAnims = useRef<PlotElement[]>([]).current;
   const stageAnim = useRef(new Animated.Value(0)).current;
   const buttonAnim = useRef(new Animated.Value(1)).current;
 
-  const pulseAnims = useRef(FAKE_TERRAINS.map(() => new Animated.Value(1))).current;
-  const glowAnims = useRef(FAKE_WEATHERS.map(() => ({ scale: new Animated.Value(1), opacity: new Animated.Value(0.8) }))).current;
-  const waveAnims = useRef(FAKE_EQUIPMENTS.map(() => ({ y: new Animated.Value(0), rotate: new Animated.Value(0) }))).current;
-  const shakeAnims = useRef(FAKE_CHARACTERS.map(() => new Animated.Value(0))).current;
+  const pulseAnims = useRef<Animated.Value[]>([]).current;
+  const glowAnims = useRef<{ scale: Animated.Value; opacity: Animated.Value }[]>([]).current;
+  const waveAnims = useRef<{ y: Animated.Value; rotate: Animated.Value }[]>([]).current;
 
-  const stageCharAnims = useRef(FAKE_CHARACTERS.map(() => ({
+  useEffect(() => {
+    loadData();
+  }, [bookId]);
+
+  const loadData = async () => {
+    setIsLoading(true);
+    try {
+      const book = await getBookById(bookId);
+      if (book) {
+        const chars = await getCharactersByBookId(bookId);
+        setCharacters(chars);
+        
+        const adventureData = await getPlotElementsByTypeId(book.typeId, 'adventure');
+        setAdventures(adventureData);
+        
+        const weatherData = await getPlotElementsByTypeId(book.typeId, 'weather');
+        setWeathers(weatherData);
+        
+        const terrainData = await getPlotElementsByTypeId(book.typeId, 'terrain');
+        setTerrains(terrainData);
+        
+        const equipmentData = await getPlotElementsByTypeId(book.typeId, 'equipment');
+        setEquipments(equipmentData);
+      }
+    } catch (error) {
+      console.error('Failed to load director data:', error);
+    } finally {
+      setIsLoading(false);
+    }
+  };
+  const shakeAnims = useRef(characters.map(() => new Animated.Value(0))).current;
+
+  const stageCharAnims = useRef(characters.map(() => ({
     y: new Animated.Value(-50),
     scale: new Animated.Value(0),
     opacity: new Animated.Value(0),
@@ -113,7 +119,7 @@ const StoryDirectorDemo: React.FC<StoryDirectorDemoProps> = ({ onBack }) => {
     scale: new Animated.Value(Math.random() * 0.5 + 0.5),
   }))).current;
 
-  const floatAnims = useRef(FAKE_CHARACTERS.map(() => new Animated.Value(0))).current;
+  const floatAnims = useRef(characters.map(() => new Animated.Value(0))).current;
 
   useEffect(() => {
     Animated.timing(pageAnim, {
@@ -321,7 +327,7 @@ const StoryDirectorDemo: React.FC<StoryDirectorDemoProps> = ({ onBack }) => {
 
   useEffect(() => {
     selectedCharacters.forEach((charId) => {
-      const index = FAKE_CHARACTERS.findIndex((c) => c.id === charId);
+      const index = characters.findIndex((c) => c.characterId === charId);
       if (index >= 0) {
         Animated.parallel([
           Animated.spring(stageCharAnims[index].y, {
@@ -348,7 +354,7 @@ const StoryDirectorDemo: React.FC<StoryDirectorDemoProps> = ({ onBack }) => {
 
   const toggleCharacter = (id: string) => {
     if (selectedCharacters.includes(id)) {
-      const index = FAKE_CHARACTERS.findIndex((c) => c.id === id);
+      const index = characters.findIndex((c) => c.characterId === id);
       if (index >= 0) {
         Animated.parallel([
           Animated.timing(stageCharAnims[index].y, {
@@ -371,7 +377,7 @@ const StoryDirectorDemo: React.FC<StoryDirectorDemoProps> = ({ onBack }) => {
       setSelectedCharacters(selectedCharacters.filter((c) => c !== id));
     } else if (selectedCharacters.length < 5) {
       setSelectedCharacters([...selectedCharacters, id]);
-      const index = FAKE_CHARACTERS.findIndex((c) => c.id === id);
+      const index = characters.findIndex((c) => c.characterId === id);
       if (index >= 0) {
         Animated.sequence([
           Animated.spring(characterAnims[index], {
@@ -410,16 +416,16 @@ const StoryDirectorDemo: React.FC<StoryDirectorDemoProps> = ({ onBack }) => {
   const isReady = selectedCharacters.length > 0 && selectedAdventure && selectedWeather && selectedTerrain && selectedEquipment;
 
   const getWeatherBgColors = () => {
-    const weather = FAKE_WEATHERS.find((w) => w.id === selectedWeather);
-    return weather?.bgColors || ['#3a3a5a', '#2a2a4a', '#1a1a3a'];
+    const weather = weathers.find((w) => w.elementId === selectedWeather);
+    return weather?.extraConfig?.bgColors || ['#3a3a5a', '#2a2a4a', '#1a1a3a'];
   };
 
   const getTerrainDecor = () => {
-    const terrain = FAKE_TERRAINS.find((t) => t.id === selectedTerrain);
-    return terrain?.decor || '🌿🌱🌿';
+    const terrain = terrains.find((t) => t.elementId === selectedTerrain);
+    return terrain?.extraConfig?.decor || '🌿🌱🌿';
   };
 
-  const renderCharacterCard = (char: typeof FAKE_CHARACTERS[0], index: number) => {
+  const renderCharacterCard = (char: Character, index: number) => {
     const isSelected = selectedCharacters.includes(char.id);
     const anim = characterAnims[index];
 
@@ -458,7 +464,7 @@ const StoryDirectorDemo: React.FC<StoryDirectorDemoProps> = ({ onBack }) => {
     );
   };
 
-  const renderAdventureCard = (adv: typeof FAKE_ADVENTURES[0], index: number) => {
+  const renderAdventureCard = (adv: PlotElement, index: number) => {
     const isSelected = selectedAdventure === adv.id;
     const anim = adventureAnims[index];
     const rotateY = anim.interpolate({
@@ -493,7 +499,7 @@ const StoryDirectorDemo: React.FC<StoryDirectorDemoProps> = ({ onBack }) => {
     );
   };
 
-  const renderWeatherCard = (weather: typeof FAKE_WEATHERS[0], index: number) => {
+  const renderWeatherCard = (weather: PlotElement, index: number) => {
     const isSelected = selectedWeather === weather.id;
     const anim = weatherAnims[index];
     const glowAnim = glowAnims[index];
@@ -537,7 +543,7 @@ const StoryDirectorDemo: React.FC<StoryDirectorDemoProps> = ({ onBack }) => {
     );
   };
 
-  const renderTerrainCard = (terrain: typeof FAKE_TERRAINS[0], index: number) => {
+  const renderTerrainCard = (terrain: PlotElement, index: number) => {
     const isSelected = selectedTerrain === terrain.id;
     const anim = terrainAnims[index];
     const pulseAnim = pulseAnims[index];
@@ -569,7 +575,7 @@ const StoryDirectorDemo: React.FC<StoryDirectorDemoProps> = ({ onBack }) => {
     );
   };
 
-  const renderEquipmentCard = (equip: typeof FAKE_EQUIPMENTS[0], index: number) => {
+  const renderEquipmentCard = (equip: PlotElement, index: number) => {
     const isSelected = selectedEquipment === equip.id;
     const anim = equipmentAnims[index];
     const waveAnim = waveAnims[index];
@@ -609,8 +615,8 @@ const StoryDirectorDemo: React.FC<StoryDirectorDemoProps> = ({ onBack }) => {
   };
 
   const render3DStage = () => {
-    const selectedCharData = FAKE_CHARACTERS.filter((c) =>
-      selectedCharacters.includes(c.id)
+    const selectedCharData = characters.filter((c) =>
+      selectedCharacters.includes(c.characterId)
     );
     const bgColors = getWeatherBgColors();
 
@@ -632,7 +638,7 @@ const StoryDirectorDemo: React.FC<StoryDirectorDemoProps> = ({ onBack }) => {
             </Text>
           ) : (
             selectedCharData.map((char, index) => {
-              const charIndex = FAKE_CHARACTERS.findIndex((c) => c.id === char.id);
+              const charIndex = characters.findIndex((c) => c.characterId === char.characterId);
               const anim = stageCharAnims[charIndex];
               const floatAnim = floatAnims[charIndex];
               const translateY = floatAnim.interpolate({
@@ -671,8 +677,8 @@ const StoryDirectorDemo: React.FC<StoryDirectorDemoProps> = ({ onBack }) => {
   };
 
   const renderBattleArena = () => {
-    const selectedCharData = FAKE_CHARACTERS.filter((c) =>
-      selectedCharacters.includes(c.id)
+    const selectedCharData = characters.filter((c) =>
+      selectedCharacters.includes(c.characterId)
     );
 
     return (
@@ -705,7 +711,7 @@ const StoryDirectorDemo: React.FC<StoryDirectorDemoProps> = ({ onBack }) => {
             </Text>
           ) : (
             selectedCharData.map((char, index) => {
-              const charIndex = FAKE_CHARACTERS.findIndex((c) => c.id === char.id);
+              const charIndex = characters.findIndex((c) => c.characterId === char.characterId);
               const anim = stageCharAnims[charIndex];
               const floatAnim = floatAnims[charIndex];
               const translateY = floatAnim.interpolate({
@@ -752,21 +758,21 @@ const StoryDirectorDemo: React.FC<StoryDirectorDemoProps> = ({ onBack }) => {
           {selectedAdventure && (
             <View style={[styles.battleStatusTag, { backgroundColor: styleConfig.colors.accent + '30' }]}>
               <Text style={styles.battleStatusEmoji}>
-                {FAKE_ADVENTURES.find((a) => a.id === selectedAdventure)?.emoji}
+                {adventures.find((a) => a.elementId === selectedAdventure)?.emoji}
               </Text>
             </View>
           )}
           {selectedWeather && (
             <View style={[styles.battleStatusTag, { backgroundColor: styleConfig.colors.primary }]}>
               <Text style={styles.battleStatusEmoji}>
-                {FAKE_WEATHERS.find((w) => w.id === selectedWeather)?.emoji}
+                {weathers.find((w) => w.elementId === selectedWeather)?.emoji}
               </Text>
             </View>
           )}
           {selectedTerrain && (
             <View style={[styles.battleStatusTag, { backgroundColor: styleConfig.colors.secondary }]}>
               <Text style={styles.battleStatusEmoji}>
-                {FAKE_TERRAINS.find((t) => t.id === selectedTerrain)?.emoji}
+                {terrains.find((t) => t.elementId === selectedTerrain)?.emoji}
               </Text>
             </View>
           )}
@@ -780,8 +786,8 @@ const StoryDirectorDemo: React.FC<StoryDirectorDemoProps> = ({ onBack }) => {
   };
 
   const renderImmersiveScene = () => {
-    const selectedCharData = FAKE_CHARACTERS.filter((c) =>
-      selectedCharacters.includes(c.id)
+    const selectedCharData = characters.filter((c) =>
+      selectedCharacters.includes(c.characterId)
     );
     const bgColors = getWeatherBgColors();
     const decor = getTerrainDecor();
@@ -812,7 +818,7 @@ const StoryDirectorDemo: React.FC<StoryDirectorDemoProps> = ({ onBack }) => {
             </Text>
           ) : (
             selectedCharData.map((char, index) => {
-              const charIndex = FAKE_CHARACTERS.findIndex((c) => c.id === char.id);
+              const charIndex = characters.findIndex((c) => c.characterId === char.characterId);
               const anim = stageCharAnims[charIndex];
               const floatAnim = floatAnims[charIndex];
               const translateY = floatAnim.interpolate({
@@ -863,8 +869,8 @@ const StoryDirectorDemo: React.FC<StoryDirectorDemoProps> = ({ onBack }) => {
   };
 
   const renderPixelArtStage = () => {
-    const selectedCharData = FAKE_CHARACTERS.filter((c) =>
-      selectedCharacters.includes(c.id)
+    const selectedCharData = characters.filter((c) =>
+      selectedCharacters.includes(c.characterId)
     );
     const bgColors = getWeatherBgColors();
 
@@ -889,7 +895,7 @@ const StoryDirectorDemo: React.FC<StoryDirectorDemoProps> = ({ onBack }) => {
             </Text>
           ) : (
             selectedCharData.map((char, index) => {
-              const charIndex = FAKE_CHARACTERS.findIndex((c) => c.id === char.id);
+              const charIndex = characters.findIndex((c) => c.characterId === char.characterId);
               const anim = stageCharAnims[charIndex];
               const floatAnim = floatAnims[charIndex];
               const translateY = floatAnim.interpolate({
@@ -937,8 +943,8 @@ const StoryDirectorDemo: React.FC<StoryDirectorDemoProps> = ({ onBack }) => {
   };
 
   const renderGlassmorphismStage = () => {
-    const selectedCharData = FAKE_CHARACTERS.filter((c) =>
-      selectedCharacters.includes(c.id)
+    const selectedCharData = characters.filter((c) =>
+      selectedCharacters.includes(c.characterId)
     );
     const bgColors = getWeatherBgColors();
 
@@ -956,7 +962,7 @@ const StoryDirectorDemo: React.FC<StoryDirectorDemoProps> = ({ onBack }) => {
               </Text>
             ) : (
               selectedCharData.map((char, index) => {
-                const charIndex = FAKE_CHARACTERS.findIndex((c) => c.id === char.id);
+                const charIndex = characters.findIndex((c) => c.characterId === char.characterId);
                 const anim = stageCharAnims[charIndex];
                 const floatAnim = floatAnims[charIndex];
                 const translateY = floatAnim.interpolate({
@@ -995,8 +1001,8 @@ const StoryDirectorDemo: React.FC<StoryDirectorDemoProps> = ({ onBack }) => {
   };
 
   const renderCarouselWheel = () => {
-    const selectedCharData = FAKE_CHARACTERS.filter((c) =>
-      selectedCharacters.includes(c.id)
+    const selectedCharData = characters.filter((c) =>
+      selectedCharacters.includes(c.characterId)
     );
     const bgColors = getWeatherBgColors();
 
@@ -1011,7 +1017,7 @@ const StoryDirectorDemo: React.FC<StoryDirectorDemoProps> = ({ onBack }) => {
             </Text>
           ) : (
             selectedCharData.map((char, index) => {
-              const charIndex = FAKE_CHARACTERS.findIndex((c) => c.id === char.id);
+              const charIndex = characters.findIndex((c) => c.characterId === char.characterId);
               const anim = stageCharAnims[charIndex];
               const angle = (index / selectedCharData.length) * 360;
               const radius = 80;
@@ -1052,8 +1058,8 @@ const StoryDirectorDemo: React.FC<StoryDirectorDemoProps> = ({ onBack }) => {
   };
 
   const renderSideScroller = () => {
-    const selectedCharData = FAKE_CHARACTERS.filter((c) =>
-      selectedCharacters.includes(c.id)
+    const selectedCharData = characters.filter((c) =>
+      selectedCharacters.includes(c.characterId)
     );
     const bgColors = getWeatherBgColors();
 
@@ -1076,7 +1082,7 @@ const StoryDirectorDemo: React.FC<StoryDirectorDemoProps> = ({ onBack }) => {
                 </Text>
               ) : (
                 selectedCharData.map((char, index) => {
-                  const charIndex = FAKE_CHARACTERS.findIndex((c) => c.id === char.id);
+                  const charIndex = characters.findIndex((c) => c.characterId === char.characterId);
                   const anim = stageCharAnims[charIndex];
                   const floatAnim = floatAnims[charIndex];
                   const translateY = floatAnim.interpolate({
@@ -1192,7 +1198,7 @@ const StoryDirectorDemo: React.FC<StoryDirectorDemoProps> = ({ onBack }) => {
           </Text>
           <ScrollView horizontal showsHorizontalScrollIndicator={false}>
             <View style={styles.cardRow}>
-              {FAKE_CHARACTERS.map((char, index) => renderCharacterCard(char, index))}
+              {characters.map((char, index) => renderCharacterCard(char, index))}
             </View>
           </ScrollView>
         </View>
@@ -1201,7 +1207,7 @@ const StoryDirectorDemo: React.FC<StoryDirectorDemoProps> = ({ onBack }) => {
           <Text style={[styles.sectionTitle, { color: styleConfig.colors.text }]}>🗺️ 冒险类型</Text>
           <ScrollView horizontal showsHorizontalScrollIndicator={false}>
             <View style={styles.cardRow}>
-              {FAKE_ADVENTURES.map((adv, index) => renderAdventureCard(adv, index))}
+              {adventures.map((adv, index) => renderAdventureCard(adv, index))}
             </View>
           </ScrollView>
         </View>
@@ -1212,7 +1218,7 @@ const StoryDirectorDemo: React.FC<StoryDirectorDemoProps> = ({ onBack }) => {
           <Text style={[styles.sectionTitle, { color: styleConfig.colors.text }]}>🌤️ 天气</Text>
           <ScrollView horizontal showsHorizontalScrollIndicator={false}>
             <View style={styles.cardRow}>
-              {FAKE_WEATHERS.map((weather, index) => renderWeatherCard(weather, index))}
+              {weathers.map((weather, index) => renderWeatherCard(weather, index))}
             </View>
           </ScrollView>
         </View>
@@ -1221,7 +1227,7 @@ const StoryDirectorDemo: React.FC<StoryDirectorDemoProps> = ({ onBack }) => {
           <Text style={[styles.sectionTitle, { color: styleConfig.colors.text }]}>🏔️ 地形</Text>
           <ScrollView horizontal showsHorizontalScrollIndicator={false}>
             <View style={styles.cardRow}>
-              {FAKE_TERRAINS.map((terrain, index) => renderTerrainCard(terrain, index))}
+              {terrains.map((terrain, index) => renderTerrainCard(terrain, index))}
             </View>
           </ScrollView>
         </View>
@@ -1230,7 +1236,7 @@ const StoryDirectorDemo: React.FC<StoryDirectorDemoProps> = ({ onBack }) => {
           <Text style={[styles.sectionTitle, { color: styleConfig.colors.text }]}>🪄 装备</Text>
           <ScrollView horizontal showsHorizontalScrollIndicator={false}>
             <View style={styles.cardRow}>
-              {FAKE_EQUIPMENTS.map((equip, index) => renderEquipmentCard(equip, index))}
+              {equipments.map((equip, index) => renderEquipmentCard(equip, index))}
             </View>
           </ScrollView>
         </View>

@@ -1,0 +1,180 @@
+{
+  "characters": [
+    {
+      "characterId": "char-children-1",
+      "typeId": "children",
+      "name": "小勇者",
+      "roleType": "主角",
+      "emoji": "👦",
+      "description": "勇敢的小男孩，喜欢冒险",
+      "health": 100,
+      "intimacy": 100,
+      "personality": ["勇敢", "开朗"]
+    },
+    {
+      "characterId": "char-children-2",
+      "typeId": "children",
+      "name": "魔法兔子",
+      "roleType": "伙伴",
+      "emoji": "🐰",
+      "description": "会说话的魔法兔子，喜欢恶作剧",
+      "health": 80,
+      "intimacy": 80,
+      "personality": ["顽皮", "善良"]
+    },
+    {
+      "characterId": "char-children-3",
+      "typeId": "children",
+      "name": "智慧猫头鹰",
+      "roleType": "导师",
+      "emoji": "🦉",
+      "description": "森林中最聪明的猫头鹰",
+      "health": 60,
+      "intimacy": 70,
+      "personality": ["智慧", "冷静"]
+    },
+    {
+      "characterId": "char-children-4",
+      "typeId": "children",
+      "name": "小狐狸",
+      "roleType": "小怪兽",
+      "emoji": "🦊",
+      "description": "神秘的森林小狐狸",
+      "health": 50,
+      "intimacy": 30,
+      "personality": ["神秘", "顽皮"]
+    },
+    {
+      "characterId": "char-magic-1",
+      "typeId": "magic",
+      "name": "法师",
+      "roleType": "主角",
+      "emoji": "🧙‍♂️",
+      "description": "年轻的魔法学徒",
+      "health": 100,
+      "intimacy": 100,
+      "personality": ["智慧", "冷静"]
+    },
+    {
+      "characterId": "char-magic-2",
+      "typeId": "magic",
+      "name": "精灵",
+      "roleType": "伙伴",
+      "emoji": "🧝",
+      "description": "来自精灵族的伙伴",
+      "health": 90,
+      "intimacy": 85,
+      "personality": ["开朗", "忠诚"]
+    },
+    {
+      "characterId": "char-magic-3",
+      "typeId": "magic",
+      "name": "巨龙",
+      "roleType": "守护者",
+      "emoji": "🐉",
+      "description": "古老的守护巨龙",
+      "health": 150,
+      "intimacy": 40,
+      "personality": ["神秘", "傲慢"]
+    },
+    {
+      "characterId": "char-magic-4",
+      "typeId": "magic",
+      "name": "独角兽",
+      "roleType": "灵兽",
+      "emoji": "🦄",
+      "description": "纯洁的魔法生物",
+      "health": 80,
+      "intimacy": 70,
+      "personality": ["善良", "神秘"]
+    },
+    {
+      "characterId": "char-urban-1",
+      "typeId": "urban",
+      "name": "创业者",
+      "roleType": "主角",
+      "emoji": "👨‍💼",
+      "description": "充满梦想的创业者",
+      "health": 100,
+      "intimacy": 100,
+      "personality": ["勇敢", "冷静"]
+    },
+    {
+      "characterId": "char-urban-2",
+      "typeId": "urban",
+      "name": "程序员",
+      "roleType": "同事",
+      "emoji": "👩‍💻",
+      "description": "技术精湛的程序员",
+      "health": 80,
+      "intimacy": 75,
+      "personality": ["谨慎", "智慧"]
+    },
+    {
+      "characterId": "char-urban-3",
+      "typeId": "urban",
+      "name": "设计师",
+      "roleType": "同事",
+      "emoji": "👨‍🎨",
+      "description": "创意无限的设计师",
+      "health": 70,
+      "intimacy": 80,
+      "personality": ["开朗", "顽皮"]
+    },
+    {
+      "characterId": "char-urban-4",
+      "typeId": "urban",
+      "name": "投资人",
+      "roleType": "合作伙伴",
+      "emoji": "👨‍💼",
+      "description": "眼光独到的投资人",
+      "health": 90,
+      "intimacy": 50,
+      "personality": ["冷静", "狡诈"]
+    },
+    {
+      "characterId": "char-mechanical-1",
+      "typeId": "mechanical",
+      "name": "机甲战士",
+      "roleType": "主角",
+      "emoji": "🦾",
+      "description": "觉醒的机甲战士",
+      "health": 150,
+      "intimacy": 100,
+      "personality": ["勇敢", "冷静"]
+    },
+    {
+      "characterId": "char-mechanical-2",
+      "typeId": "mechanical",
+      "name": "AI助手",
+      "roleType": "伙伴",
+      "emoji": "🤖",
+      "description": "智能AI助手",
+      "health": 100,
+      "intimacy": 90,
+      "personality": ["智慧", "忠诚"]
+    },
+    {
+      "characterId": "char-mechanical-3",
+      "typeId": "mechanical",
+      "name": "工程师",
+      "roleType": "支援",
+      "emoji": "👷",
+      "description": "天才工程师",
+      "health": 80,
+      "intimacy": 70,
+      "personality": ["谨慎", "善良"]
+    },
+    {
+      "characterId": "char-mechanical-4",
+      "typeId": "mechanical",
+      "name": "指挥官",
+      "roleType": "领导",
+      "emoji": "👨‍✈️",
+      "description": "经验丰富的指挥官",
+      "health": 120,
+      "intimacy": 60,
+      "personality": ["冷静", "傲慢"]
+    }
+  ]
+}

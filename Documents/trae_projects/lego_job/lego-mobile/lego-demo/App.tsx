@@ -13,6 +13,7 @@ import {
 } from 'react-native';
 import { GameProvider, useGame } from './src/context/GameContext';
 import { StyleProvider, useStyle } from './src/context/StyleContext';
+import { DataProvider } from './src/context/DataContext';
 import { Card, Minion, CardType, GameState } from './src/types/game';
 import { CardStyleType, AnimationType, CARD_STYLES, ANIMATION_CONFIGS } from './src/types/styles';
 import { logger } from './src/utils/GameLogger';
@@ -759,10 +760,19 @@ type PageState = 'main-home' | 'card-demo' | 'director' | 'ui-style-list' | 'boo
 const App: React.FC = () => {
   const [currentPage, setCurrentPage] = useState<PageState>('main-home');
   const [previousPage, setPreviousPage] = useState<PageState>('main-home');
+  const [currentBookId, setCurrentBookId] = useState<string>('book-children-1');
+  const [currentBookTitle, setCurrentBookTitle] = useState<string>('');
 
   const navigateTo = (page: PageState) => {
     setPreviousPage(currentPage);
     setCurrentPage(page);
+  };
+
+  const navigateToBookDetail = (bookId: string, bookTitle: string) => {
+    setPreviousPage(currentPage);
+    setCurrentBookId(bookId);
+    setCurrentBookTitle(bookTitle);
+    setCurrentPage('book-detail');
   };
 
   const goBack = () => {
@@ -786,17 +796,17 @@ const App: React.FC = () => {
           <GameBoard
             onNavigateToDirector={() => navigateTo('director')}
             onNavigateToUIStyles={() => setCurrentPage('ui-style-list')}
-            onNavigateToBookDetail={() => navigateTo('book-detail')}
+            onNavigateToBookDetail={() => navigateToBookDetail('book-children-1', '小勇者的森林奇遇')}
             onNavigateToBookshelf={() => navigateTo('bookshelf')}
             onNavigateToHome={() => setCurrentPage('main-home')}
           />
         );
       case 'director':
-        return <StoryDirectorDemo onBack={() => setCurrentPage('card-demo')} />;
+        return <StoryDirectorDemo bookId={currentBookId} onBack={goBack} />;
       case 'bookshelf':
-        return <BookshelfDemo onBack={() => setCurrentPage('main-home')} onNavigateToBookDetail={(bookId: string, bookTitle: string) => navigateTo('book-detail')} />;
+        return <BookshelfDemo onBack={() => setCurrentPage('main-home')} onNavigateToBookDetail={navigateToBookDetail} />;
       case 'book-detail':
-        return <BookDetailDemo onBack={goBack} onNavigateToDirector={() => navigateTo('director')} />;
+        return <BookDetailDemo bookId={currentBookId} onBack={goBack} onNavigateToDirector={() => navigateTo('director')} />;
       case 'ui-style-list':
         return (
           <UIStyleListScreen
@@ -826,9 +836,11 @@ const App: React.FC = () => {
   };
 
   return (
-    <GameProvider>
-      <StyleProvider>{renderPage()}</StyleProvider>
-    </GameProvider>
+    <DataProvider>
+      <GameProvider>
+        <StyleProvider>{renderPage()}</StyleProvider>
+      </GameProvider>
+    </DataProvider>
   );
 };
 

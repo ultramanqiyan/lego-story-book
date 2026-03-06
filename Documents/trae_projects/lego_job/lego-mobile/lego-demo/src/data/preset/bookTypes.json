@@ -1,0 +1,40 @@
+{
+  "bookTypes": [
+    {
+      "typeId": "children",
+      "typeName": "儿童探险",
+      "typeEmoji": "🧒",
+      "cardStyle": "cartoon",
+      "primaryColor": "#FF9800",
+      "secondaryColor": "#FFEB3B",
+      "accentColor": "#8BC34A"
+    },
+    {
+      "typeId": "magic",
+      "typeName": "魔法世界",
+      "typeEmoji": "🧙",
+      "cardStyle": "fantasy",
+      "primaryColor": "#7B1FA2",
+      "secondaryColor": "#FFD700",
+      "accentColor": "#1A237E"
+    },
+    {
+      "typeId": "urban",
+      "typeName": "都市职场",
+      "typeEmoji": "💼",
+      "cardStyle": "minimal",
+      "primaryColor": "#1976D2",
+      "secondaryColor": "#607D8B",
+      "accentColor": "#FFFFFF"
+    },
+    {
+      "typeId": "mechanical",
+      "typeName": "机械帝国",
+      "typeEmoji": "🤖",
+      "cardStyle": "tech",
+      "primaryColor": "#00BCD4",
+      "secondaryColor": "#9C27B0",
+      "accentColor": "#000000"
+    }
+  ]
+}
