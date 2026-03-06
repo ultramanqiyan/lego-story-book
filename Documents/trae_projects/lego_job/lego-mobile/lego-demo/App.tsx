@@ -36,6 +36,8 @@ import MovieFilmStyle from './src/screens/styles/MovieFilmStyle';
 import HandDrawnStyle from './src/screens/styles/HandDrawnStyle';
 import BookDetailDemo from './src/screens/BookDetailDemo';
 import BookshelfDemo from './src/screens/BookshelfDemo';
+import HomeScreen from './src/screens/HomeScreen';
+import StyleDemo from './src/screens/StyleDemo';
 
 const { width, height } = Dimensions.get('window');
 const CARD_WIDTH = 70;
@@ -747,11 +749,11 @@ const GameBoard: React.FC<GameBoardProps> = ({ onNavigateToDirector, onNavigateT
   );
 };
 
-type PageState = 'home' | 'director' | 'ui-style-list' | 'bookshelf' | 'book-detail' | UIStyleType;
+type PageState = 'main-home' | 'card-demo' | 'director' | 'ui-style-list' | 'bookshelf' | 'book-detail' | 'style-demo' | UIStyleType;
 
 const App: React.FC = () => {
-  const [currentPage, setCurrentPage] = useState<PageState>('home');
-  const [previousPage, setPreviousPage] = useState<PageState>('home');
+  const [currentPage, setCurrentPage] = useState<PageState>('main-home');
+  const [previousPage, setPreviousPage] = useState<PageState>('main-home');
 
   const navigateTo = (page: PageState) => {
     setPreviousPage(currentPage);
@@ -764,17 +766,36 @@ const App: React.FC = () => {
 
   const renderPage = () => {
     switch (currentPage) {
+      case 'main-home':
+        return (
+          <HomeScreen
+            onNavigateToBookshelf={() => navigateTo('bookshelf')}
+            onNavigateToCardDemo={() => navigateTo('card-demo')}
+            onNavigateToStyle={() => navigateTo('style-demo')}
+          />
+        );
+      case 'style-demo':
+        return <StyleDemo onBack={() => setCurrentPage('main-home')} />;
+      case 'card-demo':
+        return (
+          <GameBoard
+            onNavigateToDirector={() => navigateTo('director')}
+            onNavigateToUIStyles={() => setCurrentPage('ui-style-list')}
+            onNavigateToBookDetail={() => navigateTo('book-detail')}
+            onNavigateToBookshelf={() => navigateTo('bookshelf')}
+          />
+        );
       case 'director':
-        return <StoryDirectorDemo onBack={() => setCurrentPage('home')} />;
+        return <StoryDirectorDemo onBack={() => setCurrentPage('card-demo')} />;
       case 'bookshelf':
-        return <BookshelfDemo onBack={() => setCurrentPage('home')} onNavigateToBookDetail={(bookId: string, bookTitle: string) => navigateTo('book-detail')} />;
+        return <BookshelfDemo onBack={() => setCurrentPage('main-home')} onNavigateToBookDetail={(bookId: string, bookTitle: string) => navigateTo('book-detail')} />;
       case 'book-detail':
         return <BookDetailDemo onBack={goBack} onNavigateToDirector={() => navigateTo('director')} />;
       case 'ui-style-list':
         return (
           <UIStyleListScreen
             onSelectStyle={(style) => setCurrentPage(style)}
-            onBack={() => setCurrentPage('home')}
+            onBack={() => setCurrentPage('card-demo')}
           />
         );
       case 'side-scroller-game':
