@@ -472,6 +472,14 @@ const StoryDirectorDemo: React.FC<StoryDirectorDemoProps> = ({ bookId, onBack })
   };
 
   const handleShoot = async () => {
+    console.log('[StoryDirector] handleShoot called');
+    console.log('[StoryDirector] selectedCharacters:', selectedCharacters);
+    console.log('[StoryDirector] selectedAdventure:', selectedAdventure);
+    console.log('[StoryDirector] selectedWeather:', selectedWeather);
+    console.log('[StoryDirector] selectedTerrain:', selectedTerrain);
+    console.log('[StoryDirector] selectedEquipment:', selectedEquipment);
+    console.log('[StoryDirector] isReady:', isReady);
+    
     Animated.sequence([
       Animated.timing(buttonAnim, {
         toValue: 0.9,
@@ -486,9 +494,19 @@ const StoryDirectorDemo: React.FC<StoryDirectorDemoProps> = ({ bookId, onBack })
       }),
     ]).start();
 
-    if (!isReady) return;
+    if (!isReady) {
+      console.log('[StoryDirector] Early return - isReady is false');
+      console.log('[StoryDirector] Missing conditions:');
+      if (selectedCharacters.length === 0) console.log('  - No characters selected');
+      if (!selectedAdventure) console.log('  - No adventure selected');
+      if (!selectedWeather) console.log('  - No weather selected');
+      if (!selectedTerrain) console.log('  - No terrain selected');
+      if (!selectedEquipment) console.log('  - No equipment selected');
+      return;
+    }
 
     try {
+      console.log('[StoryDirector] Creating chapter...');
       const selectedCharData = characters.filter(c => selectedCharacters.includes(c.characterId));
       const charNames = selectedCharData.map(c => c.name).join('、');
       const adventureName = adventures.find(a => a.elementId === selectedAdventure)?.name || '冒险';
@@ -522,10 +540,13 @@ D. 隐身衣`;
         characterIds: selectedCharacters,
       };
 
+      console.log('[StoryDirector] Calling addChapter with bookId:', bookId);
+      console.log('[StoryDirector] chapterData:', chapterData);
       await addChapter(bookId, chapterData);
+      console.log('[StoryDirector] Chapter added successfully, calling onBack');
       onBack();
     } catch (error) {
-      console.error('Failed to add chapter:', error);
+      console.error('[StoryDirector] Failed to add chapter:', error);
     }
   };
 
@@ -1406,7 +1427,22 @@ D. 隐身衣`;
                 backgroundColor: isReady ? styleConfig.colors.accent : styleConfig.colors.border,
               },
             ]}
-            onPress={handleShoot}
+            onPress={() => {
+              console.log('[StoryDirector] ===== SHOOT BUTTON PRESSED =====');
+              console.log('[StoryDirector] Button pressed at:', new Date().toISOString());
+              console.log('[StoryDirector] isReady:', isReady);
+              console.log('[StoryDirector] selectedCharacters:', selectedCharacters);
+              console.log('[StoryDirector] selectedAdventure:', selectedAdventure);
+              console.log('[StoryDirector] selectedWeather:', selectedWeather);
+              console.log('[StoryDirector] selectedTerrain:', selectedTerrain);
+              console.log('[StoryDirector] selectedEquipment:', selectedEquipment);
+              console.log('[StoryDirector] characters array length:', characters.length);
+              console.log('[StoryDirector] adventures array length:', adventures.length);
+              console.log('[StoryDirector] weathers array length:', weathers.length);
+              console.log('[StoryDirector] terrains array length:', terrains.length);
+              console.log('[StoryDirector] equipments array length:', equipments.length);
+              handleShoot();
+            }}
             disabled={!isReady}
             activeOpacity={0.8}
           >

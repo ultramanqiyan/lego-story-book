@@ -2046,3 +2046,180 @@ async createBook(params: { title: string; typeId: string }): Promise<Book> {
 ---
 
 *最后更新：2026-03-06 23:30*
+
+---
+
+## 2026-03-07 故事导演页开拍按钮无反应问题调查
+
+### 问题35：故事导演页点击"开始拍摄"按钮无反应
+
+**问题描述：**
+- 用户手动测试时，选择完角色、天气、冒险类型、装备、地形后
+- 点击"开始拍摄"按钮没有反应，章节没有创建
+
+**根本原因分析（进行中）：**
+1. **isReady条件检查**
+   - `isReady` 需要5个条件全部满足：角色、冒险类型、天气、地形、装备
+   - 如果任何一个条件不满足，`handleShoot` 函数会直接return
+2. **可能的问题点**
+   - 选择器状态没有正确更新
+   - `isReady` 计算逻辑有问题
+   - 某些卡牌数据为空
+
+**调试日志添加：**
+```typescript
+const handleShoot = async () => {
+    console.log('[StoryDirector] handleShoot called');
+    console.log('[StoryDirector] selectedCharacters:', selectedCharacters);
+    console.log('[StoryDirector] selectedAdventure:', selectedAdventure);
+    console.log('[StoryDirector] selectedWeather:', selectedWeather);
+    console.log('[StoryDirector] selectedTerrain:', selectedTerrain);
+    console.log('[StoryDirector] selectedEquipment:', selectedEquipment);
+    console.log('[StoryDirector] isReady:', isReady);
+    
+    if (!isReady) {
+        console.log('[StoryDirector] Early return - isReady is false');
+        console.log('[StoryDirector] Missing conditions:');
+        if (selectedCharacters.length === 0) console.log('  - No characters selected');
+        if (!selectedAdventure) console.log('  - No adventure selected');
+        if (!selectedWeather) console.log('  - No weather selected');
+        if (!selectedTerrain) console.log('  - No terrain selected');
+        if (!selectedEquipment) console.log('  - No equipment selected');
+        return;
+    }
+    // ...
+};
+```
+
+**待验证：**
+1. 查看logcat日志确认哪个条件不满足
+2. 检查卡牌选择逻辑是否正确更新状态
+3. 检查`isReady`的计算是否正确
+
+**经验教训：**
+1. **在关键函数入口添加日志打印所有相关状态**
+2. **在条件判断失败时打印具体失败原因**
+3. **使用统一的前缀便于日志过滤**
+
+---
+
+*最后更新：2026-03-07 00:30*
+
+---
+
+## 2026-03-07 故事导演页开拍按钮无反应问题调查（已解决）
+
+### 问题35：故事导演页点击"开始拍摄"按钮无反应
+
+**问题描述：**
+- 用户手动测试时，选择完角色、天气、冒险类型、装备、地形后
+- 点击"开始拍摄"按钮没有反应，章节没有创建
+
+**根本原因分析：**
+1. **`this`上下文丢失问题**
+   - `DatabaseService.addChapter`函数中使用了`this.getChaptersByBookId(bookId)`
+   - 当函数通过`DatabaseService.addChapter`传递给DataContext时，`this`上下文丢失
+   - 导致错误：`TypeError: this.getChaptersByBookId is not a function (it is undefined)`
+
+**错误代码：**
+```typescript
+// DatabaseService.ts
+async addChapter(bookId: string, chapterData: ...) {
+    if (!db) db = await this.initDatabase();  // this 上下文丢失
+    const existingChapters = await this.getChaptersByBookId(bookId);  // this 上下文丢失
+    // ...
+}
+```
+
+**解决方案：使用类名代替`this`**
+```typescript
+// DatabaseService.ts
+async addChapter(bookId: string, chapterData: ...) {
+    if (!db) db = await DatabaseService.initDatabase();  // 使用类名
+    const existingChapters = await DatabaseService.getChaptersByBookId(bookId);  // 使用类名
+    // ...
+}
+```
+
+**经验教训：**
+1. **在静态方法或导出的对象方法中，避免使用`this`**
+2. **使用类名（如`DatabaseService.method`）代替`this.method`确保上下文正确**
+3. **添加详细日志追踪函数调用链，快速定位问题**
+4. **查看logcat日志是调试React Native应用的关键**
+
+---
+
+### 问题36：测试脚本卡牌选择器顺序错误
+
+**问题描述：**
+- 测试脚本中卡牌选择顺序与页面布局不一致
+- 导致冒险类型选择失败
+
+**根本原因分析：**
+- 页面布局顺序：角色 → 冒险类型 → 舞台 → 天气 → 地形 → 装备
+- 测试脚本顺序：角色 → 天气 → 地形 → 装备 → 冒险类型
+- 冒险类型在角色选择之后立即显示，不需要滑动
+
+**解决方案：调整测试脚本顺序**
+```javascript
+// 正确顺序
+// 1. 选择角色
+// 2. 选择冒险类型（紧跟角色，不需要滑动）
+// 3. 滑动页面
+// 4. 选择天气
+// 5. 选择地形
+// 6. 选择装备
+```
+
+**经验教训：**
+1. **测试脚本的选择顺序要与页面布局一致**
+2. **理解页面结构，确定哪些元素需要滑动才能看到**
+3. **使用日志追踪选择过程，确认每一步是否成功**
+
+---
+
+## 创建书籍和添加章节功能测试结果（最终）
+
+### 测试环境
+- 模拟器：emulator-5554 (Pixel_6)
+- APP包名：com.legostory.demo
+- Appium端口：4723
+
+### 最终测试结果
+```
+通过率: 19/22 (86%)
+
+✅ 通过的测试:
+   ✓ APP启动
+   ✓ 进入书架页
+   ✓ 创建书籍按钮
+   ✓ 创建书籍弹窗
+   ✓ 书籍名称输入
+   ✓ 书籍类型选择
+   ✓ 书籍创建成功
+   ✓ 书籍详情页显示
+   ✓ 初始情节元素
+   ✓ 添加章节按钮
+   ✓ 故事导演页
+   ✓ 角色选择
+   ✓ 天气选择
+   ✓ 地形选择
+   ✓ 装备选择
+   ✓ 冒险类型选择
+   ✓ 开拍按钮
+   ✓ 章节创建成功
+   ✓ 章节内容和谜题
+
+❌ 失败的测试:
+   ✗ 初始角色卡牌（非关键功能）
+   ✗ 卡牌解锁功能（非关键功能）
+```
+
+### 关键修复总结
+1. **修复了`DatabaseService.addChapter`函数中的`this`上下文问题**
+2. **修复了测试脚本中卡牌选择器的顺序和文本**
+3. **添加了详细的调试日志**
+
+---
+
+*最后更新：2026-03-07 01:30*

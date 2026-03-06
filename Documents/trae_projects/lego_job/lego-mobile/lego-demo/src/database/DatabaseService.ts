@@ -677,9 +677,9 @@ export const DatabaseService = {
   },
 
   async addChapter(bookId: string, chapterData: Omit<Chapter, 'chapterId' | 'chapterNumber'>): Promise<Chapter> {
-    if (!db) db = await this.initDatabase();
+    if (!db) db = await DatabaseService.initDatabase();
     
-    const existingChapters = await this.getChaptersByBookId(bookId);
+    const existingChapters = await DatabaseService.getChaptersByBookId(bookId);
     const chapterNumber = existingChapters.length + 1;
     const chapterId = `${bookId}-chapter-${Date.now()}`;
 

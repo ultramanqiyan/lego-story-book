@@ -359,8 +359,10 @@ async function runCreateBookTest() {
         // ==================== 选择角色 ====================
         console.log('[15/22] 选择角色...');
         const characterSelectors = [
-            '//*[contains(@text, "魔法师")]',
+            '//*[contains(@text, "法师")]',
             '//*[contains(@text, "精灵")]',
+            '//*[contains(@text, "巨龙")]',
+            '//*[contains(@text, "独角兽")]',
         ];
         
         for (const selector of characterSelectors) {
@@ -371,15 +373,35 @@ async function runCreateBookTest() {
             }
         }
 
+        // ==================== 选择冒险类型 ====================
+        // 冒险类型在角色选择之后，不需要滑动
+        console.log('[16/22] 选择冒险类型...');
+        const adventureSelectors = [
+            '//*[contains(@text, "施法")]',
+            '//*[contains(@text, "召唤")]',
+            '//*[contains(@text, "炼金")]',
+            '//*[contains(@text, "飞行")]',
+        ];
+        
+        for (const selector of adventureSelectors) {
+            if (await findAndTap(driver, selector, 1000)) {
+                testResults.adventureSelection = true;
+                console.log('已选择冒险类型\n');
+                await driver.pause(300);
+                break;
+            }
+        }
+
         // ==================== 选择天气 ====================
-        console.log('[16/22] 选择天气...');
+        console.log('[17/22] 选择天气...');
         await swipeUp(driver);
         await driver.pause(500);
         
         const weatherSelectors = [
-            '//*[contains(@text, "晴天")]',
-            '//*[contains(@text, "雨天")]',
-            '//*[contains(@text, "夜晚")]',
+            '//*[contains(@text, "月夜")]',
+            '//*[contains(@text, "迷雾")]',
+            '//*[contains(@text, "雷暴")]',
+            '//*[contains(@text, "极光")]',
         ];
         
         for (const selector of weatherSelectors) {
@@ -392,11 +414,15 @@ async function runCreateBookTest() {
         }
 
         // ==================== 选择地形 ====================
-        console.log('[17/22] 选择地形...');
+        console.log('[18/22] 选择地形...');
+        await swipeUp(driver);
+        await driver.pause(500);
+        
         const terrainSelectors = [
-            '//*[contains(@text, "森林")]',
-            '//*[contains(@text, "山脉")]',
-            '//*[contains(@text, "城堡")]',
+            '//*[contains(@text, "魔法塔")]',
+            '//*[contains(@text, "禁林")]',
+            '//*[contains(@text, "龙巢")]',
+            '//*[contains(@text, "水晶洞")]',
         ];
         
         for (const selector of terrainSelectors) {
@@ -409,34 +435,24 @@ async function runCreateBookTest() {
         }
 
         // ==================== 选择装备 ====================
-        console.log('[18/22] 选择装备...');
+        console.log('[19/22] 选择装备...');
+        // 装备在页面底部，需要滑动
+        await swipeUp(driver);
+        await driver.pause(300);
+        await swipeUp(driver);
+        await driver.pause(500);
+        
         const equipmentSelectors = [
-            '//*[contains(@text, "魔法棒")]',
-            '//*[contains(@text, "宝剑")]',
-            '//*[contains(@text, "护盾")]',
+            '//*[contains(@text, "法杖")]',
+            '//*[contains(@text, "魔戒")]',
+            '//*[contains(@text, "魔法书")]',
+            '//*[contains(@text, "水晶球")]',
         ];
         
         for (const selector of equipmentSelectors) {
             if (await findAndTap(driver, selector, 1000)) {
                 testResults.equipmentSelection = true;
                 console.log('已选择装备\n');
-                await driver.pause(300);
-                break;
-            }
-        }
-
-        // ==================== 选择冒险类型 ====================
-        console.log('[19/22] 选择冒险类型...');
-        const adventureSelectors = [
-            '//*[contains(@text, "探索")]',
-            '//*[contains(@text, "战斗")]',
-            '//*[contains(@text, "解谜")]',
-        ];
-        
-        for (const selector of adventureSelectors) {
-            if (await findAndTap(driver, selector, 1000)) {
-                testResults.adventureSelection = true;
-                console.log('已选择冒险类型\n');
                 await driver.pause(300);
                 break;
             }
