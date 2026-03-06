@@ -757,7 +757,7 @@ const App: React.FC = () => {
       case 'director':
         return <StoryDirectorDemo onBack={() => setCurrentPage('home')} />;
       case 'book-detail':
-        return <BookDetailDemo onBack={() => setCurrentPage('home')} />;
+        return <BookDetailDemo onBack={() => setCurrentPage('home')} onNavigateToDirector={() => setCurrentPage('director')} />;
       case 'ui-style-list':
         return (
           <UIStyleListScreen

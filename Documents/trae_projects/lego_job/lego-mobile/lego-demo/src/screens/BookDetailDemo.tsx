@@ -13,8 +13,10 @@ import {
 const { width, height } = Dimensions.get('window');
 const PAGE_WIDTH = (width - 60) / 2;
 const PAGE_HEIGHT = height - 200;
+const ITEMS_PER_PAGE = 6;
 
 type TabType = 'chapters' | 'characters' | 'plots';
+type ChapterViewMode = 'directory' | 'content';
 
 interface Chapter {
   chapterId: string;
@@ -70,15 +72,15 @@ const FAKE_CHAPTERS: Chapter[] = [
 "这里感觉有些不对劲，"阿尔法低声说道，"我们要小心。"
 
 就在这时，前方的灌木丛突然晃动起来，一个黑影从里面窜了出来...`,
-    wordCount: 234,
+    wordCount: 150,
     hasPuzzle: true,
-    puzzleResult: 1,
+    puzzleResult: null,
     characters: ['char-1', 'char-2'],
     puzzle: {
       question: '森林中出现的黑影最可能是什么？',
       options: ['精灵', '魔兽', '迷路的旅人', '法师的幻象'],
       correctIndex: 1,
-      attempts: 1,
+      attempts: 0,
       maxAttempts: 3,
     },
   },
@@ -94,8 +96,20 @@ const FAKE_CHAPTERS: Chapter[] = [
 
 法师贝塔走上前去，仔细研究着门上的符文。"这是古老的魔法文字，"他喃喃自语，"我需要一些时间来解读..."
 
-勇士阿尔法环顾四周，发现城堡周围还有一些奇怪的雕像，它们似乎在注视着每一个来访者。`,
-    wordCount: 312,
+勇士阿尔法环顾四周，发现城堡周围还有一些奇怪的雕像，它们似乎在注视着每一个来访者。雕像的眼睛闪烁着诡异的光芒，仿佛在守护着某种古老的秘密。
+
+"这些雕像看起来不简单，"阿尔法低声说道，"我们要小心。"
+
+贝塔点点头，开始集中精神解读符文。随着时间的推移，符文的光芒越来越亮，最终发出一声清脆的响声，大门缓缓打开。
+
+"成功了！"贝塔兴奋地说道。
+
+阿尔法深吸一口气，握紧了手中的宝剑。他们踏入了城堡的大门，迎接他们的将是未知的挑战...
+
+城堡内部昏暗而神秘，走廊两侧挂满了古老的画像，每一幅画像都讲述着一个传奇故事。他们小心翼翼地前进，生怕惊动了沉睡的守护者。
+
+突然，一阵阴风吹过，画像中的人物似乎都在注视着他们...`,
+    wordCount: 500,
     hasPuzzle: true,
     puzzleResult: null,
     characters: ['char-1', 'char-2', 'char-4'],
@@ -118,7 +132,7 @@ const FAKE_CHAPTERS: Chapter[] = [
 "我们需要一艘船，"贝塔说道，"但我感觉水下有什么东西在注视着我们。"
 
 就在这时，水面开始波动，一个巨大的身影从水中缓缓升起...那是传说中的海王，他守护着通往魔王领地的道路。`,
-    wordCount: 189,
+    wordCount: 200,
     hasPuzzle: false,
     puzzleResult: null,
     characters: ['char-1', 'char-2'],
@@ -134,8 +148,20 @@ const FAKE_CHAPTERS: Chapter[] = [
 
 魔王站在城堡的最高处，俯视着下方。"你终于来了，勇士，"他的声音如同雷鸣般回荡，"但你是否准备好面对最终的挑战？"
 
-阿尔法深吸一口气，握紧了手中的宝剑。这一刻，他等待了太久...`,
-    wordCount: 198,
+阿尔法深吸一口气，握紧了手中的宝剑。这一刻，他等待了太久...
+
+城堡的大门缓缓打开，一股黑暗的气息扑面而来。阿尔法毫不犹豫地踏入其中，每一步都踏在滚烫的岩石上。
+
+走廊两侧是无数个牢笼，里面关押着被魔王囚禁的灵魂。他们伸出枯瘦的手臂，发出无声的哀嚎。
+
+"不要看他们，"贝塔提醒道，"这些都是魔王的陷阱。"
+
+阿尔法点点头，继续向前。终于，他们来到了魔王的大殿。
+
+大殿中央，魔王端坐在黑曜石王座上，他的眼睛闪烁着血红的光芒。"欢迎来到我的领地，勇者，"他冷笑道，"你将在这里结束你的旅程。"
+
+阿尔法举起宝剑，剑身上闪烁着圣洁的光芒。"今天，我将终结你的统治！"他大声宣布。`,
+    wordCount: 600,
     hasPuzzle: true,
     puzzleResult: null,
     characters: ['char-1', 'char-3'],
@@ -160,10 +186,213 @@ const FAKE_CHAPTERS: Chapter[] = [
 战斗持续了整整一天一夜。最终，在众人的配合下，阿尔法找到了魔王的弱点，一剑刺穿了他的心脏。
 
 光明重新降临这片土地，勇者们的故事将被永远传颂...`,
-    wordCount: 245,
+    wordCount: 180,
     hasPuzzle: false,
     puzzleResult: null,
     characters: ['char-1', 'char-2', 'char-3', 'char-5'],
+    puzzle: undefined,
+  },
+  {
+    chapterId: 'ch-6',
+    chapterNumber: 6,
+    title: '新的开始',
+    content: `魔王倒下后，世界迎来了久违的和平。
+
+勇士阿尔法站在城堡的废墟上，望着远方的地平线。阳光穿透云层，洒在大地上，一切都显得那么美好。
+
+"我们成功了，"法师贝塔走到他身边，"但我们的旅程还没有结束。"
+
+阿尔法点点头。他知道，虽然魔王已经倒下，但世界上还有许多需要帮助的人。
+
+就在这时，一位神秘的旅人出现在他们面前。他穿着灰色斗篷，看不清面容。
+
+"勇者们，"旅人说道，"我有重要的事情要告诉你们。在遥远的东方，有一座被遗忘的神殿，里面封印着比魔王更可怕的存在..."
+
+阿尔法和贝塔对视一眼，他们知道新的冒险即将开始。
+
+旅人继续说道："那座神殿名为'时间裂隙'，传说中它连接着过去和未来。如果封印被打破，整个世界都将陷入混乱。"
+
+"我们需要做什么？"阿尔法问道。
+
+"找到神殿的钥匙，"旅人回答，"它们散落在世界的四个角落。只有集齐四把钥匙，才能加固封印。"
+
+阿尔法握紧宝剑，眼中闪烁着坚定的光芒。"我们接受这个任务。"
+
+旅人微微点头，从斗篷下取出一张古老的地图。"这是神殿的位置，祝你们好运。"
+
+说完，旅人便消失在空气中，仿佛从未出现过。
+
+阿尔法展开地图，上面标注着四个神秘的地点：迷雾沼泽、天空之城、时间裂隙、永恒传说。
+
+"准备好了吗，老朋友？"阿尔法看向贝塔。
+
+"随时准备着，"贝塔微笑着回答。`,
+    wordCount: 550,
+    hasPuzzle: true,
+    puzzleResult: null,
+    characters: ['char-1', 'char-2'],
+    puzzle: {
+      question: '旅人提到的神殿叫什么名字？',
+      options: ['遗忘神殿', '时间裂隙', '永恒之塔', '命运之门'],
+      correctIndex: 1,
+      attempts: 0,
+      maxAttempts: 3,
+    },
+  },
+  {
+    chapterId: 'ch-7',
+    chapterNumber: 7,
+    title: '迷雾沼泽',
+    content: `根据地图的指引，阿尔法和贝塔来到了第一站——迷雾沼泽。
+
+浓雾笼罩着整片区域，能见度不足五米。空气中弥漫着腐烂的气息，脚下的泥土发出"咕噜咕噜"的声音。
+
+"小心，"贝塔警告道，"这里的雾气有毒，不要深呼吸。"
+
+阿尔法用布条蒙住口鼻，小心翼翼地前进。突然，他感觉脚下有什么东西在移动。
+
+"有东西在水下！"他大喊一声，迅速跳开。
+
+一条巨大的沼泽蟒蛇从泥水中窜出，张开血盆大口扑向他们...`,
+    wordCount: 160,
+    hasPuzzle: true,
+    puzzleResult: null,
+    characters: ['char-1', 'char-2'],
+    puzzle: {
+      question: '迷雾沼泽的雾气有什么特点？',
+      options: ['让人迷路', '有剧毒', '会燃烧', '能隐身'],
+      correctIndex: 1,
+      attempts: 0,
+      maxAttempts: 3,
+    },
+  },
+  {
+    chapterId: 'ch-8',
+    chapterNumber: 8,
+    title: '天空之城',
+    content: `穿过迷雾沼泽，阿尔法和贝塔来到了一座悬浮在云端的城市。
+
+天空之城的建筑由洁白的大理石建成，在阳光的照耀下闪闪发光。无数条锁链将城市固定在空中，风吹过时，整座城市都会轻轻摇晃。
+
+"太壮观了，"贝塔惊叹道，"这就是传说中的天空之城！"
+
+他们乘坐云梯升上城市，迎接他们的是一位身穿银甲的守护者。
+
+"欢迎来到天空之城，"守护者说道，"我是这里的守护者，你们为何而来？"
+
+"我们寻找时间裂隙的钥匙，"阿尔法回答。
+
+守护者点点头，"钥匙就在城市的最高塔中，但要得到它，你们必须通过三道试炼。"
+
+第一道试炼是智慧之门。守护者带他们来到一座巨大的迷宫前。
+
+"这座迷宫会不断变化，"守护者解释道，"只有最聪明的人才能找到出口。"
+
+阿尔法和贝塔相互配合，贝塔用魔法探测迷宫的变化，阿尔法则负责开路。经过几个小时的努力，他们终于找到了出口。
+
+第二道试炼是勇气之桥。一座透明的桥梁横跨两座塔楼，桥下是万丈深渊。
+
+"这座桥只能承载一个人的重量，"守护者说，"你们必须一个一个通过。"
+
+阿尔法率先踏上桥梁，每一步都小心翼翼。风从四面八方吹来，试图将他推下深渊。但他咬紧牙关，一步一步向前，最终成功到达对岸。
+
+第三道试炼是力量之墙。一堵巨大的石墙挡住了去路，墙上刻着古老的符文。
+
+"这堵墙只有真正的勇者才能推倒，"守护者说。
+
+阿尔法深吸一口气，将全身的力量集中在双臂上。他猛地向前推去，石墙开始震动，然后轰然倒塌。
+
+"恭喜你们，"守护者微笑着说，"你们通过了所有试炼。"
+
+他递给阿尔法一把银色的钥匙，钥匙上刻着云朵的图案。
+
+"这是天空之城的钥匙，愿它帮助你们完成使命。"`,
+    wordCount: 580,
+    hasPuzzle: true,
+    puzzleResult: null,
+    characters: ['char-1', 'char-2'],
+    puzzle: {
+      question: '天空之城的第一道试炼是什么？',
+      options: ['力量之墙', '智慧之门', '勇气之桥', '命运之塔'],
+      correctIndex: 1,
+      attempts: 0,
+      maxAttempts: 3,
+    },
+  },
+  {
+    chapterId: 'ch-9',
+    chapterNumber: 9,
+    title: '时间裂隙',
+    content: `集齐了天空之城的钥匙，阿尔法和贝塔继续向东前进。
+
+终于，他们来到了传说中的时间裂隙。这里的空间扭曲着，过去和未来的影像交织在一起。
+
+"小心，"贝塔警告道，"这里的时间流动很不稳定。"
+
+阿尔法看到自己的过去和未来在眼前闪过：他第一次拿起宝剑的样子、与魔王战斗的场景、甚至看到了一个白发苍苍的自己。
+
+"这就是时间裂隙的力量，"一个声音从虚空中传来。
+
+阿尔法转身，看到一个模糊的身影正在凝聚。那是...他自己？
+
+"我是未来的你，"身影说道，"我来是为了警告你。封印即将破碎，你必须尽快找到最后一把钥匙。"
+
+"最后一把钥匙在哪里？"阿尔法问道。
+
+"在永恒传说之地，"未来的阿尔法回答，"那里有你要找的答案。"
+
+说完，身影便消散在空气中。`,
+    wordCount: 190,
+    hasPuzzle: true,
+    puzzleResult: null,
+    characters: ['char-1', 'char-2'],
+    puzzle: {
+      question: '谁在时间裂隙中警告了阿尔法？',
+      options: ['魔王', '未来的自己', '神秘旅人', '守护者'],
+      correctIndex: 1,
+      attempts: 0,
+      maxAttempts: 3,
+    },
+  },
+  {
+    chapterId: 'ch-10',
+    chapterNumber: 10,
+    title: '永恒传说',
+    content: `阿尔法和贝塔来到了旅程的终点——永恒传说之地。
+
+这里是一片宁静的草原，鲜花盛开，蝴蝶飞舞。在草原的中央，矗立着一座古老的神殿。
+
+"就是这里了，"阿尔法深吸一口气，"最后一把钥匙就在里面。"
+
+他们走进神殿，发现里面空无一人。只有一座石台，上面放着一把金色的钥匙。
+
+但当阿尔法伸手去拿时，一个声音在神殿中回荡：
+
+"勇者，你真的想要这把钥匙吗？"
+
+阿尔法转身，看到一个光芒四射的身影正在凝聚。那是...创世神？
+
+"是的，"阿尔法坚定地回答，"我要保护这个世界。"
+
+创世神点点头，"你已经证明了自己的勇气、智慧和力量。这把钥匙属于你。"
+
+阿尔法拿起金色的钥匙，感觉一股温暖的力量涌入体内。
+
+"去吧，"创世神说，"用这四把钥匙加固时间裂隙的封印。世界的未来，就交给你了。"
+
+阿尔法和贝塔离开神殿，踏上了返回时间裂隙的路途。他们知道，最后的战斗即将来临...
+
+当他们回到时间裂隙时，封印已经开始松动。阿尔法将四把钥匙插入封印的四个凹槽中。
+
+一道耀眼的光芒闪过，封印重新变得稳固。时间裂隙恢复了平静，世界再次安全了。
+
+阿尔法望着天空，露出疲惫但满足的微笑。他的冒险，暂时告一段落。但他知道，只要有需要，他随时都会再次踏上征程。
+
+这就是勇者阿尔法的传说，一个将被永远传颂的故事。`,
+    wordCount: 520,
+    hasPuzzle: false,
+    puzzleResult: null,
+    characters: ['char-1', 'char-2'],
     puzzle: undefined,
   },
 ];
@@ -238,8 +467,6 @@ const FAKE_PLOT_CARDS: Record<string, PlotCard[]> = {
   ],
 };
 
-const READING_POSITION_KEY = 'book_reading_position';
-
 const getRoleColor = (roleType: string) => {
   switch (roleType) {
     case 'protagonist': return '#FFD700';
@@ -258,18 +485,19 @@ const getStatusIcon = (chapter: Chapter) => {
 
 interface BookDetailDemoProps {
   onBack: () => void;
+  onNavigateToDirector: () => void;
 }
 
-const BookDetailDemo: React.FC<BookDetailDemoProps> = ({ onBack }) => {
+const BookDetailDemo: React.FC<BookDetailDemoProps> = ({ onBack, onNavigateToDirector }) => {
   const [currentTab, setCurrentTab] = useState<TabType>('chapters');
+  const [chapterViewMode, setChapterViewMode] = useState<ChapterViewMode>('directory');
+  const [directoryPage, setDirectoryPage] = useState<number>(0);
   const [selectedChapterId, setSelectedChapterId] = useState<string | null>(null);
   const [selectedCharacterId, setSelectedCharacterId] = useState<string | null>(null);
-  const [selectedPlotType, setSelectedPlotType] = useState<string>('weather');
   const [selectedPlotCardId, setSelectedPlotCardId] = useState<string | null>(null);
   const [puzzleAnswer, setPuzzleAnswer] = useState<number | null>(null);
   const [puzzleAttempts, setPuzzleAttempts] = useState<number>(0);
   const [puzzleResult, setPuzzleResult] = useState<'correct' | 'wrong' | null>(null);
-  const [savedReadingPosition, setSavedReadingPosition] = useState<string | null>(null);
   
   const flipAnim = useRef(new Animated.Value(0)).current;
   const tabAnims = useRef({
@@ -278,13 +506,26 @@ const BookDetailDemo: React.FC<BookDetailDemoProps> = ({ onBack }) => {
     plots: new Animated.Value(0),
   }).current;
 
-  useEffect(() => {
-    if (savedReadingPosition) {
-      setSelectedChapterId(savedReadingPosition);
-    } else if (FAKE_CHAPTERS.length > 0) {
-      setSelectedChapterId(FAKE_CHAPTERS[1].chapterId);
-    }
-  }, []);
+  const totalDirectoryPages = Math.ceil((FAKE_CHAPTERS.length + 1) / ITEMS_PER_PAGE);
+
+  const getDirectoryPageItems = (page: number) => {
+    const allItems: any[] = [...FAKE_CHAPTERS, { chapterId: 'add-new', isAddButton: true }];
+    const startIndex = page * ITEMS_PER_PAGE;
+    const pageItems = allItems.slice(startIndex, startIndex + ITEMS_PER_PAGE);
+    
+    const leftItems: any[] = [];
+    const rightItems: any[] = [];
+    
+    pageItems.forEach((item, index) => {
+      if (index % 2 === 0) {
+        leftItems.push(item);
+      } else {
+        rightItems.push(item);
+      }
+    });
+    
+    return { leftItems, rightItems };
+  };
 
   useEffect(() => {
     Animated.spring(flipAnim, {
@@ -306,7 +547,7 @@ const BookDetailDemo: React.FC<BookDetailDemoProps> = ({ onBack }) => {
 
   const handleChapterSelect = (chapterId: string) => {
     setSelectedChapterId(chapterId);
-    setSavedReadingPosition(chapterId);
+    setChapterViewMode('content');
     setPuzzleAnswer(null);
     setPuzzleResult(null);
     setPuzzleAttempts(0);
@@ -342,7 +583,7 @@ const BookDetailDemo: React.FC<BookDetailDemoProps> = ({ onBack }) => {
 
   const selectedChapter = FAKE_CHAPTERS.find(c => c.chapterId === selectedChapterId);
   const selectedCharacter = FAKE_CHARACTERS.find(c => c.id === selectedCharacterId);
-  const selectedPlotCard = FAKE_PLOT_CARDS[selectedPlotType]?.find(c => c.id === selectedPlotCardId);
+  const selectedPlotCard = Object.values(FAKE_PLOT_CARDS).flat().find(c => c.id === selectedPlotCardId);
 
   const renderBookmarkTab = () => (
     <View style={styles.bookmarkContainer}>
@@ -369,202 +610,260 @@ const BookDetailDemo: React.FC<BookDetailDemoProps> = ({ onBack }) => {
     </View>
   );
 
-  const renderChapterContent = (chapter: Chapter) => {
+  const renderChapterContentView = () => {
+    if (!selectedChapter) return null;
+    
+    const currentIndex = FAKE_CHAPTERS.findIndex(c => c.chapterId === selectedChapterId);
+    const hasPrev = currentIndex > 0;
+    const hasNext = currentIndex < FAKE_CHAPTERS.length - 1;
+    
     return (
-      <ScrollView style={styles.chapterScrollContainer}>
-        <Text style={styles.chapterTitle}>第{chapter.chapterNumber}章 {chapter.title}</Text>
-        <View style={styles.chapterDivider} />
-        <Text style={styles.chapterContent}>{chapter.content}</Text>
-        {chapter.characters.length > 0 && (
-          <View style={styles.characterTags}>
-            <Text style={styles.characterTagLabel}>🎭 登场角色</Text>
-            <View style={styles.characterTagList}>
-              {chapter.characters.map(charId => {
-                const char = FAKE_CHARACTERS.find(c => c.id === charId);
-                if (!char) return null;
-                return (
-                  <Text
-                    key={charId}
+      <View style={styles.contentContainer}>
+        <TouchableOpacity 
+          style={styles.backToDirectory} 
+          onPress={() => setChapterViewMode('directory')}
+        >
+          <Text style={styles.backToDirectoryText}>← 目录</Text>
+        </TouchableOpacity>
+        
+        <ScrollView style={styles.chapterScrollContainer}>
+          <Text style={styles.chapterTitle}>第{selectedChapter.chapterNumber}章 {selectedChapter.title}</Text>
+          <View style={styles.chapterDivider} />
+          <Text style={styles.chapterContent}>{selectedChapter.content}</Text>
+          
+          {selectedChapter.puzzle && (
+            <View style={styles.puzzleBox}>
+              <Text style={styles.puzzleTitle}>❓ 谜题</Text>
+              <Text style={styles.puzzleQuestion}>{selectedChapter.puzzle.question}</Text>
+              <View style={styles.puzzleOptions}>
+                {selectedChapter.puzzle.options.map((option, index) => (
+                  <TouchableOpacity
+                    key={index}
                     style={[
-                      styles.characterTag,
-                      { backgroundColor: getRoleColor(char.roleType) + '30', color: getRoleColor(char.roleType) },
+                      styles.puzzleOption,
+                      puzzleAnswer === index && styles.puzzleOptionSelected,
+                      puzzleResult === 'correct' && index === selectedChapter.puzzle!.correctIndex && styles.puzzleOptionCorrect,
+                      puzzleResult === 'wrong' && puzzleAnswer === index && styles.puzzleOptionWrong,
                     ]}
+                    onPress={() => handlePuzzleAnswer(index, selectedChapter)}
+                    disabled={puzzleResult === 'correct' || puzzleAttempts >= selectedChapter.puzzle!.maxAttempts}
                   >
-                    {char.emoji} {char.customName}
-                  </Text>
-                );
-              })}
+                    <Text style={styles.puzzleOptionText}>
+                      {String.fromCharCode(65 + index)}. {option}
+                    </Text>
+                  </TouchableOpacity>
+                ))}
+              </View>
+              <Text style={styles.puzzleAttempts}>尝试次数: {puzzleAttempts}/{selectedChapter.puzzle.maxAttempts}</Text>
+              {puzzleResult === 'correct' && (
+                <Text style={styles.puzzleResultCorrect}>✅ 正确！</Text>
+              )}
+              {puzzleResult === 'wrong' && puzzleAttempts >= selectedChapter.puzzle.maxAttempts && (
+                <Text style={styles.puzzleResultWrong}>
+                  ❌ 正确答案: {String.fromCharCode(65 + selectedChapter.puzzle.correctIndex)}. {selectedChapter.puzzle.options[selectedChapter.puzzle.correctIndex]}
+                </Text>
+              )}
             </View>
+          )}
+        </ScrollView>
+        
+        <View style={styles.chapterNavigation}>
+          <TouchableOpacity
+            style={[styles.navButton, !hasPrev && styles.navButtonDisabled]}
+            onPress={() => {
+              if (hasPrev) {
+                const prevChapter = FAKE_CHAPTERS[currentIndex - 1];
+                handleChapterSelect(prevChapter.chapterId);
+              }
+            }}
+            disabled={!hasPrev}
+          >
+            <Text style={[styles.navButtonText, !hasPrev && styles.navButtonTextDisabled]}>
+              上一章
+            </Text>
+          </TouchableOpacity>
+          
+          <Text style={styles.pageIndicator}>
+            {currentIndex + 1}/{FAKE_CHAPTERS.length}
+          </Text>
+          
+          <TouchableOpacity
+            style={[styles.navButton, !hasNext && styles.navButtonDisabled]}
+            onPress={() => {
+              if (hasNext) {
+                const nextChapter = FAKE_CHAPTERS[currentIndex + 1];
+                handleChapterSelect(nextChapter.chapterId);
+              }
+            }}
+            disabled={!hasNext}
+          >
+            <Text style={[styles.navButtonText, !hasNext && styles.navButtonTextDisabled]}>
+              下一章
+            </Text>
+          </TouchableOpacity>
+        </View>
+      </View>
+    );
+  };
+
+  const renderChaptersTab = () => {
+    if (chapterViewMode === 'content' && selectedChapterId) {
+      return renderChapterContentView();
+    }
+    
+    const { leftItems, rightItems } = getDirectoryPageItems(directoryPage);
+    
+    const renderDirectoryItem = (item: any) => {
+      if (item.isAddButton) {
+        return (
+          <TouchableOpacity
+            key="add-new"
+            style={styles.chapterItem}
+            onPress={() => onNavigateToDirector()}
+          >
+            <Text style={styles.chapterItemText}>➕ 添加章节</Text>
+            <Text style={styles.chapterItemStatus}> </Text>
+          </TouchableOpacity>
+        );
+      }
+      
+      return (
+        <TouchableOpacity
+          key={item.chapterId}
+          style={[
+            styles.chapterItem,
+            selectedChapterId === item.chapterId && styles.chapterItemActive,
+          ]}
+          onPress={() => handleChapterSelect(item.chapterId)}
+        >
+          <Text style={styles.chapterItemText}>
+            第{item.chapterNumber}章 {item.title}
+          </Text>
+          <Text style={styles.chapterItemStatus}>{getStatusIcon(item)}</Text>
+        </TouchableOpacity>
+      );
+    };
+    
+    return (
+      <View style={{ flex: 1 }}>
+        <View style={styles.bookPages}>
+          <View style={styles.leftPage}>
+            <Text style={styles.pageTitle}>目 录</Text>
+            {leftItems.map(renderDirectoryItem)}
           </View>
-        )}
-        {chapter.puzzle && (
-          <View style={styles.puzzleBox}>
-            <Text style={styles.puzzleTitle}>❓ 谜题</Text>
-            <Text style={styles.puzzleQuestion}>{chapter.puzzle.question}</Text>
-            <View style={styles.puzzleOptions}>
-              {chapter.puzzle.options.map((option, index) => (
-                <TouchableOpacity
-                  key={index}
-                  style={[
-                    styles.puzzleOption,
-                    puzzleAnswer === index && styles.puzzleOptionSelected,
-                    puzzleResult === 'correct' && index === chapter.puzzle!.correctIndex && styles.puzzleOptionCorrect,
-                    puzzleResult === 'wrong' && puzzleAnswer === index && styles.puzzleOptionWrong,
-                  ]}
-                  onPress={() => handlePuzzleAnswer(index, chapter)}
-                  disabled={puzzleResult === 'correct' || puzzleAttempts >= chapter.puzzle!.maxAttempts}
-                >
-                  <Text style={styles.puzzleOptionText}>
-                    {String.fromCharCode(65 + index)}. {option}
-                  </Text>
-                </TouchableOpacity>
-              ))}
-            </View>
-            <Text style={styles.puzzleAttempts}>尝试次数: {puzzleAttempts}/{chapter.puzzle.maxAttempts}</Text>
-            {puzzleResult === 'correct' && (
-              <Text style={styles.puzzleResultCorrect}>✅ 正确！</Text>
-            )}
-            {puzzleResult === 'wrong' && puzzleAttempts >= chapter.puzzle.maxAttempts && (
-              <Text style={styles.puzzleResultWrong}>
-                ❌ 正确答案: {String.fromCharCode(65 + chapter.puzzle.correctIndex)}. {chapter.puzzle.options[chapter.puzzle.correctIndex]}
-              </Text>
-            )}
+          <View style={styles.pageDivider} />
+          <View style={styles.rightPage}>
+            <Text style={styles.pageTitle}>目 录</Text>
+            {rightItems.map(renderDirectoryItem)}
           </View>
-        )}
+        </View>
+        
+        <View style={styles.directoryPagination}>
+          <TouchableOpacity
+            style={[styles.navButton, directoryPage === 0 && styles.navButtonDisabled]}
+            onPress={() => setDirectoryPage(Math.max(0, directoryPage - 1))}
+            disabled={directoryPage === 0}
+          >
+            <Text style={[styles.navButtonText, directoryPage === 0 && styles.navButtonTextDisabled]}>
+              上一页
+            </Text>
+          </TouchableOpacity>
+          
+          <Text style={styles.pageIndicator}>
+            {directoryPage + 1}/{totalDirectoryPages}
+          </Text>
+          
+          <TouchableOpacity
+            style={[styles.navButton, directoryPage >= totalDirectoryPages - 1 && styles.navButtonDisabled]}
+            onPress={() => setDirectoryPage(Math.min(totalDirectoryPages - 1, directoryPage + 1))}
+            disabled={directoryPage >= totalDirectoryPages - 1}
+          >
+            <Text style={[styles.navButtonText, directoryPage >= totalDirectoryPages - 1 && styles.navButtonTextDisabled]}>
+              下一页
+            </Text>
+          </TouchableOpacity>
+        </View>
+      </View>
+    );
+  };
+
+  const renderCharactersTab = () => {
+    const renderCharacterCard = (character: Character) => (
+      <TouchableOpacity
+        key={character.id}
+        style={[
+          styles.characterCard,
+          selectedCharacterId === character.id && styles.characterCardActive,
+        ]}
+        onPress={() => handleCharacterSelect(character.id)}
+      >
+        <Text style={styles.characterCardEmoji}>{character.emoji}</Text>
+        <View style={styles.characterCardDivider} />
+        <Text style={styles.characterCardName}>{character.customName}</Text>
+        <Text style={[styles.characterCardRole, { color: getRoleColor(character.roleType) }]}>
+          {character.roleType === 'protagonist' ? '主角' : character.roleType === 'supporting' ? '配角' : '反派'}
+        </Text>
+      </TouchableOpacity>
+    );
+    
+    const rows: Character[][] = [];
+    for (let i = 0; i < FAKE_CHARACTERS.length; i += 2) {
+      rows.push(FAKE_CHARACTERS.slice(i, i + 2));
+    }
+    
+    return (
+      <ScrollView style={styles.cardGridContainer}>
+        {rows.map((row, rowIndex) => (
+          <View key={rowIndex} style={styles.cardRow}>
+            {row.map(renderCharacterCard)}
+            {row.length === 1 && <View style={styles.emptyCardSlot} />}
+          </View>
+        ))}
       </ScrollView>
     );
   };
 
-  const renderChaptersTab = () => (
-    <View style={styles.bookPages}>
-      <View style={styles.leftPage}>
-        <Text style={styles.pageTitle}>目 录</Text>
-        <ScrollView>
-          {FAKE_CHAPTERS.map((chapter) => (
-            <TouchableOpacity
-              key={chapter.chapterId}
-              style={[
-                styles.chapterItem,
-                selectedChapterId === chapter.chapterId && styles.chapterItemActive,
-              ]}
-              onPress={() => handleChapterSelect(chapter.chapterId)}
-            >
-              <Text style={styles.chapterItemText}>
-                第{chapter.chapterNumber}章 {chapter.title}
-              </Text>
-              <Text style={styles.chapterItemStatus}>{getStatusIcon(chapter)}</Text>
-            </TouchableOpacity>
-          ))}
-        </ScrollView>
-      </View>
-      <View style={styles.pageDivider} />
-      <View style={styles.rightPage}>
-        {selectedChapter ? (
-          renderChapterContent(selectedChapter)
-        ) : (
-          <View style={styles.emptyPage}>
-            <Text style={styles.emptyPageText}>请选择章节</Text>
-          </View>
-        )}
-      </View>
-    </View>
-  );
-
-  const renderCharactersTab = () => (
-    <View style={styles.bookPages}>
-      <View style={styles.leftPage}>
-        <Text style={styles.pageTitle}>角色列表</Text>
-        <ScrollView>
-          {FAKE_CHARACTERS.map((character) => (
-            <TouchableOpacity
-              key={character.id}
-              style={[
-                styles.characterItem,
-                selectedCharacterId === character.id && styles.characterItemActive,
-              ]}
-              onPress={() => handleCharacterSelect(character.id)}
-            >
-              <Text style={styles.characterEmoji}>{character.emoji}</Text>
-              <View style={styles.characterInfo}>
-                <Text style={styles.characterName}>{character.customName}</Text>
-                <Text style={[styles.characterRole, { color: getRoleColor(character.roleType) }]}>
-                  {character.roleType === 'protagonist' ? '主角' : character.roleType === 'supporting' ? '配角' : '反派'}
-                </Text>
-              </View>
-            </TouchableOpacity>
-          ))}
-        </ScrollView>
-      </View>
-      <View style={styles.pageDivider} />
-      <View style={styles.rightPage}>
-        {selectedCharacter ? (
-          <View style={styles.characterDetail}>
-            <Text style={styles.characterDetailEmoji}>{selectedCharacter.emoji}</Text>
-            <Text style={styles.characterDetailName}>{selectedCharacter.customName}</Text>
-            <Text style={[styles.characterDetailRole, { color: getRoleColor(selectedCharacter.roleType) }]}>
-              {selectedCharacter.roleType === 'protagonist' ? '主角' : selectedCharacter.roleType === 'supporting' ? '配角' : '反派'}
-            </Text>
-            <View style={styles.characterDetailDivider} />
-            <Text style={styles.characterDetailDesc}>{selectedCharacter.description}</Text>
-          </View>
-        ) : (
-          <View style={styles.emptyPage}>
-            <Text style={styles.emptyPageText}>请选择角色</Text>
-          </View>
-        )}
-      </View>
-    </View>
-  );
-
-  const renderPlotsTab = () => (
-    <View style={styles.bookPages}>
-      <View style={styles.leftPage}>
-        <Text style={styles.pageTitle}>情节元素</Text>
-        <ScrollView>
-          {Object.entries(FAKE_PLOT_CARDS).map(([type, cards]) => (
-            <View key={type} style={styles.plotCategory}>
-              <Text style={styles.plotCategoryTitle}>
-                {type === 'weather' ? '☀️ 天气' : type === 'adventure' ? '⚔️ 冒险类型' : type === 'terrain' ? '🌲 地形' : '🪄 装备'}
-              </Text>
-              <View style={styles.plotCardList}>
-                {cards.map((card) => (
-                  <TouchableOpacity
-                    key={card.id}
-                    style={[
-                      styles.plotCardItem,
-                      selectedPlotType === type && selectedPlotCardId === card.id && styles.plotCardItemActive,
-                    ]}
-                    onPress={() => {
-                      setSelectedPlotType(type);
-                      handlePlotCardSelect(card.id);
-                    }}
-                  >
-                    <Text style={styles.plotCardEmoji}>{card.emoji}</Text>
-                    <Text style={styles.plotCardName}>{card.name}</Text>
-                  </TouchableOpacity>
-                ))}
-              </View>
+  const renderPlotsTab = () => {
+    const categories = [
+      { key: 'weather', title: '☀️ 天气', data: FAKE_PLOT_CARDS.weather },
+      { key: 'adventure', title: '⚔️ 冒险类型', data: FAKE_PLOT_CARDS.adventure },
+      { key: 'terrain', title: '🌲 地形', data: FAKE_PLOT_CARDS.terrain },
+      { key: 'equipment', title: '🪄 装备', data: FAKE_PLOT_CARDS.equipment },
+    ];
+    
+    const renderPlotCard = (card: PlotCard) => (
+      <TouchableOpacity
+        key={card.id}
+        style={[
+          styles.plotCard,
+          selectedPlotCardId === card.id && styles.plotCardActive,
+        ]}
+        onPress={() => handlePlotCardSelect(card.id)}
+      >
+        <Text style={styles.plotCardEmoji}>{card.emoji}</Text>
+        <View style={styles.plotCardDivider} />
+        <Text style={styles.plotCardName}>{card.name}</Text>
+        <Text style={styles.plotCardDesc} numberOfLines={2}>{card.description}</Text>
+      </TouchableOpacity>
+    );
+    
+    return (
+      <ScrollView style={styles.cardGridContainer}>
+        {categories.map(category => (
+          <View key={category.key} style={styles.plotCategory}>
+            <Text style={styles.plotCategoryTitle}>{category.title}</Text>
+            <View style={styles.plotCategoryDivider} />
+            <View style={styles.cardRow}>
+              {category.data.slice(0, 2).map(renderPlotCard)}
             </View>
-          ))}
-        </ScrollView>
-      </View>
-      <View style={styles.pageDivider} />
-      <View style={styles.rightPage}>
-        {selectedPlotCard ? (
-          <View style={styles.plotCardDetail}>
-            <Text style={styles.plotCardDetailEmoji}>{selectedPlotCard.emoji}</Text>
-            <Text style={styles.plotCardDetailName}>{selectedPlotCard.name}</Text>
-            <View style={styles.plotCardDetailDivider} />
-            <Text style={styles.plotCardDetailDesc}>{selectedPlotCard.description}</Text>
+            <View style={styles.cardRow}>
+              {category.data.slice(2, 4).map(renderPlotCard)}
+            </View>
           </View>
-        ) : (
-          <View style={styles.emptyPage}>
-            <Text style={styles.emptyPageText}>请选择情节卡牌</Text>
-          </View>
-        )}
-      </View>
-    </View>
-  );
+        ))}
+      </ScrollView>
+    );
+  };
 
   return (
     <SafeAreaView style={styles.container}>
@@ -719,12 +1018,17 @@ const styles = StyleSheet.create({
   chapterItemStatus: {
     fontSize: 16,
   },
-  pageContentContainer: {
+  contentContainer: {
     flex: 1,
-    flexDirection: 'row',
+    padding: 15,
   },
-  pageScroll: {
-    flex: 1,
+  backToDirectory: {
+    paddingVertical: 8,
+    marginBottom: 10,
+  },
+  backToDirectoryText: {
+    color: '#8B4513',
+    fontSize: 14,
   },
   chapterScrollContainer: {
     flex: 1,
@@ -746,28 +1050,42 @@ const styles = StyleSheet.create({
     color: '#3D2914',
     lineHeight: 22,
   },
-  characterTags: {
+  chapterNavigation: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+    paddingVertical: 15,
+    borderTopWidth: 1,
+    borderTopColor: '#D2B48C',
     marginTop: 15,
-    padding: 10,
-    backgroundColor: '#FFF8F0',
+  },
+  navButton: {
+    paddingHorizontal: 20,
+    paddingVertical: 8,
+    backgroundColor: '#8B4513',
     borderRadius: 5,
   },
-  characterTagLabel: {
-    fontSize: 12,
-    color: '#8B4513',
-    marginBottom: 8,
+  navButtonDisabled: {
+    backgroundColor: '#D2B48C',
   },
-  characterTagList: {
+  navButtonText: {
+    color: '#FFF8DC',
+    fontSize: 14,
+  },
+  navButtonTextDisabled: {
+    color: '#A0522D',
+  },
+  pageIndicator: {
+    fontSize: 14,
+    color: '#4A3728',
+  },
+  directoryPagination: {
     flexDirection: 'row',
-    flexWrap: 'wrap',
-  },
-  characterTag: {
-    fontSize: 12,
-    paddingHorizontal: 8,
-    paddingVertical: 4,
-    borderRadius: 10,
-    marginRight: 8,
-    marginBottom: 5,
+    justifyContent: 'center',
+    alignItems: 'center',
+    paddingVertical: 10,
+    borderTopWidth: 1,
+    borderTopColor: '#D2B48C',
   },
   puzzleBox: {
     marginTop: 15,
@@ -836,138 +1154,97 @@ const styles = StyleSheet.create({
     marginTop: 8,
     textAlign: 'center',
   },
-  emptyPage: {
+  cardGridContainer: {
     flex: 1,
-    justifyContent: 'center',
-    alignItems: 'center',
+    padding: 10,
   },
-  emptyPageText: {
-    fontSize: 14,
-    color: '#888',
-  },
-  characterItem: {
+  cardRow: {
     flexDirection: 'row',
-    alignItems: 'center',
-    paddingVertical: 12,
-    paddingHorizontal: 10,
-    borderBottomWidth: 1,
-    borderBottomColor: '#E8DCC8',
+    justifyContent: 'space-between',
+    marginBottom: 10,
   },
-  characterItemActive: {
+  characterCard: {
+    width: '48%',
     backgroundColor: '#FFF8DC',
-    borderRadius: 5,
-  },
-  characterEmoji: {
-    fontSize: 24,
-    marginRight: 10,
-  },
-  characterInfo: {
-    flex: 1,
-  },
-  characterName: {
-    fontSize: 14,
-    color: '#4A3728',
-    fontWeight: '500',
-  },
-  characterRole: {
-    fontSize: 12,
-    marginTop: 2,
-  },
-  characterDetail: {
-    flex: 1,
+    borderRadius: 10,
+    padding: 15,
     alignItems: 'center',
-    paddingTop: 20,
-  },
-  characterDetailEmoji: {
-    fontSize: 48,
-    marginBottom: 15,
-  },
-  characterDetailName: {
-    fontSize: 20,
-    fontWeight: 'bold',
-    color: '#4A3728',
-    marginBottom: 5,
-  },
-  characterDetailRole: {
-    fontSize: 14,
-    marginBottom: 15,
-  },
-  characterDetailDivider: {
-    width: '80%',
-    height: 1,
-    backgroundColor: '#D2B48C',
-    marginBottom: 15,
-  },
-  characterDetailDesc: {
-    fontSize: 14,
-    color: '#3D2914',
-    textAlign: 'center',
-    lineHeight: 22,
-    paddingHorizontal: 20,
-  },
-  plotCategory: {
-    marginBottom: 15,
-  },
-  plotCategoryTitle: {
-    fontSize: 14,
-    fontWeight: 'bold',
-    color: '#4A3728',
-    marginBottom: 8,
-  },
-  plotCardList: {
-    flexDirection: 'row',
-    flexWrap: 'wrap',
-  },
-  plotCardItem: {
-    width: '45%',
-    alignItems: 'center',
-    paddingVertical: 10,
-    marginHorizontal: '2.5%',
-    marginBottom: 8,
-    backgroundColor: '#FFF',
-    borderRadius: 5,
-    borderWidth: 1,
+    borderWidth: 2,
     borderColor: '#D2B48C',
   },
-  plotCardItemActive: {
-    borderColor: '#4A90D9',
-    backgroundColor: '#E8F4FD',
+  characterCardActive: {
+    borderColor: '#8B4513',
+    backgroundColor: '#FFF',
   },
-  plotCardEmoji: {
-    fontSize: 24,
-    marginBottom: 5,
+  characterCardEmoji: {
+    fontSize: 36,
+    marginBottom: 8,
   },
-  plotCardName: {
-    fontSize: 12,
-    color: '#4A3728',
-  },
-  plotCardDetail: {
-    flex: 1,
-    alignItems: 'center',
-    paddingTop: 20,
-  },
-  plotCardDetailEmoji: {
-    fontSize: 48,
-    marginBottom: 15,
-  },
-  plotCardDetailName: {
-    fontSize: 20,
-    fontWeight: 'bold',
-    color: '#4A3728',
-    marginBottom: 15,
-  },
-  plotCardDetailDivider: {
+  characterCardDivider: {
     width: '80%',
     height: 1,
     backgroundColor: '#D2B48C',
-    marginBottom: 15,
+    marginBottom: 8,
   },
-  plotCardDetailDesc: {
+  characterCardName: {
     fontSize: 14,
-    color: '#3D2914',
+    fontWeight: 'bold',
+    color: '#4A3728',
+    marginBottom: 4,
+  },
+  characterCardRole: {
+    fontSize: 12,
+  },
+  emptyCardSlot: {
+    width: '48%',
+  },
+  plotCategory: {
+    marginBottom: 20,
+  },
+  plotCategoryTitle: {
+    fontSize: 16,
+    fontWeight: 'bold',
+    color: '#4A3728',
+    marginBottom: 5,
+  },
+  plotCategoryDivider: {
+    height: 1,
+    backgroundColor: '#D2B48C',
+    marginBottom: 10,
+  },
+  plotCard: {
+    width: '48%',
+    backgroundColor: '#FFF8DC',
+    borderRadius: 10,
+    padding: 12,
+    alignItems: 'center',
+    borderWidth: 2,
+    borderColor: '#D2B48C',
+  },
+  plotCardActive: {
+    borderColor: '#8B4513',
+    backgroundColor: '#FFF',
+  },
+  plotCardEmoji: {
+    fontSize: 32,
+    marginBottom: 6,
+  },
+  plotCardDivider: {
+    width: '80%',
+    height: 1,
+    backgroundColor: '#D2B48C',
+    marginBottom: 6,
+  },
+  plotCardName: {
+    fontSize: 13,
+    fontWeight: 'bold',
+    color: '#4A3728',
+    marginBottom: 4,
+  },
+  plotCardDesc: {
+    fontSize: 11,
+    color: '#6B4423',
     textAlign: 'center',
-    lineHeight: 22,
-    paddingHorizontal: 20,
   },
   footer: {
     alignItems: 'center',
