@@ -486,9 +486,10 @@ interface GameBoardProps {
   onNavigateToUIStyles: () => void;
   onNavigateToBookDetail: () => void;
   onNavigateToBookshelf: () => void;
+  onNavigateToHome: () => void;
 }
 
-const GameBoard: React.FC<GameBoardProps> = ({ onNavigateToDirector, onNavigateToUIStyles, onNavigateToBookDetail, onNavigateToBookshelf }) => {
+const GameBoard: React.FC<GameBoardProps> = ({ onNavigateToDirector, onNavigateToUIStyles, onNavigateToBookDetail, onNavigateToBookshelf, onNavigateToHome }) => {
   const { state, playCard, attackMinion, attackHero, endTurn, selectMinion } = useGame();
   const { currentStyle, currentAnimation, cycleStyle, cycleAnimation } = useStyle();
   const [draggingCard, setDraggingCard] = useState<Card | null>(null);
@@ -666,6 +667,10 @@ const GameBoard: React.FC<GameBoardProps> = ({ onNavigateToDirector, onNavigateT
             ))}
           </View>
           <View style={styles.actionButtons}>
+            <TouchableOpacity style={styles.styleBtn} onPress={onNavigateToHome}>
+              <Text style={styles.btnIcon}>🏠</Text>
+              <Text style={styles.btnText}>首页</Text>
+            </TouchableOpacity>
             <TouchableOpacity style={styles.styleBtn} onPress={() => setShowStyleSelector(true)}>
               <Text style={styles.btnIcon}>🎨</Text>
               <Text style={styles.btnText}>风格</Text>
@@ -783,6 +788,7 @@ const App: React.FC = () => {
             onNavigateToUIStyles={() => setCurrentPage('ui-style-list')}
             onNavigateToBookDetail={() => navigateTo('book-detail')}
             onNavigateToBookshelf={() => navigateTo('bookshelf')}
+            onNavigateToHome={() => setCurrentPage('main-home')}
           />
         );
       case 'director':
@@ -813,6 +819,7 @@ const App: React.FC = () => {
             onNavigateToUIStyles={() => setCurrentPage('ui-style-list')}
             onNavigateToBookDetail={() => navigateTo('book-detail')}
             onNavigateToBookshelf={() => navigateTo('bookshelf')}
+            onNavigateToHome={() => setCurrentPage('main-home')}
           />
         );
     }
