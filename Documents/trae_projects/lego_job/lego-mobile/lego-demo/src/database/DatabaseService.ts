@@ -481,6 +481,7 @@ export const DatabaseService = {
   },
 
   async createBook(params: { title: string; typeId: string }): Promise<Book> {
+    console.log('[DatabaseService] createBook called with params:', params);
     if (!db) db = await this.initDatabase();
     
     if (!params.title || params.title.trim() === '') {
@@ -491,11 +492,17 @@ export const DatabaseService = {
     }
 
     const bookId = `user-book-${Date.now()}`;
+    console.log('[DatabaseService] Generated bookId:', bookId);
+    
     const bookType = await this.getBookTypeById(params.typeId);
+    console.log('[DatabaseService] bookType:', bookType);
     
     const allCharacters = charactersData.characters.filter(c => c.typeId === params.typeId);
+    console.log('[DatabaseService] allCharacters for typeId:', params.typeId, 'count:', allCharacters.length);
+    
     const shuffledChars = [...allCharacters].sort(() => Math.random() - 0.5);
     const selectedChars = shuffledChars.slice(0, 2);
+    console.log('[DatabaseService] selectedChars:', selectedChars.map(c => c.name));
     const protagonistId = selectedChars[0]?.characterId || '';
 
     const allWeathers = plotElementsData.plotElements.filter(e => e.typeId === params.typeId && e.category === 'weather');
@@ -514,11 +521,13 @@ export const DatabaseService = {
     const shuffledEquipments = [...allEquipments].sort(() => Math.random() - 0.5);
     const selectedEquipments = shuffledEquipments.slice(0, 2);
 
+    console.log('[DatabaseService] Inserting book into database...');
     await db!.runAsync(
       `INSERT INTO books (book_id, title, type_id, cover_emoji, description, chapter_count, progress, is_user_created, character_ids, protagonist_id)
        VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
       [bookId, params.title, params.typeId, bookType?.typeEmoji || '📖', `用户创建的${bookType?.typeName || '书籍'}`, 0, 0, 1, JSON.stringify(selectedChars.map(c => c.characterId)), protagonistId]
     );
+    console.log('[DatabaseService] Book inserted successfully');
 
     for (let i = 0; i < selectedChars.length; i++) {
       const char = selectedChars[i];
@@ -534,6 +543,7 @@ export const DatabaseService = {
         [bookId, char.characterId]
       );
     }
+    console.log('[DatabaseService] Characters and unlocked elements inserted');
 
     for (const element of [...selectedWeathers, ...selectedAdventures, ...selectedTerrains, ...selectedEquipments]) {
       await db!.runAsync(
@@ -542,8 +552,9 @@ export const DatabaseService = {
         [bookId, element.elementId, element.category]
       );
     }
+    console.log('[DatabaseService] Plot elements inserted');
 
-    return {
+    const result = {
       bookId,
       title: params.title,
       typeId: params.typeId,
@@ -555,6 +566,8 @@ export const DatabaseService = {
       characterIds: selectedChars.map(c => c.characterId),
       protagonistId,
     };
+    console.log('[DatabaseService] Returning book:', result);
+    return result;
   },
 
   async getUnlockedElements(bookId: string, elementType?: string): Promise<UnlockedElement[]> {

@@ -1833,3 +1833,216 @@ const goBack = () => {
 ---
 
 *最后更新：2026-03-06 20:30*
+
+---
+
+## 2026-03-06 创建书籍和添加章节功能开发经验
+
+### 问题31：Appium测试选择器匹配错误元素
+
+**问题描述：**
+- 测试脚本点击创建书籍按钮后，显示"书籍创建成功"
+- 但书籍详情页没有显示，后续测试全部失败
+- 手动点击创建按钮是成功的
+
+**根本原因分析：**
+1. **XPath选择器匹配到了错误的元素**
+   - 选择器 `//*[contains(@text, "✨ 创建")]` 可能匹配到弹窗标题"创建新故事"中的"创建"
+   - 而不是实际的创建按钮
+2. **React Native的Text组件嵌套导致文本匹配不准确**
+   - 弹窗标题包含"创建新故事"
+   - 按钮文本是"✨ 创建"
+   - 两者都包含"创建"关键字
+
+**错误代码：**
+```javascript
+// 错误：选择器可能匹配到多个元素
+if (await findAndTap(driver, '//*[contains(@text, "✨ 创建")]', 2000)) {
+    testResults.bookCreated = true;
+}
+```
+
+**解决方案：使用更精确的选择器**
+```javascript
+// 方案1：排除特定文本
+const createButtonSelector = '//android.view.View//android.widget.TextView[contains(@text, "创建") and not(contains(@text, "创建新"))]';
+
+// 方案2：使用last()选择最后一个匹配元素（按钮在弹窗底部）
+const altSelector = '(//android.widget.TextView[contains(@text, "创建")])[last()]';
+
+// 方案3：组合使用
+if (await findAndTap(driver, createButtonSelector, 2000)) {
+    testResults.bookCreated = true;
+} else {
+    // 备用选择器
+    if (await findAndTap(driver, altSelector, 2000)) {
+        testResults.bookCreated = true;
+    }
+}
+```
+
+**经验教训：**
+1. **XPath选择器要尽量精确，避免匹配到多个元素**
+2. **使用 `not(contains(@text, "xxx"))` 排除不需要的元素**
+3. **使用 `[last()]` 选择最后一个匹配元素**
+4. **添加备用选择器提高测试可靠性**
+5. **测试失败时，首先检查选择器是否匹配到正确的元素**
+
+---
+
+### 问题32：故事导演页开拍按钮文本不匹配
+
+**问题描述：**
+- 测试脚本点击开拍按钮失败
+- 选择器 `//*[contains(@text, "开拍")]` 找不到元素
+
+**根本原因分析：**
+- 按钮的实际文本是"🎬 开始拍摄!"而不是"开拍"
+- 测试脚本的选择器文本与实际文本不匹配
+
+**解决方案：使用正确的按钮文本**
+```javascript
+// 错误
+if (await findAndTap(driver, '//*[contains(@text, "开拍")]', 2000)) {
+
+// 正确
+if (await findAndTap(driver, '//*[contains(@text, "开始拍摄")]', 2000)) {
+```
+
+**经验教训：**
+1. **测试脚本中的文本要与UI实际文本完全一致**
+2. **检查源代码确认按钮的实际文本**
+3. **使用 `contains()` 时确保关键字在文本中存在**
+
+---
+
+### 问题33：故事导演页卡牌选择不完整
+
+**问题描述：**
+- 测试显示角色选择成功
+- 但天气、地形、装备、冒险类型选择失败
+- 开拍按钮点击成功，但章节没有创建
+
+**根本原因分析：**
+1. **故事导演页需要选择所有类型的卡牌才能启用开拍按钮**
+2. **`isReady` 条件需要：角色、冒险类型、天气、地形、装备全部选中**
+3. **测试脚本可能没有正确选择所有卡牌**
+
+**解决方案：确保选择所有必需的卡牌**
+```javascript
+// 选择角色（必须选择主角）
+for (const selector of characterSelectors) {
+    if (await findAndTap(driver, selector, 1500)) {
+        testResults.characterSelection = true;
+    }
+}
+
+// 滑动页面显示更多卡牌
+await swipeUp(driver);
+
+// 选择天气
+for (const selector of weatherSelectors) {
+    if (await findAndTap(driver, selector, 1000)) {
+        testResults.weatherSelection = true;
+        break;
+    }
+}
+
+// 选择地形、装备、冒险类型...
+```
+
+**经验教训：**
+1. **理解页面的业务逻辑和启用条件**
+2. **确保测试脚本满足所有前置条件**
+3. **使用滑动操作显示被遮挡的元素**
+4. **添加日志追踪选择过程**
+
+---
+
+### 问题34：添加详细日志辅助调试
+
+**问题描述：**
+- 测试失败时难以定位问题
+- 不知道是选择器问题还是业务逻辑问题
+
+**解决方案：在关键位置添加日志**
+```typescript
+// BookshelfDemo.tsx
+const handleCreateBook = async () => {
+    console.log('[BookshelfDemo] handleCreateBook called');
+    console.log('[BookshelfDemo] newBookTitle:', newBookTitle);
+    console.log('[BookshelfDemo] selectedTypeId:', selectedTypeId);
+    
+    const newBook = await createBook({...});
+    console.log('[BookshelfDemo] createBook returned:', newBook);
+    
+    setTimeout(() => {
+        console.log('[BookshelfDemo] Calling onNavigateToBookDetail');
+        onNavigateToBookDetail(newBook.bookId, newBook.title);
+    }, 300);
+};
+
+// DatabaseService.ts
+async createBook(params: { title: string; typeId: string }): Promise<Book> {
+    console.log('[DatabaseService] createBook called with params:', params);
+    const bookId = `user-book-${Date.now()}`;
+    console.log('[DatabaseService] Generated bookId:', bookId);
+    // ...
+    console.log('[DatabaseService] Returning book:', result);
+    return result;
+}
+```
+
+**经验教训：**
+1. **在关键位置添加日志追踪数据流**
+2. **日志要包含函数名、参数、返回值**
+3. **使用统一的前缀（如 `[ComponentName]`）便于过滤**
+4. **测试失败时先查看日志，而不是猜测原因**
+
+---
+
+## 创建书籍和添加章节功能测试结果
+
+### 测试环境
+- 模拟器：emulator-5554 (Pixel_6)
+- APP包名：com.legostory.demo
+- Appium端口：4723
+
+### 最终测试结果
+```
+通过率: 14/22 (64%)
+
+✅ 通过的测试:
+   ✓ APP启动
+   ✓ 进入书架页
+   ✓ 创建书籍按钮
+   ✓ 创建书籍弹窗
+   ✓ 书籍名称输入
+   ✓ 书籍类型选择
+   ✓ 书籍创建成功
+   ✓ 书籍详情页显示
+   ✓ 初始角色卡牌
+   ✓ 初始情节元素
+   ✓ 添加章节按钮
+   ✓ 故事导演页
+   ✓ 角色选择
+   ✓ 开拍按钮
+
+❌ 失败的测试:
+   ✗ 天气选择
+   ✗ 地形选择
+   ✗ 装备选择
+   ✗ 冒险类型选择
+   ✗ 章节创建成功
+   ✗ 章节内容和谜题
+   ✗ 卡牌解锁功能
+```
+
+### 待改进项
+1. 天气、地形、装备、冒险类型选择器需要优化
+2. 章节创建后的验证需要完善
+3. 答题解锁卡牌功能测试需要完善
+
+---
+
+*最后更新：2026-03-06 23:30*

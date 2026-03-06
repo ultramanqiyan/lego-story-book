@@ -95,24 +95,39 @@ const BookshelfDemo: React.FC<BookshelfDemoProps> = ({ onBack, onNavigateToBookD
   };
 
   const handleCreateBook = async () => {
-    if (!newBookTitle.trim() || isCreating) return;
+    console.log('[BookshelfDemo] handleCreateBook called');
+    console.log('[BookshelfDemo] newBookTitle:', newBookTitle);
+    console.log('[BookshelfDemo] selectedTypeId:', selectedTypeId);
+    console.log('[BookshelfDemo] isCreating:', isCreating);
+    
+    if (!newBookTitle.trim() || isCreating) {
+      console.log('[BookshelfDemo] Early return - title empty or already creating');
+      return;
+    }
     
     setIsCreating(true);
     try {
+      console.log('[BookshelfDemo] Calling createBook...');
       const newBook = await createBook({
         title: newBookTitle.trim(),
         typeId: selectedTypeId,
       });
+      console.log('[BookshelfDemo] createBook returned:', newBook);
+      console.log('[BookshelfDemo] newBook.bookId:', newBook?.bookId);
+      console.log('[BookshelfDemo] newBook.title:', newBook?.title);
       
       setShowCreateModal(false);
       setNewBookTitle('');
       setSelectedTypeId('children');
       
+      console.log('[BookshelfDemo] Modal closed, scheduling navigation...');
       setTimeout(() => {
+        console.log('[BookshelfDemo] Executing navigation to book detail...');
+        console.log('[BookshelfDemo] Calling onNavigateToBookDetail with:', newBook?.bookId, newBook?.title);
         onNavigateToBookDetail(newBook.bookId, newBook.title);
       }, 300);
     } catch (error) {
-      console.error('Failed to create book:', error);
+      console.error('[BookshelfDemo] Failed to create book:', error);
     } finally {
       setIsCreating(false);
     }

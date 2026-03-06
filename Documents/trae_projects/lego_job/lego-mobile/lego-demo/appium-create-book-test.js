@@ -290,15 +290,25 @@ async function runCreateBookTest() {
 
         // ==================== 点击创建按钮 ====================
         console.log('[9/22] 点击创建按钮...');
-        if (await findAndTap(driver, '//*[contains(@text, "✨ 创建")]', 2000)) {
-            await driver.pause(2000);
+        const createButtonSelector = '//android.view.View//android.widget.TextView[contains(@text, "创建") and not(contains(@text, "创建新"))]';
+        if (await findAndTap(driver, createButtonSelector, 2000)) {
+            await driver.pause(3000);
             testResults.bookCreated = true;
             console.log('书籍创建成功\n');
+        } else {
+            console.log('尝试备用选择器...');
+            const altSelector = '(//android.widget.TextView[contains(@text, "创建")])[last()]';
+            if (await findAndTap(driver, altSelector, 2000)) {
+                await driver.pause(3000);
+                testResults.bookCreated = true;
+                console.log('书籍创建成功(备用选择器)\n');
+            }
         }
 
         // ==================== 验证书籍详情页 ====================
         console.log('[10/22] 验证书籍详情页...');
-        if (await isElementDisplayed(driver, '//*[contains(@text, "章节")]', 3000)) {
+        await driver.pause(2000);
+        if (await isElementDisplayed(driver, '//*[contains(@text, "章节")]', 5000)) {
             testResults.bookDetailPage = true;
             console.log('书籍详情页显示正常\n');
         }

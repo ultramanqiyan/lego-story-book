@@ -63,9 +63,17 @@ export const DataProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
   };
 
   const createBook = async (params: { title: string; typeId: string }) => {
-    const book = await DatabaseService.createBook(params);
-    await refreshBooks();
-    return book;
+    console.log('[DataContext] createBook called with params:', params);
+    try {
+      const book = await DatabaseService.createBook(params);
+      console.log('[DataContext] DatabaseService.createBook returned:', book);
+      await refreshBooks();
+      console.log('[DataContext] refreshBooks completed');
+      return book;
+    } catch (error) {
+      console.error('[DataContext] createBook error:', error);
+      throw error;
+    }
   };
 
   const value: DataContextType = {
