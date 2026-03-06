@@ -13,9 +13,9 @@ import {
 } from 'react-native';
 
 const { width, height } = Dimensions.get('window');
-const BOOK_CARD_WIDTH = 80;
-const BOOK_CARD_HEIGHT = 120;
-const BOOKS_PER_ROW = 4;
+const BOOK_CARD_WIDTH = (width - 60) / 2;
+const BOOK_CARD_HEIGHT = BOOK_CARD_WIDTH * 1.4;
+const BOOKS_PER_ROW = 2;
 
 interface Book {
   bookId: string;
@@ -33,13 +33,24 @@ interface BookshelfDemoProps {
   onNavigateToBookDetail: (bookId: string, bookTitle: string) => void;
 }
 
+const BOOK_COLORS = [
+  { spine: '#C0392B', cover: '#E74C3C', accent: '#FADBD8' },
+  { spine: '#2C3E50', cover: '#34495E', accent: '#D6DBDF' },
+  { spine: '#1A5276', cover: '#2980B9', accent: '#D4E6F1' },
+  { spine: '#1E8449', cover: '#27AE60', accent: '#D5F5E3' },
+  { spine: '#7D3C98', cover: '#9B59B6', accent: '#E8DAEF' },
+  { spine: '#B7950B', cover: '#F1C40F', accent: '#FCF3CF' },
+  { spine: '#A04000', cover: '#E67E22', accent: '#FAE5D3' },
+  { spine: '#6C3483', cover: '#8E44AD', accent: '#EBDEF0' },
+];
+
 const FAKE_BOOKS: Book[] = [
   {
     bookId: 'book-1',
     title: '勇者的冒险之旅',
     chapterCount: 10,
-    coverEmoji: '📖',
-    bookSpineColor: '#8B0000',
+    coverEmoji: '⚔️',
+    bookSpineColor: '#C0392B',
     lastReadTime: '2小时前',
     progress: 65,
   },
@@ -48,7 +59,7 @@ const FAKE_BOOKS: Book[] = [
     title: '魔法学院秘闻',
     chapterCount: 8,
     coverEmoji: '🔮',
-    bookSpineColor: '#4B0082',
+    bookSpineColor: '#7D3C98',
     lastReadTime: '昨天',
     progress: 30,
   },
@@ -57,7 +68,7 @@ const FAKE_BOOKS: Book[] = [
     title: '精灵传说',
     chapterCount: 5,
     coverEmoji: '🧝',
-    bookSpineColor: '#006400',
+    bookSpineColor: '#1E8449',
     lastReadTime: '3天前',
     progress: 100,
   },
@@ -66,7 +77,7 @@ const FAKE_BOOKS: Book[] = [
     title: '龙之谷',
     chapterCount: 12,
     coverEmoji: '🐉',
-    bookSpineColor: '#8B0000',
+    bookSpineColor: '#A04000',
     lastReadTime: '1周前',
     progress: 45,
   },
@@ -75,7 +86,7 @@ const FAKE_BOOKS: Book[] = [
     title: '星际旅行',
     chapterCount: 6,
     coverEmoji: '🚀',
-    bookSpineColor: '#00008B',
+    bookSpineColor: '#1A5276',
     lastReadTime: '2周前',
     progress: 20,
   },
@@ -84,7 +95,7 @@ const FAKE_BOOKS: Book[] = [
     title: '海底世界',
     chapterCount: 7,
     coverEmoji: '🌊',
-    bookSpineColor: '#00008B',
+    bookSpineColor: '#2C3E50',
     lastReadTime: '3周前',
     progress: 80,
   },
@@ -93,7 +104,7 @@ const FAKE_BOOKS: Book[] = [
     title: '时间裂隙',
     chapterCount: 9,
     coverEmoji: '⏰',
-    bookSpineColor: '#4B0082',
+    bookSpineColor: '#6C3483',
     lastReadTime: '1个月前',
     progress: 55,
   },
@@ -102,15 +113,14 @@ const FAKE_BOOKS: Book[] = [
     title: '永恒传说',
     chapterCount: 11,
     coverEmoji: '💎',
-    bookSpineColor: '#006400',
+    bookSpineColor: '#B7950B',
     lastReadTime: '2个月前',
     progress: 10,
   },
 ];
 
-const getRandomSpineColor = (): string => {
-  const colors = ['#8B0000', '#4B0082', '#00008B', '#006400'];
-  return colors[Math.floor(Math.random() * colors.length)];
+const getBookColorScheme = (index: number) => {
+  return BOOK_COLORS[index % BOOK_COLORS.length];
 };
 
 const BookshelfDemo: React.FC<BookshelfDemoProps> = ({ onBack, onNavigateToBookDetail }) => {
@@ -120,29 +130,20 @@ const BookshelfDemo: React.FC<BookshelfDemoProps> = ({ onBack, onNavigateToBookD
   const [selectedBookId, setSelectedBookId] = useState<string | null>(null);
   
   const fadeAnim = useRef(new Animated.Value(0)).current;
-  const slideAnims = useRef(books.map(() => new Animated.Value(50))).current;
-  const scaleAnim = useRef(new Animated.Value(0.9)).current;
+  const scaleAnim = useRef(new Animated.Value(0.95)).current;
 
   useEffect(() => {
     Animated.parallel([
       Animated.timing(fadeAnim, {
         toValue: 1,
-        duration: 300,
+        duration: 400,
         useNativeDriver: true,
       }),
       Animated.timing(scaleAnim, {
         toValue: 1,
-        duration: 300,
+        duration: 400,
         useNativeDriver: true,
       }),
-      ...slideAnims.map((anim, index) =>
-        Animated.timing(anim, {
-          toValue: 0,
-          duration: 300,
-          delay: index * 50,
-          useNativeDriver: true,
-        })
-      ),
     ]).start();
   }, []);
 
@@ -161,7 +162,7 @@ const BookshelfDemo: React.FC<BookshelfDemoProps> = ({ onBack, onNavigateToBookD
       title: newBookTitle.trim(),
       chapterCount: 0,
       coverEmoji: '📖',
-      bookSpineColor: getRandomSpineColor(),
+      bookSpineColor: BOOK_COLORS[books.length % BOOK_COLORS.length].spine,
       isNew: true,
     };
     
@@ -176,42 +177,57 @@ const BookshelfDemo: React.FC<BookshelfDemoProps> = ({ onBack, onNavigateToBookD
 
   const renderBookCard = (book: Book, index: number) => {
     const isSelected = selectedBookId === book.bookId;
+    const colorScheme = getBookColorScheme(index);
     
     return (
-      <Animated.View
+      <TouchableOpacity
         key={book.bookId}
-        style={{
-          transform: [{ translateY: slideAnims[index] || 0 }],
-          opacity: fadeAnim,
-        }}
+        style={[
+          styles.bookCard,
+          { backgroundColor: colorScheme.cover },
+          isSelected && styles.bookCardSelected,
+        ]}
+        onPress={() => handleBookPress(book)}
+        activeOpacity={0.85}
       >
-        <TouchableOpacity
-          style={[
-            styles.bookCard,
-            { backgroundColor: book.bookSpineColor },
-            isSelected && styles.bookCardSelected,
-          ]}
-          onPress={() => handleBookPress(book)}
-          activeOpacity={0.8}
-        >
-          <View style={styles.bookSpine} />
-          <View style={styles.bookCover}>
+        <View style={[styles.bookSpine, { backgroundColor: colorScheme.spine }]} />
+        
+        <View style={styles.bookCover}>
+          <View style={[styles.emojiContainer, { backgroundColor: colorScheme.accent }]}>
             <Text style={styles.bookEmoji}>{book.coverEmoji}</Text>
-            <Text style={styles.bookTitle} numberOfLines={2}>
-              {book.title}
-            </Text>
-            <Text style={styles.bookChapters}>📚 {book.chapterCount}章</Text>
           </View>
-        </TouchableOpacity>
-      </Animated.View>
+          
+          <Text style={styles.bookTitle} numberOfLines={2}>
+            {book.title}
+          </Text>
+          
+          <View style={styles.bookInfo}>
+            <Text style={styles.bookChapters}>📚 {book.chapterCount}章</Text>
+            {book.progress !== undefined && book.progress > 0 && (
+              <View style={styles.progressContainer}>
+                <View style={[styles.progressBar, { width: `${book.progress}%` }]} />
+              </View>
+            )}
+          </View>
+          
+          {book.isNew && (
+            <View style={styles.newBadge}>
+              <Text style={styles.newBadgeText}>NEW</Text>
+            </View>
+          )}
+        </View>
+      </TouchableOpacity>
     );
   };
 
   const renderShelfRow = (rowBooks: Book[], rowIndex: number) => (
     <View key={rowIndex} style={styles.shelfRow}>
-      <View style={styles.shelfDivider} />
       <View style={styles.booksRow}>
         {rowBooks.map((book, index) => renderBookCard(book, rowIndex * BOOKS_PER_ROW + index))}
+        {rowBooks.length === 1 && <View style={styles.emptySlot} />}
+      </View>
+      <View style={styles.shelfBoard}>
+        <View style={styles.shelfShadow} />
       </View>
     </View>
   );
@@ -229,14 +245,14 @@ const BookshelfDemo: React.FC<BookshelfDemoProps> = ({ onBack, onNavigateToBookD
         onPress={() => setShowCreateModal(false)}
       >
         <View style={styles.modalContent} onStartShouldSetResponder={() => true}>
-          <Text style={styles.modalTitle}>✨ 创建新故事 ✨</Text>
+          <Text style={styles.modalTitle}>✨ 创建新故事</Text>
           
           <View style={styles.inputContainer}>
             <Text style={styles.inputIcon}>📖</Text>
             <TextInput
               style={styles.textInput}
               placeholder="请输入故事名称..."
-              placeholderTextColor="#888"
+              placeholderTextColor="#999"
               value={newBookTitle}
               onChangeText={setNewBookTitle}
               maxLength={20}
@@ -294,7 +310,8 @@ const BookshelfDemo: React.FC<BookshelfDemoProps> = ({ onBack, onNavigateToBookD
       </View>
       
       <Animated.View style={[styles.bookshelf, { opacity: fadeAnim, transform: [{ scale: scaleAnim }] }]}>
-        <ScrollView>
+        <ScrollView showsVerticalScrollIndicator={false}>
+          <View style={styles.shelfTop} />
           {rows.map((row, index) => renderShelfRow(row, index))}
           <View style={styles.shelfBottom} />
         </ScrollView>
@@ -312,138 +329,211 @@ const BookshelfDemo: React.FC<BookshelfDemoProps> = ({ onBack, onNavigateToBookD
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: '#2C1810',
+    backgroundColor: '#FDF5E6',
   },
   header: {
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'space-between',
     paddingHorizontal: 15,
-    paddingVertical: 10,
-    borderBottomWidth: 1,
-    borderBottomColor: '#4A3728',
+    paddingVertical: 12,
+    backgroundColor: '#8B4513',
+    borderBottomWidth: 2,
+    borderBottomColor: '#654321',
   },
   backButton: {
     padding: 5,
   },
   backButtonText: {
-    color: '#F5DEB3',
+    color: '#FFF8DC',
     fontSize: 16,
   },
   headerTitle: {
-    color: '#F5DEB3',
-    fontSize: 18,
+    color: '#FFF8DC',
+    fontSize: 20,
     fontWeight: 'bold',
   },
   newStoryButton: {
-    backgroundColor: '#8B4513',
-    paddingHorizontal: 12,
-    paddingVertical: 6,
-    borderRadius: 8,
+    backgroundColor: '#D2691E',
+    paddingHorizontal: 14,
+    paddingVertical: 8,
+    borderRadius: 20,
+    borderWidth: 1,
+    borderColor: '#DEB887',
   },
   newStoryButtonText: {
-    color: '#F5DEB3',
+    color: '#FFF8DC',
     fontSize: 14,
+    fontWeight: '600',
   },
   bookshelf: {
     flex: 1,
-    padding: 15,
+    paddingHorizontal: 15,
+    paddingTop: 10,
+  },
+  shelfTop: {
+    height: 15,
+    backgroundColor: '#8B4513',
+    marginHorizontal: -15,
+    borderTopWidth: 3,
+    borderTopColor: '#A0522D',
   },
   shelfRow: {
-    marginBottom: 5,
-  },
-  shelfDivider: {
-    height: 8,
-    backgroundColor: '#654321',
-    marginHorizontal: -15,
-    marginBottom: 10,
-    borderTopWidth: 2,
-    borderTopColor: '#8B4513',
+    marginBottom: 8,
   },
   booksRow: {
     flexDirection: 'row',
-    flexWrap: 'wrap',
+    justifyContent: 'space-between',
     paddingHorizontal: 5,
+    paddingTop: 15,
+    paddingBottom: 5,
+  },
+  emptySlot: {
+    width: BOOK_CARD_WIDTH,
+  },
+  shelfBoard: {
+    height: 18,
+    backgroundColor: '#8B4513',
+    marginHorizontal: -15,
+    borderBottomWidth: 3,
+    borderBottomColor: '#654321',
+  },
+  shelfShadow: {
+    height: 6,
+    backgroundColor: '#5D3A1A',
+    marginTop: 'auto',
   },
   shelfBottom: {
-    height: 12,
-    backgroundColor: '#654321',
+    height: 25,
+    backgroundColor: '#8B4513',
     marginHorizontal: -15,
-    borderTopWidth: 3,
-    borderTopColor: '#8B4513',
+    borderBottomWidth: 4,
+    borderBottomColor: '#654321',
   },
   bookCard: {
     width: BOOK_CARD_WIDTH,
     height: BOOK_CARD_HEIGHT,
     flexDirection: 'row',
-    borderRadius: 4,
-    marginRight: 10,
-    marginBottom: 10,
+    borderRadius: 8,
     overflow: 'hidden',
     shadowColor: '#000',
-    shadowOffset: { width: 2, height: 2 },
-    shadowOpacity: 0.3,
-    shadowRadius: 3,
-    elevation: 5,
+    shadowOffset: { width: 3, height: 4 },
+    shadowOpacity: 0.35,
+    shadowRadius: 5,
+    elevation: 8,
+    borderWidth: 1,
+    borderColor: 'rgba(0,0,0,0.1)',
   },
   bookCardSelected: {
     shadowOpacity: 0.5,
-    shadowRadius: 5,
+    shadowRadius: 8,
+    transform: [{ scale: 1.02 }],
   },
   bookSpine: {
-    width: 10,
+    width: 12,
     height: '100%',
-    backgroundColor: 'rgba(0,0,0,0.3)',
   },
   bookCover: {
     flex: 1,
-    padding: 8,
+    padding: 12,
+    alignItems: 'center',
+    justifyContent: 'space-between',
+  },
+  emojiContainer: {
+    width: 60,
+    height: 60,
+    borderRadius: 30,
     alignItems: 'center',
     justifyContent: 'center',
+    marginTop: 10,
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.15,
+    shadowRadius: 3,
+    elevation: 3,
   },
   bookEmoji: {
-    fontSize: 24,
-    marginBottom: 4,
+    fontSize: 32,
   },
   bookTitle: {
-    fontSize: 11,
+    fontSize: 15,
     fontWeight: 'bold',
     color: '#FFF',
     textAlign: 'center',
-    marginBottom: 4,
+    textShadowColor: 'rgba(0,0,0,0.3)',
+    textShadowOffset: { width: 1, height: 1 },
+    textShadowRadius: 2,
+    marginVertical: 8,
+  },
+  bookInfo: {
+    alignItems: 'center',
+    width: '100%',
   },
   bookChapters: {
+    fontSize: 12,
+    color: 'rgba(255,255,255,0.9)',
+    marginBottom: 6,
+  },
+  progressContainer: {
+    width: '80%',
+    height: 4,
+    backgroundColor: 'rgba(255,255,255,0.3)',
+    borderRadius: 2,
+    overflow: 'hidden',
+  },
+  progressBar: {
+    height: '100%',
+    backgroundColor: '#FFD700',
+    borderRadius: 2,
+  },
+  newBadge: {
+    position: 'absolute',
+    top: 8,
+    right: 8,
+    backgroundColor: '#FF6B6B',
+    paddingHorizontal: 6,
+    paddingVertical: 2,
+    borderRadius: 8,
+  },
+  newBadgeText: {
+    color: '#FFF',
     fontSize: 10,
-    color: 'rgba(255,255,255,0.8)',
+    fontWeight: 'bold',
   },
   footer: {
-    paddingVertical: 10,
+    paddingVertical: 12,
     alignItems: 'center',
-    borderTopWidth: 1,
-    borderTopColor: '#4A3728',
+    backgroundColor: '#8B4513',
+    borderTopWidth: 2,
+    borderTopColor: '#A0522D',
   },
   footerText: {
-    color: '#D2B48C',
-    fontSize: 12,
+    color: '#FFF8DC',
+    fontSize: 13,
   },
   modalOverlay: {
     flex: 1,
-    backgroundColor: 'rgba(0,0,0,0.6)',
+    backgroundColor: 'rgba(0,0,0,0.5)',
     justifyContent: 'center',
     alignItems: 'center',
   },
   modalContent: {
-    backgroundColor: '#F5E6D3',
-    borderRadius: 12,
+    backgroundColor: '#FFF8DC',
+    borderRadius: 16,
     padding: 24,
     width: width * 0.85,
-    borderWidth: 3,
+    borderWidth: 2,
     borderColor: '#8B4513',
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 10 },
+    shadowOpacity: 0.3,
+    shadowRadius: 15,
+    elevation: 10,
   },
   modalTitle: {
-    fontSize: 18,
+    fontSize: 20,
     fontWeight: 'bold',
-    color: '#4A3728',
+    color: '#5D3A1A',
     textAlign: 'center',
     marginBottom: 20,
   },
@@ -451,24 +541,24 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     alignItems: 'center',
     backgroundColor: '#FFF',
-    borderRadius: 8,
-    borderWidth: 1,
-    borderColor: '#D2B48C',
-    paddingHorizontal: 12,
+    borderRadius: 12,
+    borderWidth: 2,
+    borderColor: '#DEB887',
+    paddingHorizontal: 14,
     marginBottom: 12,
   },
   inputIcon: {
-    fontSize: 20,
-    marginRight: 8,
+    fontSize: 22,
+    marginRight: 10,
   },
   textInput: {
     flex: 1,
     fontSize: 16,
     color: '#3D2914',
-    paddingVertical: 12,
+    paddingVertical: 14,
   },
   modalHint: {
-    fontSize: 12,
+    fontSize: 13,
     color: '#888',
     textAlign: 'center',
     marginBottom: 20,
@@ -476,24 +566,26 @@ const styles = StyleSheet.create({
   modalButtons: {
     flexDirection: 'row',
     justifyContent: 'space-between',
+    gap: 12,
   },
   modalCancelButton: {
     flex: 1,
-    paddingVertical: 12,
-    borderRadius: 8,
-    borderWidth: 1,
+    paddingVertical: 14,
+    borderRadius: 12,
+    borderWidth: 2,
     borderColor: '#8B4513',
-    marginRight: 10,
     alignItems: 'center',
+    backgroundColor: '#FFF',
   },
   modalCancelText: {
     fontSize: 16,
     color: '#8B4513',
+    fontWeight: '600',
   },
   modalCreateButton: {
     flex: 1,
-    paddingVertical: 12,
-    borderRadius: 8,
+    paddingVertical: 14,
+    borderRadius: 12,
     backgroundColor: '#8B4513',
     alignItems: 'center',
   },
