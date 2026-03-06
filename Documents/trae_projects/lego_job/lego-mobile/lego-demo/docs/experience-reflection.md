@@ -1372,4 +1372,108 @@ const renderCharacterCard = (char: Character, index: number) => {
 
 ---
 
-*最后更新：2026-03-06 15:30*
+### 问题24：动画启动时机导致卡牌不显示
+
+**问题描述：**
+- 故事导演页的卡牌内容一个都没展示
+- 数据加载成功（日志显示正确加载了角色、冒险、天气、地形、装备数据）
+- 但卡牌仍然不显示
+
+**根本原因分析：**
+1. **动画启动时机问题**：
+   - 动画启动的 `useEffect` 依赖数组是空的 `[]`
+   - 只在组件挂载时执行一次
+   - 但动画数组是在 `loadData` 函数中初始化的
+   - `loadData` 是异步的，发生在组件挂载之后
+   - 所以动画启动时，动画数组还是空的！
+
+2. **执行顺序问题**：
+   ```
+   组件挂载 -> useEffect执行（动画数组为空，无法启动动画）
+   -> loadData执行 -> 动画数组初始化 -> setIsLoading(false)
+   -> 组件重新渲染 -> 但动画已经不会再次启动了
+   ```
+
+**错误代码示例：**
+```typescript
+// 错误：动画启动在useEffect中，但动画数组还未初始化
+useEffect(() => {
+  loadData();
+}, [bookId]);
+
+const loadData = async () => {
+  const chars = await getCharactersByBookId(bookId);
+  setCharacters(chars);
+  // 初始化动画数组
+  chars.forEach(() => {
+    characterAnims.push(new Animated.Value(0));
+  });
+  setIsLoading(false);
+};
+
+// 这个useEffect在组件挂载时执行，此时动画数组还是空的！
+useEffect(() => {
+  characterAnims.forEach((anim, index) => {
+    Animated.spring(anim, {
+      toValue: 1,
+      // ...
+    }).start();
+  });
+}, []);  // 空依赖数组，只在挂载时执行一次
+```
+
+**解决方案：将动画启动逻辑移到loadData函数中**
+```typescript
+const loadData = async () => {
+  setIsLoading(true);
+  try {
+    const chars = await getCharactersByBookId(bookId);
+    setCharacters(chars);
+    
+    // 初始化动画数组
+    characterAnims.length = 0;
+    chars.forEach(() => {
+      characterAnims.push(new Animated.Value(0));
+    });
+    
+    // 立即启动动画（在同一个函数中）
+    characterAnims.forEach((anim, index) => {
+      Animated.spring(anim, {
+        toValue: 1,
+        tension: 100,
+        friction: 5,
+        delay: index * 80,
+        useNativeDriver: true,
+      }).start();
+    });
+    
+    setIsLoading(false);
+  } catch (error) {
+    console.error('Failed to load director data:', error);
+  }
+};
+
+// 删除原来的动画启动useEffect
+```
+
+**关键点：**
+1. **动画启动必须在动画数组初始化之后**
+2. **不要依赖空依赖数组的useEffect来启动动画**
+3. **在数据加载完成后立即启动动画**
+4. **确保动画启动时动画数组已经准备好**
+
+**调试技巧：**
+1. 添加日志追踪数据加载过程
+2. 检查动画数组长度
+3. 理解React生命周期和异步操作顺序
+4. 使用 `console.log` 验证执行顺序
+
+**经验教训：**
+1. **理解useEffect的执行时机**：空依赖数组只在挂载时执行一次
+2. **异步操作和动画启动的协调**：动画启动必须在数据加载完成后
+3. **调试时检查执行顺序**：使用日志追踪函数调用顺序
+4. **不要假设useEffect会在数据加载后执行**：useEffect的执行时机是独立的
+
+---
+
+*最后更新：2026-03-06 16:10*
