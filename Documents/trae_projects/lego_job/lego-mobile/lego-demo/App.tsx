@@ -759,24 +759,28 @@ type PageState = 'main-home' | 'card-demo' | 'director' | 'ui-style-list' | 'boo
 
 const App: React.FC = () => {
   const [currentPage, setCurrentPage] = useState<PageState>('main-home');
-  const [previousPage, setPreviousPage] = useState<PageState>('main-home');
+  const [navigationHistory, setNavigationHistory] = useState<PageState[]>([]);
   const [currentBookId, setCurrentBookId] = useState<string>('book-children-1');
   const [currentBookTitle, setCurrentBookTitle] = useState<string>('');
 
   const navigateTo = (page: PageState) => {
-    setPreviousPage(currentPage);
+    setNavigationHistory(prev => [...prev, currentPage]);
     setCurrentPage(page);
   };
 
   const navigateToBookDetail = (bookId: string, bookTitle: string) => {
-    setPreviousPage(currentPage);
+    setNavigationHistory(prev => [...prev, currentPage]);
     setCurrentBookId(bookId);
     setCurrentBookTitle(bookTitle);
     setCurrentPage('book-detail');
   };
 
   const goBack = () => {
-    setCurrentPage(previousPage);
+    if (navigationHistory.length > 0) {
+      const previousPage = navigationHistory[navigationHistory.length - 1];
+      setNavigationHistory(prev => prev.slice(0, -1));
+      setCurrentPage(previousPage);
+    }
   };
 
   const renderPage = () => {
