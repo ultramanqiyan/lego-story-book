@@ -102,19 +102,7 @@ const BookDetailDemo: React.FC<BookDetailDemoProps> = ({ bookId, onBack, onNavig
     const allItems: any[] = [...chapters, { chapterId: 'add-new', isAddButton: true }];
     const startIndex = page * ITEMS_PER_PAGE;
     const pageItems = allItems.slice(startIndex, startIndex + ITEMS_PER_PAGE);
-    
-    const leftItems: any[] = [];
-    const rightItems: any[] = [];
-    
-    pageItems.forEach((item, index) => {
-      if (index % 2 === 0) {
-        leftItems.push(item);
-      } else {
-        rightItems.push(item);
-      }
-    });
-    
-    return { leftItems, rightItems };
+    return pageItems;
   };
 
   useEffect(() => {
@@ -304,7 +292,7 @@ const BookDetailDemo: React.FC<BookDetailDemoProps> = ({ bookId, onBack, onNavig
       return renderChapterContentView();
     }
     
-    const { leftItems, rightItems } = getDirectoryPageItems(directoryPage);
+    const allItems = getDirectoryPageItems(directoryPage);
     
     const renderDirectoryItem = (item: any) => {
       if (item.isAddButton) {
@@ -340,14 +328,9 @@ const BookDetailDemo: React.FC<BookDetailDemoProps> = ({ bookId, onBack, onNavig
     return (
       <View style={{ flex: 1 }}>
         <View style={styles.bookPages}>
-          <View style={styles.leftPage}>
+          <View style={styles.singlePage}>
             <Text style={styles.pageTitle}>目 录</Text>
-            {leftItems.map(renderDirectoryItem)}
-          </View>
-          <View style={styles.pageDivider} />
-          <View style={styles.rightPage}>
-            <Text style={styles.pageTitle}>目 录</Text>
-            {rightItems.map(renderDirectoryItem)}
+            {allItems.map(renderDirectoryItem)}
           </View>
         </View>
         
@@ -591,6 +574,10 @@ const styles = StyleSheet.create({
   rightPage: {
     flex: 1,
     padding: 15,
+  },
+  singlePage: {
+    flex: 1,
+    padding: 20,
   },
   pageDivider: {
     width: 2,
