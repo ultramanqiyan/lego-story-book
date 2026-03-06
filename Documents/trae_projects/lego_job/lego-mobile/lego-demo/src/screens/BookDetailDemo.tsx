@@ -8,9 +8,10 @@ import {
   ScrollView,
   Animated,
   Dimensions,
+  Modal,
 } from 'react-native';
 import { useData } from '../context/DataContext';
-import { Book, Chapter, Character, PlotElement } from '../database/DatabaseService';
+import { Book, Chapter, Character, PlotElement, UnlockedElement } from '../database/DatabaseService';
 
 const { width, height } = Dimensions.get('window');
 const PAGE_WIDTH = (width - 60) / 2;
@@ -47,12 +48,23 @@ const getRoleColor = (roleType: string) => {
 };
 
 const BookDetailDemo: React.FC<BookDetailDemoProps> = ({ bookId, onBack, onNavigateToDirector }) => {
-  const { getBookById, getChaptersByBookId, getCharactersByBookId, getPlotElementsByTypeId, updateBookProgress } = useData();
+  const { 
+    getBookById, 
+    getChaptersByBookId, 
+    getCharactersByBookId, 
+    getPlotElementsByTypeId, 
+    updateBookProgress,
+    getUnlockedElements,
+    unlockElement,
+    getLockedElements,
+    updatePuzzleResult,
+  } = useData();
   
   const [book, setBook] = useState<Book | null>(null);
   const [chapters, setChapters] = useState<Chapter[]>([]);
   const [characters, setCharacters] = useState<Character[]>([]);
   const [plotElements, setPlotElements] = useState<PlotElement[]>([]);
+  const [unlockedElements, setUnlockedElements] = useState<UnlockedElement[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   
   const [currentTab, setCurrentTab] = useState<TabType>('chapters');
@@ -64,6 +76,8 @@ const BookDetailDemo: React.FC<BookDetailDemoProps> = ({ bookId, onBack, onNavig
   const [puzzleAnswer, setPuzzleAnswer] = useState<number | null>(null);
   const [puzzleAttempts, setPuzzleAttempts] = useState<number>(0);
   const [puzzleResult, setPuzzleResult] = useState<'correct' | 'wrong' | null>(null);
+  const [showUnlockModal, setShowUnlockModal] = useState(false);
+  const [unlockedCard, setUnlockedCard] = useState<{emoji: string; name: string; type: string} | null>(null);
   
   const flipAnim = useRef(new Animated.Value(0)).current;
   const tabAnims = useRef({
@@ -84,10 +98,19 @@ const BookDetailDemo: React.FC<BookDetailDemoProps> = ({ bookId, onBack, onNavig
         setBook(bookData);
         const chaptersData = await getChaptersByBookId(bookId);
         setChapters(chaptersData);
-        const charactersData = await getCharactersByBookId(bookId);
-        setCharacters(charactersData);
-        const plotData = await getPlotElementsByTypeId(bookData.typeId);
-        setPlotElements(plotData);
+        
+        const unlocked = await getUnlockedElements(bookId);
+        setUnlockedElements(unlocked);
+        
+        const unlockedCharIds = unlocked
+          .filter(e => e.elementType === 'character')
+          .map(e => e.elementId);
+        const allChars = await getCharactersByBookId(bookId);
+        setCharacters(allChars.filter(c => unlockedCharIds.includes(c.characterId)));
+        
+        const allPlotElements = await getPlotElementsByTypeId(bookData.typeId);
+        const unlockedPlotIds = unlocked.map(e => e.elementId);
+        setPlotElements(allPlotElements.filter(e => unlockedPlotIds.includes(e.elementId)));
       }
     } catch (error) {
       console.error('Failed to load book data:', error);
@@ -139,7 +162,7 @@ const BookDetailDemo: React.FC<BookDetailDemoProps> = ({ bookId, onBack, onNavig
     setSelectedPlotCardId(cardId);
   };
 
-  const handlePuzzleAnswer = (optionIndex: number, chapter: Chapter) => {
+  const handlePuzzleAnswer = async (optionIndex: number, chapter: Chapter) => {
     if (!chapter.puzzleQuestion || !chapter.puzzleOptions || puzzleAttempts >= 3) return;
     
     setPuzzleAnswer(optionIndex);
@@ -148,8 +171,30 @@ const BookDetailDemo: React.FC<BookDetailDemoProps> = ({ bookId, onBack, onNavig
     
     if (optionIndex === chapter.puzzleCorrectIndex) {
       setPuzzleResult('correct');
+      await updatePuzzleResult(chapter.chapterId, 1);
+      
+      if (book) {
+        const lockedElements = await getLockedElements(bookId, book.typeId);
+        const allLocked = [
+          ...lockedElements.characters.map(c => ({ id: c.characterId, type: 'character', emoji: c.emoji, name: c.name })),
+          ...lockedElements.weathers.map(w => ({ id: w.elementId, type: 'weather', emoji: w.emoji, name: w.name })),
+          ...lockedElements.terrains.map(t => ({ id: t.elementId, type: 'terrain', emoji: t.emoji, name: t.name })),
+          ...lockedElements.equipments.map(e => ({ id: e.elementId, type: 'equipment', emoji: e.emoji, name: e.name })),
+          ...lockedElements.adventures.map(a => ({ id: a.elementId, type: 'adventure', emoji: a.emoji, name: a.name })),
+        ];
+        
+        if (allLocked.length > 0) {
+          const randomIndex = Math.floor(Math.random() * allLocked.length);
+          const randomCard = allLocked[randomIndex];
+          await unlockElement(bookId, randomCard.id, randomCard.type);
+          setUnlockedCard(randomCard);
+          setShowUnlockModal(true);
+          await loadData();
+        }
+      }
     } else if (newAttempts >= 3) {
       setPuzzleResult('wrong');
+      await updatePuzzleResult(chapter.chapterId, 0);
     } else {
       setPuzzleResult('wrong');
       setTimeout(() => {
@@ -479,6 +524,41 @@ const BookDetailDemo: React.FC<BookDetailDemoProps> = ({ bookId, onBack, onNavig
             : '1/1'}
         </Text>
       </View>
+      
+      <Modal
+        visible={showUnlockModal}
+        transparent
+        animationType="fade"
+        onRequestClose={() => setShowUnlockModal(false)}
+      >
+        <TouchableOpacity
+          style={styles.modalOverlay}
+          activeOpacity={1}
+          onPress={() => setShowUnlockModal(false)}
+        >
+          <View style={styles.modalContent}>
+            <Text style={styles.modalTitle}>🎉 恭喜解锁新卡牌！</Text>
+            {unlockedCard && (
+              <View style={styles.unlockedCardContainer}>
+                <Text style={styles.unlockedCardEmoji}>{unlockedCard.emoji}</Text>
+                <Text style={styles.unlockedCardName}>{unlockedCard.name}</Text>
+                <Text style={styles.unlockedCardType}>
+                  {unlockedCard.type === 'character' ? '角色' :
+                   unlockedCard.type === 'weather' ? '天气' :
+                   unlockedCard.type === 'terrain' ? '地形' :
+                   unlockedCard.type === 'equipment' ? '装备' : '冒险类型'}
+                </Text>
+              </View>
+            )}
+            <TouchableOpacity
+              style={styles.modalButton}
+              onPress={() => setShowUnlockModal(false)}
+            >
+              <Text style={styles.modalButtonText}>太棒了！</Text>
+            </TouchableOpacity>
+          </View>
+        </TouchableOpacity>
+      </Modal>
     </SafeAreaView>
   );
 };
@@ -830,6 +910,56 @@ const styles = StyleSheet.create({
   pageNumber: {
     color: '#D2B48C',
     fontSize: 12,
+  },
+  modalOverlay: {
+    flex: 1,
+    backgroundColor: 'rgba(0,0,0,0.6)',
+    justifyContent: 'center',
+    alignItems: 'center',
+  },
+  modalContent: {
+    backgroundColor: '#FFF8DC',
+    borderRadius: 16,
+    padding: 24,
+    width: width * 0.8,
+    alignItems: 'center',
+    borderWidth: 3,
+    borderColor: '#8B4513',
+  },
+  modalTitle: {
+    fontSize: 20,
+    fontWeight: 'bold',
+    color: '#4A3728',
+    marginBottom: 20,
+  },
+  unlockedCardContainer: {
+    alignItems: 'center',
+    marginBottom: 20,
+  },
+  unlockedCardEmoji: {
+    fontSize: 64,
+    marginBottom: 12,
+  },
+  unlockedCardName: {
+    fontSize: 18,
+    fontWeight: 'bold',
+    color: '#4A3728',
+    marginBottom: 4,
+  },
+  unlockedCardType: {
+    fontSize: 14,
+    color: '#8B4513',
+  },
+  modalButton: {
+    backgroundColor: '#8B4513',
+    paddingHorizontal: 32,
+    paddingVertical: 12,
+    borderRadius: 8,
+  },
+  modalButtonText: {
+    color: '#FFF8DC',
+    fontSize: 16,
+    fontWeight: 'bold',
   },
 });
 

@@ -1,5 +1,5 @@
 import React, { createContext, useContext, useEffect, useState, ReactNode } from 'react';
-import { DatabaseService, BookType, Book, Chapter, Character, PlotElement } from '../database/DatabaseService';
+import { DatabaseService, BookType, Book, Chapter, Character, PlotElement, UnlockedElement } from '../database/DatabaseService';
 
 interface DataContextType {
   isLoading: boolean;
@@ -13,6 +13,18 @@ interface DataContextType {
   getCharactersByBookId: (bookId: string) => Promise<Character[]>;
   getPlotElementsByTypeId: (typeId: string, category?: string) => Promise<PlotElement[]>;
   updateBookProgress: (bookId: string, progress: number) => Promise<void>;
+  createBook: (params: { title: string; typeId: string }) => Promise<Book>;
+  getUnlockedElements: (bookId: string, elementType?: string) => Promise<UnlockedElement[]>;
+  unlockElement: (bookId: string, elementId: string, elementType: string) => Promise<void>;
+  getLockedElements: (bookId: string, typeId: string) => Promise<{
+    characters: Character[];
+    weathers: PlotElement[];
+    terrains: PlotElement[];
+    equipments: PlotElement[];
+    adventures: PlotElement[];
+  }>;
+  addChapter: (bookId: string, chapterData: Omit<Chapter, 'chapterId' | 'chapterNumber'>) => Promise<Chapter>;
+  updatePuzzleResult: (chapterId: string, result: number) => Promise<void>;
 }
 
 const DataContext = createContext<DataContextType | undefined>(undefined);
@@ -50,6 +62,12 @@ export const DataProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
     setBooks(allBooks);
   };
 
+  const createBook = async (params: { title: string; typeId: string }) => {
+    const book = await DatabaseService.createBook(params);
+    await refreshBooks();
+    return book;
+  };
+
   const value: DataContextType = {
     isLoading,
     bookTypes,
@@ -62,6 +80,12 @@ export const DataProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
     getCharactersByBookId: DatabaseService.getCharactersByBookId,
     getPlotElementsByTypeId: DatabaseService.getPlotElementsByTypeId,
     updateBookProgress: DatabaseService.updateBookProgress,
+    createBook,
+    getUnlockedElements: DatabaseService.getUnlockedElements,
+    unlockElement: DatabaseService.unlockElement,
+    getLockedElements: DatabaseService.getLockedElements,
+    addChapter: DatabaseService.addChapter,
+    updatePuzzleResult: DatabaseService.updatePuzzleResult,
   };
 
   return (

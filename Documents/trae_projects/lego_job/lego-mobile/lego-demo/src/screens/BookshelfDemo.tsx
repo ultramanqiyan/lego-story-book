@@ -46,11 +46,13 @@ const getTypeColorScheme = (typeId: string) => {
 };
 
 const BookshelfDemo: React.FC<BookshelfDemoProps> = ({ onBack, onNavigateToBookDetail }) => {
-  const { books: dataBooks, isLoading, bookTypes } = useData();
+  const { books: dataBooks, isLoading, bookTypes, createBook, refreshBooks } = useData();
   const [books, setBooks] = useState<Book[]>([]);
   const [showCreateModal, setShowCreateModal] = useState(false);
   const [newBookTitle, setNewBookTitle] = useState('');
+  const [selectedTypeId, setSelectedTypeId] = useState<string>('children');
   const [selectedBookId, setSelectedBookId] = useState<string | null>(null);
+  const [isCreating, setIsCreating] = useState(false);
   
   const fadeAnim = useRef(new Animated.Value(0)).current;
   const scaleAnim = useRef(new Animated.Value(0.95)).current;
@@ -92,25 +94,28 @@ const BookshelfDemo: React.FC<BookshelfDemoProps> = ({ onBack, onNavigateToBookD
     }, 200);
   };
 
-  const handleCreateBook = () => {
-    if (!newBookTitle.trim()) return;
+  const handleCreateBook = async () => {
+    if (!newBookTitle.trim() || isCreating) return;
     
-    const newBook: Book = {
-      bookId: `book-user-${Date.now()}`,
-      title: newBookTitle.trim(),
-      chapterCount: 0,
-      coverEmoji: '📖',
-      typeId: 'children',
-      isUserCreated: true,
-    };
-    
-    setBooks([newBook, ...books]);
-    setShowCreateModal(false);
-    setNewBookTitle('');
-    
-    setTimeout(() => {
-      onNavigateToBookDetail(newBook.bookId, newBook.title);
-    }, 300);
+    setIsCreating(true);
+    try {
+      const newBook = await createBook({
+        title: newBookTitle.trim(),
+        typeId: selectedTypeId,
+      });
+      
+      setShowCreateModal(false);
+      setNewBookTitle('');
+      setSelectedTypeId('children');
+      
+      setTimeout(() => {
+        onNavigateToBookDetail(newBook.bookId, newBook.title);
+      }, 300);
+    } catch (error) {
+      console.error('Failed to create book:', error);
+    } finally {
+      setIsCreating(false);
+    }
   };
 
   const renderBookCard = (book: Book, index: number) => {
@@ -198,7 +203,30 @@ const BookshelfDemo: React.FC<BookshelfDemoProps> = ({ onBack, onNavigateToBookD
             />
           </View>
           
-          <Text style={styles.modalHint}>💡 好的名字能让故事更精彩！</Text>
+          <Text style={styles.typeSelectorLabel}>选择故事类型：</Text>
+          <View style={styles.typeSelector}>
+            {bookTypes.map(type => (
+              <TouchableOpacity
+                key={type.typeId}
+                style={[
+                  styles.typeOption,
+                  selectedTypeId === type.typeId && styles.typeOptionSelected,
+                  { borderColor: type.primaryColor },
+                ]}
+                onPress={() => setSelectedTypeId(type.typeId)}
+              >
+                <Text style={styles.typeEmoji}>{type.typeEmoji}</Text>
+                <Text style={[
+                  styles.typeName,
+                  selectedTypeId === type.typeId && { color: type.primaryColor },
+                ]}>
+                  {type.typeName}
+                </Text>
+              </TouchableOpacity>
+            ))}
+          </View>
+          
+          <Text style={styles.modalHint}>💡 系统将为你初始化角色和情节卡牌</Text>
           
           <View style={styles.modalButtons}>
             <TouchableOpacity
@@ -206,6 +234,7 @@ const BookshelfDemo: React.FC<BookshelfDemoProps> = ({ onBack, onNavigateToBookD
               onPress={() => {
                 setShowCreateModal(false);
                 setNewBookTitle('');
+                setSelectedTypeId('children');
               }}
             >
               <Text style={styles.modalCancelText}>取消</Text>
@@ -214,12 +243,14 @@ const BookshelfDemo: React.FC<BookshelfDemoProps> = ({ onBack, onNavigateToBookD
             <TouchableOpacity
               style={[
                 styles.modalCreateButton,
-                !newBookTitle.trim() && styles.modalCreateButtonDisabled,
+                (!newBookTitle.trim() || isCreating) && styles.modalCreateButtonDisabled,
               ]}
               onPress={handleCreateBook}
-              disabled={!newBookTitle.trim()}
+              disabled={!newBookTitle.trim() || isCreating}
             >
-              <Text style={styles.modalCreateText}>✨ 创建</Text>
+              <Text style={styles.modalCreateText}>
+                {isCreating ? '创建中...' : '✨ 创建'}
+              </Text>
             </TouchableOpacity>
           </View>
         </View>
@@ -505,6 +536,39 @@ const styles = StyleSheet.create({
     color: '#888',
     textAlign: 'center',
     marginBottom: 20,
+  },
+  typeSelectorLabel: {
+    fontSize: 14,
+    color: '#5D3A1A',
+    marginBottom: 8,
+    fontWeight: '600',
+  },
+  typeSelector: {
+    flexDirection: 'row',
+    flexWrap: 'wrap',
+    gap: 8,
+    marginBottom: 16,
+  },
+  typeOption: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    paddingHorizontal: 12,
+    paddingVertical: 8,
+    borderRadius: 20,
+    backgroundColor: '#FFF',
+    borderWidth: 2,
+  },
+  typeOptionSelected: {
+    backgroundColor: 'rgba(139, 69, 19, 0.1)',
+  },
+  typeEmoji: {
+    fontSize: 16,
+    marginRight: 4,
+  },
+  typeName: {
+    fontSize: 13,
+    color: '#5D3A1A',
+    fontWeight: '500',
   },
   modalButtons: {
     flexDirection: 'row',

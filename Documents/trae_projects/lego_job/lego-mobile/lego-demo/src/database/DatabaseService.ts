@@ -50,6 +50,15 @@ export interface Chapter {
   puzzleOptions?: string[];
   puzzleCorrectIndex?: number;
   characterIds?: string[];
+  puzzleResult?: number;
+}
+
+export interface UnlockedElement {
+  id: number;
+  bookId: string;
+  elementId: string;
+  elementType: 'character' | 'weather' | 'terrain' | 'equipment' | 'adventure';
+  unlockedAt: string;
 }
 
 export interface Book {
@@ -181,6 +190,7 @@ export const DatabaseService = {
         puzzle_question TEXT,
         puzzle_options TEXT,
         puzzle_correct_index INTEGER,
+        puzzle_result INTEGER DEFAULT NULL,
         character_ids TEXT
       )
     `);
@@ -194,6 +204,17 @@ export const DatabaseService = {
         current_health INTEGER,
         current_intimacy INTEGER,
         UNIQUE(book_id, character_id)
+      )
+    `);
+    
+    await database.execAsync(`
+      CREATE TABLE IF NOT EXISTS book_unlocked_elements (
+        id INTEGER PRIMARY KEY AUTOINCREMENT,
+        book_id TEXT NOT NULL,
+        element_id TEXT NOT NULL,
+        element_type TEXT NOT NULL,
+        unlocked_at TEXT DEFAULT CURRENT_TIMESTAMP,
+        UNIQUE(book_id, element_id)
       )
     `);
     
@@ -271,6 +292,24 @@ export const DatabaseService = {
           `INSERT INTO book_characters (book_id, character_id, is_protagonist, current_health, current_intimacy)
            VALUES (?, ?, ?, 100, 100)`,
           [book.bookId, charId, isProtagonist]
+        );
+      }
+
+      const bookTypeCharacters = charactersData.characters.filter(c => c.typeId === book.typeId);
+      for (const char of bookTypeCharacters) {
+        await database.runAsync(
+          `INSERT OR IGNORE INTO book_unlocked_elements (book_id, element_id, element_type)
+           VALUES (?, ?, 'character')`,
+          [book.bookId, char.characterId]
+        );
+      }
+
+      const bookTypeElements = plotElementsData.plotElements.filter(e => e.typeId === book.typeId);
+      for (const element of bookTypeElements) {
+        await database.runAsync(
+          `INSERT OR IGNORE INTO book_unlocked_elements (book_id, element_id, element_type)
+           VALUES (?, ?, ?)`,
+          [book.bookId, element.elementId, element.category]
         );
       }
     }
@@ -441,10 +480,255 @@ export const DatabaseService = {
     );
   },
 
+  async createBook(params: { title: string; typeId: string }): Promise<Book> {
+    if (!db) db = await this.initDatabase();
+    
+    if (!params.title || params.title.trim() === '') {
+      throw new Error('书籍名称不能为空');
+    }
+    if (!params.typeId) {
+      throw new Error('书籍类型不能为空');
+    }
+
+    const bookId = `user-book-${Date.now()}`;
+    const bookType = await this.getBookTypeById(params.typeId);
+    
+    const allCharacters = charactersData.characters.filter(c => c.typeId === params.typeId);
+    const shuffledChars = [...allCharacters].sort(() => Math.random() - 0.5);
+    const selectedChars = shuffledChars.slice(0, 2);
+    const protagonistId = selectedChars[0]?.characterId || '';
+
+    const allWeathers = plotElementsData.plotElements.filter(e => e.typeId === params.typeId && e.category === 'weather');
+    const shuffledWeathers = [...allWeathers].sort(() => Math.random() - 0.5);
+    const selectedWeathers = shuffledWeathers.slice(0, 2);
+
+    const allAdventures = plotElementsData.plotElements.filter(e => e.typeId === params.typeId && e.category === 'adventure');
+    const shuffledAdventures = [...allAdventures].sort(() => Math.random() - 0.5);
+    const selectedAdventures = shuffledAdventures.slice(0, 2);
+
+    const allTerrains = plotElementsData.plotElements.filter(e => e.typeId === params.typeId && e.category === 'terrain');
+    const shuffledTerrains = [...allTerrains].sort(() => Math.random() - 0.5);
+    const selectedTerrains = shuffledTerrains.slice(0, 2);
+
+    const allEquipments = plotElementsData.plotElements.filter(e => e.typeId === params.typeId && e.category === 'equipment');
+    const shuffledEquipments = [...allEquipments].sort(() => Math.random() - 0.5);
+    const selectedEquipments = shuffledEquipments.slice(0, 2);
+
+    await db!.runAsync(
+      `INSERT INTO books (book_id, title, type_id, cover_emoji, description, chapter_count, progress, is_user_created, character_ids, protagonist_id)
+       VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
+      [bookId, params.title, params.typeId, bookType?.typeEmoji || '📖', `用户创建的${bookType?.typeName || '书籍'}`, 0, 0, 1, JSON.stringify(selectedChars.map(c => c.characterId)), protagonistId]
+    );
+
+    for (let i = 0; i < selectedChars.length; i++) {
+      const char = selectedChars[i];
+      await db!.runAsync(
+        `INSERT INTO book_characters (book_id, character_id, is_protagonist, current_health, current_intimacy)
+         VALUES (?, ?, ?, 100, 100)`,
+        [bookId, char.characterId, i === 0 ? 1 : 0]
+      );
+      
+      await db!.runAsync(
+        `INSERT OR IGNORE INTO book_unlocked_elements (book_id, element_id, element_type)
+         VALUES (?, ?, 'character')`,
+        [bookId, char.characterId]
+      );
+    }
+
+    for (const element of [...selectedWeathers, ...selectedAdventures, ...selectedTerrains, ...selectedEquipments]) {
+      await db!.runAsync(
+        `INSERT OR IGNORE INTO book_unlocked_elements (book_id, element_id, element_type)
+         VALUES (?, ?, ?)`,
+        [bookId, element.elementId, element.category]
+      );
+    }
+
+    return {
+      bookId,
+      title: params.title,
+      typeId: params.typeId,
+      coverEmoji: bookType?.typeEmoji || '📖',
+      description: `用户创建的${bookType?.typeName || '书籍'}`,
+      chapterCount: 0,
+      progress: 0,
+      isUserCreated: true,
+      characterIds: selectedChars.map(c => c.characterId),
+      protagonistId,
+    };
+  },
+
+  async getUnlockedElements(bookId: string, elementType?: string): Promise<UnlockedElement[]> {
+    if (!db) db = await this.initDatabase();
+    
+    let query = 'SELECT * FROM book_unlocked_elements WHERE book_id = ?';
+    const params: any[] = [bookId];
+    
+    if (elementType) {
+      query += ' AND element_type = ?';
+      params.push(elementType);
+    }
+    
+    const results = await db!.getAllAsync<any>(query, params);
+    return results.map(r => ({
+      id: r.id,
+      bookId: r.book_id,
+      elementId: r.element_id,
+      elementType: r.element_type,
+      unlockedAt: r.unlocked_at,
+    }));
+  },
+
+  async unlockElement(bookId: string, elementId: string, elementType: string): Promise<void> {
+    if (!db) db = await this.initDatabase();
+    
+    await db!.runAsync(
+      `INSERT OR IGNORE INTO book_unlocked_elements (book_id, element_id, element_type)
+       VALUES (?, ?, ?)`,
+      [bookId, elementId, elementType]
+    );
+  },
+
+  async getLockedElements(bookId: string, typeId: string): Promise<{
+    characters: Character[];
+    weathers: PlotElement[];
+    terrains: PlotElement[];
+    equipments: PlotElement[];
+    adventures: PlotElement[];
+  }> {
+    if (!db) db = await this.initDatabase();
+    
+    const unlockedElements = await this.getUnlockedElements(bookId);
+    const unlockedIds = new Set(unlockedElements.map(e => e.elementId));
+
+    const allCharacters = charactersData.characters.filter(c => c.typeId === typeId);
+    const characters = allCharacters.filter(c => !unlockedIds.has(c.characterId)).map(c => ({
+      characterId: c.characterId,
+      typeId: c.typeId,
+      name: c.name,
+      customName: c.customName,
+      roleType: c.roleType,
+      emoji: c.emoji,
+      description: c.description,
+      health: c.health,
+      intimacy: c.intimacy,
+      personality: c.personality,
+    }));
+
+    const allElements = plotElementsData.plotElements.filter(e => e.typeId === typeId);
+    
+    const weathers = allElements
+      .filter(e => e.category === 'weather' && !unlockedIds.has(e.elementId))
+      .map(e => ({
+        elementId: e.elementId,
+        typeId: e.typeId,
+        category: e.category,
+        name: e.name,
+        emoji: e.emoji,
+        extraConfig: e.extraConfig,
+      }));
+
+    const terrains = allElements
+      .filter(e => e.category === 'terrain' && !unlockedIds.has(e.elementId))
+      .map(e => ({
+        elementId: e.elementId,
+        typeId: e.typeId,
+        category: e.category,
+        name: e.name,
+        emoji: e.emoji,
+        extraConfig: e.extraConfig,
+      }));
+
+    const equipments = allElements
+      .filter(e => e.category === 'equipment' && !unlockedIds.has(e.elementId))
+      .map(e => ({
+        elementId: e.elementId,
+        typeId: e.typeId,
+        category: e.category,
+        name: e.name,
+        emoji: e.emoji,
+        extraConfig: e.extraConfig,
+      }));
+
+    const adventures = allElements
+      .filter(e => e.category === 'adventure' && !unlockedIds.has(e.elementId))
+      .map(e => ({
+        elementId: e.elementId,
+        typeId: e.typeId,
+        category: e.category,
+        name: e.name,
+        emoji: e.emoji,
+        extraConfig: e.extraConfig,
+      }));
+
+    return { characters, weathers, terrains, equipments, adventures };
+  },
+
+  async addChapter(bookId: string, chapterData: Omit<Chapter, 'chapterId' | 'chapterNumber'>): Promise<Chapter> {
+    if (!db) db = await this.initDatabase();
+    
+    const existingChapters = await this.getChaptersByBookId(bookId);
+    const chapterNumber = existingChapters.length + 1;
+    const chapterId = `${bookId}-chapter-${Date.now()}`;
+
+    await db!.runAsync(
+      `INSERT INTO chapters (chapter_id, book_id, chapter_number, title, content, word_count, has_puzzle, puzzle_question, puzzle_options, puzzle_correct_index, character_ids)
+       VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
+      [
+        chapterId,
+        bookId,
+        chapterNumber,
+        chapterData.title,
+        chapterData.content,
+        chapterData.content.length,
+        chapterData.hasPuzzle ? 1 : 0,
+        chapterData.puzzleQuestion || null,
+        chapterData.puzzleOptions ? JSON.stringify(chapterData.puzzleOptions) : null,
+        chapterData.puzzleCorrectIndex ?? null,
+        chapterData.characterIds ? JSON.stringify(chapterData.characterIds) : null
+      ]
+    );
+
+    await db!.runAsync(
+      'UPDATE books SET chapter_count = chapter_count + 1 WHERE book_id = ?',
+      [bookId]
+    );
+
+    return {
+      chapterId,
+      bookId,
+      chapterNumber,
+      title: chapterData.title,
+      content: chapterData.content,
+      wordCount: chapterData.content.length,
+      hasPuzzle: chapterData.hasPuzzle,
+      puzzleQuestion: chapterData.puzzleQuestion,
+      puzzleOptions: chapterData.puzzleOptions,
+      puzzleCorrectIndex: chapterData.puzzleCorrectIndex,
+      characterIds: chapterData.characterIds,
+    };
+  },
+
+  async updatePuzzleResult(chapterId: string, result: number): Promise<void> {
+    if (!db) db = await this.initDatabase();
+    
+    if (result !== 0 && result !== 1) {
+      throw new Error('谜题结果必须是0(答错)或1(答对)');
+    }
+    
+    await db!.runAsync(
+      'UPDATE chapters SET puzzle_result = ? WHERE chapter_id = ?',
+      [result, chapterId]
+    );
+  },
+
   async closeDatabase(): Promise<void> {
     if (db) {
       await db.closeAsync();
       db = null;
     }
+  },
+
+  resetForTesting(): void {
+    db = null;
   },
 };

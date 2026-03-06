@@ -42,7 +42,7 @@ interface StoryDirectorDemoProps {
 
 const StoryDirectorDemo: React.FC<StoryDirectorDemoProps> = ({ bookId, onBack }) => {
   const { currentStyle, setStyle, allStyles } = useStyle();
-  const { getBookById, getCharactersByBookId, getPlotElementsByTypeId } = useData();
+  const { getBookById, getUnlockedElements, addChapter, getCharactersByBookId, getPlotElementsByTypeId } = useData();
   const styleConfig = CARD_STYLES[currentStyle];
 
   const [characters, setCharacters] = useState<Character[]>([]);
@@ -89,24 +89,48 @@ const StoryDirectorDemo: React.FC<StoryDirectorDemoProps> = ({ bookId, onBack })
       const book = await getBookById(bookId);
       console.log('[StoryDirector] Book loaded:', book);
       if (book) {
-        const chars = await getCharactersByBookId(bookId);
-        console.log('[StoryDirector] Characters loaded:', chars.length, chars);
+        const unlockedElements = await getUnlockedElements(bookId);
+        console.log('[StoryDirector] Unlocked elements:', unlockedElements.length);
+        
+        const unlockedCharIds = unlockedElements
+          .filter(e => e.elementType === 'character')
+          .map(e => e.elementId);
+        
+        const allChars = await getCharactersByBookId(bookId);
+        const chars = allChars.filter(c => unlockedCharIds.includes(c.characterId));
+        console.log('[StoryDirector] Unlocked characters loaded:', chars.length, chars);
         setCharacters(chars);
         
-        const adventureData = await getPlotElementsByTypeId(book.typeId, 'adventure');
-        console.log('[StoryDirector] Adventures loaded:', adventureData.length, adventureData);
+        const allAdventures = await getPlotElementsByTypeId(book.typeId, 'adventure');
+        const unlockedAdventureIds = unlockedElements
+          .filter(e => e.elementType === 'adventure')
+          .map(e => e.elementId);
+        const adventureData = allAdventures.filter(a => unlockedAdventureIds.includes(a.elementId));
+        console.log('[StoryDirector] Unlocked adventures loaded:', adventureData.length);
         setAdventures(adventureData);
         
-        const weatherData = await getPlotElementsByTypeId(book.typeId, 'weather');
-        console.log('[StoryDirector] Weathers loaded:', weatherData.length, weatherData);
+        const allWeathers = await getPlotElementsByTypeId(book.typeId, 'weather');
+        const unlockedWeatherIds = unlockedElements
+          .filter(e => e.elementType === 'weather')
+          .map(e => e.elementId);
+        const weatherData = allWeathers.filter(w => unlockedWeatherIds.includes(w.elementId));
+        console.log('[StoryDirector] Unlocked weathers loaded:', weatherData.length);
         setWeathers(weatherData);
         
-        const terrainData = await getPlotElementsByTypeId(book.typeId, 'terrain');
-        console.log('[StoryDirector] Terrains loaded:', terrainData.length, terrainData);
+        const allTerrains = await getPlotElementsByTypeId(book.typeId, 'terrain');
+        const unlockedTerrainIds = unlockedElements
+          .filter(e => e.elementType === 'terrain')
+          .map(e => e.elementId);
+        const terrainData = allTerrains.filter(t => unlockedTerrainIds.includes(t.elementId));
+        console.log('[StoryDirector] Unlocked terrains loaded:', terrainData.length);
         setTerrains(terrainData);
         
-        const equipmentData = await getPlotElementsByTypeId(book.typeId, 'equipment');
-        console.log('[StoryDirector] Equipments loaded:', equipmentData.length, equipmentData);
+        const allEquipments = await getPlotElementsByTypeId(book.typeId, 'equipment');
+        const unlockedEquipmentIds = unlockedElements
+          .filter(e => e.elementType === 'equipment')
+          .map(e => e.elementId);
+        const equipmentData = allEquipments.filter(e => unlockedEquipmentIds.includes(e.elementId));
+        console.log('[StoryDirector] Unlocked equipments loaded:', equipmentData.length);
         setEquipments(equipmentData);
         
         // Initialize animation arrays immediately after loading data
@@ -447,7 +471,7 @@ const StoryDirectorDemo: React.FC<StoryDirectorDemoProps> = ({ bookId, onBack })
     }
   };
 
-  const handleShoot = () => {
+  const handleShoot = async () => {
     Animated.sequence([
       Animated.timing(buttonAnim, {
         toValue: 0.9,
@@ -461,6 +485,48 @@ const StoryDirectorDemo: React.FC<StoryDirectorDemoProps> = ({ bookId, onBack })
         useNativeDriver: true,
       }),
     ]).start();
+
+    if (!isReady) return;
+
+    try {
+      const selectedCharData = characters.filter(c => selectedCharacters.includes(c.characterId));
+      const charNames = selectedCharData.map(c => c.name).join('、');
+      const adventureName = adventures.find(a => a.elementId === selectedAdventure)?.name || '冒险';
+      const weatherName = weathers.find(w => w.elementId === selectedWeather)?.name || '晴天';
+      const terrainName = terrains.find(t => t.elementId === selectedTerrain)?.name || '森林';
+      const equipmentName = equipments.find(e => e.elementId === selectedEquipment)?.name || '装备';
+
+      const fakeTitle = `新的冒险`;
+      const fakeContent = `这是一个关于${charNames}的故事。
+
+在${weatherName}的${terrainName}中，${charNames}开始了一场${adventureName}之旅。
+
+他们带着${equipmentName}，勇敢地踏上了征程。
+
+一路上，他们遇到了许多有趣的事情...
+
+【谜题】
+在这个故事中，主角们使用了什么装备？
+A. ${equipmentName}
+B. 魔法棒
+C. 飞行器
+D. 隐身衣`;
+
+      const chapterData = {
+        title: fakeTitle,
+        content: fakeContent,
+        hasPuzzle: true,
+        puzzleQuestion: '在这个故事中，主角们使用了什么装备？',
+        puzzleOptions: [equipmentName, '魔法棒', '飞行器', '隐身衣'],
+        puzzleCorrectIndex: 0,
+        characterIds: selectedCharacters,
+      };
+
+      await addChapter(bookId, chapterData);
+      onBack();
+    } catch (error) {
+      console.error('Failed to add chapter:', error);
+    }
   };
 
   const isReady = selectedCharacters.length > 0 && selectedAdventure && selectedWeather && selectedTerrain && selectedEquipment;

@@ -1779,4 +1779,57 @@ powershell -ExecutionPolicy Bypass -File run-app.ps1
 
 ---
 
-*最后更新：2026-03-06 19:45*
+### 问题30：多级导航返回失败
+
+**问题描述：**
+- 从书架进入书籍详情页
+- 点击"添加章节"进入故事导演页
+- 点击返回回到书籍详情页
+- 再次点击返回，无法返回到书架
+
+**根本原因分析：**
+1. **`previousPage` 只保存了一个页面状态**
+2. **导航流程：`bookshelf` → `book-detail` → `director`**
+3. **当从 `director` 返回到 `book-detail` 时，`previousPage` 仍然是 `book-detail`**
+4. **再次点击返回时，页面没有变化**
+
+**错误代码：**
+```typescript
+const [previousPage, setPreviousPage] = useState<PageState>('main-home');
+
+const navigateTo = (page: PageState) => {
+  setPreviousPage(currentPage);  // 只保存一个状态
+  setCurrentPage(page);
+};
+
+const goBack = () => {
+  setCurrentPage(previousPage);  // 无法处理多级返回
+};
+```
+
+**解决方案：使用导航历史栈**
+```typescript
+const [navigationHistory, setNavigationHistory] = useState<PageState[]>([]);
+
+const navigateTo = (page: PageState) => {
+  setNavigationHistory(prev => [...prev, currentPage]);  // 推入历史栈
+  setCurrentPage(page);
+};
+
+const goBack = () => {
+  if (navigationHistory.length > 0) {
+    const previousPage = navigationHistory[navigationHistory.length - 1];
+    setNavigationHistory(prev => prev.slice(0, -1));  // 弹出历史栈
+    setCurrentPage(previousPage);
+  }
+};
+```
+
+**经验教训：**
+1. **多级导航需要使用历史栈来跟踪所有导航记录**
+2. **单一状态只能处理一级返回**
+3. **导航历史栈类似于浏览器的后退功能**
+
+---
+
+*最后更新：2026-03-06 20:30*
