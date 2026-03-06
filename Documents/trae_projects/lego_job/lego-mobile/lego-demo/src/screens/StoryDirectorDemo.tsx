@@ -62,11 +62,11 @@ const StoryDirectorDemo: React.FC<StoryDirectorDemoProps> = ({ bookId, onBack })
   const [stageStyle, setStageStyle] = useState<StageStyleType>('3d-perspective');
 
   const pageAnim = useRef(new Animated.Value(0)).current;
-  const characterAnims = useRef<Character[]>([]).current;
-  const adventureAnims = useRef<PlotElement[]>([]).current;
-  const weatherAnims = useRef<PlotElement[]>([]).current;
-  const terrainAnims = useRef<PlotElement[]>([]).current;
-  const equipmentAnims = useRef<PlotElement[]>([]).current;
+  const characterAnims = useRef<Animated.Value[]>([]).current;
+  const adventureAnims = useRef<Animated.Value[]>([]).current;
+  const weatherAnims = useRef<Animated.Value[]>([]).current;
+  const terrainAnims = useRef<Animated.Value[]>([]).current;
+  const equipmentAnims = useRef<Animated.Value[]>([]).current;
   const stageAnim = useRef(new Animated.Value(0)).current;
   const buttonAnim = useRef(new Animated.Value(1)).current;
 
@@ -113,6 +113,14 @@ const StoryDirectorDemo: React.FC<StoryDirectorDemoProps> = ({ bookId, onBack })
     shakeAnims.length = 0;
     stageCharAnims.length = 0;
     floatAnims.length = 0;
+    characterAnims.length = 0;
+    adventureAnims.length = 0;
+    weatherAnims.length = 0;
+    terrainAnims.length = 0;
+    equipmentAnims.length = 0;
+    pulseAnims.length = 0;
+    glowAnims.length = 0;
+    waveAnims.length = 0;
     
     characters.forEach(() => {
       shakeAnims.push(new Animated.Value(0));
@@ -122,8 +130,34 @@ const StoryDirectorDemo: React.FC<StoryDirectorDemoProps> = ({ bookId, onBack })
         opacity: new Animated.Value(0),
       });
       floatAnims.push(new Animated.Value(0));
+      characterAnims.push(new Animated.Value(0));
     });
-  }, [characters]);
+    
+    adventures.forEach(() => {
+      adventureAnims.push(new Animated.Value(0));
+    });
+    
+    weathers.forEach(() => {
+      weatherAnims.push(new Animated.Value(0));
+      glowAnims.push({
+        scale: new Animated.Value(1),
+        opacity: new Animated.Value(0.5),
+      });
+    });
+    
+    terrains.forEach(() => {
+      terrainAnims.push(new Animated.Value(0));
+      pulseAnims.push(new Animated.Value(1));
+    });
+    
+    equipments.forEach(() => {
+      equipmentAnims.push(new Animated.Value(0));
+      waveAnims.push({
+        y: new Animated.Value(0),
+        rotate: new Animated.Value(0),
+      });
+    });
+  }, [characters, adventures, weathers, terrains, equipments]);
 
   const particleAnims = useRef(Array(20).fill(null).map(() => ({
     x: new Animated.Value(Math.random() * width),
@@ -478,6 +512,9 @@ const StoryDirectorDemo: React.FC<StoryDirectorDemoProps> = ({ bookId, onBack })
   const renderAdventureCard = (adv: PlotElement, index: number) => {
     const isSelected = selectedAdventure === adv.elementId;
     const anim = adventureAnims[index];
+    
+    if (!anim) return null;
+    
     const rotateY = anim.interpolate({
       inputRange: [0, 1],
       outputRange: ['180deg', '0deg'],
@@ -514,6 +551,8 @@ const StoryDirectorDemo: React.FC<StoryDirectorDemoProps> = ({ bookId, onBack })
     const isSelected = selectedWeather === weather.elementId;
     const anim = weatherAnims[index];
     const glowAnim = glowAnims[index];
+
+    if (!anim) return null;
 
     return (
       <Animated.View
@@ -559,6 +598,8 @@ const StoryDirectorDemo: React.FC<StoryDirectorDemoProps> = ({ bookId, onBack })
     const anim = terrainAnims[index];
     const pulseAnim = pulseAnims[index];
 
+    if (!anim) return null;
+
     return (
       <Animated.View
         key={terrain.elementId}
@@ -590,6 +631,9 @@ const StoryDirectorDemo: React.FC<StoryDirectorDemoProps> = ({ bookId, onBack })
     const isSelected = selectedEquipment === equip.elementId;
     const anim = equipmentAnims[index];
     const waveAnim = waveAnims[index];
+    
+    if (!anim || !waveAnim) return null;
+    
     const rotate = waveAnim.rotate.interpolate({
       inputRange: [0, 0.5, 1],
       outputRange: ['0deg', '5deg', '0deg'],
@@ -1202,6 +1246,14 @@ const StoryDirectorDemo: React.FC<StoryDirectorDemoProps> = ({ bookId, onBack })
         },
       ]}
     >
+      {isLoading ? (
+        <View style={styles.loadingContainer}>
+          <Text style={[styles.loadingText, { color: styleConfig.colors.text }]}>
+            加载中...
+          </Text>
+        </View>
+      ) : (
+        <>
       <View style={[styles.header, { borderBottomColor: styleConfig.colors.border }]}>
         <TouchableOpacity onPress={onBack} style={styles.backButton}>
           <Text style={[styles.backButtonText, { color: styleConfig.colors.accent }]}>← 返回</Text>
@@ -1377,6 +1429,8 @@ const StoryDirectorDemo: React.FC<StoryDirectorDemoProps> = ({ bookId, onBack })
           </View>
         </TouchableOpacity>
       )}
+        </>
+      )}
     </Animated.View>
   );
 };
@@ -1384,6 +1438,15 @@ const StoryDirectorDemo: React.FC<StoryDirectorDemoProps> = ({ bookId, onBack })
 const styles = StyleSheet.create({
   container: {
     flex: 1,
+  },
+  loadingContainer: {
+    flex: 1,
+    justifyContent: 'center',
+    alignItems: 'center',
+  },
+  loadingText: {
+    fontSize: 18,
+    fontWeight: 'bold',
   },
   header: {
     flexDirection: 'row',

@@ -806,7 +806,7 @@ const App: React.FC = () => {
       case 'bookshelf':
         return <BookshelfDemo onBack={() => setCurrentPage('main-home')} onNavigateToBookDetail={navigateToBookDetail} />;
       case 'book-detail':
-        return <BookDetailDemo bookId={currentBookId} onBack={goBack} onNavigateToDirector={() => navigateTo('director')} />;
+        return <BookDetailDemo bookId={currentBookId} onBack={goBack} onNavigateToDirector={(bookId) => { setCurrentBookId(bookId); navigateTo('director'); }} />;
       case 'ui-style-list':
         return (
           <UIStyleListScreen

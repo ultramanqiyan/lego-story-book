@@ -309,7 +309,7 @@ const BookDetailDemo: React.FC<BookDetailDemoProps> = ({ bookId, onBack, onNavig
           <TouchableOpacity
             key="add-new"
             style={styles.chapterItem}
-            onPress={() => onNavigateToDirector()}
+            onPress={() => onNavigateToDirector(bookId)}
           >
             <Text style={styles.chapterItemText}>➕ 添加章节</Text>
             <Text style={styles.chapterItemStatus}> </Text>

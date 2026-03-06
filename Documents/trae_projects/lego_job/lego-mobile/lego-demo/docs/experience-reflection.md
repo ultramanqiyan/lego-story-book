@@ -1190,4 +1190,90 @@ E ReactNativeJS: ReferenceError: Property 'FAKE_CHARACTERS' doesn't exist
 
 ---
 
-*最后更新：2026-03-06 13:45*
+### 问题22：React Native动画数组初始化时机问题
+
+**问题描述：**
+- 点击"添加章节"按钮时报错 `length=0`
+- 故事导演页报错 `Cannot read property 'interpolate' of undefined`
+- 动画数组在首次渲染时为空，导致访问undefined
+
+**根本原因分析：**
+1. **动画数组通过 `useEffect` 初始化**：依赖于 `characters`, `adventures` 等状态
+2. **首次渲染时状态为空数组**：数据从数据库异步加载
+3. **`useEffect` 在渲染后执行**：所以首次渲染时动画数组是空的
+4. **渲染函数尝试访问 `animationAnims[index]`**：但数组长度为0
+
+**错误代码示例：**
+```typescript
+// 错误：动画数组类型定义错误
+const characterAnims = useRef<Character[]>([]).current;  // 应该是 Animated.Value[]
+const adventureAnims = useRef<PlotElement[]>([]).current; // 应该是 Animated.Value[]
+
+// 错误：首次渲染时动画数组为空
+const renderAdventureCard = (adv: PlotElement, index: number) => {
+  const anim = adventureAnims[index];  // undefined!
+  const rotateY = anim.interpolate({...});  // 报错
+};
+```
+
+**解决方案：**
+
+**方案1：修复动画数组类型定义**
+```typescript
+// 正确的类型定义
+const characterAnims = useRef<Animated.Value[]>([]).current;
+const adventureAnims = useRef<Animated.Value[]>([]).current;
+const weatherAnims = useRef<Animated.Value[]>([]).current;
+const terrainAnims = useRef<Animated.Value[]>([]).current;
+const equipmentAnims = useRef<Animated.Value[]>([]).current;
+```
+
+**方案2：添加安全检查**
+```typescript
+const renderAdventureCard = (adv: PlotElement, index: number) => {
+  const anim = adventureAnims[index];
+  
+  // 安全检查：如果动画对象不存在，返回null
+  if (!anim) return null;
+  
+  const rotateY = anim.interpolate({...});
+  // ...
+};
+```
+
+**方案3：使用useEffect初始化动画数组**
+```typescript
+useEffect(() => {
+  // 清空现有数组
+  characterAnims.length = 0;
+  adventureAnims.length = 0;
+  // ...
+  
+  // 根据数据初始化动画数组
+  characters.forEach(() => {
+    characterAnims.push(new Animated.Value(0));
+  });
+  
+  adventures.forEach(() => {
+    adventureAnims.push(new Animated.Value(0));
+  });
+}, [characters, adventures, weathers, terrains, equipments]);
+```
+
+**方案4：添加loading状态**
+```typescript
+if (isLoading || characterAnims.length === 0) {
+  return <LoadingSpinner />;
+}
+```
+
+**经验教训：**
+1. **动画数组类型必须正确**：`useRef<Animated.Value[]>` 而不是 `useRef<Character[]>`
+2. **异步数据加载时要注意首次渲染**：数据为空时动画数组也为空
+3. **添加安全检查**：访问数组元素前检查是否存在
+4. **使用loading状态**：数据加载完成前显示加载状态
+5. **useEffect依赖数组要完整**：包含所有相关的状态变量
+
+---
+
+*最后更新：2026-03-06 15:10*
