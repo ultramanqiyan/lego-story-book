@@ -1701,9 +1701,86 @@ const renderChapterContentView = () => {
 ```
 
 **改进措施：**
-1. 修复解谜功能测试
+1. ✅ 修复解谜功能测试（已解决 - 清除缓存）
 2. 检查冒险卡牌和装备卡牌数据
 
 ---
 
-*最后更新：2026-03-06 18:00*
+### 问题29：React Native Bundle/Gradle缓存导致代码不生效
+
+**问题描述：**
+- 修改了代码（如添加日志、修复bug）
+- 重新构建应用后，修改没有生效
+- 日志没有显示，功能仍然失败
+
+**根本原因分析：**
+1. **Gradle缓存**：`android/.gradle` 目录缓存了旧的编译结果
+2. **Metro Bundle缓存**：JS bundle 没有重新生成
+3. **Build缓存**：`android/app/build` 目录缓存了旧的APK
+
+**解决方案：清除所有缓存并重新构建**
+```powershell
+# 清除Gradle缓存
+Remove-Item -Recurse -Force "android\.gradle" -ErrorAction SilentlyContinue
+Remove-Item -Recurse -Force "android\app\build" -ErrorAction SilentlyContinue
+
+# 清除Metro缓存
+Remove-Item -Recurse -Force "$env:TEMP\metro-*" -ErrorAction SilentlyContinue
+Remove-Item -Recurse -Force "$env:TEMP\react-*" -ErrorAction SilentlyContinue
+
+# 重新构建
+powershell -ExecutionPolicy Bypass -File run-app.ps1
+```
+
+**经验教训：**
+1. **修改代码后如果发现不生效，首先怀疑缓存问题**
+2. **清除Gradle缓存和Build缓存可以解决大部分问题**
+3. **使用 `--clear` 参数启动Metro可以清除JS缓存**
+4. **调试时应该先清除缓存再验证问题**
+
+---
+
+## 测试结果汇总
+
+### 2026-03-06 真实书籍数据系统测试（最终）
+
+**测试环境：**
+- 模拟器：emulator-5554 (Pixel_6)
+- APP包名：com.legostory.demo
+- 数据库：files/SQLite/lego_story.db
+
+**测试结果：**
+```
+通过率: 22/24 (92%)
+
+✅ 通过的测试:
+   ✓ APP启动
+   ✓ 书架按钮入口
+   ✓ 书架页标题
+   ✓ 真实书籍数据加载（8本书）
+   ✓ 书籍卡片点击
+   ✓ 书籍详情页章节Tab
+   ✓ 章节数据（10章）
+   ✓ 章节内容阅读
+   ✓ 解谜功能（已修复）
+   ✓ 角色数据（每本书4个角色）
+   ✓ 情节元素数据
+   ✓ 故事导演页导航
+   ✓ 故事导演页标题
+   ✓ 故事导演页角色卡牌
+   ✓ 故事导演页天气卡牌
+   ✓ 故事导演页地形卡牌
+   ✓ 角色选择功能
+   ✓ 舞台展示
+   ✓ 返回导航
+   ✓ 返回首页
+   ✓ 风格按钮
+
+❌ 失败的测试:
+   ✗ 故事导演页冒险卡牌
+   ✗ 故事导演页装备卡牌
+```
+
+---
+
+*最后更新：2026-03-06 19:30*
