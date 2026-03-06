@@ -35,6 +35,7 @@ import PixelBlockStyle from './src/screens/styles/PixelBlockStyle';
 import MovieFilmStyle from './src/screens/styles/MovieFilmStyle';
 import HandDrawnStyle from './src/screens/styles/HandDrawnStyle';
 import BookDetailDemo from './src/screens/BookDetailDemo';
+import BookshelfDemo from './src/screens/BookshelfDemo';
 
 const { width, height } = Dimensions.get('window');
 const CARD_WIDTH = 70;
@@ -482,9 +483,10 @@ interface GameBoardProps {
   onNavigateToDirector: () => void;
   onNavigateToUIStyles: () => void;
   onNavigateToBookDetail: () => void;
+  onNavigateToBookshelf: () => void;
 }
 
-const GameBoard: React.FC<GameBoardProps> = ({ onNavigateToDirector, onNavigateToUIStyles, onNavigateToBookDetail }) => {
+const GameBoard: React.FC<GameBoardProps> = ({ onNavigateToDirector, onNavigateToUIStyles, onNavigateToBookDetail, onNavigateToBookshelf }) => {
   const { state, playCard, attackMinion, attackHero, endTurn, selectMinion } = useGame();
   const { currentStyle, currentAnimation, cycleStyle, cycleAnimation } = useStyle();
   const [draggingCard, setDraggingCard] = useState<Card | null>(null);
@@ -670,13 +672,11 @@ const GameBoard: React.FC<GameBoardProps> = ({ onNavigateToDirector, onNavigateT
               style={[
                 styles.endTurnBtn,
                 { backgroundColor: styleConfig.colors.accent },
-                state.currentTurn !== 'player' && styles.endTurnBtnDisabled,
               ]}
-              onPress={handleEndTurn}
+              onPress={onNavigateToBookshelf}
               activeOpacity={0.8}
-              disabled={state.currentTurn !== 'player'}
             >
-              <Text style={styles.endTurnText}>结束回合</Text>
+              <Text style={styles.endTurnText}>📚 书架</Text>
             </TouchableOpacity>
             <TouchableOpacity style={styles.styleBtn} onPress={onNavigateToDirector}>
               <Text style={styles.btnIcon}>🎬</Text>
@@ -747,17 +747,29 @@ const GameBoard: React.FC<GameBoardProps> = ({ onNavigateToDirector, onNavigateT
   );
 };
 
-type PageState = 'home' | 'director' | 'ui-style-list' | 'book-detail' | UIStyleType;
+type PageState = 'home' | 'director' | 'ui-style-list' | 'bookshelf' | 'book-detail' | UIStyleType;
 
 const App: React.FC = () => {
   const [currentPage, setCurrentPage] = useState<PageState>('home');
+  const [previousPage, setPreviousPage] = useState<PageState>('home');
+
+  const navigateTo = (page: PageState) => {
+    setPreviousPage(currentPage);
+    setCurrentPage(page);
+  };
+
+  const goBack = () => {
+    setCurrentPage(previousPage);
+  };
 
   const renderPage = () => {
     switch (currentPage) {
       case 'director':
         return <StoryDirectorDemo onBack={() => setCurrentPage('home')} />;
+      case 'bookshelf':
+        return <BookshelfDemo onBack={() => setCurrentPage('home')} onNavigateToBookDetail={(bookId: string, bookTitle: string) => navigateTo('book-detail')} />;
       case 'book-detail':
-        return <BookDetailDemo onBack={() => setCurrentPage('home')} onNavigateToDirector={() => setCurrentPage('director')} />;
+        return <BookDetailDemo onBack={goBack} onNavigateToDirector={() => navigateTo('director')} />;
       case 'ui-style-list':
         return (
           <UIStyleListScreen
@@ -776,9 +788,10 @@ const App: React.FC = () => {
       default:
         return (
           <GameBoard
-            onNavigateToDirector={() => setCurrentPage('director')}
+            onNavigateToDirector={() => navigateTo('director')}
             onNavigateToUIStyles={() => setCurrentPage('ui-style-list')}
-            onNavigateToBookDetail={() => setCurrentPage('book-detail')}
+            onNavigateToBookDetail={() => navigateTo('book-detail')}
+            onNavigateToBookshelf={() => navigateTo('bookshelf')}
           />
         );
     }
