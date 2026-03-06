@@ -1276,4 +1276,100 @@ if (isLoading || characterAnims.length === 0) {
 
 ---
 
-*最后更新：2026-03-06 15:10*
+### 问题23：动画数组初始化时机导致卡牌不显示
+
+**问题描述：**
+- 故事导演页的卡牌内容一个都没展示
+- 页面显示"加载中..."后变为空白
+- 没有JS错误日志，但卡牌都不显示
+
+**根本原因分析：**
+1. **动画数组初始化时机问题**：
+   - `isLoading` 变为 `false` 时，组件重新渲染
+   - 渲染函数调用 `characters.map((char, index) => renderCharacterCard(char, index))`
+   - `renderCharacterCard` 中 `const anim = characterAnims[index]` 返回 `undefined`
+   - `if (!anim) return null` 返回 `null`
+   - 所有卡牌都返回 `null`，所以页面是空的
+
+2. **useEffect执行时机问题**：
+   - `useEffect` 在渲染后执行
+   - 即使 `isLoading` 变为 `false`，`useEffect` 还没来得及初始化动画数组
+   - 渲染函数已经尝试访问动画数组
+
+**错误代码示例：**
+```typescript
+// 错误：useEffect在渲染后执行，动画数组还未初始化
+const loadData = async () => {
+  setIsLoading(true);
+  const chars = await getCharactersByBookId(bookId);
+  setCharacters(chars);
+  setIsLoading(false);  // 此时动画数组还是空的！
+};
+
+useEffect(() => {
+  // 这个useEffect在渲染后才执行
+  characters.forEach(() => {
+    characterAnims.push(new Animated.Value(0));
+  });
+}, [characters]);
+
+const renderCharacterCard = (char: Character, index: number) => {
+  const anim = characterAnims[index];  // undefined!
+  if (!anim) return null;  // 所有卡牌都返回null
+  // ...
+};
+```
+
+**解决方案：在loadData中直接初始化动画数组**
+```typescript
+const loadData = async () => {
+  setIsLoading(true);
+  try {
+    const chars = await getCharactersByBookId(bookId);
+    const adventureData = await getPlotElementsByTypeId(book.typeId, 'adventure');
+    // ... 加载其他数据
+    
+    // 在setIsLoading(false)之前初始化动画数组
+    characterAnims.length = 0;
+    adventureAnims.length = 0;
+    // ... 清空其他数组
+    
+    chars.forEach(() => {
+      characterAnims.push(new Animated.Value(0));
+    });
+    
+    adventureData.forEach(() => {
+      adventureAnims.push(new Animated.Value(0));
+    });
+    // ... 初始化其他动画数组
+    
+    setCharacters(chars);
+    setAdventures(adventureData);
+    // ... 设置其他状态
+  } finally {
+    setIsLoading(false);  // 此时动画数组已经初始化完成
+  }
+};
+
+const renderCharacterCard = (char: Character, index: number) => {
+  const anim = characterAnims[index];
+  if (!anim) return null;  // 现在anim存在，不会返回null
+  // ...
+};
+```
+
+**关键点：**
+1. **动画数组初始化必须在setIsLoading(false)之前完成**
+2. **不要依赖useEffect来初始化动画数组**
+3. **在数据加载完成后立即初始化动画数组**
+4. **确保渲染时动画数组已经准备好**
+
+**经验教训：**
+1. **理解React生命周期**：useEffect在渲染后执行，不是同步的
+2. **异步操作的顺序很重要**：先初始化依赖数据，再更新loading状态
+3. **调试技巧**：即使没有错误日志，也要检查数据流和渲染逻辑
+4. **安全检查的双刃剑**：`if (!anim) return null` 虽然防止了崩溃，但也隐藏了问题
+
+---
+
+*最后更新：2026-03-06 15:30*

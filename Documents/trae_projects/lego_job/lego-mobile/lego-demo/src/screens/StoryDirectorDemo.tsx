@@ -97,6 +97,55 @@ const StoryDirectorDemo: React.FC<StoryDirectorDemoProps> = ({ bookId, onBack })
         
         const equipmentData = await getPlotElementsByTypeId(book.typeId, 'equipment');
         setEquipments(equipmentData);
+        
+        // Initialize animation arrays immediately after loading data
+        shakeAnims.length = 0;
+        stageCharAnims.length = 0;
+        floatAnims.length = 0;
+        characterAnims.length = 0;
+        adventureAnims.length = 0;
+        weatherAnims.length = 0;
+        terrainAnims.length = 0;
+        equipmentAnims.length = 0;
+        pulseAnims.length = 0;
+        glowAnims.length = 0;
+        waveAnims.length = 0;
+        
+        chars.forEach(() => {
+          shakeAnims.push(new Animated.Value(0));
+          stageCharAnims.push({
+            y: new Animated.Value(-50),
+            scale: new Animated.Value(0),
+            opacity: new Animated.Value(0),
+          });
+          floatAnims.push(new Animated.Value(0));
+          characterAnims.push(new Animated.Value(0));
+        });
+        
+        adventureData.forEach(() => {
+          adventureAnims.push(new Animated.Value(0));
+        });
+        
+        weatherData.forEach(() => {
+          weatherAnims.push(new Animated.Value(0));
+          glowAnims.push({
+            scale: new Animated.Value(1),
+            opacity: new Animated.Value(0.5),
+          });
+        });
+        
+        terrainData.forEach(() => {
+          terrainAnims.push(new Animated.Value(0));
+          pulseAnims.push(new Animated.Value(1));
+        });
+        
+        equipmentData.forEach(() => {
+          equipmentAnims.push(new Animated.Value(0));
+          waveAnims.push({
+            y: new Animated.Value(0),
+            rotate: new Animated.Value(0),
+          });
+        });
       }
     } catch (error) {
       console.error('Failed to load director data:', error);
@@ -108,56 +157,6 @@ const StoryDirectorDemo: React.FC<StoryDirectorDemoProps> = ({ bookId, onBack })
   const shakeAnims = useRef<Animated.Value[]>([]).current;
   const stageCharAnims = useRef<{ y: Animated.Value; scale: Animated.Value; opacity: Animated.Value }[]>([]).current;
   const floatAnims = useRef<Animated.Value[]>([]).current;
-
-  useEffect(() => {
-    shakeAnims.length = 0;
-    stageCharAnims.length = 0;
-    floatAnims.length = 0;
-    characterAnims.length = 0;
-    adventureAnims.length = 0;
-    weatherAnims.length = 0;
-    terrainAnims.length = 0;
-    equipmentAnims.length = 0;
-    pulseAnims.length = 0;
-    glowAnims.length = 0;
-    waveAnims.length = 0;
-    
-    characters.forEach(() => {
-      shakeAnims.push(new Animated.Value(0));
-      stageCharAnims.push({
-        y: new Animated.Value(-50),
-        scale: new Animated.Value(0),
-        opacity: new Animated.Value(0),
-      });
-      floatAnims.push(new Animated.Value(0));
-      characterAnims.push(new Animated.Value(0));
-    });
-    
-    adventures.forEach(() => {
-      adventureAnims.push(new Animated.Value(0));
-    });
-    
-    weathers.forEach(() => {
-      weatherAnims.push(new Animated.Value(0));
-      glowAnims.push({
-        scale: new Animated.Value(1),
-        opacity: new Animated.Value(0.5),
-      });
-    });
-    
-    terrains.forEach(() => {
-      terrainAnims.push(new Animated.Value(0));
-      pulseAnims.push(new Animated.Value(1));
-    });
-    
-    equipments.forEach(() => {
-      equipmentAnims.push(new Animated.Value(0));
-      waveAnims.push({
-        y: new Animated.Value(0),
-        rotate: new Animated.Value(0),
-      });
-    });
-  }, [characters, adventures, weathers, terrains, equipments]);
 
   const particleAnims = useRef(Array(20).fill(null).map(() => ({
     x: new Animated.Value(Math.random() * width),
@@ -473,6 +472,8 @@ const StoryDirectorDemo: React.FC<StoryDirectorDemoProps> = ({ bookId, onBack })
   const renderCharacterCard = (char: Character, index: number) => {
     const isSelected = selectedCharacters.includes(char.characterId);
     const anim = characterAnims[index];
+
+    if (!anim) return null;
 
     return (
       <Animated.View
