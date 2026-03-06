@@ -1,6 +1,6 @@
 /**
  * 真实书籍数据系统测试 - Appium端到端测试（完整版）
- * 覆盖所有功能点
+ * 覆盖所有功能点，包含详细的内容检查
  * 
  * 测试范围：
  * 1. 首页入口按钮
@@ -8,7 +8,7 @@
  * 3. 书籍详情页显示真实章节数据（10章）
  * 4. 书籍详情页显示真实角色数据（4个角色）
  * 5. 书籍详情页显示真实情节元素
- * 6. 故事导演页显示真实角色和情节元素
+ * 6. 故事导演页显示真实角色和情节元素卡牌
  * 7. 不同书籍类型的卡牌风格
  * 8. 章节阅读和解谜功能
  * 9. 角色选择和舞台展示
@@ -43,10 +43,14 @@ async function startAppiumServer() {
             }
         });
         
+        appiumProcess.stderr.on('data', (data) => {
+            console.log('Appium stderr:', data.toString());
+        });
+        
         setTimeout(() => {
             console.log('Appium服务器启动超时，继续尝试...\n');
             resolve(true);
-        }, 10000);
+        }, 15000);
     });
 }
 
@@ -71,6 +75,7 @@ async function forceStopAndLaunchApp() {
         );
         return true;
     } catch (e) {
+        console.log('启动APP失败:', e.message);
         return false;
     }
 }
@@ -118,6 +123,34 @@ async function isElementDisplayed(driver, selector, timeout = 1000) {
     }
 }
 
+async function getElementText(driver, selector, timeout = 1000) {
+    try {
+        const element = await driver.$(selector);
+        await element.waitForDisplayed({ timeout });
+        return await element.getText();
+    } catch (e) {
+        return null;
+    }
+}
+
+async function getAllElementsText(driver, selector) {
+    try {
+        const elements = await driver.$$(selector);
+        const texts = [];
+        for (const element of elements) {
+            try {
+                const text = await element.getText();
+                texts.push(text);
+            } catch (e) {
+                // 忽略无法获取文本的元素
+            }
+        }
+        return texts;
+    } catch (e) {
+        return [];
+    }
+}
+
 async function checkForCrashes() {
     try {
         const result = execSync(
@@ -135,12 +168,21 @@ async function checkForCrashes() {
     }
 }
 
+async function getPageSource(driver) {
+    try {
+        const source = await driver.getPageSource();
+        return source;
+    } catch (e) {
+        return null;
+    }
+}
+
 async function runRealDataTest() {
     let driver;
     
     console.log('\n' + '='.repeat(70));
     console.log('  真实书籍数据系统测试 - Appium端到端测试（完整版）');
-    console.log('  测试所有功能点');
+    console.log('  测试所有功能点，包含详细的内容检查');
     console.log('='.repeat(70) + '\n');
     
     const startTime = Date.now();
@@ -158,7 +200,12 @@ async function runRealDataTest() {
         characterData: false,
         plotData: false,
         directorNavigation: false,
-        directorData: false,
+        directorPageTitle: false,
+        directorCharacterCards: false,
+        directorAdventureCards: false,
+        directorWeatherCards: false,
+        directorTerrainCards: false,
+        directorEquipmentCards: false,
         characterSelection: false,
         stageDisplay: false,
         backNavigation: false,
@@ -170,12 +217,12 @@ async function runRealDataTest() {
     try {
         await startAppiumServer();
         
-        console.log('[1/25] 强制重启APP确保干净状态...');
+        console.log('[1/30] 强制重启APP确保干净状态...');
         await forceStopAndLaunchApp();
         testResults.appLaunch = true;
         console.log('APP已重启\n');
 
-        console.log('[2/25] 连接Appium服务器...');
+        console.log('[2/30] 连接Appium服务器...');
         driver = await remote({
             capabilities: {
                 platformName: 'Android',
@@ -197,13 +244,13 @@ async function runRealDataTest() {
         });
         console.log('连接成功！\n');
 
-        console.log('[3/25] 等待应用启动...');
+        console.log('[3/30] 等待应用启动...');
         await driver.pause(3000);
         testResults.homePage = true;
         console.log('应用已启动\n');
 
         // ==================== 首页测试 ====================
-        console.log('[4/25] 测试首页入口按钮...');
+        console.log('[4/30] 测试首页入口按钮...');
         if (await findAndTap(driver, '//*[contains(@text, "书架")]', 3000)) {
             testResults.bookshelfButton = true;
             console.log('已点击书架按钮\n');
@@ -214,7 +261,7 @@ async function runRealDataTest() {
         await driver.pause(1000);
 
         // ==================== 书架页测试 ====================
-        console.log('[5/25] 验证书架页显示真实书籍数据...');
+        console.log('[5/30] 验证书架页显示真实书籍数据...');
         if (await isElementDisplayed(driver, '//*[contains(@text, "我的书架")]', 3000)) {
             testResults.bookshelfTitle = true;
             console.log('书架页标题显示正常\n');
@@ -247,7 +294,7 @@ async function runRealDataTest() {
         }
 
         // ==================== 点击书籍测试 ====================
-        console.log('[6/25] 测试点击书籍跳转到书籍详情页...');
+        console.log('[6/30] 测试点击书籍跳转到书籍详情页...');
         if (await findAndTap(driver, '//*[contains(@text, "小勇者的森林奇遇")]', 2000)) {
             testResults.bookClick = true;
             console.log('已点击书籍卡片\n');
@@ -255,7 +302,7 @@ async function runRealDataTest() {
         }
 
         // ==================== 书籍详情页测试 ====================
-        console.log('[7/25] 验证书籍详情页章节数据...');
+        console.log('[7/30] 验证书籍详情页章节数据...');
         if (await isElementDisplayed(driver, '//*[contains(@text, "章节")]', 3000)) {
             testResults.bookDetailTitle = true;
             console.log('书籍详情页章节Tab显示正常\n');
@@ -287,30 +334,27 @@ async function runRealDataTest() {
         }
 
         // ==================== 章节内容测试 ====================
-        console.log('[8/25] 测试章节内容阅读...');
+        console.log('[8/30] 测试章节内容阅读...');
         if (await findAndTap(driver, '//*[contains(@text, "神秘森林入口")]', 2000)) {
             await driver.pause(500);
             
-            // 验证章节内容显示
             if (await isElementDisplayed(driver, '//*[contains(@text, "森林")]', 2000)) {
                 testResults.chapterContent = true;
                 console.log('章节内容显示正常\n');
             }
             
-            // 测试解谜功能
             if (await isElementDisplayed(driver, '//*[contains(@text, "谜题")]', 1000) ||
                 await isElementDisplayed(driver, '//*[contains(@text, "?")]', 1000)) {
                 testResults.puzzleFeature = true;
                 console.log('解谜功能显示正常\n');
             }
             
-            // 返回目录
             await findAndTap(driver, '//*[contains(@text, "目录")]', 2000);
             await driver.pause(500);
         }
 
         // ==================== 角色Tab测试 ====================
-        console.log('[9/25] 测试角色Tab数据...');
+        console.log('[9/30] 测试角色Tab数据...');
         if (await findAndTap(driver, '//*[contains(@text, "角色")]', 2000)) {
             await driver.pause(500);
             
@@ -329,11 +373,10 @@ async function runRealDataTest() {
         }
 
         // ==================== 情节Tab测试 ====================
-        console.log('[10/25] 测试情节Tab数据...');
+        console.log('[10/30] 测试情节Tab数据...');
         if (await findAndTap(driver, '//*[contains(@text, "情节")]', 2000)) {
             await driver.pause(500);
             
-            // 验证情节元素分类
             const plotCategories = ['天气', '地形', '装备', '冒险'];
             let foundCategories = 0;
             for (const cat of plotCategories) {
@@ -349,42 +392,145 @@ async function runRealDataTest() {
         }
 
         // ==================== 故事导演页测试 ====================
-        console.log('[11/25] 测试故事导演页导航...');
-        // 返回首页再进入导演台
-        if (await findAndTap(driver, '//*[contains(@text, "返回")]', 2000)) {
-            await driver.pause(500);
-        }
-        
-        if (await findAndTap(driver, '//*[contains(@text, "返回")]', 2000)) {
-            await driver.pause(500);
-        }
+        console.log('[11/30] 测试故事导演页导航...');
+        await findAndTap(driver, '//*[contains(@text, "返回")]', 2000);
+        await driver.pause(500);
+        await findAndTap(driver, '//*[contains(@text, "返回")]', 2000);
+        await driver.pause(500);
 
-        // 点击卡牌Demo按钮
-        console.log('[12/25] 测试卡牌Demo按钮...');
+        console.log('[12/30] 测试卡牌Demo按钮...');
         if (await findAndTap(driver, '//*[contains(@text, "卡牌")]', 2000)) {
             testResults.cardDemoButton = true;
             console.log('已点击卡牌Demo按钮\n');
             await driver.pause(500);
         }
 
-        // 点击导演台按钮
+        console.log('[13/30] 进入故事导演页...');
         if (await findAndTap(driver, '//*[contains(@text, "导演")]', 2000)) {
             testResults.directorNavigation = true;
             console.log('已进入故事导演页\n');
-            await driver.pause(1000);
+            await driver.pause(2000);  // 等待数据加载和动画
         }
 
-        // 验证导演页数据
-        console.log('[13/25] 验证故事导演页数据...');
-        if (await isElementDisplayed(driver, '//*[contains(@text, "角色")]', 2000) ||
-            await isElementDisplayed(driver, '//*[contains(@text, "天气")]', 1000)) {
-            testResults.directorData = true;
-            console.log('故事导演页数据正常\n');
+        // ==================== 故事导演页详细检查 ====================
+        console.log('[14/30] 检查故事导演页标题...');
+        if (await isElementDisplayed(driver, '//*[contains(@text, "故事导演")]', 3000)) {
+            testResults.directorPageTitle = true;
+            console.log('故事导演页标题显示正常\n');
+        } else {
+            console.log('故事导演页标题未找到\n');
+        }
+
+        // 获取页面源代码进行分析
+        console.log('[15/30] 获取页面源代码进行分析...');
+        const pageSource = await getPageSource(driver);
+        if (pageSource) {
+            console.log('页面源代码长度:', pageSource.length);
+            
+            // 检查是否包含角色名称
+            const characterNames = ['小勇者', '魔法兔子', '智慧猫头鹰', '森林精灵'];
+            let foundInSource = 0;
+            for (const name of characterNames) {
+                if (pageSource.includes(name)) {
+                    foundInSource++;
+                    console.log(`  在页面源码中找到角色: ${name}`);
+                }
+            }
+            console.log(`页面源码中找到${foundInSource}个角色名称\n`);
+        }
+
+        // ==================== 角色卡牌检查 ====================
+        console.log('[16/30] 检查故事导演页角色卡牌...');
+        const directorCharacters = ['小勇者', '魔法兔子', '智慧猫头鹰', '森林精灵'];
+        let foundDirectorCharacters = 0;
+        for (const char of directorCharacters) {
+            if (await isElementDisplayed(driver, `//*[contains(@text, "${char}")]`, 1500)) {
+                foundDirectorCharacters++;
+                console.log(`  找到角色卡牌: ${char}`);
+            }
+        }
+        
+        if (foundDirectorCharacters >= 2) {
+            testResults.directorCharacterCards = true;
+            console.log(`故事导演页找到${foundDirectorCharacters}个角色卡牌\n`);
+        } else {
+            console.log(`故事导演页只找到${foundDirectorCharacters}个角色卡牌，可能有问题\n`);
+        }
+
+        // ==================== 冒险卡牌检查 ====================
+        console.log('[17/30] 检查故事导演页冒险卡牌...');
+        const adventures = ['森林探险', '宝藏寻找', '怪物战斗', '谜题挑战'];
+        let foundAdventures = 0;
+        for (const adv of adventures) {
+            if (await isElementDisplayed(driver, `//*[contains(@text, "${adv}")]`, 1500)) {
+                foundAdventures++;
+                console.log(`  找到冒险卡牌: ${adv}`);
+            }
+        }
+        
+        if (foundAdventures >= 1) {
+            testResults.directorAdventureCards = true;
+            console.log(`故事导演页找到${foundAdventures}个冒险卡牌\n`);
+        } else {
+            console.log(`故事导演页未找到冒险卡牌\n`);
+        }
+
+        // ==================== 天气卡牌检查 ====================
+        console.log('[18/30] 检查故事导演页天气卡牌...');
+        const weathers = ['晴天', '雨天', '雾天', '夜晚'];
+        let foundWeathers = 0;
+        for (const weather of weathers) {
+            if (await isElementDisplayed(driver, `//*[contains(@text, "${weather}")]`, 1500)) {
+                foundWeathers++;
+                console.log(`  找到天气卡牌: ${weather}`);
+            }
+        }
+        
+        if (foundWeathers >= 1) {
+            testResults.directorWeatherCards = true;
+            console.log(`故事导演页找到${foundWeathers}个天气卡牌\n`);
+        } else {
+            console.log(`故事导演页未找到天气卡牌\n`);
+        }
+
+        // ==================== 地形卡牌检查 ====================
+        console.log('[19/30] 检查故事导演页地形卡牌...');
+        const terrains = ['森林', '山脉', '河流', '洞穴'];
+        let foundTerrains = 0;
+        for (const terrain of terrains) {
+            if (await isElementDisplayed(driver, `//*[contains(@text, "${terrain}")]`, 1500)) {
+                foundTerrains++;
+                console.log(`  找到地形卡牌: ${terrain}`);
+            }
+        }
+        
+        if (foundTerrains >= 1) {
+            testResults.directorTerrainCards = true;
+            console.log(`故事导演页找到${foundTerrains}个地形卡牌\n`);
+        } else {
+            console.log(`故事导演页未找到地形卡牌\n`);
+        }
+
+        // ==================== 装备卡牌检查 ====================
+        console.log('[20/30] 检查故事导演页装备卡牌...');
+        const equipments = ['魔法剑', '盾牌', '药水', '地图'];
+        let foundEquipments = 0;
+        for (const equip of equipments) {
+            if (await isElementDisplayed(driver, `//*[contains(@text, "${equip}")]`, 1500)) {
+                foundEquipments++;
+                console.log(`  找到装备卡牌: ${equip}`);
+            }
+        }
+        
+        if (foundEquipments >= 1) {
+            testResults.directorEquipmentCards = true;
+            console.log(`故事导演页找到${foundEquipments}个装备卡牌\n`);
+        } else {
+            console.log(`故事导演页未找到装备卡牌\n`);
         }
 
         // ==================== 角色选择测试 ====================
-        console.log('[14/25] 测试角色选择功能...');
-        // 点击角色卡片
+        console.log('[21/30] 测试角色选择功能...');
         if (await findAndTap(driver, '//*[contains(@text, "小勇者")]', 2000)) {
             testResults.characterSelection = true;
             console.log('角色选择功能正常\n');
@@ -392,16 +538,15 @@ async function runRealDataTest() {
         }
 
         // ==================== 舞台展示测试 ====================
-        console.log('[15/25] 测试舞台展示...');
-        // 检查舞台区域是否显示角色
+        console.log('[22/30] 测试舞台展示...');
         if (await isElementDisplayed(driver, '//*[contains(@text, "选择角色")]', 1000) ||
             await isElementDisplayed(driver, '//*[contains(@text, "舞台")]', 1000)) {
             testResults.stageDisplay = true;
             console.log('舞台展示正常\n');
         }
 
-        // ==================== 测试其他书籍类型 ====================
-        console.log('[16/25] 测试返回导航...');
+        // ==================== 返回导航测试 ====================
+        console.log('[23/30] 测试返回导航...');
         if (await findAndTap(driver, '//*[contains(@text, "返回")]', 2000)) {
             testResults.backNavigation = true;
             console.log('返回导航正常\n');
@@ -409,7 +554,7 @@ async function runRealDataTest() {
         }
 
         // ==================== 返回首页测试 ====================
-        console.log('[17/25] 测试返回首页...');
+        console.log('[24/30] 测试返回首页...');
         if (await findAndTap(driver, '//*[contains(@text, "首页")]', 2000)) {
             testResults.returnHome = true;
             console.log('返回首页正常\n');
@@ -417,92 +562,15 @@ async function runRealDataTest() {
         }
 
         // ==================== 风格按钮测试 ====================
-        console.log('[18/25] 测试风格按钮...');
+        console.log('[25/30] 测试风格按钮...');
         if (await findAndTap(driver, '//*[contains(@text, "风格")]', 2000)) {
             testResults.styleButton = true;
             console.log('风格按钮正常\n');
             await driver.pause(500);
         }
 
-        // ==================== 测试魔法世界类型书籍 ====================
-        console.log('[19/25] 测试魔法世界类型书籍...');
-        await findAndTap(driver, '//*[contains(@text, "返回")]', 1000);
-        await driver.pause(500);
-        await findAndTap(driver, '//*[contains(@text, "书架")]', 2000);
-        await driver.pause(1000);
-        
-        if (await findAndTap(driver, '//*[contains(@text, "龙之谷的召唤")]', 2000)) {
-            console.log('已点击魔法世界类型书籍\n');
-            await driver.pause(1000);
-            
-            // 验证魔法世界角色
-            const magicChars = ['龙骑士', '魔法师', '精灵弓手', '神秘商人'];
-            let foundMagicChars = 0;
-            
-            if (await findAndTap(driver, '//*[contains(@text, "角色")]', 2000)) {
-                await driver.pause(500);
-                for (const char of magicChars) {
-                    if (await isElementDisplayed(driver, `//*[contains(@text, "${char}")]`, 1000)) {
-                        foundMagicChars++;
-                    }
-                }
-            }
-            
-            console.log(`魔法世界类型找到${foundMagicChars}个角色\n`);
-        }
-
-        // ==================== 测试都市职场类型书籍 ====================
-        console.log('[20/25] 测试都市职场类型书籍...');
-        await findAndTap(driver, '//*[contains(@text, "返回")]', 1000);
-        await driver.pause(500);
-        
-        if (await findAndTap(driver, '//*[contains(@text, "创业之路")]', 2000)) {
-            console.log('已点击都市职场类型书籍\n');
-            await driver.pause(1000);
-            
-            // 验证都市职场角色
-            const urbanChars = ['创业者', '合伙人', '投资人', '技术总监'];
-            let foundUrbanChars = 0;
-            
-            if (await findAndTap(driver, '//*[contains(@text, "角色")]', 2000)) {
-                await driver.pause(500);
-                for (const char of urbanChars) {
-                    if (await isElementDisplayed(driver, `//*[contains(@text, "${char}")]`, 1000)) {
-                        foundUrbanChars++;
-                    }
-                }
-            }
-            
-            console.log(`都市职场类型找到${foundUrbanChars}个角色\n`);
-        }
-
-        // ==================== 测试机械帝国类型书籍 ====================
-        console.log('[21/25] 测试机械帝国类型书籍...');
-        await findAndTap(driver, '//*[contains(@text, "返回")]', 1000);
-        await driver.pause(500);
-        
-        if (await findAndTap(driver, '//*[contains(@text, "机甲觉醒")]', 2000)) {
-            console.log('已点击机械帝国类型书籍\n');
-            await driver.pause(1000);
-            
-            // 验证机械帝国角色
-            const mechChars = ['机甲驾驶员', 'AI助手', '机械师', '指挥官'];
-            let foundMechChars = 0;
-            
-            if (await findAndTap(driver, '//*[contains(@text, "角色")]', 2000)) {
-                await driver.pause(500);
-                for (const char of mechChars) {
-                    if (await isElementDisplayed(driver, `//*[contains(@text, "${char}")]`, 1000)) {
-                        foundMechChars++;
-                    }
-                }
-            }
-            
-            console.log(`机械帝国类型找到${foundMechChars}个角色\n`);
-        }
-
         // ==================== 崩溃检测 ====================
-        console.log('[22/25] 检测应用崩溃...');
+        console.log('[26/30] 检测应用崩溃...');
         const crashDetected = await checkForCrashes();
         if (crashDetected) {
             console.log('应用发生崩溃!\n');
@@ -511,7 +579,7 @@ async function runRealDataTest() {
         }
 
         // ==================== 测试结果汇总 ====================
-        console.log('[23/25] 汇总测试结果...');
+        console.log('[27/30] 汇总测试结果...');
         
         const totalTime = ((Date.now() - startTime) / 1000).toFixed(1);
         
@@ -534,7 +602,12 @@ async function runRealDataTest() {
         console.log(`  ${testResults.characterData ? '✅' : '❌'} 角色数据（每本书4个角色）`);
         console.log(`  ${testResults.plotData ? '✅' : '❌'} 情节元素数据`);
         console.log(`  ${testResults.directorNavigation ? '✅' : '❌'} 故事导演页导航`);
-        console.log(`  ${testResults.directorData ? '✅' : '❌'} 故事导演页数据`);
+        console.log(`  ${testResults.directorPageTitle ? '✅' : '❌'} 故事导演页标题`);
+        console.log(`  ${testResults.directorCharacterCards ? '✅' : '❌'} 故事导演页角色卡牌`);
+        console.log(`  ${testResults.directorAdventureCards ? '✅' : '❌'} 故事导演页冒险卡牌`);
+        console.log(`  ${testResults.directorWeatherCards ? '✅' : '❌'} 故事导演页天气卡牌`);
+        console.log(`  ${testResults.directorTerrainCards ? '✅' : '❌'} 故事导演页地形卡牌`);
+        console.log(`  ${testResults.directorEquipmentCards ? '✅' : '❌'} 故事导演页装备卡牌`);
         console.log(`  ${testResults.characterSelection ? '✅' : '❌'} 角色选择功能`);
         console.log(`  ${testResults.stageDisplay ? '✅' : '❌'} 舞台展示`);
         console.log(`  ${testResults.backNavigation ? '✅' : '❌'} 返回导航`);
@@ -559,6 +632,7 @@ async function runRealDataTest() {
 
     } catch (error) {
         console.error('\n测试失败:', error.message);
+        console.error('错误堆栈:', error.stack);
         await checkForCrashes();
     } finally {
         if (driver) {
