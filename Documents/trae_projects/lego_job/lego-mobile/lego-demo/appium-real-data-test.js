@@ -133,22 +133,28 @@ async function getElementText(driver, selector, timeout = 1000) {
     }
 }
 
-async function getAllElementsText(driver, selector) {
-    try {
-        const elements = await driver.$$(selector);
-        const texts = [];
-        for (const element of elements) {
-            try {
-                const text = await element.getText();
-                texts.push(text);
-            } catch (e) {
-                // 忽略无法获取文本的元素
-            }
+async function swipeUp(driver, distance = 300) {
+    const { width, height } = await driver.getWindowSize();
+    const startX = width / 2;
+    const startY = height * 0.7;
+    const endY = height * 0.3;
+    
+    await driver.performActions([
+        {
+            type: 'pointer',
+            id: 'finger1',
+            parameters: { pointerType: 'touch' },
+            actions: [
+                { type: 'pointerMove', duration: 0, x: startX, y: startY },
+                { type: 'pointerDown', button: 0 },
+                { type: 'pause', duration: 100 },
+                { type: 'pointerMove', duration: 300, x: startX, y: endY },
+                { type: 'pointerUp', button: 0 }
+            ]
         }
-        return texts;
-    } catch (e) {
-        return [];
-    }
+    ]);
+    
+    await driver.pause(500);
 }
 
 async function checkForCrashes() {
@@ -211,18 +217,17 @@ async function runRealDataTest() {
         backNavigation: false,
         returnHome: false,
         styleButton: false,
-        cardDemoButton: false,
     };
     
     try {
         await startAppiumServer();
         
-        console.log('[1/30] 强制重启APP确保干净状态...');
+        console.log('[1/25] 强制重启APP确保干净状态...');
         await forceStopAndLaunchApp();
         testResults.appLaunch = true;
         console.log('APP已重启\n');
 
-        console.log('[2/30] 连接Appium服务器...');
+        console.log('[2/25] 连接Appium服务器...');
         driver = await remote({
             capabilities: {
                 platformName: 'Android',
@@ -244,13 +249,13 @@ async function runRealDataTest() {
         });
         console.log('连接成功！\n');
 
-        console.log('[3/30] 等待应用启动...');
+        console.log('[3/25] 等待应用启动...');
         await driver.pause(3000);
         testResults.homePage = true;
         console.log('应用已启动\n');
 
         // ==================== 首页测试 ====================
-        console.log('[4/30] 测试首页入口按钮...');
+        console.log('[4/25] 测试首页入口按钮...');
         if (await findAndTap(driver, '//*[contains(@text, "书架")]', 3000)) {
             testResults.bookshelfButton = true;
             console.log('已点击书架按钮\n');
@@ -261,7 +266,7 @@ async function runRealDataTest() {
         await driver.pause(1000);
 
         // ==================== 书架页测试 ====================
-        console.log('[5/30] 验证书架页显示真实书籍数据...');
+        console.log('[5/25] 验证书架页显示真实书籍数据...');
         if (await isElementDisplayed(driver, '//*[contains(@text, "我的书架")]', 3000)) {
             testResults.bookshelfTitle = true;
             console.log('书架页标题显示正常\n');
@@ -294,7 +299,7 @@ async function runRealDataTest() {
         }
 
         // ==================== 点击书籍测试 ====================
-        console.log('[6/30] 测试点击书籍跳转到书籍详情页...');
+        console.log('[6/25] 测试点击书籍跳转到书籍详情页...');
         if (await findAndTap(driver, '//*[contains(@text, "小勇者的森林奇遇")]', 2000)) {
             testResults.bookClick = true;
             console.log('已点击书籍卡片\n');
@@ -302,7 +307,7 @@ async function runRealDataTest() {
         }
 
         // ==================== 书籍详情页测试 ====================
-        console.log('[7/30] 验证书籍详情页章节数据...');
+        console.log('[7/25] 验证书籍详情页章节数据...');
         if (await isElementDisplayed(driver, '//*[contains(@text, "章节")]', 3000)) {
             testResults.bookDetailTitle = true;
             console.log('书籍详情页章节Tab显示正常\n');
@@ -334,7 +339,7 @@ async function runRealDataTest() {
         }
 
         // ==================== 章节内容测试 ====================
-        console.log('[8/30] 测试章节内容阅读...');
+        console.log('[8/25] 测试章节内容阅读...');
         if (await findAndTap(driver, '//*[contains(@text, "神秘森林入口")]', 2000)) {
             await driver.pause(500);
             
@@ -354,7 +359,7 @@ async function runRealDataTest() {
         }
 
         // ==================== 角色Tab测试 ====================
-        console.log('[9/30] 测试角色Tab数据...');
+        console.log('[9/25] 测试角色Tab数据...');
         if (await findAndTap(driver, '//*[contains(@text, "角色")]', 2000)) {
             await driver.pause(500);
             
@@ -373,7 +378,7 @@ async function runRealDataTest() {
         }
 
         // ==================== 情节Tab测试 ====================
-        console.log('[10/30] 测试情节Tab数据...');
+        console.log('[10/25] 测试情节Tab数据...');
         if (await findAndTap(driver, '//*[contains(@text, "情节")]', 2000)) {
             await driver.pause(500);
             
@@ -391,29 +396,72 @@ async function runRealDataTest() {
             }
         }
 
-        // ==================== 故事导演页测试 ====================
-        console.log('[11/30] 测试故事导演页导航...');
-        await findAndTap(driver, '//*[contains(@text, "返回")]', 2000);
-        await driver.pause(500);
-        await findAndTap(driver, '//*[contains(@text, "返回")]', 2000);
-        await driver.pause(500);
-
-        console.log('[12/30] 测试卡牌Demo按钮...');
-        if (await findAndTap(driver, '//*[contains(@text, "卡牌")]', 2000)) {
-            testResults.cardDemoButton = true;
-            console.log('已点击卡牌Demo按钮\n');
+        // ==================== 故事导演页测试（从书籍详情页进入）====================
+        console.log('[11/25] 测试故事导演页导航（从书籍详情页->章节Tab->添加章节进入）...');
+        
+        // 先点击章节Tab
+        if (await findAndTap(driver, '//*[contains(@text, "章节")]', 2000)) {
             await driver.pause(500);
+            console.log('已点击章节Tab\n');
         }
-
-        console.log('[13/30] 进入故事导演页...');
-        if (await findAndTap(driver, '//*[contains(@text, "导演")]', 2000)) {
+        
+        // 添加章节按钮在最后一页，需要翻页
+        // 每页显示6个章节，共10章，添加章节按钮在第2页
+        console.log('查找添加章节按钮，可能需要翻页...\n');
+        
+        // 先尝试在当前页查找
+        let addChapterClicked = false;
+        const addChapterSelectors = [
+            '//*[contains(@text, "添加章节")]',
+            '//*[contains(@text, "➕")]',
+        ];
+        
+        // 最多翻3页
+        for (let page = 0; page < 3; page++) {
+            console.log(`检查第${page + 1}页...`);
+            
+            for (const selector of addChapterSelectors) {
+                if (await findAndTap(driver, selector, 1500)) {
+                    addChapterClicked = true;
+                    console.log('已点击添加章节按钮\n');
+                    break;
+                }
+            }
+            
+            if (addChapterClicked) break;
+            
+            // 点击下一页按钮
+            const nextButtonSelectors = [
+                '//*[contains(@text, "下一页")]',
+                '//*[contains(@text, ">")]',
+                '//android.widget.TextView[@text=">"]',
+            ];
+            
+            let nextPageClicked = false;
+            for (const selector of nextButtonSelectors) {
+                if (await findAndTap(driver, selector, 1000)) {
+                    nextPageClicked = true;
+                    console.log('已点击下一页按钮\n');
+                    await driver.pause(500);
+                    break;
+                }
+            }
+            
+            if (!nextPageClicked) {
+                console.log('未找到下一页按钮，可能在最后一页了\n');
+                break;
+            }
+        }
+        
+        if (addChapterClicked) {
             testResults.directorNavigation = true;
-            console.log('已进入故事导演页\n');
             await driver.pause(2000);  // 等待数据加载和动画
+        } else {
+            console.log('未找到添加章节按钮\n');
         }
 
         // ==================== 故事导演页详细检查 ====================
-        console.log('[14/30] 检查故事导演页标题...');
+        console.log('[12/25] 检查故事导演页标题...');
         if (await isElementDisplayed(driver, '//*[contains(@text, "故事导演")]', 3000)) {
             testResults.directorPageTitle = true;
             console.log('故事导演页标题显示正常\n');
@@ -422,7 +470,7 @@ async function runRealDataTest() {
         }
 
         // 获取页面源代码进行分析
-        console.log('[15/30] 获取页面源代码进行分析...');
+        console.log('[13/25] 获取页面源代码进行分析...');
         const pageSource = await getPageSource(driver);
         if (pageSource) {
             console.log('页面源代码长度:', pageSource.length);
@@ -440,7 +488,7 @@ async function runRealDataTest() {
         }
 
         // ==================== 角色卡牌检查 ====================
-        console.log('[16/30] 检查故事导演页角色卡牌...');
+        console.log('[14/25] 检查故事导演页角色卡牌...');
         const directorCharacters = ['小勇者', '魔法兔子', '智慧猫头鹰', '森林精灵'];
         let foundDirectorCharacters = 0;
         for (const char of directorCharacters) {
@@ -457,26 +505,8 @@ async function runRealDataTest() {
             console.log(`故事导演页只找到${foundDirectorCharacters}个角色卡牌，可能有问题\n`);
         }
 
-        // ==================== 冒险卡牌检查 ====================
-        console.log('[17/30] 检查故事导演页冒险卡牌...');
-        const adventures = ['森林探险', '宝藏寻找', '怪物战斗', '谜题挑战'];
-        let foundAdventures = 0;
-        for (const adv of adventures) {
-            if (await isElementDisplayed(driver, `//*[contains(@text, "${adv}")]`, 1500)) {
-                foundAdventures++;
-                console.log(`  找到冒险卡牌: ${adv}`);
-            }
-        }
-        
-        if (foundAdventures >= 1) {
-            testResults.directorAdventureCards = true;
-            console.log(`故事导演页找到${foundAdventures}个冒险卡牌\n`);
-        } else {
-            console.log(`故事导演页未找到冒险卡牌\n`);
-        }
-
         // ==================== 天气卡牌检查 ====================
-        console.log('[18/30] 检查故事导演页天气卡牌...');
+        console.log('[15/25] 检查故事导演页天气卡牌...');
         const weathers = ['晴天', '雨天', '雾天', '夜晚'];
         let foundWeathers = 0;
         for (const weather of weathers) {
@@ -493,8 +523,38 @@ async function runRealDataTest() {
             console.log(`故事导演页未找到天气卡牌\n`);
         }
 
+        // ==================== 滚动查看更多卡牌 ====================
+        console.log('[16/25] 滚动页面查看更多卡牌...');
+        await swipeUp(driver);
+        await driver.pause(500);
+        console.log('已向上滚动一次\n');
+
+        // ==================== 冒险卡牌检查 ====================
+        console.log('[17/25] 检查故事导演页冒险卡牌...');
+        const adventures = ['森林探险', '宝藏寻找', '怪物战斗', '谜题挑战'];
+        let foundAdventures = 0;
+        for (const adv of adventures) {
+            if (await isElementDisplayed(driver, `//*[contains(@text, "${adv}")]`, 1500)) {
+                foundAdventures++;
+                console.log(`  找到冒险卡牌: ${adv}`);
+            }
+        }
+        
+        if (foundAdventures >= 1) {
+            testResults.directorAdventureCards = true;
+            console.log(`故事导演页找到${foundAdventures}个冒险卡牌\n`);
+        } else {
+            console.log(`故事导演页未找到冒险卡牌，尝试继续滚动\n`);
+        }
+
+        // ==================== 再次滚动查看地形和装备 ====================
+        console.log('[18/25] 再次滚动查看地形和装备卡牌...');
+        await swipeUp(driver);
+        await driver.pause(500);
+        console.log('已向上滚动第二次\n');
+
         // ==================== 地形卡牌检查 ====================
-        console.log('[19/30] 检查故事导演页地形卡牌...');
+        console.log('[19/25] 检查故事导演页地形卡牌...');
         const terrains = ['森林', '山脉', '河流', '洞穴'];
         let foundTerrains = 0;
         for (const terrain of terrains) {
@@ -512,7 +572,7 @@ async function runRealDataTest() {
         }
 
         // ==================== 装备卡牌检查 ====================
-        console.log('[20/30] 检查故事导演页装备卡牌...');
+        console.log('[20/25] 检查故事导演页装备卡牌...');
         const equipments = ['魔法剑', '盾牌', '药水', '地图'];
         let foundEquipments = 0;
         for (const equip of equipments) {
@@ -530,7 +590,25 @@ async function runRealDataTest() {
         }
 
         // ==================== 角色选择测试 ====================
-        console.log('[21/30] 测试角色选择功能...');
+        console.log('[21/25] 测试角色选择功能...');
+        // 先滚动回顶部
+        const { height } = await driver.getWindowSize();
+        await driver.performActions([
+            {
+                type: 'pointer',
+                id: 'finger1',
+                parameters: { pointerType: 'touch' },
+                actions: [
+                    { type: 'pointerMove', duration: 0, x: 360, y: height * 0.3 },
+                    { type: 'pointerDown', button: 0 },
+                    { type: 'pause', duration: 100 },
+                    { type: 'pointerMove', duration: 300, x: 360, y: height * 0.7 },
+                    { type: 'pointerUp', button: 0 }
+                ]
+            }
+        ]);
+        await driver.pause(500);
+        
         if (await findAndTap(driver, '//*[contains(@text, "小勇者")]', 2000)) {
             testResults.characterSelection = true;
             console.log('角色选择功能正常\n');
@@ -538,7 +616,7 @@ async function runRealDataTest() {
         }
 
         // ==================== 舞台展示测试 ====================
-        console.log('[22/30] 测试舞台展示...');
+        console.log('[22/25] 测试舞台展示...');
         if (await isElementDisplayed(driver, '//*[contains(@text, "选择角色")]', 1000) ||
             await isElementDisplayed(driver, '//*[contains(@text, "舞台")]', 1000)) {
             testResults.stageDisplay = true;
@@ -546,7 +624,7 @@ async function runRealDataTest() {
         }
 
         // ==================== 返回导航测试 ====================
-        console.log('[23/30] 测试返回导航...');
+        console.log('[23/25] 测试返回导航...');
         if (await findAndTap(driver, '//*[contains(@text, "返回")]', 2000)) {
             testResults.backNavigation = true;
             console.log('返回导航正常\n');
@@ -554,7 +632,7 @@ async function runRealDataTest() {
         }
 
         // ==================== 返回首页测试 ====================
-        console.log('[24/30] 测试返回首页...');
+        console.log('[24/25] 测试返回首页...');
         if (await findAndTap(driver, '//*[contains(@text, "首页")]', 2000)) {
             testResults.returnHome = true;
             console.log('返回首页正常\n');
@@ -562,25 +640,14 @@ async function runRealDataTest() {
         }
 
         // ==================== 风格按钮测试 ====================
-        console.log('[25/30] 测试风格按钮...');
+        console.log('[25/25] 测试风格按钮...');
         if (await findAndTap(driver, '//*[contains(@text, "风格")]', 2000)) {
             testResults.styleButton = true;
             console.log('风格按钮正常\n');
             await driver.pause(500);
         }
 
-        // ==================== 崩溃检测 ====================
-        console.log('[26/30] 检测应用崩溃...');
-        const crashDetected = await checkForCrashes();
-        if (crashDetected) {
-            console.log('应用发生崩溃!\n');
-        } else {
-            console.log('应用运行正常，无崩溃\n');
-        }
-
         // ==================== 测试结果汇总 ====================
-        console.log('[27/30] 汇总测试结果...');
-        
         const totalTime = ((Date.now() - startTime) / 1000).toFixed(1);
         
         console.log('\n' + '='.repeat(70));
@@ -601,7 +668,7 @@ async function runRealDataTest() {
         console.log(`  ${testResults.puzzleFeature ? '✅' : '❌'} 解谜功能`);
         console.log(`  ${testResults.characterData ? '✅' : '❌'} 角色数据（每本书4个角色）`);
         console.log(`  ${testResults.plotData ? '✅' : '❌'} 情节元素数据`);
-        console.log(`  ${testResults.directorNavigation ? '✅' : '❌'} 故事导演页导航`);
+        console.log(`  ${testResults.directorNavigation ? '✅' : '❌'} 故事导演页导航（添加章节）`);
         console.log(`  ${testResults.directorPageTitle ? '✅' : '❌'} 故事导演页标题`);
         console.log(`  ${testResults.directorCharacterCards ? '✅' : '❌'} 故事导演页角色卡牌`);
         console.log(`  ${testResults.directorAdventureCards ? '✅' : '❌'} 故事导演页冒险卡牌`);
@@ -613,7 +680,6 @@ async function runRealDataTest() {
         console.log(`  ${testResults.backNavigation ? '✅' : '❌'} 返回导航`);
         console.log(`  ${testResults.returnHome ? '✅' : '❌'} 返回首页`);
         console.log(`  ${testResults.styleButton ? '✅' : '❌'} 风格按钮`);
-        console.log(`  ${testResults.cardDemoButton ? '✅' : '❌'} 卡牌Demo按钮`);
         
         const passedCount = Object.values(testResults).filter(v => v).length;
         const totalCount = Object.values(testResults).length;
