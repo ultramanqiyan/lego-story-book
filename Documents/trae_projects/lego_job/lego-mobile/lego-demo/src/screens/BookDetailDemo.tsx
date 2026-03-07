@@ -59,6 +59,7 @@ const BookDetailDemo: React.FC<BookDetailDemoProps> = ({ bookId, onBack, onNavig
     getBookById, 
     getChaptersByBookId, 
     getCharactersByBookId, 
+    getCharactersByTypeId,
     getPlotElementsByTypeId, 
     updateBookProgress,
     getUnlockedElements,
@@ -116,15 +117,23 @@ const BookDetailDemo: React.FC<BookDetailDemoProps> = ({ bookId, onBack, onNavig
         
         const unlocked = await getUnlockedElements(bookId);
         setUnlockedElements(unlocked);
+        console.log('[BookDetailDemo] unlocked elements:', unlocked.length);
         
+        // 角色加载：从 characters 表获取所有该类型的角色，然后过滤已解锁的
         const unlockedCharIds = unlocked
           .filter(e => e.elementType === 'character')
           .map(e => e.elementId);
-        const allChars = await getCharactersByBookId(bookId);
+        console.log('[BookDetailDemo] unlockedCharIds:', unlockedCharIds);
+        
+        const allChars = await getCharactersByTypeId(bookData.typeId || 'children');
+        console.log('[BookDetailDemo] allChars count:', allChars.length);
         setCharacters(allChars.filter(c => unlockedCharIds.includes(c.characterId)));
         
+        // 情节元素加载
         const allPlotElements = await getPlotElementsByTypeId(bookData.typeId);
         const unlockedPlotIds = unlocked.map(e => e.elementId);
+        console.log('[BookDetailDemo] unlockedPlotIds:', unlockedPlotIds);
+        console.log('[BookDetailDemo] allPlotElements count:', allPlotElements.length);
         setPlotElements(allPlotElements.filter(e => unlockedPlotIds.includes(e.elementId)));
       }
     } catch (error) {
