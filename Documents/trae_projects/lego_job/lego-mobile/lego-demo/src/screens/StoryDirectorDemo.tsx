@@ -834,9 +834,9 @@ D. 隐身衣`;
       selectedCharacters.includes(c.characterId)
     );
     
-    const protagonist = selectedCharData.find(c => c.roleType === 'protagonist');
-    const supporting = selectedCharData.filter(c => c.roleType === 'supporting');
-    const antagonist = selectedCharData.find(c => c.roleType === 'antagonist');
+    const protagonist = selectedCharData.find(c => c.roleType === '主角');
+    const supporting = selectedCharData.filter(c => c.roleType === '伙伴' || c.roleType === '导师');
+    const antagonist = selectedCharData.find(c => c.roleType === '反派');
     
     if (protagonist) {
       parts.push(protagonist.name);
@@ -881,9 +881,9 @@ D. 隐身衣`;
       selectedCharacters.includes(c.characterId)
     );
     
-    const protagonist = selectedCharData.find(c => c.roleType === 'protagonist');
-    const supporting = selectedCharData.filter(c => c.roleType === 'supporting');
-    const antagonist = selectedCharData.find(c => c.roleType === 'antagonist');
+    const protagonist = selectedCharData.find(c => c.roleType === '主角');
+    const supporting = selectedCharData.filter(c => c.roleType === '伙伴' || c.roleType === '导师');
+    const antagonist = selectedCharData.find(c => c.roleType === '反派');
     
     const selectedTerrainData = terrains.find(t => t.elementId === selectedTerrain);
     const selectedWeatherData = weathers.find(w => w.elementId === selectedWeather);
@@ -1742,23 +1742,24 @@ const styles = StyleSheet.create({
   },
   miniPreviewContainer: {
     marginHorizontal: 16,
+    marginTop: 16,
     marginBottom: 16,
     borderRadius: 16,
     overflow: 'hidden',
-    backgroundColor: 'rgba(0,0,0,0.5)',
-    borderWidth: 2,
-    borderColor: 'rgba(255, 215, 0, 0.2)',
+    backgroundColor: 'rgba(255, 255, 255, 0.9)',
+    borderWidth: 1,
+    borderColor: 'rgba(0, 0, 0, 0.08)',
   },
   miniPreviewHeader: {
     paddingHorizontal: 16,
     paddingVertical: 10,
     borderBottomWidth: 1,
-    borderBottomColor: 'rgba(255,255,255,0.1)',
+    borderBottomColor: 'rgba(0, 0, 0, 0.05)',
   },
   miniPreviewTitle: {
     fontSize: 14,
     fontWeight: 'bold',
-    color: '#ffd700',
+    color: '#1E293B',
     textAlign: 'center',
   },
   miniPreviewContent: {
@@ -1769,7 +1770,7 @@ const styles = StyleSheet.create({
   },
   miniPreviewRowTitle: {
     fontSize: 12,
-    color: 'rgba(255,255,255,0.6)',
+    color: '#64748B',
     marginBottom: 8,
   },
   miniCardsRow: {
@@ -1781,7 +1782,7 @@ const styles = StyleSheet.create({
     width: 70,
     height: 90,
     borderRadius: 8,
-    backgroundColor: 'rgba(30, 30, 50, 0.9)',
+    backgroundColor: '#FFFFFF',
     borderWidth: 2,
     alignItems: 'center',
     justifyContent: 'center',
@@ -1801,7 +1802,7 @@ const styles = StyleSheet.create({
   miniCardName: {
     fontSize: 10,
     fontWeight: '600',
-    color: '#fff',
+    color: '#1E293B',
     marginTop: 4,
     textAlign: 'center',
     paddingHorizontal: 4,
@@ -1829,38 +1830,39 @@ const styles = StyleSheet.create({
     borderRadius: 8,
     borderWidth: 2,
     borderStyle: 'dashed',
-    borderColor: 'rgba(255,255,255,0.3)',
+    borderColor: 'rgba(0, 0, 0, 0.15)',
     alignItems: 'center',
     justifyContent: 'center',
+    backgroundColor: 'rgba(0, 0, 0, 0.02)',
   },
   emptySlotRequired: {
-    borderColor: 'rgba(255, 215, 0, 0.5)',
-    backgroundColor: 'rgba(255, 215, 0, 0.05)',
+    borderColor: 'rgba(251, 146, 60, 0.5)',
+    backgroundColor: 'rgba(251, 146, 60, 0.05)',
   },
   emptySlotIcon: {
     fontSize: 20,
-    opacity: 0.5,
+    opacity: 0.4,
   },
   emptySlotLabel: {
     fontSize: 10,
-    color: 'rgba(255,255,255,0.5)',
+    color: '#94A3B8',
     marginTop: 4,
   },
   emptySlotRequiredLabel: {
     position: 'absolute',
     bottom: -12,
     fontSize: 8,
-    color: '#ffd700',
+    color: '#F97316',
   },
   previewTextContainer: {
-    backgroundColor: 'rgba(255,255,255,0.05)',
+    backgroundColor: 'rgba(0, 0, 0, 0.03)',
     borderRadius: 8,
     padding: 10,
     marginTop: 4,
   },
   previewText: {
     fontSize: 12,
-    color: 'rgba(255,255,255,0.7)',
+    color: '#64748B',
     fontStyle: 'italic',
     lineHeight: 18,
   },
