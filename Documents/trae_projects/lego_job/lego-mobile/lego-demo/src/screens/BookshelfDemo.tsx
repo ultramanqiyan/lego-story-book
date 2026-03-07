@@ -13,7 +13,7 @@ import {
 } from 'react-native';
 import { LinearGradient } from 'expo-linear-gradient';
 import { useData } from '../context/DataContext';
-import { getThemeColors } from '../theme/storyThemes';
+import { getThemeColors, getGlassStyle } from '../theme';
 
 const { width, height } = Dimensions.get('window');
 const BOOK_CARD_WIDTH = (width - 60) / 2;
@@ -35,37 +35,6 @@ interface BookshelfDemoProps {
   onBack: () => void;
   onNavigateToBookDetail: (bookId: string, bookTitle: string) => void;
 }
-
-const TYPE_COLORS: Record<string, { spine: string; cover: string; accent: string; background: string[] }> = {
-  children: { 
-    spine: '#7C3AED', 
-    cover: '#A78BFA', 
-    accent: '#FBBF24',
-    background: ['#F5F3FF', '#EDE9FE', '#DDD6FE']
-  },
-  magic: { 
-    spine: '#8B5CF6', 
-    cover: '#A78BFA', 
-    accent: '#FBBF24',
-    background: ['#1E1B4B', '#312E81', '#4338CA']
-  },
-  urban: { 
-    spine: '#2563EB', 
-    cover: '#3B82F6', 
-    accent: '#F97316',
-    background: ['#F8FAFC', '#EFF6FF', '#DBEAFE']
-  },
-  mechanical: { 
-    spine: '#00FFFF', 
-    cover: '#7B61FF', 
-    accent: '#FF00FF',
-    background: ['#0B0B10', '#1A1A2E', '#16213E']
-  },
-};
-
-const getTypeColorScheme = (typeId: string) => {
-  return TYPE_COLORS[typeId] || TYPE_COLORS.children;
-};
 
 const BookshelfDemo: React.FC<BookshelfDemoProps> = ({ onBack, onNavigateToBookDetail }) => {
   const { books: dataBooks, isLoading, bookTypes, createBook, refreshBooks } = useData();
@@ -157,35 +126,35 @@ const BookshelfDemo: React.FC<BookshelfDemoProps> = ({ onBack, onNavigateToBookD
 
   const renderBookCard = (book: Book, index: number) => {
     const isSelected = selectedBookId === book.bookId;
-    const colorScheme = getTypeColorScheme(book.typeId);
+    const themeColors = getThemeColors(book.typeId);
     
     return (
       <TouchableOpacity
         key={book.bookId}
         style={[
           styles.bookCard,
-          { backgroundColor: colorScheme.cover },
+          { backgroundColor: themeColors.card },
           isSelected && styles.bookCardSelected,
         ]}
         onPress={() => handleBookPress(book)}
         activeOpacity={0.85}
       >
-        <View style={[styles.bookSpine, { backgroundColor: colorScheme.spine }]} />
+        <View style={[styles.bookSpine, { backgroundColor: themeColors.primary }]} />
         
         <View style={styles.bookCover}>
-          <View style={[styles.emojiContainer, { backgroundColor: colorScheme.accent }]}>
+          <View style={[styles.emojiContainer, { backgroundColor: themeColors.accent }]}>
             <Text style={styles.bookEmoji}>{book.coverEmoji}</Text>
           </View>
           
-          <Text style={styles.bookTitle} numberOfLines={2}>
+          <Text style={[styles.bookTitle, { color: themeColors.text }]} numberOfLines={2}>
             {book.title}
           </Text>
           
           <View style={styles.bookInfo}>
-            <Text style={styles.bookChapters}>📚 {book.chapterCount}章</Text>
+            <Text style={[styles.bookChapters, { color: themeColors.textSecondary }]}>📚 {book.chapterCount}章</Text>
             {book.progress !== undefined && book.progress > 0 && (
               <View style={styles.progressContainer}>
-                <View style={[styles.progressBar, { width: `${book.progress}%` }]} />
+                <View style={[styles.progressBar, { width: `${book.progress}%`, backgroundColor: themeColors.accent }]} />
               </View>
             )}
           </View>
@@ -335,7 +304,7 @@ const BookshelfDemo: React.FC<BookshelfDemoProps> = ({ onBack, onNavigateToBookD
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: '#1E1B4B',
+    backgroundColor: '#F8FAFC',
   },
   header: {
     flexDirection: 'row',
@@ -343,9 +312,14 @@ const styles = StyleSheet.create({
     justifyContent: 'space-between',
     paddingHorizontal: 15,
     paddingVertical: 12,
-    backgroundColor: '#312E81',
+    backgroundColor: '#FFFFFF',
     borderBottomWidth: 1,
-    borderBottomColor: '#4C1D95',
+    borderBottomColor: '#E2E8F0',
+    shadowColor: '#64748B',
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.08,
+    shadowRadius: 4,
+    elevation: 2,
   },
   backButton: {
     padding: 12,
@@ -356,11 +330,12 @@ const styles = StyleSheet.create({
     alignItems: 'center',
   },
   backButtonText: {
-    color: '#E0E7FF',
+    color: '#64748B',
     fontSize: 16,
+    fontWeight: '500',
   },
   headerTitle: {
-    color: '#F8FAFC',
+    color: '#1E293B',
     fontSize: 20,
     fontWeight: 'bold',
   },
@@ -369,11 +344,14 @@ const styles = StyleSheet.create({
     paddingHorizontal: 14,
     paddingVertical: 8,
     borderRadius: 20,
-    borderWidth: 1,
-    borderColor: '#A78BFA',
+    shadowColor: '#8B5CF6',
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.2,
+    shadowRadius: 4,
+    elevation: 3,
   },
   newStoryButtonText: {
-    color: '#F8FAFC',
+    color: '#FFFFFF',
     fontSize: 14,
     fontWeight: '600',
   },
@@ -384,10 +362,10 @@ const styles = StyleSheet.create({
   },
   shelfTop: {
     height: 15,
-    backgroundColor: '#4338CA',
+    backgroundColor: '#E2E8F0',
     marginHorizontal: -15,
     borderTopWidth: 3,
-    borderTopColor: '#6366F1',
+    borderTopColor: '#CBD5E1',
   },
   shelfRow: {
     marginBottom: 8,
@@ -398,30 +376,30 @@ const styles = StyleSheet.create({
     paddingHorizontal: 5,
     paddingTop: 15,
     paddingBottom: 5,
-    backgroundColor: 'rgba(49, 46, 129, 0.3)',
-    borderRadius: 8,
+    backgroundColor: '#F1F5F9',
+    borderRadius: 12,
   },
   emptySlot: {
     width: BOOK_CARD_WIDTH,
   },
   shelfBoard: {
     height: 18,
-    backgroundColor: '#4338CA',
+    backgroundColor: '#CBD5E1',
     marginHorizontal: -15,
     borderBottomWidth: 3,
-    borderBottomColor: '#654321',
+    borderBottomColor: '#94A3B8',
   },
   shelfShadow: {
     height: 6,
-    backgroundColor: '#312E81',
+    backgroundColor: '#E2E8F0',
     marginTop: 'auto',
   },
   shelfBottom: {
     height: 25,
-    backgroundColor: '#4338CA',
+    backgroundColor: '#E2E8F0',
     marginHorizontal: -15,
     borderBottomWidth: 4,
-    borderBottomColor: '#6366F1',
+    borderBottomColor: '#CBD5E1',
   },
   bookCard: {
     width: BOOK_CARD_WIDTH,
@@ -429,16 +407,16 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     borderRadius: 12,
     overflow: 'hidden',
-    shadowColor: '#8B5CF6',
-    shadowOffset: { width: 3, height: 4 },
-    shadowOpacity: 0.35,
-    shadowRadius: 5,
-    elevation: 8,
+    shadowColor: '#64748B',
+    shadowOffset: { width: 2, height: 3 },
+    shadowOpacity: 0.15,
+    shadowRadius: 6,
+    elevation: 4,
     borderWidth: 1,
-    borderColor: 'rgba(139, 92, 246, 0.3)',
+    borderColor: 'rgba(139, 92, 246, 0.15)',
   },
   bookCardSelected: {
-    shadowOpacity: 0.5,
+    shadowOpacity: 0.25,
     shadowRadius: 8,
     transform: [{ scale: 1.02 }],
   },
@@ -459,11 +437,11 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     justifyContent: 'center',
     marginTop: 10,
-    shadowColor: '#8B5CF6',
+    shadowColor: '#64748B',
     shadowOffset: { width: 0, height: 2 },
-    shadowOpacity: 0.15,
+    shadowOpacity: 0.1,
     shadowRadius: 3,
-    elevation: 3,
+    elevation: 2,
   },
   bookEmoji: {
     fontSize: 32,
@@ -471,11 +449,8 @@ const styles = StyleSheet.create({
   bookTitle: {
     fontSize: 15,
     fontWeight: 'bold',
-    color: '#FFF',
+    color: '#374151',
     textAlign: 'center',
-    textShadowColor: 'rgba(0,0,0,0.3)',
-    textShadowOffset: { width: 1, height: 1 },
-    textShadowRadius: 2,
     marginVertical: 8,
   },
   bookInfo: {
@@ -484,26 +459,26 @@ const styles = StyleSheet.create({
   },
   bookChapters: {
     fontSize: 12,
-    color: 'rgba(255,255,255,0.9)',
+    color: '#6B7280',
     marginBottom: 6,
   },
   progressContainer: {
     width: '80%',
     height: 4,
-    backgroundColor: 'rgba(255,255,255,0.3)',
+    backgroundColor: '#E5E7EB',
     borderRadius: 2,
     overflow: 'hidden',
   },
   progressBar: {
     height: '100%',
-    backgroundColor: '#FBBF24',
+    backgroundColor: '#10B981',
     borderRadius: 2,
   },
   newBadge: {
     position: 'absolute',
     top: 8,
     right: 8,
-    backgroundColor: '#F43F5E',
+    backgroundColor: '#EC4899',
     paddingHorizontal: 6,
     paddingVertical: 2,
     borderRadius: 8,
@@ -516,47 +491,47 @@ const styles = StyleSheet.create({
   footer: {
     paddingVertical: 12,
     alignItems: 'center',
-    backgroundColor: '#8B4513',
-    borderTopWidth: 2,
-    borderTopColor: '#A0522D',
+    backgroundColor: '#FFFFFF',
+    borderTopWidth: 1,
+    borderTopColor: '#E2E8F0',
   },
   footerText: {
-    color: '#FFF8DC',
+    color: '#64748B',
     fontSize: 13,
   },
   modalOverlay: {
     flex: 1,
-    backgroundColor: 'rgba(0,0,0,0.5)',
+    backgroundColor: 'rgba(15, 23, 42, 0.5)',
     justifyContent: 'center',
     alignItems: 'center',
   },
   modalContent: {
-    backgroundColor: '#FFF8DC',
-    borderRadius: 16,
+    backgroundColor: '#FFFFFF',
+    borderRadius: 20,
     padding: 24,
     width: width * 0.85,
-    borderWidth: 2,
-    borderColor: '#8B4513',
-    shadowColor: '#000',
+    borderWidth: 1,
+    borderColor: '#E2E8F0',
+    shadowColor: '#1E293B',
     shadowOffset: { width: 0, height: 10 },
-    shadowOpacity: 0.3,
-    shadowRadius: 15,
+    shadowOpacity: 0.15,
+    shadowRadius: 20,
     elevation: 10,
   },
   modalTitle: {
     fontSize: 20,
     fontWeight: 'bold',
-    color: '#5D3A1A',
+    color: '#1E293B',
     textAlign: 'center',
     marginBottom: 20,
   },
   inputContainer: {
     flexDirection: 'row',
     alignItems: 'center',
-    backgroundColor: '#FFF',
+    backgroundColor: '#F8FAFC',
     borderRadius: 12,
-    borderWidth: 2,
-    borderColor: '#DEB887',
+    borderWidth: 1,
+    borderColor: '#E2E8F0',
     paddingHorizontal: 14,
     marginBottom: 12,
   },
@@ -567,18 +542,18 @@ const styles = StyleSheet.create({
   textInput: {
     flex: 1,
     fontSize: 16,
-    color: '#3D2914',
+    color: '#1E293B',
     paddingVertical: 14,
   },
   modalHint: {
     fontSize: 13,
-    color: '#888',
+    color: '#94A3B8',
     textAlign: 'center',
     marginBottom: 20,
   },
   typeSelectorLabel: {
     fontSize: 14,
-    color: '#5D3A1A',
+    color: '#475569',
     marginBottom: 8,
     fontWeight: '600',
   },
@@ -594,11 +569,12 @@ const styles = StyleSheet.create({
     paddingHorizontal: 12,
     paddingVertical: 8,
     borderRadius: 20,
-    backgroundColor: '#FFF',
-    borderWidth: 2,
+    backgroundColor: '#F8FAFC',
+    borderWidth: 1,
   },
   typeOptionSelected: {
-    backgroundColor: 'rgba(139, 69, 19, 0.1)',
+    backgroundColor: '#F5F3FF',
+    borderColor: '#8B5CF6',
   },
   typeEmoji: {
     fontSize: 16,
@@ -606,7 +582,7 @@ const styles = StyleSheet.create({
   },
   typeName: {
     fontSize: 13,
-    color: '#5D3A1A',
+    color: '#475569',
     fontWeight: '500',
   },
   modalButtons: {
@@ -618,29 +594,29 @@ const styles = StyleSheet.create({
     flex: 1,
     paddingVertical: 14,
     borderRadius: 12,
-    borderWidth: 2,
-    borderColor: '#8B4513',
+    borderWidth: 1,
+    borderColor: '#E2E8F0',
     alignItems: 'center',
-    backgroundColor: '#FFF',
+    backgroundColor: '#FFFFFF',
   },
   modalCancelText: {
     fontSize: 16,
-    color: '#8B4513',
+    color: '#64748B',
     fontWeight: '600',
   },
   modalCreateButton: {
     flex: 1,
     paddingVertical: 14,
     borderRadius: 12,
-    backgroundColor: '#8B4513',
+    backgroundColor: '#8B5CF6',
     alignItems: 'center',
   },
   modalCreateButtonDisabled: {
-    backgroundColor: '#D2B48C',
+    backgroundColor: '#C4B5FD',
   },
   modalCreateText: {
     fontSize: 16,
-    color: '#FFF',
+    color: '#FFFFFF',
     fontWeight: 'bold',
   },
 });
