@@ -4,16 +4,25 @@ export const storyThemes = {
     name: '儿童探险',
     description: '适合儿童的冒险故事',
     colors: {
-      primary: '#7C3AED',
-      secondary: '#A78BFA',
-      cta: '#F43F5E',
-      background: '#F5F3FF',
-      backgroundGradient: ['#F5F3FF', '#EDE9FE', '#DDD6FE'],
-      text: '#1E1B4B',
-      border: '#C4B5FD',
-      card: '#FFFFFF',
-      cardBorder: '#E9D5FF',
+      primary: '#FB923C',
+      secondary: '#FBBF24',
+      cta: '#F87171',
+      background: '#FFFDF7',
+      backgroundGradient: ['#FFFDF7', '#FFFBEB', '#FEF7E6'],
+      primaryGradient: ['#FB923C', '#FBBF24'],
+      ctaGradient: ['#F87171', '#FB923C'],
+      text: '#92400E',
+      textSecondary: '#B45309',
+      border: 'rgba(251, 191, 36, 0.25)',
+      card: 'rgba(255, 255, 255, 0.9)',
+      cardBorder: 'rgba(251, 191, 36, 0.3)',
       accent: '#FBBF24',
+    },
+    glassEffect: {
+      backgroundColor: 'rgba(255, 255, 255, 0.85)',
+      borderColor: 'rgba(251, 191, 36, 0.25)',
+      blur: 12,
+      shadowColor: 'rgba(251, 146, 60, 0.12)',
     },
     typography: {
       fontFamily: 'Fredoka',
@@ -22,8 +31,6 @@ export const storyThemes = {
     },
     style: {
       borderRadius: 16,
-      shadowColor: '#7C3AED',
-      shadowOpacity: 0.15,
       cardStyle: 'playful',
     },
   },
@@ -32,16 +39,25 @@ export const storyThemes = {
     name: '魔法世界',
     description: '魔法奇幻故事',
     colors: {
-      primary: '#8B5CF6',
-      secondary: '#A78BFA',
-      cta: '#FBBF24',
+      primary: '#A78BFA',
+      secondary: '#C4B5FD',
+      cta: '#F9A8D4',
       background: '#1E1B4B',
-      backgroundGradient: ['#1E1B4B', '#312E81', '#4338CA'],
-      text: '#F8FAFC',
-      border: '#4C1D95',
-      card: '#312E81',
-      cardBorder: '#6366F1',
-      accent: '#FBBF24',
+      backgroundGradient: ['#1E1B4B', '#2D2867', '#3D3683'],
+      primaryGradient: ['#A78BFA', '#C4B5FD'],
+      ctaGradient: ['#F9A8D4', '#FBCFE8'],
+      text: '#EDE9FE',
+      textSecondary: '#C4B5FD',
+      border: 'rgba(167, 139, 250, 0.35)',
+      card: 'rgba(67, 56, 202, 0.6)',
+      cardBorder: 'rgba(167, 139, 250, 0.4)',
+      accent: '#C4B5FD',
+    },
+    glassEffect: {
+      backgroundColor: 'rgba(67, 56, 202, 0.5)',
+      borderColor: 'rgba(167, 139, 250, 0.35)',
+      blur: 18,
+      shadowColor: 'rgba(167, 139, 250, 0.2)',
     },
     typography: {
       fontFamily: 'Cinzel',
@@ -50,8 +66,6 @@ export const storyThemes = {
     },
     style: {
       borderRadius: 12,
-      shadowColor: '#8B5CF6',
-      shadowOpacity: 0.3,
       cardStyle: 'mystical',
     },
   },
@@ -60,16 +74,25 @@ export const storyThemes = {
     name: '都市职场',
     description: '现代都市故事',
     colors: {
-      primary: '#2563EB',
-      secondary: '#3B82F6',
-      cta: '#F97316',
+      primary: '#60A5FA',
+      secondary: '#93C5FD',
+      cta: '#6EE7B7',
       background: '#F8FAFC',
-      backgroundGradient: ['#F8FAFC', '#EFF6FF', '#DBEAFE'],
-      text: '#1E293B',
-      border: '#E2E8F0',
-      card: '#FFFFFF',
-      cardBorder: '#BFDBFE',
-      accent: '#0369A1',
+      backgroundGradient: ['#F8FAFC', '#F1F5F9', '#E8EEF4'],
+      primaryGradient: ['#60A5FA', '#93C5FD'],
+      ctaGradient: ['#6EE7B7', '#A7F3D0'],
+      text: '#475569',
+      textSecondary: '#64748B',
+      border: 'rgba(148, 163, 184, 0.2)',
+      card: 'rgba(255, 255, 255, 0.92)',
+      cardBorder: 'rgba(148, 163, 184, 0.25)',
+      accent: '#93C5FD',
+    },
+    glassEffect: {
+      backgroundColor: 'rgba(255, 255, 255, 0.88)',
+      borderColor: 'rgba(148, 163, 184, 0.2)',
+      blur: 14,
+      shadowColor: 'rgba(96, 165, 250, 0.1)',
     },
     typography: {
       fontFamily: 'Inter',
@@ -78,8 +101,6 @@ export const storyThemes = {
     },
     style: {
       borderRadius: 8,
-      shadowColor: '#1E293B',
-      shadowOpacity: 0.1,
       cardStyle: 'professional',
     },
   },
@@ -88,16 +109,25 @@ export const storyThemes = {
     name: '机械帝国',
     description: '科幻机械故事',
     colors: {
-      primary: '#00FFFF',
-      secondary: '#7B61FF',
-      cta: '#FF00FF',
-      background: '#0B0B10',
-      backgroundGradient: ['#0B0B10', '#1A1A2E', '#16213E'],
-      text: '#E0E0FF',
-      border: '#333344',
-      card: '#1A1A2E',
-      cardBorder: '#00FFFF',
-      accent: '#00FF41',
+      primary: '#67E8F9',
+      secondary: '#A5F3FC',
+      cta: '#A78BFA',
+      background: '#0F172A',
+      backgroundGradient: ['#0F172A', '#1E293B', '#283548'],
+      primaryGradient: ['#67E8F9', '#A5F3FC'],
+      ctaGradient: ['#A78BFA', '#C4B5FD'],
+      text: '#E2E8F0',
+      textSecondary: '#94A3B8',
+      border: 'rgba(103, 232, 249, 0.3)',
+      card: 'rgba(51, 65, 85, 0.65)',
+      cardBorder: 'rgba(103, 232, 249, 0.35)',
+      accent: '#A5F3FC',
+    },
+    glassEffect: {
+      backgroundColor: 'rgba(51, 65, 85, 0.55)',
+      borderColor: 'rgba(103, 232, 249, 0.3)',
+      blur: 18,
+      shadowColor: 'rgba(103, 232, 249, 0.15)',
     },
     typography: {
       fontFamily: 'Orbitron',
@@ -106,25 +136,28 @@ export const storyThemes = {
     },
     style: {
       borderRadius: 4,
-      shadowColor: '#00FFFF',
-      shadowOpacity: 0.2,
       cardStyle: 'tech',
     },
   },
 };
 
-export const getTheme = (typeId) => {
+export const getTheme = (typeId: string) => {
   return storyThemes[typeId] || storyThemes.magic;
 };
 
-export const getThemeColors = (typeId) => {
+export const getThemeColors = (typeId: string) => {
   const theme = getTheme(typeId);
   return theme.colors;
 };
 
-export const getThemeStyle = (typeId) => {
+export const getThemeStyle = (typeId: string) => {
   const theme = getTheme(typeId);
   return theme.style;
+};
+
+export const getGlassEffect = (typeId: string) => {
+  const theme = getTheme(typeId);
+  return theme.glassEffect;
 };
 
 export default storyThemes;
