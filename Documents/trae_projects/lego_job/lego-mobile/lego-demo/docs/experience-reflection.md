@@ -2676,4 +2676,87 @@ const handlePuzzleAnswer = async (optionIndex: number, chapter: Chapter) => {
 
 ---
 
-*最后更新：2026-03-07 10:45*
+### 问题45：答题后提示和目录页状态图标显示问题
+
+**问题描述：**
+1. 答题正确或失败三次后，再次答题没有提示
+2. 目录页没有显示答题状态图标（✅ 或 ❌）
+
+**根本原因分析：**
+1. **答题提示**：`handlePuzzleAnswer` 函数检查到已回答后直接返回，没有提示用户
+2. **状态图标不显示**：`getChaptersByBookId` 函数没有返回 `puzzleResult` 字段
+
+**解决方案：**
+
+1. **添加答题提示**：
+   ```typescript
+   if (chapter.puzzleResult !== null) {
+     Alert.alert('提示', '已经回答过了，不能重复答题');
+     return;
+   }
+   ```
+
+2. **修复状态图标显示**：
+   ```typescript
+   // DatabaseService.ts - getChaptersByBookId 函数
+   const chapter = {
+     // ...其他字段
+     puzzleResult: r.puzzle_result,  // 添加这个字段
+   };
+   ```
+
+3. **修复状态图标逻辑**：
+   ```typescript
+   const getStatusIcon = (chapter: Chapter) => {
+     if (chapter.puzzleResult === 1) return '✅';  // 回答正确
+     if (chapter.puzzleResult === 0) return '❌';  // 回答失败三次
+     if (chapter.hasPuzzle && chapter.puzzleResult === null) return '🧩';  // 未回答
+     if (!chapter.hasPuzzle) return '○';  // 无谜题
+     return '🔒';
+   };
+   ```
+
+**关键代码位置：**
+- `src/screens/BookDetailDemo.tsx:193-205` - handlePuzzleAnswer 函数
+- `src/database/DatabaseService.ts:384-408` - getChaptersByBookId 函数
+
+**经验教训：**
+1. **数据库字段映射**：确保查询函数返回所有需要的字段
+2. **用户反馈**：重要操作应该给用户明确的反馈
+3. **状态检查**：在函数开头检查状态，避免重复执行
+
+---
+
+### 问题46：书架页章节数没有更新
+
+**问题描述：**
+- 添加新章节后，返回书架页，章节数没有变化
+
+**根本原因分析：**
+- `StoryDirectorDemo` 中添加章节后，没有刷新书籍数据
+- 书架页显示的是旧数据
+
+**解决方案：**
+
+在 `StoryDirectorDemo` 中添加章节后调用 `refreshBooks`：
+
+```typescript
+const { ..., refreshBooks } = useData();
+
+// 添加章节后
+await addChapter(bookId, chapterData);
+await refreshBooks();  // 刷新书籍数据
+onBack();
+```
+
+**关键代码位置：**
+- `src/screens/StoryDirectorDemo.tsx:63` - useData hook
+- `src/screens/StoryDirectorDemo.tsx:567-573` - handleShoot 函数
+
+**经验教训：**
+1. **数据同步**：修改数据后需要刷新相关页面
+2. **Context 状态管理**：使用 Context 提供的刷新函数更新数据
+
+---
+
+*最后更新：2026-03-07 11:00*
