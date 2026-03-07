@@ -9,6 +9,7 @@ import {
   Animated,
   Dimensions,
   Modal,
+  Alert,
 } from 'react-native';
 import { useData } from '../context/DataContext';
 import { Book, Chapter, Character, PlotElement, UnlockedElement } from '../database/DatabaseService';
@@ -22,8 +23,9 @@ const { width, height } = Dimensions.get('window');
 const PAGE_WIDTH = (width - 60) / 2;
 const PAGE_HEIGHT = height - 200;
 const ITEMS_PER_PAGE = 6;
-const CARD_WIDTH = 80;
-const CARD_HEIGHT = 100;
+// 计算卡片宽度：每行显示2张卡片，考虑gap和padding
+const CARD_WIDTH = (width - 10 - 12) / 2;  // (屏幕宽度 - paddingHorizontal*2 - gap) / 2
+const CARD_HEIGHT = CARD_WIDTH * 1.25;  // 保持 4:5 比例
 
 type TabType = 'chapters' | 'characters' | 'plots';
 type ChapterViewMode = 'directory' | 'content';
@@ -31,10 +33,11 @@ type ChapterViewMode = 'directory' | 'content';
 
 
 const getStatusIcon = (chapter: Chapter) => {
-  if (chapter.puzzleResult === 1) return '✅';
-  if (chapter.hasPuzzle && chapter.puzzleResult === null) return '🧩';
-  if (!chapter.hasPuzzle && chapter.puzzleResult === null) return '○';
-  return '🔒';
+  if (chapter.puzzleResult === 1) return '✅';  // 回答正确
+  if (chapter.puzzleResult === 0) return '❌';  // 回答失败三次
+  if (chapter.hasPuzzle && chapter.puzzleResult === null) return '🧩';  // 未回答
+  if (!chapter.hasPuzzle) return '○';  // 无谜题
+  return '🔒';  // 其他情况
 };
 
 interface BookDetailDemoProps {
@@ -199,6 +202,7 @@ const BookDetailDemo: React.FC<BookDetailDemoProps> = ({ bookId, onBack, onNavig
     // 检查是否已经回答过（成功或失败三次）
     if (chapter.puzzleResult !== null) {
       console.log('[Puzzle] Already answered, puzzleResult:', chapter.puzzleResult);
+      Alert.alert('提示', '已经回答过了，不能重复答题');
       return;
     }
     

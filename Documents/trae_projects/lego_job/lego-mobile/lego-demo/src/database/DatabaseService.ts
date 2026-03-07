@@ -399,9 +399,10 @@ export const DatabaseService = {
         puzzleQuestion: r.puzzle_question,
         puzzleOptions: r.puzzle_options ? JSON.parse(r.puzzle_options) : undefined,
         puzzleCorrectIndex: r.puzzle_correct_index,
+        puzzleResult: r.puzzle_result,
         characterIds: r.character_ids ? JSON.parse(r.character_ids) : undefined,
       };
-      console.log(`[DB] Chapter ${r.chapter_number}: hasPuzzle=${chapter.hasPuzzle}, puzzleQuestion=${chapter.puzzleQuestion}, puzzleOptions=${JSON.stringify(chapter.puzzleOptions)}`);
+      console.log(`[DB] Chapter ${r.chapter_number}: hasPuzzle=${chapter.hasPuzzle}, puzzleResult=${chapter.puzzleResult}`);
       return chapter;
     });
     return chapters;
