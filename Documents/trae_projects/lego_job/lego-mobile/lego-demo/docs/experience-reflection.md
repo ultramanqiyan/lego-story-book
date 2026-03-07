@@ -2386,4 +2386,52 @@ cardSelected: {
 
 ---
 
-*最后更新：2026-03-07 10:30*
+## 2026-03-07 卡牌掉落机制调查
+
+### 问题40：解谜成功后卡牌不掉落
+
+**问题描述：**
+- 新建书籍后，添加章节，进入章节答题
+- 答题正确后，没有卡牌掉落
+
+**调查过程：**
+
+1. **追踪代码流程**：
+   - `handleShoot()` 创建章节，包含谜题
+   - `BookDetailDemo.handlePuzzleAnswer()` 处理答题
+   - `getLockedElements()` 获取未解锁元素
+   - `unlockElement()` 解锁元素
+
+2. **添加调试日志**：
+   ```typescript
+   console.log('[Puzzle] handlePuzzleAnswer called');
+   console.log('[Puzzle] book:', book);
+   console.log('[Puzzle] bookId:', bookId, 'typeId:', book?.typeId);
+   console.log('[Puzzle] lockedElements result:', JSON.stringify(lockedElements, null, 2));
+   console.log('[Puzzle] allLocked count:', allLocked.length);
+   ```
+
+3. **数据统计**：
+   - children 类型每种 category 约有 4 个元素
+   - 创建书籍时解锁 2 个，剩余 2 个可以掉落
+
+**可能的原因：**
+
+1. **`book.typeId` 未正确设置**
+   - 需要检查 `loadData()` 中 `bookData.typeId` 的值
+
+2. **`getLockedElements()` 返回空数组**
+   - 可能 `typeId` 过滤条件不匹配
+   - 可能所有元素都已解锁
+
+**待验证：**
+- 需要手动在模拟器上测试，查看 console 日志
+- 检查 `[Puzzle]` 相关日志输出
+
+**关键代码位置：**
+- `src/screens/BookDetailDemo.tsx:177-217` - handlePuzzleAnswer 函数
+- `src/database/DatabaseService.ts:604-677` - getLockedElements 函数
+
+---
+
+*最后更新：2026-03-07 16:40*

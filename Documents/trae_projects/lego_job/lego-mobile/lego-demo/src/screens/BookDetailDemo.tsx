@@ -175,6 +175,11 @@ const BookDetailDemo: React.FC<BookDetailDemoProps> = ({ bookId, onBack, onNavig
   };
 
   const handlePuzzleAnswer = async (optionIndex: number, chapter: Chapter) => {
+    console.log('[Puzzle] handlePuzzleAnswer called');
+    console.log('[Puzzle] optionIndex:', optionIndex, 'correctIndex:', chapter.puzzleCorrectIndex);
+    console.log('[Puzzle] book:', book);
+    console.log('[Puzzle] bookId:', bookId, 'typeId:', book?.typeId);
+    
     if (!chapter.puzzleQuestion || !chapter.puzzleOptions || puzzleAttempts >= 3) return;
     
     setPuzzleAnswer(optionIndex);
@@ -182,11 +187,15 @@ const BookDetailDemo: React.FC<BookDetailDemoProps> = ({ bookId, onBack, onNavig
     setPuzzleAttempts(newAttempts);
     
     if (optionIndex === chapter.puzzleCorrectIndex) {
+      console.log('[Puzzle] Answer CORRECT!');
       setPuzzleResult('correct');
       await updatePuzzleResult(chapter.chapterId, 1);
       
       if (book) {
+        console.log('[Puzzle] Calling getLockedElements with bookId:', bookId, 'typeId:', book.typeId);
         const lockedElements = await getLockedElements(bookId, book.typeId);
+        console.log('[Puzzle] lockedElements result:', JSON.stringify(lockedElements, null, 2));
+        
         const allLocked = [
           ...lockedElements.characters.map(c => ({ id: c.characterId, type: 'character', emoji: c.emoji, name: c.name })),
           ...lockedElements.weathers.map(w => ({ id: w.elementId, type: 'weather', emoji: w.emoji, name: w.name })),
@@ -195,19 +204,29 @@ const BookDetailDemo: React.FC<BookDetailDemoProps> = ({ bookId, onBack, onNavig
           ...lockedElements.adventures.map(a => ({ id: a.elementId, type: 'adventure', emoji: a.emoji, name: a.name })),
         ];
         
+        console.log('[Puzzle] allLocked count:', allLocked.length);
+        console.log('[Puzzle] allLocked items:', allLocked);
+        
         if (allLocked.length > 0) {
           const randomIndex = Math.floor(Math.random() * allLocked.length);
           const randomCard = allLocked[randomIndex];
+          console.log('[Puzzle] Unlocking card:', randomCard);
           await unlockElement(bookId, randomCard.id, randomCard.type);
           setUnlockedCard(randomCard);
           setShowUnlockModal(true);
           await loadData();
+        } else {
+          console.log('[Puzzle] No locked elements to unlock!');
         }
+      } else {
+        console.log('[Puzzle] No book found!');
       }
     } else if (newAttempts >= 3) {
+      console.log('[Puzzle] Answer WRONG, max attempts reached');
       setPuzzleResult('wrong');
       await updatePuzzleResult(chapter.chapterId, 0);
     } else {
+      console.log('[Puzzle] Answer WRONG, attempts:', newAttempts);
       setPuzzleResult('wrong');
       setTimeout(() => {
         setPuzzleResult(null);

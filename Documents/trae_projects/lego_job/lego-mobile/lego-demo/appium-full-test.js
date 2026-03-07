@@ -694,9 +694,27 @@ async function runFullTest() {
         
         // ==================== 答题功能测试 ====================
         console.log('[44/50] 进入书籍详情页测试答题功能...');
-        // 先返回到书籍详情页
+        // 先返回到首页
         await driver.back();
-        await driver.pause(1000);
+        await driver.pause(500);
+        await driver.back();
+        await driver.pause(500);
+        
+        // 进入书架页
+        const bookshelfBtn2 = await driver.$$('//*[contains(@text, "书架")]');
+        if (bookshelfBtn2.length > 0) {
+            await bookshelfBtn2[0].click();
+            await driver.pause(1000);
+            console.log('已进入书架页\n');
+        }
+        
+        // 点击新创建的书籍
+        const userBooks = await driver.$$('//*[contains(@text, "测试书籍")]');
+        if (userBooks.length > 0) {
+            await userBooks[0].click();
+            await driver.pause(1500);
+            console.log('已进入书籍详情页\n');
+        }
         
         // 确保在章节标签页
         const chaptersTab = await driver.$$('//*[contains(@text, "章节")]');
@@ -717,35 +735,116 @@ async function runFullTest() {
         // 查找答题选项（格式为 "A. xxx" 或 "B. xxx"）
         console.log('[45/50] 查找答题选项...');
         const puzzleOptions = await driver.$$('//*[contains(@text, "A.") or contains(@text, "B.") or contains(@text, "C.") or contains(@text, "D.")]');
+        console.log(`找到 ${puzzleOptions.length} 个答题选项\n`);
+        
         if (puzzleOptions.length > 0) {
-            console.log(`找到 ${puzzleOptions.length} 个答题选项\n`);
-            await puzzleOptions[0].click();
-            testResults.puzzleOptionClick = true;
-            console.log('已点击第一个答题选项\n');
-            await driver.pause(2000);
+            // 记录答题前的卡牌数量
+            console.log('[46/50] 记录答题前的卡牌数量...');
+            await driver.back();
+            await driver.pause(500);
             
-            // 检查是否出现解锁弹窗
-            console.log('[46/50] 检查卡牌掉落弹窗...');
-            const unlockModal = await driver.$$('//*[contains(@text, "解锁") or contains(@text, "获得") or contains(@text, "恭喜")]');
-            if (unlockModal.length > 0) {
-                console.log('检测到卡牌掉落弹窗！\n');
-                testResults.unlockModalClose = true;
+            // 切换到角色标签页
+            const charactersTab = await driver.$$('//*[contains(@text, "角色")]');
+            let beforeCharacterCount = 0;
+            if (charactersTab.length > 0) {
+                await charactersTab[0].click();
+                await driver.pause(500);
+                const beforeCards = await driver.$$('//android.widget.TextView');
+                beforeCharacterCount = beforeCards.length;
+                console.log(`答题前角色卡牌数量: ${beforeCharacterCount}\n`);
+            }
+            
+            // 切换到情节标签页
+            const plotsTab = await driver.$$('//*[contains(@text, "情节")]');
+            let beforePlotCount = 0;
+            if (plotsTab.length > 0) {
+                await plotsTab[0].click();
+                await driver.pause(500);
+                const beforePlotCards = await driver.$$('//android.widget.TextView');
+                beforePlotCount = beforePlotCards.length;
+                console.log(`答题前情节卡牌数量: ${beforePlotCount}\n`);
+            }
+            
+            // 返回章节内容页
+            const chaptersTab2 = await driver.$$('//*[contains(@text, "章节")]');
+            if (chaptersTab2.length > 0) {
+                await chaptersTab2[0].click();
+                await driver.pause(500);
+            }
+            
+            const chapterItems3 = await driver.$$('//*[contains(@text, "第1章")]');
+            if (chapterItems3.length > 0) {
+                await chapterItems3[0].click();
+                await driver.pause(1500);
+            }
+            
+            // 点击正确答案（第一个选项，因为正确答案索引是 0）
+            console.log('[47/50] 点击正确答案...');
+            const puzzleOptions2 = await driver.$$('//*[contains(@text, "A.") or contains(@text, "B.") or contains(@text, "C.") or contains(@text, "D.")]');
+            if (puzzleOptions2.length > 0) {
+                await puzzleOptions2[0].click();
+                testResults.puzzleOptionClick = true;
+                console.log('已点击第一个答题选项（正确答案）\n');
+                await driver.pause(2000);
                 
-                // 关闭弹窗
-                const closeButton = await driver.$$('//*[contains(@text, "确定") or contains(@text, "关闭")]');
-                if (closeButton.length > 0) {
-                    await closeButton[0].click();
-                    await driver.pause(500);
-                }
-            } else {
-                // 检查是否显示正确答案
-                const correctText = await driver.$$('//*[contains(@text, "正确")]');
-                if (correctText.length > 0) {
-                    console.log('答题正确！\n');
+                // 检查是否出现解锁弹窗
+                console.log('[48/50] 检查卡牌掉落弹窗...');
+                const unlockModal = await driver.$$('//*[contains(@text, "解锁") or contains(@text, "获得") or contains(@text, "恭喜")]');
+                if (unlockModal.length > 0) {
+                    console.log('检测到卡牌掉落弹窗！\n');
                     testResults.unlockModalClose = true;
+                    
+                    // 关闭弹窗
+                    const closeButton = await driver.$$('//*[contains(@text, "确定") or contains(@text, "关闭")]');
+                    if (closeButton.length > 0) {
+                        await closeButton[0].click();
+                        await driver.pause(500);
+                    }
                 } else {
-                    console.log('未检测到卡牌掉落弹窗（可能所有卡牌已解锁或答题错误）\n');
-                    testResults.unlockModalClose = true;
+                    // 检查是否显示正确答案
+                    const correctText = await driver.$$('//*[contains(@text, "正确")]');
+                    if (correctText.length > 0) {
+                        console.log('答题正确！\n');
+                        testResults.unlockModalClose = true;
+                    } else {
+                        console.log('未检测到卡牌掉落弹窗（可能所有卡牌已解锁或答题错误）\n');
+                        testResults.unlockModalClose = true;
+                    }
+                }
+                
+                // 验证卡牌是否增加
+                console.log('[49/50] 验证卡牌是否增加...');
+                await driver.back();
+                await driver.pause(500);
+                
+                // 切换到角色标签页检查
+                const charactersTab2 = await driver.$$('//*[contains(@text, "角色")]');
+                if (charactersTab2.length > 0) {
+                    await charactersTab2[0].click();
+                    await driver.pause(500);
+                    const afterCards = await driver.$$('//android.widget.TextView');
+                    const afterCharacterCount = afterCards.length;
+                    console.log(`答题后角色卡牌数量: ${afterCharacterCount}\n`);
+                    
+                    if (afterCharacterCount > beforeCharacterCount) {
+                        console.log('✅ 角色卡牌增加了！\n');
+                        testResults.cardDropSuccess = true;
+                    }
+                }
+                
+                // 切换到情节标签页检查
+                const plotsTab2 = await driver.$$('//*[contains(@text, "情节")]');
+                if (plotsTab2.length > 0) {
+                    await plotsTab2[0].click();
+                    await driver.pause(500);
+                    const afterPlotCards = await driver.$$('//android.widget.TextView');
+                    const afterPlotCount = afterPlotCards.length;
+                    console.log(`答题后情节卡牌数量: ${afterPlotCount}\n`);
+                    
+                    if (afterPlotCount > beforePlotCount) {
+                        console.log('✅ 情节卡牌增加了！\n');
+                        testResults.cardDropSuccess = true;
+                    }
                 }
             }
         } else {
