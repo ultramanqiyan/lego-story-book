@@ -13,8 +13,12 @@ import { useStyle } from '../context/StyleContext';
 import { CardStyleType, AnimationType, CARD_STYLES } from '../types/styles';
 import { useData } from '../context/DataContext';
 import { Character, PlotElement } from '../database/DatabaseService';
+import { getCardStyleForBookType } from '../theme/cardStyleMapping';
+import { getThemeColors, getGlassStyle } from '../theme';
 
 const { width, height } = Dimensions.get('window');
+const CARD_WIDTH = 80;
+const CARD_HEIGHT = 100;
 
 type StageStyleType = 
   | '3d-perspective' 
@@ -43,7 +47,12 @@ interface StoryDirectorDemoProps {
 const StoryDirectorDemo: React.FC<StoryDirectorDemoProps> = ({ bookId, onBack }) => {
   const { currentStyle, setStyle, allStyles } = useStyle();
   const { getBookById, getUnlockedElements, addChapter, getCharactersByBookId, getPlotElementsByTypeId } = useData();
-  const styleConfig = CARD_STYLES[currentStyle];
+  
+  const [bookType, setBookType] = useState<string>('magic');
+  const cardStyleType = getCardStyleForBookType(bookType);
+  const styleConfig = CARD_STYLES[cardStyleType];
+  const themeColors = getThemeColors(bookType);
+  const glassStyle = getGlassStyle(bookType);
 
   const [characters, setCharacters] = useState<Character[]>([]);
   const [adventures, setAdventures] = useState<PlotElement[]>([]);
@@ -89,6 +98,7 @@ const StoryDirectorDemo: React.FC<StoryDirectorDemoProps> = ({ bookId, onBack })
       const book = await getBookById(bookId);
       console.log('[StoryDirector] Book loaded:', book);
       if (book) {
+        setBookType(book.typeId || 'magic');
         const unlockedElements = await getUnlockedElements(bookId);
         console.log('[StoryDirector] Unlocked elements:', unlockedElements.length);
         
@@ -1547,18 +1557,18 @@ D. 隐身衣`;
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: '#1E1B4B',
+    backgroundColor: '#F8FAFC',
   },
   loadingContainer: {
     flex: 1,
     justifyContent: 'center',
     alignItems: 'center',
-    backgroundColor: '#1E1B4B',
+    backgroundColor: '#F8FAFC',
   },
   loadingText: {
     fontSize: 18,
     fontWeight: 'bold',
-    color: '#E0E7FF',
+    color: '#64748B',
   },
   header: {
     flexDirection: 'row',
@@ -1567,8 +1577,9 @@ const styles = StyleSheet.create({
     paddingHorizontal: 16,
     paddingVertical: 12,
     borderBottomWidth: 1,
-    borderBottomColor: '#4C1D95',
+    borderBottomColor: '#E2E8F0',
     marginTop: 40,
+    backgroundColor: '#FFFFFF',
   },
   backButton: {
     padding: 12,
@@ -1580,13 +1591,13 @@ const styles = StyleSheet.create({
   },
   backButtonText: {
     fontSize: 16,
-    fontWeight: 'bold',
-    color: '#E0E7FF',
+    fontWeight: '500',
+    color: '#8B5CF6',
   },
   title: {
     fontSize: 18,
     fontWeight: 'bold',
-    color: '#F8FAFC',
+    color: '#1E293B',
   },
   headerButtons: {
     flexDirection: 'row',
@@ -1596,28 +1607,29 @@ const styles = StyleSheet.create({
     paddingHorizontal: 10,
     paddingVertical: 6,
     borderRadius: 8,
-    borderWidth: 2,
-    borderColor: '#6366F1',
-    backgroundColor: 'rgba(99, 102, 241, 0.2)',
+    borderWidth: 1,
+    borderColor: '#E2E8F0',
+    backgroundColor: '#F8FAFC',
   },
   styleButtonText: {
     fontSize: 16,
-    color: '#C4B5FD',
+    color: '#8B5CF6',
   },
   stageStyleButton: {
     paddingHorizontal: 10,
     paddingVertical: 6,
     borderRadius: 8,
-    borderWidth: 2,
-    borderColor: '#8B5CF6',
-    backgroundColor: 'rgba(139, 92, 246, 0.2)',
+    borderWidth: 1,
+    borderColor: '#E2E8F0',
+    backgroundColor: '#F8FAFC',
   },
   stageStyleButtonText: {
     fontSize: 16,
-    color: '#C4B5FD',
+    color: '#8B5CF6',
   },
   content: {
     flex: 1,
+    backgroundColor: '#F8FAFC',
   },
   section: {
     marginTop: 16,
@@ -1627,30 +1639,35 @@ const styles = StyleSheet.create({
     fontSize: 16,
     fontWeight: 'bold',
     marginBottom: 12,
-    color: '#E0E7FF',
+    color: '#374151',
   },
   cardRow: {
     flexDirection: 'row',
     gap: 12,
   },
   card: {
-    width: 80,
-    height: 100,
+    width: CARD_WIDTH,
+    height: CARD_HEIGHT,
     borderRadius: 12,
     alignItems: 'center',
     justifyContent: 'center',
-    borderWidth: 2,
+    borderWidth: 1,
     padding: 8,
-    backgroundColor: 'rgba(49, 46, 129, 0.5)',
-    borderColor: '#4338CA',
+    backgroundColor: '#FFFFFF',
+    borderColor: '#E2E8F0',
+    shadowColor: '#64748B',
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.08,
+    shadowRadius: 4,
+    elevation: 2,
   },
   cardSelected: {
     shadowOffset: { width: 0, height: 0 },
-    shadowOpacity: 0,
+    shadowOpacity: 0.2,
     shadowRadius: 10,
-    elevation: 8,
+    elevation: 6,
     borderColor: '#8B5CF6',
-    backgroundColor: 'rgba(139, 92, 246, 0.3)',
+    backgroundColor: '#F5F3FF',
   },
   cardEmoji: {
     fontSize: 32,
@@ -1659,7 +1676,7 @@ const styles = StyleSheet.create({
   cardName: {
     fontSize: 12,
     fontWeight: 'bold',
-    color: '#E0E7FF',
+    color: '#374151',
   },
   selectedBadge: {
     position: 'absolute',
@@ -1689,6 +1706,7 @@ const styles = StyleSheet.create({
     fontSize: 14,
     fontStyle: 'italic',
     textAlign: 'center',
+    color: '#64748B',
   },
   shootButton: {
     margin: 20,
@@ -1696,6 +1714,11 @@ const styles = StyleSheet.create({
     borderRadius: 12,
     alignItems: 'center',
     justifyContent: 'center',
+    shadowColor: '#8B5CF6',
+    shadowOffset: { width: 0, height: 4 },
+    shadowOpacity: 0.2,
+    shadowRadius: 8,
+    elevation: 4,
   },
   shootButtonText: {
     fontSize: 18,
@@ -1707,20 +1730,24 @@ const styles = StyleSheet.create({
     left: 0,
     right: 0,
     bottom: 0,
-    backgroundColor: 'rgba(0, 0, 0, 0.7)',
+    backgroundColor: 'rgba(15, 23, 42, 0.5)',
     justifyContent: 'center',
     alignItems: 'center',
   },
   modalContent: {
     width: width * 0.85,
-    borderRadius: 16,
+    borderRadius: 20,
     padding: 20,
+    backgroundColor: '#FFFFFF',
+    borderWidth: 1,
+    borderColor: '#E2E8F0',
   },
   modalTitle: {
     fontSize: 20,
     fontWeight: 'bold',
     textAlign: 'center',
     marginBottom: 20,
+    color: '#1E293B',
   },
   styleGrid: {
     flexDirection: 'row',
@@ -1734,6 +1761,8 @@ const styles = StyleSheet.create({
     borderRadius: 10,
     alignItems: 'center',
     justifyContent: 'center',
+    borderWidth: 1,
+    borderColor: '#E2E8F0',
   },
   styleItemName: {
     fontSize: 12,
@@ -1746,12 +1775,15 @@ const styles = StyleSheet.create({
     paddingVertical: 16,
     paddingHorizontal: 20,
     borderRadius: 12,
-    borderWidth: 2,
+    borderWidth: 1,
     alignItems: 'center',
+    borderColor: '#E2E8F0',
+    backgroundColor: '#FFFFFF',
   },
   stageStyleItemName: {
     fontSize: 16,
     fontWeight: 'bold',
+    color: '#374151',
   },
   stage3DContainer: {
     margin: 16,
