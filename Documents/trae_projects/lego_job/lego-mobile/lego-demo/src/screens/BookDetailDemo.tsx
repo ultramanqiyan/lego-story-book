@@ -22,8 +22,8 @@ const { width, height } = Dimensions.get('window');
 const PAGE_WIDTH = (width - 60) / 2;
 const PAGE_HEIGHT = height - 200;
 const ITEMS_PER_PAGE = 6;
-const CARD_WIDTH = (PAGE_WIDTH - 12) / 2;
-const CARD_HEIGHT = 180;
+const CARD_WIDTH = 80;
+const CARD_HEIGHT = 100;
 
 type TabType = 'chapters' | 'characters' | 'plots';
 type ChapterViewMode = 'directory' | 'content';
@@ -195,6 +195,12 @@ const BookDetailDemo: React.FC<BookDetailDemoProps> = ({ bookId, onBack, onNavig
     console.log('[Puzzle] optionIndex:', optionIndex, 'correctIndex:', chapter.puzzleCorrectIndex);
     console.log('[Puzzle] book:', book);
     console.log('[Puzzle] bookId:', bookId, 'typeId:', book?.typeId);
+    
+    // 检查是否已经回答过（成功或失败三次）
+    if (chapter.puzzleResult !== null) {
+      console.log('[Puzzle] Already answered, puzzleResult:', chapter.puzzleResult);
+      return;
+    }
     
     if (!chapter.puzzleQuestion || !chapter.puzzleOptions || puzzleAttempts >= 3) return;
     
@@ -907,6 +913,7 @@ const styles = StyleSheet.create({
     flexWrap: 'wrap',
     gap: 12,
     paddingHorizontal: 5,
+    justifyContent: 'flex-start',
   },
   characterCard: {
     width: CARD_WIDTH,
