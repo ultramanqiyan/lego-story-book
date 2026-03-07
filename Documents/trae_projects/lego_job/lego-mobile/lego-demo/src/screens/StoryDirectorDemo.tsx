@@ -60,7 +60,7 @@ interface StoryDirectorDemoProps {
 
 const StoryDirectorDemo: React.FC<StoryDirectorDemoProps> = ({ bookId, onBack }) => {
   const { currentStyle, setStyle, allStyles } = useStyle();
-  const { getBookById, getUnlockedElements, addChapter, getCharactersByBookId, getPlotElementsByTypeId } = useData();
+  const { getBookById, getUnlockedElements, addChapter, getCharactersByBookId, getPlotElementsByTypeId, refreshBooks } = useData();
   
   const [bookType, setBookType] = useState<string>('magic');
   const cardStyleType = getCardStyleForBookType(bookType);
@@ -567,7 +567,9 @@ D. 隐身衣`;
       console.log('[StoryDirector] Calling addChapter with bookId:', bookId);
       console.log('[StoryDirector] chapterData:', chapterData);
       await addChapter(bookId, chapterData);
-      console.log('[StoryDirector] Chapter added successfully, calling onBack');
+      console.log('[StoryDirector] Chapter added successfully, refreshing books');
+      await refreshBooks();
+      console.log('[StoryDirector] Books refreshed, calling onBack');
       onBack();
     } catch (error) {
       console.error('[StoryDirector] Failed to add chapter:', error);

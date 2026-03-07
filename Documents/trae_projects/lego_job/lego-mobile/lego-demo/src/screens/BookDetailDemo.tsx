@@ -23,8 +23,13 @@ const { width, height } = Dimensions.get('window');
 const PAGE_WIDTH = (width - 60) / 2;
 const PAGE_HEIGHT = height - 200;
 const ITEMS_PER_PAGE = 6;
-// 计算卡片宽度：每行显示2张卡片，考虑gap和padding
-const CARD_WIDTH = (width - 10 - 12) / 2;  // (屏幕宽度 - paddingHorizontal*2 - gap) / 2
+// 计算卡片宽度：每行显示2张卡片
+// cardRow paddingHorizontal: 5 * 2 = 10px
+// gap: 12px
+// 所以每张卡片宽度 = (屏幕宽度 - 10 - 12) / 2
+const CARD_GAP = 12;
+const CARD_PADDING = 5;
+const CARD_WIDTH = (width - CARD_PADDING * 2 - CARD_GAP) / 2;
 const CARD_HEIGHT = CARD_WIDTH * 1.25;  // 保持 4:5 比例
 
 type TabType = 'chapters' | 'characters' | 'plots';
