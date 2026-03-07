@@ -2305,3 +2305,85 @@ Remove-Item -Path "path\to\android\.gradle" -Recurse -Force
 ---
 
 *最后更新：2026-03-07 05:05*
+
+---
+
+## 2026-03-07 卡牌样式统一修复经验
+
+### 问题39：书籍详情页和故事导演页卡牌选中样式不一致
+
+**问题描述：**
+- 书籍详情页和故事导演页的卡牌选中样式不一致
+- 选中时阴影颜色不同
+- 选中时背景色不同
+- 光环颜色不同
+
+**根本原因分析：**
+1. **BookDetailDemo 使用硬编码颜色**
+   - 未使用动态样式系统
+   - 颜色值直接写在 StyleSheet 中
+   
+2. **StoryDirectorDemo 使用了动态样式系统，但配置不完整**
+   - 选中样式 `cardSelected` 中缺少 `shadowColor`
+   - 使用了 `styleConfig.colors.glow` 但部分样式未定义
+
+**解决方案：**
+
+**方案1：统一使用动态样式系统**
+```typescript
+import { CARD_STYLES } from '../types/styles';
+import { getCardStyleForBookType } from '../theme/cardStyleMapping';
+
+const cardStyleType = getCardStyleForBookType(bookType);
+const styleConfig = CARD_STYLES[cardStyleType];
+```
+
+**方案2：统一的卡牌选中样式逻辑**
+```typescript
+style={[
+  styles.card,
+  {
+    backgroundColor: isSelected ? styleConfig.colors.secondary : styleConfig.colors.primary,
+    borderColor: isSelected ? styleConfig.colors.accent : styleConfig.colors.border,
+    shadowColor: isSelected ? styleConfig.colors.accent : 'transparent',
+  },
+  isSelected && styles.cardSelected,
+]}
+```
+
+**方案3：样式定义**
+```typescript
+cardSelected: {
+  shadowOffset: { width: 0, height: 0 },
+  shadowOpacity: 0.3,
+  shadowRadius: 10,
+  elevation: 6,
+},
+```
+
+**修改的文件：**
+1. `src/screens/BookDetailDemo.tsx` - 添加动态样式系统支持
+2. `src/screens/StoryDirectorDemo.tsx` - 修复选中样式配置
+
+**保留的差异：**
+| 页面 | 卡牌尺寸 | 原因 |
+|------|----------|------|
+| BookDetailDemo | 160×200 | 书籍详情页需要更大的卡牌展示 |
+| StoryDirectorDemo | 80×100 | 故事导演页需要更紧凑的布局 |
+
+**调试方法（systematic-debugging）：**
+1. **Phase 1**: 读取并对比两个页面的卡牌样式代码
+2. **Phase 2**: 分析样式差异模式
+3. **Phase 3**: 形成假设并测试
+4. **Phase 4**: 实现修复
+
+**经验教训：**
+1. **颜色使用动态配置**：不使用硬编码颜色值
+2. **选中状态统一**：使用 `styleConfig.colors.accent` 作为选中高亮色
+3. **背景色区分**：未选中用 `primary`，选中用 `secondary`
+4. **阴影效果**：选中时使用 `accent` 色作为阴影色
+5. **新增页面时参考现有页面**：确保样式一致性
+
+---
+
+*最后更新：2026-03-07 10:30*

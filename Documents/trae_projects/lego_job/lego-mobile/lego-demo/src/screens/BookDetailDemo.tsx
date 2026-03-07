@@ -13,6 +13,8 @@ import {
 import { useData } from '../context/DataContext';
 import { Book, Chapter, Character, PlotElement, UnlockedElement } from '../database/DatabaseService';
 import { getThemeColors, getGlassStyle, storyThemes } from '../theme';
+import { CARD_STYLES } from '../types/styles';
+import { getCardStyleForBookType } from '../theme/cardStyleMapping';
 
 const DEFAULT_THEME = storyThemes.children.colors;
 
@@ -66,6 +68,10 @@ const BookDetailDemo: React.FC<BookDetailDemoProps> = ({ bookId, onBack, onNavig
   } = useData();
   
   const [book, setBook] = useState<Book | null>(null);
+  const [bookType, setBookType] = useState<string>('children');
+  const cardStyleType = getCardStyleForBookType(bookType);
+  const styleConfig = CARD_STYLES[cardStyleType];
+  
   const [chapters, setChapters] = useState<Chapter[]>([]);
   const [characters, setCharacters] = useState<Character[]>([]);
   const [plotElements, setPlotElements] = useState<PlotElement[]>([]);
@@ -101,6 +107,7 @@ const BookDetailDemo: React.FC<BookDetailDemoProps> = ({ bookId, onBack, onNavig
       const bookData = await getBookById(bookId);
       if (bookData) {
         setBook(bookData);
+        setBookType(bookData.typeId || 'children');
         const chaptersData = await getChaptersByBookId(bookId);
         setChapters(chaptersData);
         
@@ -422,16 +429,21 @@ const BookDetailDemo: React.FC<BookDetailDemoProps> = ({ bookId, onBack, onNavig
           key={character.characterId}
           style={[
             styles.characterCard,
+            {
+              backgroundColor: isSelected ? styleConfig.colors.secondary : styleConfig.colors.primary,
+              borderColor: isSelected ? styleConfig.colors.accent : styleConfig.colors.border,
+              shadowColor: isSelected ? styleConfig.colors.accent : 'transparent',
+            },
             isSelected && styles.cardSelected,
           ]}
           onPress={() => handleCharacterSelect(character.characterId)}
           activeOpacity={0.8}
         >
           {isSelected && (
-            <View style={[styles.glowRing, { borderColor: getRoleColor(character.roleType) }]} />
+            <View style={[styles.glowRing, { borderColor: styleConfig.colors.accent }]} />
           )}
           <Text style={styles.cardEmoji}>{character.emoji}</Text>
-          <Text style={styles.cardName}>{character.name}</Text>
+          <Text style={[styles.cardName, { color: styleConfig.colors.text }]}>{character.name}</Text>
           <Text style={[styles.cardRole, { color: getRoleColor(character.roleType) }]}>
             {character.roleType}
           </Text>
@@ -472,16 +484,21 @@ const BookDetailDemo: React.FC<BookDetailDemoProps> = ({ bookId, onBack, onNavig
           key={card.elementId}
           style={[
             styles.plotCard,
+            {
+              backgroundColor: isSelected ? styleConfig.colors.secondary : styleConfig.colors.primary,
+              borderColor: isSelected ? styleConfig.colors.accent : styleConfig.colors.border,
+              shadowColor: isSelected ? styleConfig.colors.accent : 'transparent',
+            },
             isSelected && styles.cardSelected,
           ]}
           onPress={() => handlePlotCardSelect(card.elementId)}
           activeOpacity={0.8}
         >
           {isSelected && (
-            <View style={[styles.glowRing, { borderColor: '#FFD700' }]} />
+            <View style={[styles.glowRing, { borderColor: styleConfig.colors.accent }]} />
           )}
           <Text style={styles.cardEmoji}>{card.emoji}</Text>
-          <Text style={styles.cardName}>{card.name}</Text>
+          <Text style={[styles.cardName, { color: styleConfig.colors.text }]}>{card.name}</Text>
         </TouchableOpacity>
       );
     };
@@ -863,18 +880,13 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     justifyContent: 'center',
     borderWidth: 1,
-    borderColor: '#E2E8F0',
-    backgroundColor: '#FFFFFF',
     padding: 12,
   },
   cardSelected: {
-    shadowColor: DEFAULT_THEME.primary,
     shadowOffset: { width: 0, height: 0 },
     shadowOpacity: 0.3,
     shadowRadius: 10,
     elevation: 6,
-    borderColor: DEFAULT_THEME.primary,
-    backgroundColor: 'rgba(251, 146, 60, 0.1)',
   },
   glowRing: {
     position: 'absolute',
@@ -892,7 +904,6 @@ const styles = StyleSheet.create({
   cardName: {
     fontSize: 12,
     fontWeight: 'bold',
-    color: '#374151',
     textAlign: 'center',
   },
   cardRole: {
@@ -909,8 +920,6 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     justifyContent: 'center',
     borderWidth: 1,
-    borderColor: '#E2E8F0',
-    backgroundColor: '#FFFFFF',
     padding: 12,
   },
   footer: {

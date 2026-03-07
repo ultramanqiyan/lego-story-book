@@ -592,9 +592,9 @@ D. 隐身衣`;
           style={[
             styles.card,
             {
-              backgroundColor: styleConfig.colors.primary,
+              backgroundColor: isSelected ? styleConfig.colors.secondary : styleConfig.colors.primary,
               borderColor: isSelected ? styleConfig.colors.accent : styleConfig.colors.border,
-              shadowColor: isSelected ? styleConfig.colors.glow : 'transparent',
+              shadowColor: isSelected ? styleConfig.colors.accent : 'transparent',
             },
             isSelected && styles.cardSelected,
           ]}
@@ -638,8 +638,9 @@ D. 隐身衣`;
           style={[
             styles.card,
             {
-              backgroundColor: styleConfig.colors.primary,
+              backgroundColor: isSelected ? styleConfig.colors.secondary : styleConfig.colors.primary,
               borderColor: isSelected ? styleConfig.colors.accent : styleConfig.colors.border,
+              shadowColor: isSelected ? styleConfig.colors.accent : 'transparent',
             },
             isSelected && styles.cardSelected,
           ]}
@@ -672,8 +673,9 @@ D. 隐身衣`;
           style={[
             styles.card,
             {
-              backgroundColor: styleConfig.colors.primary,
+              backgroundColor: isSelected ? styleConfig.colors.secondary : styleConfig.colors.primary,
               borderColor: isSelected ? styleConfig.colors.accent : styleConfig.colors.border,
+              shadowColor: isSelected ? styleConfig.colors.accent : 'transparent',
             },
             isSelected && styles.cardSelected,
           ]}
@@ -687,7 +689,7 @@ D. 隐身衣`;
                 {
                   transform: [{ scale: glowAnim.scale }],
                   opacity: glowAnim.opacity,
-                  borderColor: styleConfig.colors.glow || styleConfig.colors.accent,
+                  borderColor: styleConfig.colors.accent,
                 },
               ]}
             />
@@ -718,8 +720,9 @@ D. 隐身衣`;
           style={[
             styles.card,
             {
-              backgroundColor: styleConfig.colors.primary,
+              backgroundColor: isSelected ? styleConfig.colors.secondary : styleConfig.colors.primary,
               borderColor: isSelected ? styleConfig.colors.accent : styleConfig.colors.border,
+              shadowColor: isSelected ? styleConfig.colors.accent : 'transparent',
             },
             isSelected && styles.cardSelected,
           ]}
@@ -760,8 +763,9 @@ D. 隐身衣`;
           style={[
             styles.card,
             {
-              backgroundColor: styleConfig.colors.primary,
+              backgroundColor: isSelected ? styleConfig.colors.secondary : styleConfig.colors.primary,
               borderColor: isSelected ? styleConfig.colors.accent : styleConfig.colors.border,
+              shadowColor: isSelected ? styleConfig.colors.accent : 'transparent',
             },
             isSelected && styles.cardSelected,
           ]}
@@ -1665,11 +1669,9 @@ const styles = StyleSheet.create({
   },
   cardSelected: {
     shadowOffset: { width: 0, height: 0 },
-    shadowOpacity: 0.2,
+    shadowOpacity: 0.3,
     shadowRadius: 10,
     elevation: 6,
-    borderColor: DEFAULT_THEME.primary,
-    backgroundColor: 'rgba(251, 146, 60, 0.1)',
   },
   cardEmoji: {
     fontSize: 32,
