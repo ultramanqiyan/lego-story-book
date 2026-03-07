@@ -1547,15 +1547,18 @@ D. 隐身衣`;
 const styles = StyleSheet.create({
   container: {
     flex: 1,
+    backgroundColor: '#1E1B4B',
   },
   loadingContainer: {
     flex: 1,
     justifyContent: 'center',
     alignItems: 'center',
+    backgroundColor: '#1E1B4B',
   },
   loadingText: {
     fontSize: 18,
     fontWeight: 'bold',
+    color: '#E0E7FF',
   },
   header: {
     flexDirection: 'row',
@@ -1564,6 +1567,7 @@ const styles = StyleSheet.create({
     paddingHorizontal: 16,
     paddingVertical: 12,
     borderBottomWidth: 1,
+    borderBottomColor: '#4C1D95',
     marginTop: 40,
   },
   backButton: {
@@ -1577,10 +1581,12 @@ const styles = StyleSheet.create({
   backButtonText: {
     fontSize: 16,
     fontWeight: 'bold',
+    color: '#E0E7FF',
   },
   title: {
     fontSize: 18,
     fontWeight: 'bold',
+    color: '#F8FAFC',
   },
   headerButtons: {
     flexDirection: 'row',
@@ -1591,18 +1597,24 @@ const styles = StyleSheet.create({
     paddingVertical: 6,
     borderRadius: 8,
     borderWidth: 2,
+    borderColor: '#6366F1',
+    backgroundColor: 'rgba(99, 102, 241, 0.2)',
   },
   styleButtonText: {
     fontSize: 16,
+    color: '#C4B5FD',
   },
   stageStyleButton: {
     paddingHorizontal: 10,
     paddingVertical: 6,
     borderRadius: 8,
     borderWidth: 2,
+    borderColor: '#8B5CF6',
+    backgroundColor: 'rgba(139, 92, 246, 0.2)',
   },
   stageStyleButtonText: {
     fontSize: 16,
+    color: '#C4B5FD',
   },
   content: {
     flex: 1,
@@ -1615,6 +1627,7 @@ const styles = StyleSheet.create({
     fontSize: 16,
     fontWeight: 'bold',
     marginBottom: 12,
+    color: '#E0E7FF',
   },
   cardRow: {
     flexDirection: 'row',
@@ -1628,12 +1641,16 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
     borderWidth: 2,
     padding: 8,
+    backgroundColor: 'rgba(49, 46, 129, 0.5)',
+    borderColor: '#4338CA',
   },
   cardSelected: {
     shadowOffset: { width: 0, height: 0 },
-    shadowOpacity: 0.8,
+    shadowOpacity: 0,
     shadowRadius: 10,
     elevation: 8,
+    borderColor: '#8B5CF6',
+    backgroundColor: 'rgba(139, 92, 246, 0.3)',
   },
   cardEmoji: {
     fontSize: 32,
@@ -1642,6 +1659,7 @@ const styles = StyleSheet.create({
   cardName: {
     fontSize: 12,
     fontWeight: 'bold',
+    color: '#E0E7FF',
   },
   selectedBadge: {
     position: 'absolute',

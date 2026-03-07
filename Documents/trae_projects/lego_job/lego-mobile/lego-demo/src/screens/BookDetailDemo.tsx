@@ -566,7 +566,7 @@ const BookDetailDemo: React.FC<BookDetailDemoProps> = ({ bookId, onBack, onNavig
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: '#2C1810',
+    backgroundColor: '#1E1B4B',
   },
   header: {
     flexDirection: 'row',
@@ -575,7 +575,7 @@ const styles = StyleSheet.create({
     paddingHorizontal: 15,
     paddingVertical: 10,
     borderBottomWidth: 1,
-    borderBottomColor: '#4A3728',
+    borderBottomColor: '#4C1D95',
   },
   backButton: {
     padding: 12,
@@ -586,11 +586,11 @@ const styles = StyleSheet.create({
     alignItems: 'center',
   },
   backButtonText: {
-    color: '#F5DEB3',
+    color: '#E0E7FF',
     fontSize: 16,
   },
   headerTitle: {
-    color: '#F5DEB3',
+    color: '#F8FAFC',
     fontSize: 18,
     fontWeight: 'bold',
   },
@@ -604,7 +604,7 @@ const styles = StyleSheet.create({
     paddingBottom: 5,
   },
   bookmark: {
-    backgroundColor: '#8B4513',
+    backgroundColor: '#312E81',
     paddingHorizontal: 20,
     paddingVertical: 10,
     marginHorizontal: 5,
@@ -612,19 +612,19 @@ const styles = StyleSheet.create({
     borderTopRightRadius: 8,
     borderWidth: 2,
     borderBottomWidth: 0,
-    borderColor: '#5D3A1A',
+    borderColor: '#4338CA',
   },
   bookmarkActive: {
-    backgroundColor: '#A0522D',
-    borderColor: '#D2691E',
+    backgroundColor: '#4338CA',
+    borderColor: '#6366F1',
   },
   bookmarkText: {
-    color: '#D2B48C',
+    color: '#C4B5FD',
     fontSize: 14,
     fontWeight: 'bold',
   },
   bookmarkTextActive: {
-    color: '#FFF8DC',
+    color: '#F8FAFC',
   },
   bookContainer: {
     flex: 1,
@@ -633,11 +633,11 @@ const styles = StyleSheet.create({
   },
   bookCover: {
     flex: 1,
-    backgroundColor: '#F5F0E6',
-    borderRadius: 5,
-    borderWidth: 3,
-    borderColor: '#8B4513',
-    shadowColor: '#000',
+    backgroundColor: '#312E81',
+    borderRadius: 12,
+    borderWidth: 2,
+    borderColor: '#6366F1',
+    shadowColor: '#8B5CF6',
     shadowOffset: { width: 0, height: 2 },
     shadowOpacity: 0.3,
     shadowRadius: 5,
@@ -661,7 +661,7 @@ const styles = StyleSheet.create({
   },
   pageDivider: {
     width: 2,
-    backgroundColor: '#D2B48C',
+    backgroundColor: '#4338CA',
     marginVertical: 10,
   },
   pageTitle: {
