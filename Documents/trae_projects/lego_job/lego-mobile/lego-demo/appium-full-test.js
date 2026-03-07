@@ -694,24 +694,39 @@ async function runFullTest() {
         
         // ==================== 答题功能测试 ====================
         console.log('[44/50] 进入书籍详情页测试答题功能...');
-        // 先返回到首页
-        await driver.back();
-        await driver.pause(500);
+        
+        // 先关闭风格设置页面（点击关闭按钮）
+        const closeButtons = await driver.$$('//*[contains(@text, "关闭")]');
+        if (closeButtons.length > 0) {
+            await closeButtons[0].click();
+            await driver.pause(500);
+            console.log('已关闭风格设置页面\n');
+        }
+        
+        // 返回到书籍详情页
         await driver.back();
         await driver.pause(500);
         
-        // 进入书架页
-        const bookshelfBtn2 = await driver.$$('//*[contains(@text, "书架")]');
-        if (bookshelfBtn2.length > 0) {
-            await bookshelfBtn2[0].click();
-            await driver.pause(1000);
+        // 再返回到书架页
+        await driver.back();
+        await driver.pause(500);
+        
+        // 点击底部导航栏的书架按钮
+        console.log('点击书架按钮...');
+        const bookshelfBtns = await driver.$$('//*[contains(@text, "书架")]');
+        if (bookshelfBtns.length > 0) {
+            await bookshelfBtns[0].click();
+            await driver.pause(1500);
             console.log('已进入书架页\n');
         }
         
-        // 点击新创建的书籍
-        const userBooks = await driver.$$('//*[contains(@text, "测试书籍")]');
-        if (userBooks.length > 0) {
-            await userBooks[0].click();
+        // 查找新创建的书籍（测试书籍）
+        console.log('查找测试书籍...');
+        const testBooks = await driver.$$('//*[contains(@text, "测试书籍")]');
+        console.log(`找到 ${testBooks.length} 个测试书籍`);
+        
+        if (testBooks.length > 0) {
+            await testBooks[0].click();
             await driver.pause(1500);
             console.log('已进入书籍详情页\n');
         }
@@ -726,6 +741,8 @@ async function runFullTest() {
         
         // 点击第一个章节进入内容页
         const chapterItems2 = await driver.$$('//*[contains(@text, "第1章")]');
+        console.log(`找到 ${chapterItems2.length} 个第1章`);
+        
         if (chapterItems2.length > 0) {
             await chapterItems2[0].click();
             await driver.pause(1500);

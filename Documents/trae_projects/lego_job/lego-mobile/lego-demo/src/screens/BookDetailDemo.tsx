@@ -104,7 +104,10 @@ const BookDetailDemo: React.FC<BookDetailDemoProps> = ({ bookId, onBack, onNavig
   const loadData = async () => {
     setIsLoading(true);
     try {
+      console.log('[BookDetailDemo] loadData called, bookId:', bookId);
       const bookData = await getBookById(bookId);
+      console.log('[BookDetailDemo] bookData from DB:', bookData);
+      console.log('[BookDetailDemo] bookData.typeId:', bookData?.typeId);
       if (bookData) {
         setBook(bookData);
         setBookType(bookData.typeId || 'children');

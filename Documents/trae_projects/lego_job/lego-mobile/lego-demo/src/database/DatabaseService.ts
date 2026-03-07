@@ -608,12 +608,19 @@ export const DatabaseService = {
     equipments: PlotElement[];
     adventures: PlotElement[];
   }> {
+    console.log('[getLockedElements] Called with bookId:', bookId, 'typeId:', typeId);
+    
     if (!db) db = await this.initDatabase();
     
     const unlockedElements = await this.getUnlockedElements(bookId);
+    console.log('[getLockedElements] unlockedElements count:', unlockedElements.length);
+    console.log('[getLockedElements] unlockedIds:', unlockedElements.map(e => e.elementId));
+    
     const unlockedIds = new Set(unlockedElements.map(e => e.elementId));
 
     const allCharacters = charactersData.characters.filter(c => c.typeId === typeId);
+    console.log('[getLockedElements] allCharacters for typeId:', typeId, 'count:', allCharacters.length);
+    
     const characters = allCharacters.filter(c => !unlockedIds.has(c.characterId)).map(c => ({
       characterId: c.characterId,
       typeId: c.typeId,
@@ -626,8 +633,10 @@ export const DatabaseService = {
       intimacy: c.intimacy,
       personality: c.personality,
     }));
+    console.log('[getLockedElements] locked characters count:', characters.length);
 
     const allElements = plotElementsData.plotElements.filter(e => e.typeId === typeId);
+    console.log('[getLockedElements] allElements for typeId:', typeId, 'count:', allElements.length);
     
     const weathers = allElements
       .filter(e => e.category === 'weather' && !unlockedIds.has(e.elementId))

@@ -2404,34 +2404,72 @@ cardSelected: {
 
 2. **添加调试日志**：
    ```typescript
+   // BookDetailDemo.tsx
+   console.log('[BookDetailDemo] loadData called, bookId:', bookId);
+   console.log('[BookDetailDemo] bookData from DB:', bookData);
+   console.log('[BookDetailDemo] bookData.typeId:', bookData?.typeId);
+   
    console.log('[Puzzle] handlePuzzleAnswer called');
    console.log('[Puzzle] book:', book);
    console.log('[Puzzle] bookId:', bookId, 'typeId:', book?.typeId);
    console.log('[Puzzle] lockedElements result:', JSON.stringify(lockedElements, null, 2));
    console.log('[Puzzle] allLocked count:', allLocked.length);
+   
+   // DatabaseService.ts
+   console.log('[getLockedElements] Called with bookId:', bookId, 'typeId:', typeId);
+   console.log('[getLockedElements] unlockedElements count:', unlockedElements.length);
+   console.log('[getLockedElements] unlockedIds:', unlockedElements.map(e => e.elementId));
+   console.log('[getLockedElements] allCharacters for typeId:', typeId, 'count:', allCharacters.length);
+   console.log('[getLockedElements] locked characters count:', characters.length);
+   console.log('[getLockedElements] allElements for typeId:', typeId, 'count:', allElements.length);
    ```
 
 3. **数据统计**：
    - children 类型每种 category 约有 4 个元素
    - 创建书籍时解锁 2 个，剩余 2 个可以掉落
 
+4. **代码流程验证**：
+   - `createBook()` 正确设置 `type_id` 参数
+   - `getBookById()` 正确返回 `typeId`
+   - `getLockedElements()` 正确过滤 `typeId`
+   - `addChapter()` 正确存储谜题数据
+   - `getChaptersByBookId()` 正确读取谜题数据
+
 **可能的原因：**
 
-1. **`book.typeId` 未正确设置**
-   - 需要检查 `loadData()` 中 `bookData.typeId` 的值
+1. **`book.typeId` 为空或不匹配**
+   - 需要查看日志确认 `bookData.typeId` 的值
 
 2. **`getLockedElements()` 返回空数组**
    - 可能 `typeId` 过滤条件不匹配
    - 可能所有元素都已解锁
 
-**待验证：**
-- 需要手动在模拟器上测试，查看 console 日志
-- 检查 `[Puzzle]` 相关日志输出
+3. **答题选项未显示**
+   - 可能章节内容未正确渲染谜题
+
+**验证步骤：**
+
+1. 创建新书籍（选择"儿童故事"类型）
+2. 添加新章节（选择卡牌后点击"开始拍摄"）
+3. 进入章节内容页
+4. 点击正确答案（第一个选项 A）
+5. 查看 Metro Bundler 终端的日志输出
+
+**关键日志标签：**
+- `[BookDetailDemo]` - 书籍数据加载
+- `[Puzzle]` - 答题处理
+- `[getLockedElements]` - 获取未解锁元素
+- `[DB]` - 数据库操作
 
 **关键代码位置：**
-- `src/screens/BookDetailDemo.tsx:177-217` - handlePuzzleAnswer 函数
-- `src/database/DatabaseService.ts:604-677` - getLockedElements 函数
+- `src/screens/BookDetailDemo.tsx:100-132` - loadData 函数
+- `src/screens/BookDetailDemo.tsx:177-236` - handlePuzzleAnswer 函数
+- `src/database/DatabaseService.ts:604-686` - getLockedElements 函数
+- `src/database/DatabaseService.ts:688-720` - addChapter 函数
+- `src/database/DatabaseService.ts:384-408` - getChaptersByBookId 函数
+
+**状态：待手动验证**
 
 ---
 
-*最后更新：2026-03-07 16:40*
+*最后更新：2026-03-07 17:05*
