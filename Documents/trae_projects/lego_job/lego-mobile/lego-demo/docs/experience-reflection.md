@@ -2621,4 +2621,59 @@ const handlePuzzleAnswer = async (optionIndex: number, chapter: Chapter) => {
 
 ---
 
-*最后更新：2026-03-07 10:30*
+### 问题44：角色tab和情节tab卡片布局问题（续）
+
+**问题描述：**
+- 每行显示了三列卡片，需要每行只显示两列
+- 卡片长宽比例与故事导演页不一致
+
+**根本原因分析：**
+1. **卡片尺寸计算错误**：
+   ```typescript
+   // 之前 - 动态计算导致尺寸过小
+   const CARD_WIDTH = (PAGE_WIDTH - 12) / 2;  // 约 60px
+   const CARD_HEIGHT = 180;  // 过高
+   ```
+2. **与故事导演页尺寸不一致**：
+   ```typescript
+   // 故事导演页
+   const CARD_WIDTH = 80;
+   const CARD_HEIGHT = 100;
+   ```
+
+**解决方案：**
+
+1. **统一卡片尺寸**：
+   ```typescript
+   // BookDetailDemo.tsx
+   const CARD_WIDTH = 80;
+   const CARD_HEIGHT = 100;
+   ```
+
+2. **添加左对齐**：
+   ```typescript
+   cardRow: {
+     flexDirection: 'row',
+     flexWrap: 'wrap',
+     gap: 12,
+     paddingHorizontal: 5,
+     justifyContent: 'flex-start',  // 确保左对齐
+   },
+   ```
+
+**验证结果：**
+- 每行显示 2 张卡片（80 * 2 + 12 gap = 172px < 屏幕宽度）
+- 卡片比例与故事导演页一致（80:100 = 4:5）
+
+**关键代码位置：**
+- `src/screens/BookDetailDemo.tsx:25-26` - 卡片尺寸定义
+- `src/screens/BookDetailDemo.tsx:905-911` - cardRow 样式
+
+**经验教训：**
+1. **保持UI一致性**：不同页面的相同组件应使用相同的尺寸
+2. **避免动态计算**：固定尺寸更容易维护和保持一致性
+3. **参考现有实现**：修改前先检查其他页面的实现
+
+---
+
+*最后更新：2026-03-07 10:45*
