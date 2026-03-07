@@ -12,11 +12,14 @@ import {
 } from 'react-native';
 import { useData } from '../context/DataContext';
 import { Book, Chapter, Character, PlotElement, UnlockedElement } from '../database/DatabaseService';
+import { getThemeColors, getGlassStyle } from '../theme';
 
 const { width, height } = Dimensions.get('window');
 const PAGE_WIDTH = (width - 60) / 2;
 const PAGE_HEIGHT = height - 200;
 const ITEMS_PER_PAGE = 6;
+const CARD_WIDTH = 160;
+const CARD_HEIGHT = 200;
 
 type TabType = 'chapters' | 'characters' | 'plots';
 type ChapterViewMode = 'directory' | 'content';
@@ -566,7 +569,7 @@ const BookDetailDemo: React.FC<BookDetailDemoProps> = ({ bookId, onBack, onNavig
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: '#1E1B4B',
+    backgroundColor: '#F8FAFC',
   },
   header: {
     flexDirection: 'row',
@@ -574,8 +577,9 @@ const styles = StyleSheet.create({
     justifyContent: 'space-between',
     paddingHorizontal: 15,
     paddingVertical: 10,
+    backgroundColor: '#FFFFFF',
     borderBottomWidth: 1,
-    borderBottomColor: '#4C1D95',
+    borderBottomColor: '#E2E8F0',
   },
   backButton: {
     padding: 12,
@@ -586,11 +590,12 @@ const styles = StyleSheet.create({
     alignItems: 'center',
   },
   backButtonText: {
-    color: '#E0E7FF',
+    color: '#64748B',
     fontSize: 16,
+    fontWeight: '500',
   },
   headerTitle: {
-    color: '#F8FAFC',
+    color: '#1E293B',
     fontSize: 18,
     fontWeight: 'bold',
   },
@@ -602,29 +607,30 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
     paddingTop: 10,
     paddingBottom: 5,
+    backgroundColor: '#FFFFFF',
   },
   bookmark: {
-    backgroundColor: '#312E81',
+    backgroundColor: '#F1F5F9',
     paddingHorizontal: 20,
     paddingVertical: 10,
     marginHorizontal: 5,
     borderTopLeftRadius: 8,
     borderTopRightRadius: 8,
-    borderWidth: 2,
+    borderWidth: 1,
     borderBottomWidth: 0,
-    borderColor: '#4338CA',
+    borderColor: '#E2E8F0',
   },
   bookmarkActive: {
-    backgroundColor: '#4338CA',
-    borderColor: '#6366F1',
+    backgroundColor: '#8B5CF6',
+    borderColor: '#7C3AED',
   },
   bookmarkText: {
-    color: '#C4B5FD',
+    color: '#64748B',
     fontSize: 14,
     fontWeight: 'bold',
   },
   bookmarkTextActive: {
-    color: '#F8FAFC',
+    color: '#FFFFFF',
   },
   bookContainer: {
     flex: 1,
@@ -633,15 +639,15 @@ const styles = StyleSheet.create({
   },
   bookCover: {
     flex: 1,
-    backgroundColor: '#312E81',
+    backgroundColor: '#FFFFFF',
     borderRadius: 12,
-    borderWidth: 2,
-    borderColor: '#6366F1',
-    shadowColor: '#8B5CF6',
+    borderWidth: 1,
+    borderColor: '#E2E8F0',
+    shadowColor: '#64748B',
     shadowOffset: { width: 0, height: 2 },
-    shadowOpacity: 0.3,
-    shadowRadius: 5,
-    elevation: 5,
+    shadowOpacity: 0.08,
+    shadowRadius: 8,
+    elevation: 3,
   },
   bookPages: {
     flex: 1,
@@ -661,18 +667,18 @@ const styles = StyleSheet.create({
   },
   pageDivider: {
     width: 2,
-    backgroundColor: '#4338CA',
+    backgroundColor: '#E2E8F0',
     marginVertical: 10,
   },
   pageTitle: {
     fontSize: 18,
     fontWeight: 'bold',
-    color: '#4A3728',
+    color: '#1E293B',
     textAlign: 'center',
     marginBottom: 15,
     paddingBottom: 10,
     borderBottomWidth: 1,
-    borderBottomColor: '#D2B48C',
+    borderBottomColor: '#E2E8F0',
   },
   chapterItem: {
     flexDirection: 'row',
@@ -681,15 +687,15 @@ const styles = StyleSheet.create({
     paddingVertical: 12,
     paddingHorizontal: 10,
     borderBottomWidth: 1,
-    borderBottomColor: '#E8DCC8',
+    borderBottomColor: '#F1F5F9',
   },
   chapterItemActive: {
-    backgroundColor: '#FFF8DC',
-    borderRadius: 5,
+    backgroundColor: '#F5F3FF',
+    borderRadius: 8,
   },
   chapterItemText: {
     fontSize: 14,
-    color: '#4A3728',
+    color: '#374151',
   },
   chapterItemStatus: {
     fontSize: 16,
@@ -703,27 +709,28 @@ const styles = StyleSheet.create({
     marginBottom: 10,
   },
   backToDirectoryText: {
-    color: '#8B4513',
+    color: '#8B5CF6',
     fontSize: 14,
+    fontWeight: '500',
   },
   chapterScrollContainer: {
     flex: 1,
   },
   chapterDivider: {
     height: 1,
-    backgroundColor: '#D2B48C',
+    backgroundColor: '#E2E8F0',
     marginBottom: 15,
   },
   chapterTitle: {
     fontSize: 16,
     fontWeight: 'bold',
-    color: '#4A3728',
+    color: '#1E293B',
     marginBottom: 10,
     textAlign: 'center',
   },
   chapterContent: {
     fontSize: 13,
-    color: '#3D2914',
+    color: '#475569',
     lineHeight: 22,
   },
   chapterNavigation: {
@@ -732,28 +739,29 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     paddingVertical: 15,
     borderTopWidth: 1,
-    borderTopColor: '#D2B48C',
+    borderTopColor: '#E2E8F0',
     marginTop: 15,
   },
   navButton: {
     paddingHorizontal: 20,
     paddingVertical: 8,
-    backgroundColor: '#8B4513',
-    borderRadius: 5,
+    backgroundColor: '#8B5CF6',
+    borderRadius: 8,
   },
   navButtonDisabled: {
-    backgroundColor: '#D2B48C',
+    backgroundColor: '#E2E8F0',
   },
   navButtonText: {
-    color: '#FFF8DC',
+    color: '#FFFFFF',
     fontSize: 14,
+    fontWeight: '500',
   },
   navButtonTextDisabled: {
-    color: '#A0522D',
+    color: '#94A3B8',
   },
   pageIndicator: {
     fontSize: 14,
-    color: '#4A3728',
+    color: '#64748B',
   },
   directoryPagination: {
     flexDirection: 'row',
@@ -761,25 +769,25 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     paddingVertical: 10,
     borderTopWidth: 1,
-    borderTopColor: '#D2B48C',
+    borderTopColor: '#E2E8F0',
   },
   puzzleBox: {
     marginTop: 15,
     padding: 12,
-    backgroundColor: '#FFF8DC',
-    borderRadius: 8,
+    backgroundColor: '#FDF4FF',
+    borderRadius: 12,
     borderWidth: 1,
-    borderColor: '#D2B48C',
+    borderColor: '#E9D5FF',
   },
   puzzleTitle: {
     fontSize: 14,
     fontWeight: 'bold',
-    color: '#4A3728',
+    color: '#7C3AED',
     marginBottom: 8,
   },
   puzzleQuestion: {
     fontSize: 13,
-    color: '#3D2914',
+    color: '#4C1D95',
     marginBottom: 10,
   },
   puzzleOptions: {
@@ -789,36 +797,36 @@ const styles = StyleSheet.create({
     paddingVertical: 8,
     paddingHorizontal: 12,
     marginBottom: 5,
-    backgroundColor: '#FFF',
-    borderRadius: 5,
+    backgroundColor: '#FFFFFF',
+    borderRadius: 8,
     borderWidth: 1,
-    borderColor: '#D2B48C',
+    borderColor: '#E2E8F0',
   },
   puzzleOptionSelected: {
-    borderColor: '#4A90D9',
-    backgroundColor: '#E8F4FD',
+    borderColor: '#8B5CF6',
+    backgroundColor: '#F5F3FF',
   },
   puzzleOptionCorrect: {
-    borderColor: '#22C55E',
-    backgroundColor: '#DCFCE7',
+    borderColor: '#10B981',
+    backgroundColor: '#ECFDF5',
   },
   puzzleOptionWrong: {
     borderColor: '#EF4444',
-    backgroundColor: '#FEE2E2',
+    backgroundColor: '#FEF2F2',
   },
   puzzleOptionText: {
     fontSize: 13,
-    color: '#3D2914',
+    color: '#374151',
   },
   puzzleAttempts: {
     fontSize: 12,
-    color: '#888',
+    color: '#94A3B8',
     marginTop: 8,
     textAlign: 'center',
   },
   puzzleResultCorrect: {
     fontSize: 14,
-    color: '#22C55E',
+    color: '#10B981',
     fontWeight: 'bold',
     marginTop: 8,
     textAlign: 'center',
@@ -837,7 +845,7 @@ const styles = StyleSheet.create({
   sectionTitle: {
     fontSize: 16,
     fontWeight: 'bold',
-    color: '#4A3728',
+    color: '#1E293B',
     marginBottom: 12,
     paddingHorizontal: 5,
   },
@@ -847,24 +855,24 @@ const styles = StyleSheet.create({
     paddingHorizontal: 5,
   },
   characterCard: {
-    width: 80,
-    height: 100,
+    width: CARD_WIDTH,
+    height: CARD_HEIGHT,
     borderRadius: 12,
     alignItems: 'center',
     justifyContent: 'center',
-    borderWidth: 2,
-    borderColor: '#D2B48C',
-    backgroundColor: '#FFF8DC',
-    padding: 8,
+    borderWidth: 1,
+    borderColor: '#E2E8F0',
+    backgroundColor: '#FFFFFF',
+    padding: 12,
   },
   cardSelected: {
-    shadowColor: '#FFD700',
+    shadowColor: '#8B5CF6',
     shadowOffset: { width: 0, height: 0 },
-    shadowOpacity: 0.8,
+    shadowOpacity: 0.3,
     shadowRadius: 10,
-    elevation: 8,
-    borderColor: '#8B4513',
-    backgroundColor: '#FFF',
+    elevation: 6,
+    borderColor: '#8B5CF6',
+    backgroundColor: '#F5F3FF',
   },
   glowRing: {
     position: 'absolute',
@@ -882,7 +890,7 @@ const styles = StyleSheet.create({
   cardName: {
     fontSize: 12,
     fontWeight: 'bold',
-    color: '#4A3728',
+    color: '#374151',
     textAlign: 'center',
   },
   cardRole: {
@@ -893,43 +901,51 @@ const styles = StyleSheet.create({
     marginBottom: 15,
   },
   plotCard: {
-    width: 80,
-    height: 100,
+    width: CARD_WIDTH,
+    height: CARD_HEIGHT,
     borderRadius: 12,
     alignItems: 'center',
     justifyContent: 'center',
-    borderWidth: 2,
-    borderColor: '#D2B48C',
-    backgroundColor: '#FFF8DC',
-    padding: 8,
+    borderWidth: 1,
+    borderColor: '#E2E8F0',
+    backgroundColor: '#FFFFFF',
+    padding: 12,
   },
   footer: {
     alignItems: 'center',
     paddingVertical: 10,
+    backgroundColor: '#FFFFFF',
+    borderTopWidth: 1,
+    borderTopColor: '#E2E8F0',
   },
   pageNumber: {
-    color: '#D2B48C',
+    color: '#94A3B8',
     fontSize: 12,
   },
   modalOverlay: {
     flex: 1,
-    backgroundColor: 'rgba(0,0,0,0.6)',
+    backgroundColor: 'rgba(15, 23, 42, 0.5)',
     justifyContent: 'center',
     alignItems: 'center',
   },
   modalContent: {
-    backgroundColor: '#FFF8DC',
-    borderRadius: 16,
+    backgroundColor: '#FFFFFF',
+    borderRadius: 20,
     padding: 24,
     width: width * 0.8,
     alignItems: 'center',
-    borderWidth: 3,
-    borderColor: '#8B4513',
+    borderWidth: 1,
+    borderColor: '#E2E8F0',
+    shadowColor: '#1E293B',
+    shadowOffset: { width: 0, height: 10 },
+    shadowOpacity: 0.15,
+    shadowRadius: 20,
+    elevation: 10,
   },
   modalTitle: {
     fontSize: 20,
     fontWeight: 'bold',
-    color: '#4A3728',
+    color: '#1E293B',
     marginBottom: 20,
   },
   unlockedCardContainer: {
@@ -943,21 +959,21 @@ const styles = StyleSheet.create({
   unlockedCardName: {
     fontSize: 18,
     fontWeight: 'bold',
-    color: '#4A3728',
+    color: '#1E293B',
     marginBottom: 4,
   },
   unlockedCardType: {
     fontSize: 14,
-    color: '#8B4513',
+    color: '#64748B',
   },
   modalButton: {
-    backgroundColor: '#8B4513',
+    backgroundColor: '#8B5CF6',
     paddingHorizontal: 32,
     paddingVertical: 12,
-    borderRadius: 8,
+    borderRadius: 12,
   },
   modalButtonText: {
-    color: '#FFF8DC',
+    color: '#FFFFFF',
     fontSize: 16,
     fontWeight: 'bold',
   },
