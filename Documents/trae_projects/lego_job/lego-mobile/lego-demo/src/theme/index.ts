@@ -1,5 +1,8 @@
 import storyThemes, { getTheme, getThemeColors, getThemeStyle, getGlassEffect } from './storyThemes';
 
+export { getTheme, getThemeColors, getThemeStyle, getGlassEffect };
+export { storyThemes };
+
 export const getThemeTypography = (typeId: string) => {
   const theme = getTheme(typeId);
   return theme.typography;

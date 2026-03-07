@@ -2223,3 +2223,85 @@ async addChapter(bookId: string, chapterData: ...) {
 ---
 
 *最后更新：2026-03-07 01:30*
+
+---
+
+## 问题37：模块导出函数未正确导出导致 TypeError
+
+### 问题描述
+应用启动后访问某些页面时报错：
+```
+TypeError: 0,l.getThemeColors is not a function (it is undefined)
+```
+
+### 错误原因
+在 `src/theme/index.ts` 中，虽然从 `storyThemes.ts` 导入了 `getThemeColors` 函数，但没有重新导出它。其他文件尝试从 `'../theme'` 导入 `getThemeColors` 时，由于 `index.ts` 没有导出该函数，导致导入的是 `undefined`。
+
+### 错误代码
+```typescript
+// src/theme/index.ts - 错误写法
+import storyThemes, { getTheme, getThemeColors, getThemeStyle, getGlassEffect } from './storyThemes';
+
+// 没有重新导出这些函数！
+export const getThemeTypography = (typeId: string) => { ... };
+```
+
+### 解决方案
+在 `index.ts` 中添加命名导出：
+```typescript
+// src/theme/index.ts - 正确写法
+import storyThemes, { getTheme, getThemeColors, getThemeStyle, getGlassEffect } from './storyThemes';
+
+export { getTheme, getThemeColors, getThemeStyle, getGlassEffect };
+export { storyThemes };
+```
+
+### 教训总结
+1. **模块重导出**：当创建一个模块的 `index.ts` 作为入口文件时，需要确保所有希望对外暴露的函数都被正确导出
+2. **导入检查**：使用 `import { func } from './module'` 时，确保 `module/index.ts` 确实导出了 `func`
+3. **TypeScript 编译检查**：TypeScript 应该能捕获这类错误，但如果使用 `any` 类型或配置不当，可能会遗漏
+
+### 调试方法
+使用 `adb logcat` 检查 ReactNativeJS 错误：
+```bash
+adb -s emulator-5554 logcat -d -s ReactNativeJS:*
+```
+
+---
+
+## 问题38：Gradle 缓存损坏导致构建失败
+
+### 问题描述
+Gradle 构建时报错：
+```
+java.io.UncheckedIOException: Could not read workspace metadata from metadata.bin
+```
+
+### 错误原因
+Gradle 的依赖访问器缓存（`dependencies-accessors`）损坏，导致无法读取元数据文件。
+
+### 解决方案
+使用 robocopy 清空目录后再删除：
+```powershell
+# 创建空目录
+New-Item -ItemType Directory -Path "c:\temp\empty_gradle" -Force | Out-Null
+# 使用 robocopy 镜像空目录到目标目录（会删除目标目录中所有文件）
+robocopy "c:\temp\empty_gradle" "path\to\android\.gradle" /MIR /R:0 /W:0
+# 然后删除空目录
+Remove-Item -Path "path\to\android\.gradle" -Recurse -Force
+```
+
+### 为什么 `Remove-Item -Recurse -Force` 有时失败？
+1. **文件锁定**：Gradle daemon 进程可能仍在持有文件句柄
+2. **权限问题**：某些文件可能有只读属性
+3. **路径过长**：Windows 路径长度限制
+4. **并发访问**：防病毒软件或其他进程正在扫描文件
+
+### 预防措施
+1. 构建前先停止 Gradle daemon：`./gradlew --stop`
+2. 定期清理 `.gradle` 目录
+3. 使用 `--no-daemon` 参数避免 daemon 缓存问题
+
+---
+
+*最后更新：2026-03-07 05:05*
