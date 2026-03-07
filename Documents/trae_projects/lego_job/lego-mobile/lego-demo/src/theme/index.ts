@@ -1,18 +1,4 @@
-import storyThemes from './storyThemes';
-
-export const getThemeColors = (typeId: string) => {
-  const theme = storyThemes[typeId] || storyThemes.magic;
-  return theme.colors;
-};
-
-export const getTheme = (typeId: string) => {
-  return storyThemes[typeId] || storyThemes.magic;
-};
-
-export const getThemeStyle = (typeId: string) => {
-  const theme = getTheme(typeId);
-  return theme.style;
-};
+import storyThemes, { getTheme, getThemeColors, getThemeStyle, getGlassEffect } from './storyThemes';
 
 export const getThemeTypography = (typeId: string) => {
   const theme = getTheme(typeId);
@@ -30,15 +16,37 @@ export const getThemeGradient = (typeId: string) => {
 
 export const getCardStyle = (typeId: string) => {
   const theme = getTheme(typeId);
-  const { colors, style } = theme;
+  const { colors, style, glassEffect } = theme;
   
   return {
     backgroundColor: colors.card,
     borderColor: colors.cardBorder,
     borderRadius: style.borderRadius,
-    shadowColor: style.shadowColor,
-    shadowOpacity: style.shadowOpacity,
+    shadowColor: glassEffect.shadowColor,
+    shadowOpacity: 1,
+    shadowRadius: glassEffect.blur,
   };
+};
+
+export const getGlassStyle = (typeId: string) => {
+  const theme = getTheme(typeId);
+  const { glassEffect } = theme;
+  
+  return {
+    backgroundColor: glassEffect.backgroundColor,
+    borderWidth: 1,
+    borderColor: glassEffect.borderColor,
+    shadowColor: glassEffect.shadowColor,
+    shadowOffset: { width: 0, height: 4 },
+    shadowOpacity: 1,
+    shadowRadius: glassEffect.blur,
+    elevation: 8,
+  };
+};
+
+export const getButtonGradient = (typeId: string, variant: 'primary' | 'cta' = 'primary') => {
+  const colors = getThemeColors(typeId);
+  return variant === 'primary' ? colors.primaryGradient : colors.ctaGradient;
 };
 
 export default {
@@ -49,4 +57,7 @@ export default {
   getAllThemes,
   getThemeGradient,
   getCardStyle,
+  getGlassEffect,
+  getGlassStyle,
+  getButtonGradient,
 };
