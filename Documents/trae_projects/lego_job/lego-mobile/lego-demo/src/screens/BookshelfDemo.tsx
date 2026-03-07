@@ -13,7 +13,9 @@ import {
 } from 'react-native';
 import { LinearGradient } from 'expo-linear-gradient';
 import { useData } from '../context/DataContext';
-import { getThemeColors, getGlassStyle } from '../theme';
+import { getThemeColors, getGlassStyle, storyThemes } from '../theme';
+
+const DEFAULT_THEME = storyThemes.children.colors;
 
 const { width, height } = Dimensions.get('window');
 const BOOK_CARD_WIDTH = (width - 60) / 2;
@@ -249,6 +251,7 @@ const BookshelfDemo: React.FC<BookshelfDemoProps> = ({ onBack, onNavigateToBookD
             <TouchableOpacity
               style={[
                 styles.modalCreateButton,
+                { backgroundColor: DEFAULT_THEME.primary },
                 (!newBookTitle.trim() || isCreating) && styles.modalCreateButtonDisabled,
               ]}
               onPress={handleCreateBook}
@@ -277,7 +280,7 @@ const BookshelfDemo: React.FC<BookshelfDemoProps> = ({ onBack, onNavigateToBookD
         </TouchableOpacity>
         <Text style={styles.headerTitle}>📚 我的书架</Text>
         <TouchableOpacity 
-          style={styles.newStoryButton} 
+          style={[styles.newStoryButton, { backgroundColor: DEFAULT_THEME.primary, shadowColor: DEFAULT_THEME.primary }]} 
           onPress={() => setShowCreateModal(true)}
         >
           <Text style={styles.newStoryButtonText}>➕ 新建</Text>
@@ -340,11 +343,9 @@ const styles = StyleSheet.create({
     fontWeight: 'bold',
   },
   newStoryButton: {
-    backgroundColor: '#8B5CF6',
     paddingHorizontal: 14,
     paddingVertical: 8,
     borderRadius: 20,
-    shadowColor: '#8B5CF6',
     shadowOffset: { width: 0, height: 2 },
     shadowOpacity: 0.2,
     shadowRadius: 4,
@@ -573,8 +574,8 @@ const styles = StyleSheet.create({
     borderWidth: 1,
   },
   typeOptionSelected: {
-    backgroundColor: '#F5F3FF',
-    borderColor: '#8B5CF6',
+    backgroundColor: 'rgba(251, 146, 60, 0.15)',
+    borderColor: DEFAULT_THEME.primary,
   },
   typeEmoji: {
     fontSize: 16,
@@ -608,11 +609,10 @@ const styles = StyleSheet.create({
     flex: 1,
     paddingVertical: 14,
     borderRadius: 12,
-    backgroundColor: '#8B5CF6',
     alignItems: 'center',
   },
   modalCreateButtonDisabled: {
-    backgroundColor: '#C4B5FD',
+    opacity: 0.5,
   },
   modalCreateText: {
     fontSize: 16,

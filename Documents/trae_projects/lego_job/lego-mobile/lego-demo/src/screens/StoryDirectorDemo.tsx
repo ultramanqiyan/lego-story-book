@@ -14,7 +14,9 @@ import { CardStyleType, AnimationType, CARD_STYLES } from '../types/styles';
 import { useData } from '../context/DataContext';
 import { Character, PlotElement } from '../database/DatabaseService';
 import { getCardStyleForBookType } from '../theme/cardStyleMapping';
-import { getThemeColors, getGlassStyle } from '../theme';
+import { getThemeColors, getGlassStyle, storyThemes } from '../theme';
+
+const DEFAULT_THEME = storyThemes.children.colors;
 
 const { width, height } = Dimensions.get('window');
 const CARD_WIDTH = 80;
@@ -1592,7 +1594,7 @@ const styles = StyleSheet.create({
   backButtonText: {
     fontSize: 16,
     fontWeight: '500',
-    color: '#8B5CF6',
+    color: DEFAULT_THEME.text,
   },
   title: {
     fontSize: 18,
@@ -1613,7 +1615,7 @@ const styles = StyleSheet.create({
   },
   styleButtonText: {
     fontSize: 16,
-    color: '#8B5CF6',
+    color: DEFAULT_THEME.primary,
   },
   stageStyleButton: {
     paddingHorizontal: 10,
@@ -1625,7 +1627,7 @@ const styles = StyleSheet.create({
   },
   stageStyleButtonText: {
     fontSize: 16,
-    color: '#8B5CF6',
+    color: DEFAULT_THEME.primary,
   },
   content: {
     flex: 1,
@@ -1666,8 +1668,8 @@ const styles = StyleSheet.create({
     shadowOpacity: 0.2,
     shadowRadius: 10,
     elevation: 6,
-    borderColor: '#8B5CF6',
-    backgroundColor: '#F5F3FF',
+    borderColor: DEFAULT_THEME.primary,
+    backgroundColor: 'rgba(251, 146, 60, 0.1)',
   },
   cardEmoji: {
     fontSize: 32,
@@ -1714,7 +1716,7 @@ const styles = StyleSheet.create({
     borderRadius: 12,
     alignItems: 'center',
     justifyContent: 'center',
-    shadowColor: '#8B5CF6',
+    shadowColor: DEFAULT_THEME.primary,
     shadowOffset: { width: 0, height: 4 },
     shadowOpacity: 0.2,
     shadowRadius: 8,

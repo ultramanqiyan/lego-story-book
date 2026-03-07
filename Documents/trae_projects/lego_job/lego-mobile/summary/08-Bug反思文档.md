@@ -375,3 +375,59 @@ Android打包后应用无法连接后端API，部分动画效果导致崩溃。
 - [ ] 打包后在真机/模拟器测试
 - [ ] 验证网络连接正常
 - [ ] 验证所有功能可用
+
+## 八、React Native JS错误追查方法
+
+### 8.1 获取错误日志
+
+当APP出现JS错误或崩溃时，使用ADB获取React Native错误日志：
+
+```bash
+# 方法1：获取ReactNativeJS标签的日志
+adb -s emulator-5554 logcat -d -s ReactNativeJS:*
+
+# 方法2：获取所有错误和异常
+adb -s emulator-5554 logcat -d | findstr /i "ReactNativeJS\|FATAL\|Exception\|Error"
+
+# 方法3：获取最近500行日志并过滤
+adb -s emulator-5554 logcat -d -t 500 *:V 2>&1 | findstr /i "ReactNative"
+```
+
+### 8.2 常见错误类型
+
+| 错误类型 | 说明 | 解决方法 |
+|---------|------|---------|
+| ReferenceError: Property 'xxx' doesn't exist | 引用了不存在的变量/属性 | 检查变量是否已定义，是否被删除 |
+| TypeError: undefined is not a function | 调用了未定义的函数 | 检查函数是否存在，导入是否正确 |
+| Cannot read property 'xxx' of undefined | 访问了undefined的属性 | 添加空值检查，确保数据已加载 |
+| Element type is invalid | 组件导入错误 | 检查组件导出和导入方式 |
+
+### 8.3 追查流程
+
+1. **获取日志**：运行上述ADB命令获取错误日志
+2. **定位错误**：找到 `E ReactNativeJS:` 开头的错误行
+3. **分析堆栈**：查看错误堆栈定位到具体组件
+4. **代码搜索**：使用 `Grep` 工具搜索相关代码
+5. **修复问题**：修改代码并重新构建测试
+
+### 8.4 案例：FAKE_CHARACTERS不存在错误
+
+**错误日志**：
+```
+E ReactNativeJS: ReferenceError: Property 'FAKE_CHARACTERS' doesn't exist
+```
+
+**追查步骤**：
+1. 确认错误：变量 `FAKE_CHARACTERS` 被引用但不存在
+2. 搜索代码：`Grep pattern="FAKE_CHARACTERS"` 找到所有引用位置
+3. 发现问题：BookDetailDemo.tsx 和 StoryDirectorDemo.tsx 仍在使用假数据
+4. 修复方案：将假数据引用替换为从 useData() 获取的真实数据
+
+**根本原因**：数据迁移不完整，部分文件未完全更新
+
+### 8.5 预防措施
+
+1. **代码搜索**：删除变量前搜索所有引用
+2. **类型检查**：使用TypeScript编译检查
+3. **增量测试**：修改后立即测试相关功能
+4. **代码审查**：确保所有文件都已更新

@@ -12,7 +12,9 @@ import {
 } from 'react-native';
 import { useData } from '../context/DataContext';
 import { Book, Chapter, Character, PlotElement, UnlockedElement } from '../database/DatabaseService';
-import { getThemeColors, getGlassStyle } from '../theme';
+import { getThemeColors, getGlassStyle, storyThemes } from '../theme';
+
+const DEFAULT_THEME = storyThemes.children.colors;
 
 const { width, height } = Dimensions.get('window');
 const PAGE_WIDTH = (width - 60) / 2;
@@ -621,8 +623,8 @@ const styles = StyleSheet.create({
     borderColor: '#E2E8F0',
   },
   bookmarkActive: {
-    backgroundColor: '#8B5CF6',
-    borderColor: '#7C3AED',
+    backgroundColor: DEFAULT_THEME.primary,
+    borderColor: DEFAULT_THEME.primary,
   },
   bookmarkText: {
     color: '#64748B',
@@ -709,7 +711,7 @@ const styles = StyleSheet.create({
     marginBottom: 10,
   },
   backToDirectoryText: {
-    color: '#8B5CF6',
+    color: DEFAULT_THEME.primary,
     fontSize: 14,
     fontWeight: '500',
   },
@@ -745,7 +747,7 @@ const styles = StyleSheet.create({
   navButton: {
     paddingHorizontal: 20,
     paddingVertical: 8,
-    backgroundColor: '#8B5CF6',
+    backgroundColor: DEFAULT_THEME.primary,
     borderRadius: 8,
   },
   navButtonDisabled: {
@@ -803,8 +805,8 @@ const styles = StyleSheet.create({
     borderColor: '#E2E8F0',
   },
   puzzleOptionSelected: {
-    borderColor: '#8B5CF6',
-    backgroundColor: '#F5F3FF',
+    borderColor: DEFAULT_THEME.primary,
+    backgroundColor: 'rgba(251, 146, 60, 0.15)',
   },
   puzzleOptionCorrect: {
     borderColor: '#10B981',
@@ -866,13 +868,13 @@ const styles = StyleSheet.create({
     padding: 12,
   },
   cardSelected: {
-    shadowColor: '#8B5CF6',
+    shadowColor: DEFAULT_THEME.primary,
     shadowOffset: { width: 0, height: 0 },
     shadowOpacity: 0.3,
     shadowRadius: 10,
     elevation: 6,
-    borderColor: '#8B5CF6',
-    backgroundColor: '#F5F3FF',
+    borderColor: DEFAULT_THEME.primary,
+    backgroundColor: 'rgba(251, 146, 60, 0.1)',
   },
   glowRing: {
     position: 'absolute',
@@ -967,7 +969,7 @@ const styles = StyleSheet.create({
     color: '#64748B',
   },
   modalButton: {
-    backgroundColor: '#8B5CF6',
+    backgroundColor: DEFAULT_THEME.primary,
     paddingHorizontal: 32,
     paddingVertical: 12,
     borderRadius: 12,
