@@ -571,7 +571,13 @@ export const DatabaseService = {
   },
 
   async getUnlockedElements(bookId: string, elementType?: string): Promise<UnlockedElement[]> {
-    if (!db) db = await this.initDatabase();
+    console.log('[getUnlockedElements] Called with bookId:', bookId, 'elementType:', elementType);
+    
+    if (!db) {
+      console.log('[getUnlockedElements] Database not initialized, initializing...');
+      db = await this.initDatabase();
+      console.log('[getUnlockedElements] Database initialized');
+    }
     
     let query = 'SELECT * FROM book_unlocked_elements WHERE book_id = ?';
     const params: any[] = [bookId];
@@ -581,7 +587,10 @@ export const DatabaseService = {
       params.push(elementType);
     }
     
+    console.log('[getUnlockedElements] Executing query:', query, 'params:', params);
     const results = await db!.getAllAsync<any>(query, params);
+    console.log('[getUnlockedElements] Query returned', results.length, 'results');
+    
     return results.map(r => ({
       id: r.id,
       bookId: r.book_id,
@@ -608,19 +617,19 @@ export const DatabaseService = {
     equipments: PlotElement[];
     adventures: PlotElement[];
   }> {
-    console.log('[getLockedElements] Called with bookId:', bookId, 'typeId:', typeId);
+    console.log('[getLockedElements] START, bookId:', bookId, 'typeId:', typeId);
     
     if (!db) db = await this.initDatabase();
     
-    const unlockedElements = await this.getUnlockedElements(bookId);
-    console.log('[getLockedElements] unlockedElements count:', unlockedElements.length);
-    console.log('[getLockedElements] unlockedIds:', unlockedElements.map(e => e.elementId));
-    
-    const unlockedIds = new Set(unlockedElements.map(e => e.elementId));
+    // 直接执行查询，不调用 getUnlockedElements
+    const results = await db!.getAllAsync<any>(
+      'SELECT element_id FROM book_unlocked_elements WHERE book_id = ?',
+      [bookId]
+    );
+    const unlockedIds = new Set(results.map(r => r.element_id));
+    console.log('[getLockedElements] unlockedIds count:', unlockedIds.size);
 
     const allCharacters = charactersData.characters.filter(c => c.typeId === typeId);
-    console.log('[getLockedElements] allCharacters for typeId:', typeId, 'count:', allCharacters.length);
-    
     const characters = allCharacters.filter(c => !unlockedIds.has(c.characterId)).map(c => ({
       characterId: c.characterId,
       typeId: c.typeId,
@@ -633,10 +642,9 @@ export const DatabaseService = {
       intimacy: c.intimacy,
       personality: c.personality,
     }));
-    console.log('[getLockedElements] locked characters count:', characters.length);
+    console.log('[getLockedElements] locked characters:', characters.length);
 
     const allElements = plotElementsData.plotElements.filter(e => e.typeId === typeId);
-    console.log('[getLockedElements] allElements for typeId:', typeId, 'count:', allElements.length);
     
     const weathers = allElements
       .filter(e => e.category === 'weather' && !unlockedIds.has(e.elementId))
@@ -681,6 +689,8 @@ export const DatabaseService = {
         emoji: e.emoji,
         extraConfig: e.extraConfig,
       }));
+
+    console.log('[getLockedElements] locked elements - weather:', weathers.length, 'terrain:', terrains.length, 'equipment:', equipments.length, 'adventure:', adventures.length);
 
     return { characters, weathers, terrains, equipments, adventures };
   },

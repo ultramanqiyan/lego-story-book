@@ -192,12 +192,15 @@ const BookDetailDemo: React.FC<BookDetailDemoProps> = ({ bookId, onBack, onNavig
     if (optionIndex === chapter.puzzleCorrectIndex) {
       console.log('[Puzzle] Answer CORRECT!');
       setPuzzleResult('correct');
+      
+      console.log('[Puzzle] Before updatePuzzleResult');
       await updatePuzzleResult(chapter.chapterId, 1);
+      console.log('[Puzzle] After updatePuzzleResult');
       
       if (book) {
-        console.log('[Puzzle] Calling getLockedElements with bookId:', bookId, 'typeId:', book.typeId);
+        console.log('[Puzzle] Before getLockedElements, bookId:', bookId, 'typeId:', book.typeId);
         const lockedElements = await getLockedElements(bookId, book.typeId);
-        console.log('[Puzzle] lockedElements result:', JSON.stringify(lockedElements, null, 2));
+        console.log('[Puzzle] After getLockedElements, result:', lockedElements);
         
         const allLocked = [
           ...lockedElements.characters.map(c => ({ id: c.characterId, type: 'character', emoji: c.emoji, name: c.name })),

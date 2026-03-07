@@ -2386,7 +2386,7 @@ cardSelected: {
 
 ---
 
-## 2026-03-07 卡牌掉落机制调查
+## 2026-03-07 卡牌掉落机制调查与修复
 
 ### 问题40：解谜成功后卡牌不掉落
 
@@ -2402,74 +2402,53 @@ cardSelected: {
    - `getLockedElements()` 获取未解锁元素
    - `unlockElement()` 解锁元素
 
-2. **添加调试日志**：
-   ```typescript
-   // BookDetailDemo.tsx
-   console.log('[BookDetailDemo] loadData called, bookId:', bookId);
-   console.log('[BookDetailDemo] bookData from DB:', bookData);
-   console.log('[BookDetailDemo] bookData.typeId:', bookData?.typeId);
-   
-   console.log('[Puzzle] handlePuzzleAnswer called');
-   console.log('[Puzzle] book:', book);
-   console.log('[Puzzle] bookId:', bookId, 'typeId:', book?.typeId);
-   console.log('[Puzzle] lockedElements result:', JSON.stringify(lockedElements, null, 2));
-   console.log('[Puzzle] allLocked count:', allLocked.length);
-   
-   // DatabaseService.ts
-   console.log('[getLockedElements] Called with bookId:', bookId, 'typeId:', typeId);
-   console.log('[getLockedElements] unlockedElements count:', unlockedElements.length);
-   console.log('[getLockedElements] unlockedIds:', unlockedElements.map(e => e.elementId));
-   console.log('[getLockedElements] allCharacters for typeId:', typeId, 'count:', allCharacters.length);
-   console.log('[getLockedElements] locked characters count:', characters.length);
-   console.log('[getLockedElements] allElements for typeId:', typeId, 'count:', allElements.length);
-   ```
+2. **添加调试日志定位问题**：
+   - 日志显示 `getLockedElements` 在调用 `getUnlockedElements` 后卡住
+   - 没有后续日志输出
 
-3. **数据统计**：
-   - children 类型每种 category 约有 4 个元素
-   - 创建书籍时解锁 2 个，剩余 2 个可以掉落
+3. **问题根因**：
+   - `getLockedElements` 函数内部调用 `getUnlockedElements` 时出现 **死锁或异步问题**
+   - 可能是 SQLite 数据库在 WAL 模式下的并发访问问题
 
-4. **代码流程验证**：
-   - `createBook()` 正确设置 `type_id` 参数
-   - `getBookById()` 正确返回 `typeId`
-   - `getLockedElements()` 正确过滤 `typeId`
-   - `addChapter()` 正确存储谜题数据
-   - `getChaptersByBookId()` 正确读取谜题数据
+**解决方案：**
 
-**可能的原因：**
+简化 `getLockedElements` 函数，直接执行数据库查询，避免函数调用：
 
-1. **`book.typeId` 为空或不匹配**
-   - 需要查看日志确认 `bookData.typeId` 的值
+```typescript
+async getLockedElements(bookId: string, typeId: string) {
+  if (!db) db = await this.initDatabase();
+  
+  // 直接执行查询，不调用 getUnlockedElements
+  const results = await db!.getAllAsync<any>(
+    'SELECT element_id FROM book_unlocked_elements WHERE book_id = ?',
+    [bookId]
+  );
+  const unlockedIds = new Set(results.map(r => r.element_id));
+  
+  // 过滤未解锁元素...
+}
+```
 
-2. **`getLockedElements()` 返回空数组**
-   - 可能 `typeId` 过滤条件不匹配
-   - 可能所有元素都已解锁
+**验证结果：**
 
-3. **答题选项未显示**
-   - 可能章节内容未正确渲染谜题
-
-**验证步骤：**
-
-1. 创建新书籍（选择"儿童故事"类型）
-2. 添加新章节（选择卡牌后点击"开始拍摄"）
-3. 进入章节内容页
-4. 点击正确答案（第一个选项 A）
-5. 查看 Metro Bundler 终端的日志输出
-
-**关键日志标签：**
-- `[BookDetailDemo]` - 书籍数据加载
-- `[Puzzle]` - 答题处理
-- `[getLockedElements]` - 获取未解锁元素
-- `[DB]` - 数据库操作
+```
+[getLockedElements] unlockedIds count: 10
+[getLockedElements] locked characters: 2
+[getLockedElements] locked elements - weather: 2, terrain: 2, equipment: 2, adventure: 2
+[Puzzle] allLocked count: 10
+[Puzzle] Unlocking card: { id: 'adventure-magic-4', type: 'adventure', emoji: '🦋', name: '飞行' }
+[getUnlockedElements] Query returned 11 results  // 之前是 10，说明新卡牌已解锁
+```
 
 **关键代码位置：**
-- `src/screens/BookDetailDemo.tsx:100-132` - loadData 函数
-- `src/screens/BookDetailDemo.tsx:177-236` - handlePuzzleAnswer 函数
-- `src/database/DatabaseService.ts:604-686` - getLockedElements 函数
-- `src/database/DatabaseService.ts:688-720` - addChapter 函数
-- `src/database/DatabaseService.ts:384-408` - getChaptersByBookId 函数
+- `src/screens/BookDetailDemo.tsx:180-229` - handlePuzzleAnswer 函数
+- `src/database/DatabaseService.ts:613-695` - getLockedElements 函数
 
-**状态：待手动验证**
+**经验教训：**
+1. **避免嵌套异步调用**：在数据库操作中，尽量避免函数嵌套调用
+2. **简化代码流程**：直接执行查询比调用其他函数更可靠
+3. **添加调试日志**：关键步骤添加日志，便于定位问题
 
 ---
 
-*最后更新：2026-03-07 17:05*
+*最后更新：2026-03-07 10:00*
