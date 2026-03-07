@@ -2451,4 +2451,174 @@ async getLockedElements(bookId: string, typeId: string) {
 
 ---
 
-*最后更新：2026-03-07 10:00*
+### 问题41：卡牌掉落后角色和情节标签页看不到新卡牌
+
+**问题描述：**
+- 解谜成功后，卡牌掉落弹窗显示正确
+- 但切换到角色tab或情节tab，看不到新解锁的卡牌
+
+**调查过程：**
+
+1. **检查数据库更新**：
+   ```
+   解锁前：unlocked elements: 15
+   解锁后：unlocked elements: 16  ✅ 数据库已更新
+   ```
+
+2. **检查数据加载**：
+   ```
+   unlockedPlotIds: [..., 'adventure-magic-3', ...]  ✅ 包含新卡牌
+   filteredPlotElements count: 13  ✅ 状态已更新
+   ```
+
+3. **问题根因**：
+   - 角色加载使用 `getCharactersByBookId`，只返回 `book_characters` 表中的角色
+   - 新解锁的角色不在 `book_characters` 表中，所以不会显示
+
+**解决方案：**
+
+修改角色加载逻辑，使用 `getCharactersByTypeId` 获取所有该类型的角色：
+
+```typescript
+// 之前 - 只返回 book_characters 表中的角色
+const allChars = await getCharactersByBookId(bookId);
+
+// 现在 - 获取所有该类型的角色，然后过滤已解锁的
+const allChars = await getCharactersByTypeId(bookData.typeId || 'children');
+const unlockedCharIds = unlocked
+  .filter(e => e.elementType === 'character')
+  .map(e => e.elementId);
+setCharacters(allChars.filter(c => unlockedCharIds.includes(c.characterId)));
+```
+
+**验证结果：**
+```
+[BookDetailDemo] unlockedCharIds: ['char-magic-1', 'char-magic-2', 'char-magic-3', 'char-magic-4']
+[BookDetailDemo] allChars count: 4
+[BookDetailDemo] filteredPlotElements count: 13
+```
+
+**关键代码位置：**
+- `src/screens/BookDetailDemo.tsx:100-145` - loadData 函数
+
+**经验教训：**
+1. **理解数据来源**：不同函数返回的数据来源不同
+2. **检查数据过滤逻辑**：确保过滤条件正确
+3. **添加日志追踪数据流**：便于定位问题
+
+---
+
+### 问题42：角色和情节标签页卡牌布局问题
+
+**问题描述：**
+- 角色tab和情节tab每行显示了3列卡牌
+- 需要每行只显示2列
+- 卡片长宽比例与故事导演页不一致
+
+**根本原因分析：**
+1. **卡片宽度计算错误**：
+   ```typescript
+   // 之前
+   const CARD_WIDTH = (PAGE_WIDTH - 12) / 2;  // 计算结果太小
+   ```
+2. **缺少换行支持**：
+   ```typescript
+   cardRow: {
+     flexDirection: 'row',
+     // 缺少 flexWrap: 'wrap'
+   }
+   ```
+3. **使用了水平滚动**：
+   ```typescript
+   <ScrollView horizontal>  // 导致卡牌水平排列不换行
+   ```
+
+**解决方案：**
+
+1. **修改卡片宽度**：与故事导演页保持一致
+   ```typescript
+   // 故事导演页
+   const CARD_WIDTH = 80;
+   const CARD_HEIGHT = 100;
+   
+   // BookDetailDemo 也使用相同的尺寸
+   const CARD_WIDTH = 80;
+   const CARD_HEIGHT = 100;
+   ```
+
+2. **添加换行支持**：
+   ```typescript
+   cardRow: {
+     flexDirection: 'row',
+     flexWrap: 'wrap',  // 允许换行
+     gap: 12,
+     paddingHorizontal: 5,
+   },
+   ```
+
+3. **移除水平滚动**：
+   ```typescript
+   // 之前
+   <ScrollView horizontal>
+     <View style={styles.cardRow}>
+       {cards.map(...)}
+     </View>
+   </ScrollView>
+   
+   // 现在
+   <View style={styles.cardRow}>
+     {cards.map(...)}
+   </View>
+   ```
+
+**经验教训：**
+1. **保持UI一致性**：不同页面的相同组件应使用相同的尺寸
+2. **使用flexWrap实现换行**：而不是水平滚动
+3. **计算卡片宽度时考虑gap**：确保每行显示正确数量的卡牌
+
+---
+
+### 问题43：答题后可以重复回答导致无限掉落卡牌
+
+**问题描述：**
+- 回答问题成功后，可以继续回答
+- 回答失败三次后，也可以继续回答
+- 导致可以无限掉落新卡牌
+
+**根本原因分析：**
+- `handlePuzzleAnswer` 函数没有检查谜题是否已经回答过
+- 没有检查答题次数是否已用完
+
+**解决方案：**
+
+在 `handlePuzzleAnswer` 函数开头添加检查：
+
+```typescript
+const handlePuzzleAnswer = async (optionIndex: number, chapter: Chapter) => {
+  // 检查是否已经回答过（成功或失败三次）
+  if (chapter.puzzleResult !== null) {
+    console.log('[Puzzle] Already answered, puzzleResult:', chapter.puzzleResult);
+    return;
+  }
+  
+  // 检查是否已经达到最大尝试次数
+  if (puzzleAttempts >= 3) {
+    console.log('[Puzzle] Max attempts reached');
+    return;
+  }
+  
+  // 继续处理答题逻辑...
+};
+```
+
+**关键代码位置：**
+- `src/screens/BookDetailDemo.tsx:180-230` - handlePuzzleAnswer 函数
+
+**经验教训：**
+1. **状态检查放在函数开头**：避免重复执行
+2. **使用puzzleResult字段判断**：null表示未回答，0表示失败，1表示成功
+3. **添加日志追踪状态变化**：便于调试
+
+---
+
+*最后更新：2026-03-07 10:30*

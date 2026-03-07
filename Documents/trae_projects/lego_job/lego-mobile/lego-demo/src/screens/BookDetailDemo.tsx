@@ -22,8 +22,8 @@ const { width, height } = Dimensions.get('window');
 const PAGE_WIDTH = (width - 60) / 2;
 const PAGE_HEIGHT = height - 200;
 const ITEMS_PER_PAGE = 6;
-const CARD_WIDTH = 160;
-const CARD_HEIGHT = 200;
+const CARD_WIDTH = (PAGE_WIDTH - 12) / 2;
+const CARD_HEIGHT = 180;
 
 type TabType = 'chapters' | 'characters' | 'plots';
 type ChapterViewMode = 'directory' | 'content';
@@ -134,7 +134,11 @@ const BookDetailDemo: React.FC<BookDetailDemoProps> = ({ bookId, onBack, onNavig
         const unlockedPlotIds = unlocked.map(e => e.elementId);
         console.log('[BookDetailDemo] unlockedPlotIds:', unlockedPlotIds);
         console.log('[BookDetailDemo] allPlotElements count:', allPlotElements.length);
-        setPlotElements(allPlotElements.filter(e => unlockedPlotIds.includes(e.elementId)));
+        console.log('[BookDetailDemo] allPlotElements IDs:', allPlotElements.map(e => e.elementId));
+        const filteredPlotElements = allPlotElements.filter(e => unlockedPlotIds.includes(e.elementId));
+        console.log('[BookDetailDemo] filteredPlotElements count:', filteredPlotElements.length);
+        console.log('[BookDetailDemo] filteredPlotElements IDs:', filteredPlotElements.map(e => e.elementId));
+        setPlotElements(filteredPlotElements);
       }
     } catch (error) {
       console.error('Failed to load book data:', error);
@@ -488,11 +492,9 @@ const BookDetailDemo: React.FC<BookDetailDemoProps> = ({ bookId, onBack, onNavig
     return (
       <ScrollView style={styles.cardGridContainer}>
         <Text style={styles.sectionTitle}>👥 角色列表</Text>
-        <ScrollView horizontal showsHorizontalScrollIndicator={false}>
-          <View style={styles.cardRow}>
-            {characters.map((character, index) => renderCharacterCard(character, index))}
-          </View>
-        </ScrollView>
+        <View style={styles.cardRow}>
+          {characters.map((character, index) => renderCharacterCard(character, index))}
+        </View>
       </ScrollView>
     );
   };
@@ -542,11 +544,9 @@ const BookDetailDemo: React.FC<BookDetailDemoProps> = ({ bookId, onBack, onNavig
         {categories.map(category => (
           <View key={category.key} style={styles.plotCategory}>
             <Text style={styles.sectionTitle}>{category.title}</Text>
-            <ScrollView horizontal showsHorizontalScrollIndicator={false}>
-              <View style={styles.cardRow}>
-                {category.data.map((card, index) => renderPlotCard(card, index))}
-              </View>
-            </ScrollView>
+            <View style={styles.cardRow}>
+              {category.data.map((card, index) => renderPlotCard(card, index))}
+            </View>
           </View>
         ))}
       </ScrollView>
@@ -904,6 +904,7 @@ const styles = StyleSheet.create({
   },
   cardRow: {
     flexDirection: 'row',
+    flexWrap: 'wrap',
     gap: 12,
     paddingHorizontal: 5,
   },
