@@ -33,8 +33,9 @@ const CARD_MARGIN = 6;
 const CARD_ROW_PADDING = 5;
 // 基础卡片宽度（每行两张）
 const BASE_CARD_WIDTH = (width - CARD_ROW_PADDING * 2 - CARD_MARGIN * 4) / 2;
-// 扩大1.3倍，但限制最大宽度不超过屏幕
-const CARD_WIDTH = Math.min(BASE_CARD_WIDTH * 1.3, width * 0.45);
+// 书籍详情页卡牌缩小为0.8倍
+const BOOK_DETAIL_CARD_SCALE = 0.8;
+const CARD_WIDTH = Math.min(BASE_CARD_WIDTH * 1.3 * BOOK_DETAIL_CARD_SCALE, width * 0.36);
 const CARD_HEIGHT = CARD_WIDTH * 1.25;  // 保持比例不变
 
 type TabType = 'chapters' | 'characters' | 'plots';
@@ -110,6 +111,10 @@ const BookDetailDemo: React.FC<BookDetailDemoProps> = ({ bookId, onBack, onNavig
   const [selectedDisplayCard, setSelectedDisplayCard] = useState<string | null>(null);
   const cardExpandAnim = useRef(new Animated.Value(0)).current;
   const cardScaleAnim = useRef(new Animated.Value(1)).current;
+  
+  const [contentPage, setContentPage] = useState<number>(0);
+  const [totalPages, setTotalPages] = useState<number>(1);
+  const CHARS_PER_PAGE = 300;
   
   const flipAnim = useRef(new Animated.Value(0)).current;
   const tabAnims = useRef({
@@ -200,6 +205,7 @@ const BookDetailDemo: React.FC<BookDetailDemoProps> = ({ bookId, onBack, onNavig
     setPuzzleAnswer(null);
     setPuzzleResult(null);
     setPuzzleAttempts(0);
+    setContentPage(0);
   };
 
   const handleCharacterSelect = (characterId: string) => {
@@ -318,10 +324,25 @@ const BookDetailDemo: React.FC<BookDetailDemoProps> = ({ bookId, onBack, onNavig
     console.log(`[UI] Puzzle check: hasPuzzle=${selectedChapter.hasPuzzle}, puzzleQuestion=${selectedChapter.puzzleQuestion}, puzzleOptions=${JSON.stringify(selectedChapter.puzzleOptions)}`);
     
     const currentIndex = chapters.findIndex(c => c.chapterId === selectedChapterId);
-    const hasPrev = currentIndex > 0;
-    const hasNext = currentIndex < chapters.length - 1;
+    const hasPrevChapter = currentIndex > 0;
+    const hasNextChapter = currentIndex < chapters.length - 1;
     
-    // 获取本章卡牌
+    const fullContent = selectedChapter.content || '';
+    const contentLength = fullContent.length;
+    const calculatedTotalPages = Math.max(1, Math.ceil(contentLength / CHARS_PER_PAGE));
+    
+    if (calculatedTotalPages !== totalPages) {
+      setTotalPages(calculatedTotalPages);
+    }
+    
+    const currentPageSafe = Math.min(contentPage, calculatedTotalPages - 1);
+    const startChar = currentPageSafe * CHARS_PER_PAGE;
+    const endChar = Math.min(startChar + CHARS_PER_PAGE, contentLength);
+    const pageContent = fullContent.substring(startChar, endChar);
+    
+    const hasPrevPage = currentPageSafe > 0;
+    const hasNextPage = currentPageSafe < calculatedTotalPages - 1;
+    
     let chapterCards: any[] = [];
     console.log('[BookDetailDemo] selectedChapter.selectedElements:', selectedChapter.selectedElements);
     console.log('[BookDetailDemo] allCharacters count:', allCharacters.length);
@@ -359,6 +380,8 @@ const BookDetailDemo: React.FC<BookDetailDemoProps> = ({ bookId, onBack, onNavig
     }
     console.log('[BookDetailDemo] Total chapterCards:', chapterCards.length);
     
+    const showPuzzleAndCards = currentPageSafe === calculatedTotalPages - 1;
+    
     return (
       <View style={styles.contentContainer}>
         <TouchableOpacity 
@@ -368,12 +391,12 @@ const BookDetailDemo: React.FC<BookDetailDemoProps> = ({ bookId, onBack, onNavig
           <Text style={styles.backToDirectoryText}>← 目录</Text>
         </TouchableOpacity>
         
-        <ScrollView style={styles.chapterScrollContainer}>
+        <View style={styles.chapterContentContainer}>
           <Text style={styles.chapterTitle}>第{selectedChapter.chapterNumber}章 {selectedChapter.title}</Text>
           <View style={styles.chapterDivider} />
-          <Text style={styles.chapterContent}>{selectedChapter.content}</Text>
+          <Text style={styles.chapterContent}>{pageContent}</Text>
           
-          {selectedChapter.hasPuzzle && selectedChapter.puzzleQuestion && selectedChapter.puzzleOptions && (
+          {showPuzzleAndCards && selectedChapter.hasPuzzle && selectedChapter.puzzleQuestion && selectedChapter.puzzleOptions && (
             <View style={styles.puzzleBox}>
               <Text style={styles.puzzleTitle}>❓ 谜题</Text>
               <Text style={styles.puzzleQuestion}>{selectedChapter.puzzleQuestion}</Text>
@@ -408,8 +431,7 @@ const BookDetailDemo: React.FC<BookDetailDemoProps> = ({ bookId, onBack, onNavig
             </View>
           )}
           
-          {/* 本章卡牌展示区 */}
-          {chapterCards.length > 0 && (
+          {showPuzzleAndCards && chapterCards.length > 0 && (
             <View style={styles.chapterCardsSection}>
               <Text style={styles.chapterCardsTitle}>🎴 本章卡牌</Text>
               <View style={styles.chapterCardsRow}>
@@ -422,40 +444,44 @@ const BookDetailDemo: React.FC<BookDetailDemoProps> = ({ bookId, onBack, onNavig
               </View>
             </View>
           )}
-        </ScrollView>
+        </View>
         
         <View style={styles.chapterNavigation}>
           <TouchableOpacity
-            style={[styles.navButton, !hasPrev && styles.navButtonDisabled]}
+            style={[styles.navButton, !hasPrevPage && !hasPrevChapter && styles.navButtonDisabled]}
             onPress={() => {
-              if (hasPrev) {
+              if (hasPrevPage) {
+                setContentPage(currentPageSafe - 1);
+              } else if (hasPrevChapter) {
                 const prevChapter = chapters[currentIndex - 1];
                 handleChapterSelect(prevChapter.chapterId);
               }
             }}
-            disabled={!hasPrev}
+            disabled={!hasPrevPage && !hasPrevChapter}
           >
-            <Text style={[styles.navButtonText, !hasPrev && styles.navButtonTextDisabled]}>
-              上一章
+            <Text style={[styles.navButtonText, !hasPrevPage && !hasPrevChapter && styles.navButtonTextDisabled]}>
+              {hasPrevPage ? '上一页' : '上一章'}
             </Text>
           </TouchableOpacity>
           
           <Text style={styles.pageIndicator}>
-            {currentIndex + 1}/{chapters.length}
+            {calculatedTotalPages > 1 ? `${currentPageSafe + 1}/${calculatedTotalPages}` : `${currentIndex + 1}/${chapters.length}`}
           </Text>
           
           <TouchableOpacity
-            style={[styles.navButton, !hasNext && styles.navButtonDisabled]}
+            style={[styles.navButton, !hasNextPage && !hasNextChapter && styles.navButtonDisabled]}
             onPress={() => {
-              if (hasNext) {
+              if (hasNextPage) {
+                setContentPage(currentPageSafe + 1);
+              } else if (hasNextChapter) {
                 const nextChapter = chapters[currentIndex + 1];
                 handleChapterSelect(nextChapter.chapterId);
               }
             }}
-            disabled={!hasNext}
+            disabled={!hasNextPage && !hasNextChapter}
           >
-            <Text style={[styles.navButtonText, !hasNext && styles.navButtonTextDisabled]}>
-              下一章
+            <Text style={[styles.navButtonText, !hasNextPage && !hasNextChapter && styles.navButtonTextDisabled]}>
+              {hasNextPage ? '下一页' : '下一章'}
             </Text>
           </TouchableOpacity>
         </View>
@@ -1010,8 +1036,9 @@ const styles = StyleSheet.create({
     fontSize: 14,
     fontWeight: '500',
   },
-  chapterScrollContainer: {
+  chapterContentContainer: {
     flex: 1,
+    paddingHorizontal: 16,
   },
   chapterDivider: {
     height: 1,
@@ -1150,6 +1177,7 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     flexWrap: 'wrap',
     paddingHorizontal: CARD_ROW_PADDING,
+    justifyContent: 'center',
   },
   characterCard: {
     width: CARD_WIDTH,
@@ -1177,16 +1205,16 @@ const styles = StyleSheet.create({
     borderWidth: 2,
   },
   cardEmoji: {
-    fontSize: 64,  // 放大一倍
+    fontSize: 52,  // 64 * 0.8 = 51.2
     marginBottom: 4,
   },
   cardName: {
-    fontSize: 12,
+    fontSize: 10,  // 12 * 0.8 = 9.6
     fontWeight: 'bold',
     textAlign: 'center',
   },
   cardRole: {
-    fontSize: 10,
+    fontSize: 8,  // 10 * 0.8 = 8
     marginTop: 2,
   },
   plotCategory: {
