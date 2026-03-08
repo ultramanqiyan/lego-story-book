@@ -329,16 +329,25 @@ const BookDetailDemo: React.FC<BookDetailDemoProps> = ({ bookId, onBack, onNavig
     
     const fullContent = selectedChapter.content || '';
     const contentLength = fullContent.length;
-    const calculatedTotalPages = Math.max(1, Math.ceil(contentLength / CHARS_PER_PAGE));
+    const contentPages = Math.max(1, Math.ceil(contentLength / CHARS_PER_PAGE));
+    
+    const hasPuzzleOrCards = (selectedChapter.hasPuzzle && selectedChapter.puzzleQuestion) || 
+                              (selectedChapter.selectedElements && Object.keys(selectedChapter.selectedElements).length > 0);
+    const calculatedTotalPages = contentPages + (hasPuzzleOrCards ? 1 : 0);
     
     if (calculatedTotalPages !== totalPages) {
       setTotalPages(calculatedTotalPages);
     }
     
     const currentPageSafe = Math.min(contentPage, calculatedTotalPages - 1);
-    const startChar = currentPageSafe * CHARS_PER_PAGE;
-    const endChar = Math.min(startChar + CHARS_PER_PAGE, contentLength);
-    const pageContent = fullContent.substring(startChar, endChar);
+    const isPuzzlePage = hasPuzzleOrCards && currentPageSafe === calculatedTotalPages - 1;
+    
+    let pageContent = '';
+    if (!isPuzzlePage) {
+      const startChar = currentPageSafe * CHARS_PER_PAGE;
+      const endChar = Math.min(startChar + CHARS_PER_PAGE, contentLength);
+      pageContent = fullContent.substring(startChar, endChar);
+    }
     
     const hasPrevPage = currentPageSafe > 0;
     const hasNextPage = currentPageSafe < calculatedTotalPages - 1;
@@ -380,8 +389,6 @@ const BookDetailDemo: React.FC<BookDetailDemoProps> = ({ bookId, onBack, onNavig
     }
     console.log('[BookDetailDemo] Total chapterCards:', chapterCards.length);
     
-    const showPuzzleAndCards = currentPageSafe === calculatedTotalPages - 1;
-    
     return (
       <View style={styles.contentContainer}>
         <TouchableOpacity 
@@ -394,55 +401,59 @@ const BookDetailDemo: React.FC<BookDetailDemoProps> = ({ bookId, onBack, onNavig
         <View style={styles.chapterContentContainer}>
           <Text style={styles.chapterTitle}>第{selectedChapter.chapterNumber}章 {selectedChapter.title}</Text>
           <View style={styles.chapterDivider} />
-          <Text style={styles.chapterContent}>{pageContent}</Text>
-          
-          {showPuzzleAndCards && selectedChapter.hasPuzzle && selectedChapter.puzzleQuestion && selectedChapter.puzzleOptions && (
-            <View style={styles.puzzleBox}>
-              <Text style={styles.puzzleTitle}>❓ 谜题</Text>
-              <Text style={styles.puzzleQuestion}>{selectedChapter.puzzleQuestion}</Text>
-              <View style={styles.puzzleOptions}>
-                {selectedChapter.puzzleOptions.map((option, index) => (
-                  <TouchableOpacity
-                    key={index}
-                    style={[
-                      styles.puzzleOption,
-                      puzzleAnswer === index && styles.puzzleOptionSelected,
-                      puzzleResult === 'correct' && index === selectedChapter.puzzleCorrectIndex && styles.puzzleOptionCorrect,
-                      puzzleResult === 'wrong' && puzzleAnswer === index && styles.puzzleOptionWrong,
-                    ]}
-                    onPress={() => handlePuzzleAnswer(index, selectedChapter)}
-                    disabled={puzzleResult === 'correct' || puzzleAttempts >= 3}
-                  >
-                    <Text style={styles.puzzleOptionText}>
-                      {String.fromCharCode(65 + index)}. {option}
-                    </Text>
-                  </TouchableOpacity>
-                ))}
-              </View>
-              <Text style={styles.puzzleAttempts}>尝试次数: {puzzleAttempts}/3</Text>
-              {puzzleResult === 'correct' && (
-                <Text style={styles.puzzleResultCorrect}>✅ 正确！</Text>
-              )}
-              {puzzleResult === 'wrong' && puzzleAttempts >= 3 && (
-                <Text style={styles.puzzleResultWrong}>
-                  ❌ 正确答案: {String.fromCharCode(65 + (selectedChapter.puzzleCorrectIndex ?? 0))}. {selectedChapter.puzzleOptions[selectedChapter.puzzleCorrectIndex ?? 0]}
-                </Text>
-              )}
-            </View>
-          )}
-          
-          {showPuzzleAndCards && chapterCards.length > 0 && (
-            <View style={styles.chapterCardsSection}>
-              <Text style={styles.chapterCardsTitle}>🎴 本章卡牌</Text>
-              <View style={styles.chapterCardsRow}>
-                {chapterCards.map((card, index) => (
-                  <View key={index} style={styles.chapterCardItem}>
-                    <Text style={styles.chapterCardEmoji}>{card.emoji}</Text>
-                    <Text style={styles.chapterCardName}>{card.name}</Text>
+          {isPuzzlePage ? (
+            <View style={styles.puzzleAndCardsContainer}>
+              {selectedChapter.hasPuzzle && selectedChapter.puzzleQuestion && selectedChapter.puzzleOptions && (
+                <View style={styles.puzzleBox}>
+                  <Text style={styles.puzzleTitle}>❓ 谜题</Text>
+                  <Text style={styles.puzzleQuestion}>{selectedChapter.puzzleQuestion}</Text>
+                  <View style={styles.puzzleOptions}>
+                    {selectedChapter.puzzleOptions.map((option, index) => (
+                      <TouchableOpacity
+                        key={index}
+                        style={[
+                          styles.puzzleOption,
+                          puzzleAnswer === index && styles.puzzleOptionSelected,
+                          puzzleResult === 'correct' && index === selectedChapter.puzzleCorrectIndex && styles.puzzleOptionCorrect,
+                          puzzleResult === 'wrong' && puzzleAnswer === index && styles.puzzleOptionWrong,
+                        ]}
+                        onPress={() => handlePuzzleAnswer(index, selectedChapter)}
+                        disabled={puzzleResult === 'correct' || puzzleAttempts >= 3}
+                      >
+                        <Text style={styles.puzzleOptionText}>
+                          {String.fromCharCode(65 + index)}. {option}
+                        </Text>
+                      </TouchableOpacity>
+                    ))}
                   </View>
-                ))}
-              </View>
+                  <Text style={styles.puzzleAttempts}>尝试次数: {puzzleAttempts}/3</Text>
+                  {puzzleResult === 'correct' && (
+                    <Text style={styles.puzzleResultCorrect}>✅ 正确！</Text>
+                  )}
+                  {puzzleResult === 'wrong' && puzzleAttempts >= 3 && (
+                    <Text style={styles.puzzleResultWrong}>
+                      ❌ 正确答案: {String.fromCharCode(65 + (selectedChapter.puzzleCorrectIndex ?? 0))}. {selectedChapter.puzzleOptions[selectedChapter.puzzleCorrectIndex ?? 0]}
+                    </Text>
+                  )}
+                </View>
+              )}
+              
+              {chapterCards.length > 0 && (
+                <View style={styles.chapterCardsSection}>
+                  <Text style={styles.chapterCardsTitle}>🎴 本章卡牌</Text>
+                  <View style={styles.chapterCardsRow}>
+                    {chapterCards.map((card, index) => (
+                      <View key={index} style={styles.chapterCardItem}>
+                        <Text style={styles.chapterCardEmoji}>{card.emoji}</Text>
+                        <Text style={styles.chapterCardName}>{card.name}</Text>
+                      </View>
+                    ))}
+                  </View>
+                </View>
+              )}
             </View>
+          ) : (
+            <Text style={styles.chapterContent}>{pageContent}</Text>
           )}
         </View>
         
@@ -1094,6 +1105,9 @@ const styles = StyleSheet.create({
     paddingVertical: 10,
     borderTopWidth: 1,
     borderTopColor: '#E2E8F0',
+  },
+  puzzleAndCardsContainer: {
+    flex: 1,
   },
   puzzleBox: {
     marginTop: 15,
