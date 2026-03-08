@@ -762,6 +762,7 @@ const App: React.FC = () => {
   const [navigationHistory, setNavigationHistory] = useState<PageState[]>([]);
   const [currentBookId, setCurrentBookId] = useState<string>('book-children-1');
   const [currentBookTitle, setCurrentBookTitle] = useState<string>('');
+  const [bookDetailKey, setBookDetailKey] = useState<number>(0);
 
   const navigateTo = (page: PageState) => {
     setNavigationHistory(prev => [...prev, currentPage]);
@@ -781,6 +782,11 @@ const App: React.FC = () => {
       setNavigationHistory(prev => prev.slice(0, -1));
       setCurrentPage(previousPage);
     }
+  };
+
+  const goBackFromDirector = () => {
+    setBookDetailKey(prev => prev + 1);
+    goBack();
   };
 
   const renderPage = () => {
@@ -806,11 +812,11 @@ const App: React.FC = () => {
           />
         );
       case 'director':
-        return <StoryDirectorDemo bookId={currentBookId} onBack={goBack} />;
+        return <StoryDirectorDemo bookId={currentBookId} onBack={goBackFromDirector} />;
       case 'bookshelf':
         return <BookshelfDemo onBack={() => setCurrentPage('main-home')} onNavigateToBookDetail={navigateToBookDetail} />;
       case 'book-detail':
-        return <BookDetailDemo bookId={currentBookId} onBack={goBack} onNavigateToDirector={(bookId) => { setCurrentBookId(bookId); navigateTo('director'); }} />;
+        return <BookDetailDemo key={bookDetailKey} bookId={currentBookId} onBack={goBack} onNavigateToDirector={(bookId) => { setCurrentBookId(bookId); navigateTo('director'); }} />;
       case 'ui-style-list':
         return (
           <UIStyleListScreen

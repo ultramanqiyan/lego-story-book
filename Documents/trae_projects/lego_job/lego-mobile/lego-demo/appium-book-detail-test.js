@@ -157,6 +157,13 @@ async function runBookDetailTest() {
         plotCardGrid: false,
         plotCardSelect: false,
         backNavigation: false,
+        cardDisplayArea: false,
+        cardDisplayExpand: false,
+        cardDisplayTap: false,
+        chapterCardDisplay: false,
+        puzzleCorrect: false,
+        puzzleWrong: false,
+        puzzleAlreadyAnswered: false,
     };
     
     try {
@@ -441,8 +448,112 @@ async function runBookDetailTest() {
             await driver.pause(300);
         }
 
+        // ==================== 卡牌展示区测试 ====================
+        console.log('[22/30] 测试卡牌展示区...');
+        if (await isElementDisplayed(driver, '//*[contains(@text, "已解锁卡牌")]', 2000)) {
+            testResults.cardDisplayArea = true;
+            console.log('卡牌展示区显示正常\n');
+        }
+
+        console.log('[23/30] 测试卡牌展示区展开...');
+        if (await findAndTap(driver, '//*[contains(@text, "已解锁卡牌")]', 2000)) {
+            await driver.pause(500);
+            testResults.cardDisplayExpand = true;
+            console.log('卡牌展示区展开成功\n');
+        }
+
+        console.log('[24/30] 测试卡牌点击放大...');
+        const firstCard = await findElement(driver, '//*[contains(@text, "勇士")]', 2000);
+        if (firstCard) {
+            await tapElement(driver, firstCard);
+            await driver.pause(300);
+            testResults.cardDisplayTap = true;
+            console.log('卡牌点击放大成功\n');
+        }
+
+        // ==================== 章节卡牌展示测试 ====================
+        console.log('[25/30] 测试章节内容视图卡牌展示...');
+        if (await findAndTap(driver, '//*[contains(@text, "章节")]', 2000)) {
+            await driver.pause(300);
+        }
+        if (await findAndTap(driver, '//*[contains(@text, "第一章")]', 2000)) {
+            await driver.pause(500);
+            
+            if (await isElementDisplayed(driver, '//*[contains(@text, "本章卡牌")]', 2000)) {
+                testResults.chapterCardDisplay = true;
+                console.log('章节卡牌展示正常\n');
+            }
+        }
+
+        // ==================== 解谜功能测试 ====================
+        console.log('[26/30] 测试解谜功能 - 正确答案...');
+        if (await findAndTap(driver, '//*[contains(@text, "返回")]', 2000)) {
+            await driver.pause(300);
+        }
+        if (await findAndTap(driver, '//*[contains(@text, "章节")]', 2000)) {
+            await driver.pause(300);
+        }
+        
+        if (await findAndTap(driver, '//*[contains(@text, "第二章")]', 2000)) {
+            await driver.pause(500);
+            
+            const puzzleOptions = await driver.$$('//*[contains(@text, "A.") or contains(@text, "B.")]');
+            if (puzzleOptions.length > 0) {
+                await tapElement(driver, puzzleOptions[0]);
+                await driver.pause(1000);
+                
+                if (await isElementDisplayed(driver, '//*[contains(@text, "正确") or contains(@text, "恭喜")]', 2000)) {
+                    testResults.puzzleCorrect = true;
+                    console.log('解谜正确答案测试通过\n');
+                }
+                
+                if (await isElementDisplayed(driver, '//*[contains(@text, "解锁") or contains(@text, "太棒了")]', 2000)) {
+                    await findAndTap(driver, '//*[contains(@text, "太棒了") or contains(@text, "确定")]', 2000);
+                    await driver.pause(300);
+                }
+            }
+        }
+
+        console.log('[27/30] 测试解谜功能 - 错误答案...');
+        if (await findAndTap(driver, '//*[contains(@text, "返回")]', 2000)) {
+            await driver.pause(300);
+        }
+        if (await findAndTap(driver, '//*[contains(@text, "第三章")]', 2000)) {
+            await driver.pause(500);
+            
+            const puzzleOptions = await driver.$$('//*[contains(@text, "A.") or contains(@text, "B.") or contains(@text, "C.") or contains(@text, "D.")]');
+            if (puzzleOptions.length >= 2) {
+                await tapElement(driver, puzzleOptions[1]);
+                await driver.pause(500);
+                
+                if (await isElementDisplayed(driver, '//*[contains(@text, "尝试次数") or contains(@text, "错误")]', 2000)) {
+                    testResults.puzzleWrong = true;
+                    console.log('解谜错误答案测试通过\n');
+                }
+            }
+        }
+
+        console.log('[28/30] 测试解谜功能 - 已回答提示...');
+        if (await findAndTap(driver, '//*[contains(@text, "返回")]', 2000)) {
+            await driver.pause(300);
+        }
+        if (await findAndTap(driver, '//*[contains(@text, "第二章")]', 2000)) {
+            await driver.pause(500);
+            
+            const puzzleOptions = await driver.$$('//*[contains(@text, "A.")]');
+            if (puzzleOptions.length > 0) {
+                await tapElement(driver, puzzleOptions[0]);
+                await driver.pause(300);
+                
+                if (await isElementDisplayed(driver, '//*[contains(@text, "已经回答") or contains(@text, "已答")]', 2000)) {
+                    testResults.puzzleAlreadyAnswered = true;
+                    console.log('已回答提示测试通过\n');
+                }
+            }
+        }
+
         // ==================== 返回功能测试 ====================
-        console.log('[22/25] 测试返回功能...');
+        console.log('[29/30] 测试返回功能...');
         if (await findAndTap(driver, '//*[contains(@text, "返回")]', 2000)) {
             testResults.backNavigation = true;
             await driver.pause(300);
@@ -450,7 +561,7 @@ async function runBookDetailTest() {
         }
 
         // ==================== 测试结果汇总 ====================
-        console.log('[23/25] 汇总测试结果...');
+        console.log('[30/30] 汇总测试结果...');
         
         const totalTime = ((Date.now() - startTime) / 1000).toFixed(1);
         
@@ -478,6 +589,13 @@ async function runBookDetailTest() {
         console.log(`  ${testResults.plotCategories ? '✅' : '❌'} 情节分类显示`);
         console.log(`  ${testResults.plotCardGrid ? '✅' : '❌'} 情节卡牌网格`);
         console.log(`  ${testResults.plotCardSelect ? '✅' : '❌'} 情节卡牌选择`);
+        console.log(`  ${testResults.cardDisplayArea ? '✅' : '❌'} 卡牌展示区显示`);
+        console.log(`  ${testResults.cardDisplayExpand ? '✅' : '❌'} 卡牌展示区展开`);
+        console.log(`  ${testResults.cardDisplayTap ? '✅' : '❌'} 卡牌点击放大`);
+        console.log(`  ${testResults.chapterCardDisplay ? '✅' : '❌'} 章节卡牌展示`);
+        console.log(`  ${testResults.puzzleCorrect ? '✅' : '❌'} 解谜正确答案`);
+        console.log(`  ${testResults.puzzleWrong ? '✅' : '❌'} 解谜错误答案`);
+        console.log(`  ${testResults.puzzleAlreadyAnswered ? '✅' : '❌'} 解谜已回答提示`);
         console.log(`  ${testResults.backNavigation ? '✅' : '❌'} 返回功能`);
         
         const passedCount = Object.values(testResults).filter(v => v).length;

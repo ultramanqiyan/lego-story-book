@@ -1,4 +1,4 @@
-import React, { useState, useRef, useEffect } from 'react';
+import React, { useState, useRef, useEffect, useCallback } from 'react';
 import {
   View,
   Text,
@@ -25,12 +25,17 @@ const PAGE_HEIGHT = height - 200;
 const ITEMS_PER_PAGE = 6;
 // 计算卡片宽度：每行显示2张卡片
 // cardRow paddingHorizontal: 5 * 2 = 10px
-// gap: 12px
-// 所以每张卡片宽度 = (屏幕宽度 - 10 - 12) / 2
-const CARD_GAP = 12;
-const CARD_PADDING = 5;
-const CARD_WIDTH = (width - CARD_PADDING * 2 - CARD_GAP) / 2;
-const CARD_HEIGHT = CARD_WIDTH * 1.25;  // 保持 4:5 比例
+// 每张卡片 margin: 6 * 2 = 12px (左右各6px)
+// 两张卡片总 margin: 12 * 2 = 24px
+// 可用宽度: 屏幕宽度 - 10 - 24 = 屏幕宽度 - 34
+// 每张卡片宽度 = (屏幕宽度 - 34) / 2
+const CARD_MARGIN = 6;
+const CARD_ROW_PADDING = 5;
+// 基础卡片宽度（每行两张）
+const BASE_CARD_WIDTH = (width - CARD_ROW_PADDING * 2 - CARD_MARGIN * 4) / 2;
+// 扩大1.3倍，但限制最大宽度不超过屏幕
+const CARD_WIDTH = Math.min(BASE_CARD_WIDTH * 1.3, width * 0.45);
+const CARD_HEIGHT = CARD_WIDTH * 1.25;  // 保持比例不变
 
 type TabType = 'chapters' | 'characters' | 'plots';
 type ChapterViewMode = 'directory' | 'content';
@@ -83,7 +88,9 @@ const BookDetailDemo: React.FC<BookDetailDemoProps> = ({ bookId, onBack, onNavig
   
   const [chapters, setChapters] = useState<Chapter[]>([]);
   const [characters, setCharacters] = useState<Character[]>([]);
+  const [allCharacters, setAllCharacters] = useState<Character[]>([]);  // 所有角色（用于章节卡牌显示）
   const [plotElements, setPlotElements] = useState<PlotElement[]>([]);
+  const [allPlotElements, setAllPlotElements] = useState<PlotElement[]>([]);  // 所有情节元素（用于章节卡牌显示）
   const [unlockedElements, setUnlockedElements] = useState<UnlockedElement[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   
@@ -98,6 +105,11 @@ const BookDetailDemo: React.FC<BookDetailDemoProps> = ({ bookId, onBack, onNavig
   const [puzzleResult, setPuzzleResult] = useState<'correct' | 'wrong' | null>(null);
   const [showUnlockModal, setShowUnlockModal] = useState(false);
   const [unlockedCard, setUnlockedCard] = useState<{emoji: string; name: string; type: string} | null>(null);
+  
+  const [isCardAreaExpanded, setIsCardAreaExpanded] = useState(false);
+  const [selectedDisplayCard, setSelectedDisplayCard] = useState<string | null>(null);
+  const cardExpandAnim = useRef(new Animated.Value(0)).current;
+  const cardScaleAnim = useRef(new Animated.Value(1)).current;
   
   const flipAnim = useRef(new Animated.Value(0)).current;
   const tabAnims = useRef({
@@ -135,17 +147,17 @@ const BookDetailDemo: React.FC<BookDetailDemoProps> = ({ bookId, onBack, onNavig
         
         const allChars = await getCharactersByTypeId(bookData.typeId || 'children');
         console.log('[BookDetailDemo] allChars count:', allChars.length);
+        setAllCharacters(allChars);  // 保存所有角色
         setCharacters(allChars.filter(c => unlockedCharIds.includes(c.characterId)));
         
         // 情节元素加载
-        const allPlotElements = await getPlotElementsByTypeId(bookData.typeId);
+        const allPlotElementsData = await getPlotElementsByTypeId(bookData.typeId);
         const unlockedPlotIds = unlocked.map(e => e.elementId);
         console.log('[BookDetailDemo] unlockedPlotIds:', unlockedPlotIds);
-        console.log('[BookDetailDemo] allPlotElements count:', allPlotElements.length);
-        console.log('[BookDetailDemo] allPlotElements IDs:', allPlotElements.map(e => e.elementId));
-        const filteredPlotElements = allPlotElements.filter(e => unlockedPlotIds.includes(e.elementId));
+        console.log('[BookDetailDemo] allPlotElements count:', allPlotElementsData.length);
+        setAllPlotElements(allPlotElementsData);  // 保存所有情节元素
+        const filteredPlotElements = allPlotElementsData.filter(e => unlockedPlotIds.includes(e.elementId));
         console.log('[BookDetailDemo] filteredPlotElements count:', filteredPlotElements.length);
-        console.log('[BookDetailDemo] filteredPlotElements IDs:', filteredPlotElements.map(e => e.elementId));
         setPlotElements(filteredPlotElements);
       }
     } catch (error) {
@@ -302,11 +314,50 @@ const BookDetailDemo: React.FC<BookDetailDemoProps> = ({ bookId, onBack, onNavig
     if (!selectedChapter) return null;
     
     console.log(`[UI] renderChapterContentView: chapter=${selectedChapter.chapterNumber}, title=${selectedChapter.title}`);
+    console.log(`[UI] selectedElements: ${JSON.stringify(selectedChapter.selectedElements)}`);
     console.log(`[UI] Puzzle check: hasPuzzle=${selectedChapter.hasPuzzle}, puzzleQuestion=${selectedChapter.puzzleQuestion}, puzzleOptions=${JSON.stringify(selectedChapter.puzzleOptions)}`);
     
     const currentIndex = chapters.findIndex(c => c.chapterId === selectedChapterId);
     const hasPrev = currentIndex > 0;
     const hasNext = currentIndex < chapters.length - 1;
+    
+    // 获取本章卡牌
+    let chapterCards: any[] = [];
+    console.log('[BookDetailDemo] selectedChapter.selectedElements:', selectedChapter.selectedElements);
+    console.log('[BookDetailDemo] allCharacters count:', allCharacters.length);
+    console.log('[BookDetailDemo] allPlotElements count:', allPlotElements.length);
+    
+    if (selectedChapter.selectedElements) {
+      const sel = selectedChapter.selectedElements;
+      
+      if (sel.characters && sel.characters.length > 0) {
+        const chapterChars = allCharacters.filter(c => sel.characters!.includes(c.characterId));
+        console.log('[BookDetailDemo] chapterChars found:', chapterChars.length);
+        chapterCards.push(...chapterChars.map(c => ({ ...c, cardType: 'character', elementId: c.characterId })));
+      }
+      
+      if (sel.weather) {
+        const weather = allPlotElements.find(p => p.elementId === sel.weather);
+        console.log('[BookDetailDemo] weather found:', weather?.name);
+        if (weather) chapterCards.push({ ...weather, cardType: 'weather' });
+      }
+      if (sel.terrain) {
+        const terrain = allPlotElements.find(p => p.elementId === sel.terrain);
+        console.log('[BookDetailDemo] terrain found:', terrain?.name);
+        if (terrain) chapterCards.push({ ...terrain, cardType: 'terrain' });
+      }
+      if (sel.equipment) {
+        const equipment = allPlotElements.find(p => p.elementId === sel.equipment);
+        console.log('[BookDetailDemo] equipment found:', equipment?.name);
+        if (equipment) chapterCards.push({ ...equipment, cardType: 'equipment' });
+      }
+      if (sel.adventure) {
+        const adventure = allPlotElements.find(p => p.elementId === sel.adventure);
+        console.log('[BookDetailDemo] adventure found:', adventure?.name);
+        if (adventure) chapterCards.push({ ...adventure, cardType: 'adventure' });
+      }
+    }
+    console.log('[BookDetailDemo] Total chapterCards:', chapterCards.length);
     
     return (
       <View style={styles.contentContainer}>
@@ -354,6 +405,21 @@ const BookDetailDemo: React.FC<BookDetailDemoProps> = ({ bookId, onBack, onNavig
                   ❌ 正确答案: {String.fromCharCode(65 + (selectedChapter.puzzleCorrectIndex ?? 0))}. {selectedChapter.puzzleOptions[selectedChapter.puzzleCorrectIndex ?? 0]}
                 </Text>
               )}
+            </View>
+          )}
+          
+          {/* 本章卡牌展示区 */}
+          {chapterCards.length > 0 && (
+            <View style={styles.chapterCardsSection}>
+              <Text style={styles.chapterCardsTitle}>🎴 本章卡牌</Text>
+              <View style={styles.chapterCardsRow}>
+                {chapterCards.map((card, index) => (
+                  <View key={index} style={styles.chapterCardItem}>
+                    <Text style={styles.chapterCardEmoji}>{card.emoji}</Text>
+                    <Text style={styles.chapterCardName}>{card.name}</Text>
+                  </View>
+                ))}
+              </View>
             </View>
           )}
         </ScrollView>
@@ -568,6 +634,167 @@ const BookDetailDemo: React.FC<BookDetailDemoProps> = ({ bookId, onBack, onNavig
     );
   };
 
+  const handleCardDisplayTap = (card: any) => {
+    const cardId = card.characterId || card.elementId;
+    
+    if (selectedDisplayCard === cardId) {
+      Animated.spring(cardScaleAnim, {
+        toValue: 1,
+        tension: 100,
+        friction: 5,
+        useNativeDriver: true,
+      }).start();
+      setSelectedDisplayCard(null);
+    } else {
+      setSelectedDisplayCard(cardId);
+      Animated.sequence([
+        Animated.timing(cardScaleAnim, {
+          toValue: 1.3,
+          duration: 150,
+          useNativeDriver: true,
+        }),
+        Animated.spring(cardScaleAnim, {
+          toValue: 1.2,
+          tension: 100,
+          friction: 5,
+          useNativeDriver: true,
+        }),
+      ]).start();
+    }
+  };
+
+  const renderCardDisplayArea = () => {
+    let displayCards: any[] = [];
+    let areaTitle = '🎴 已解锁卡牌';
+
+    // 检查是否在章节内容视图（chapterViewMode === 'content' 且有选中的章节）
+    if (chapterViewMode === 'content' && selectedChapter && selectedChapter.selectedElements) {
+      areaTitle = '🎴 本章卡牌';
+      const sel = selectedChapter.selectedElements;
+      
+      if (sel.characters && sel.characters.length > 0) {
+        const chapterChars = allCharacters.filter(c => sel.characters!.includes(c.characterId));
+        displayCards.push(...chapterChars.map(c => ({ ...c, cardType: 'character', elementId: c.characterId })));
+      }
+      
+      if (sel.weather) {
+        const weather = allPlotElements.find(p => p.elementId === sel.weather);
+        if (weather) displayCards.push({ ...weather, cardType: 'weather' });
+      }
+      if (sel.terrain) {
+        const terrain = allPlotElements.find(p => p.elementId === sel.terrain);
+        if (terrain) displayCards.push({ ...terrain, cardType: 'terrain' });
+      }
+      if (sel.equipment) {
+        const equipment = allPlotElements.find(p => p.elementId === sel.equipment);
+        if (equipment) displayCards.push({ ...equipment, cardType: 'equipment' });
+      }
+      if (sel.adventure) {
+        const adventure = allPlotElements.find(p => p.elementId === sel.adventure);
+        if (adventure) displayCards.push({ ...adventure, cardType: 'adventure' });
+      }
+    } else if (chapterViewMode === 'directory') {
+      // 目录视图显示所有已解锁卡牌
+      displayCards = [
+        ...characters.map(c => ({ ...c, cardType: 'character', elementId: c.characterId })),
+        ...plotElements.map(p => ({ ...p, cardType: p.category })),
+      ];
+    } else {
+      // 章节内容视图但没有选择的卡牌，显示空
+      displayCards = [];
+      areaTitle = '🎴 本章卡牌';
+    }
+
+    const collapsedOffset = 30;
+    const expandedOffset = CARD_WIDTH + CARD_MARGIN * 2;
+
+    const renderStackedCard = (card: any, index: number) => {
+      const isSelected = selectedDisplayCard === card.elementId || selectedDisplayCard === card.characterId;
+      
+      const translateX = cardExpandAnim.interpolate({
+        inputRange: [0, 1],
+        outputRange: [collapsedOffset * index, expandedOffset * index],
+      });
+
+      return (
+        <Animated.View
+          key={card.elementId || card.characterId}
+          style={[
+            styles.stackedCard,
+            {
+              transform: [
+                { translateX: index > 0 ? translateX : 0 },
+                { scale: isSelected ? cardScaleAnim : 1 },
+              ],
+              zIndex: isSelected ? 100 : displayCards.length - index,
+            },
+          ]}
+        >
+          <TouchableOpacity
+            style={[
+              styles.miniCard,
+              {
+                backgroundColor: isSelected ? styleConfig.colors.secondary : styleConfig.colors.primary,
+                borderColor: isSelected ? styleConfig.colors.accent : styleConfig.colors.border,
+              },
+            ]}
+            onPress={() => handleCardDisplayTap(card)}
+            activeOpacity={0.8}
+          >
+            <Text style={styles.miniCardEmoji}>{card.emoji}</Text>
+            <Text style={[styles.miniCardName, { color: styleConfig.colors.text }]} numberOfLines={1}>
+              {card.name}
+            </Text>
+            {card.roleType && (
+              <Text style={[styles.miniCardRole, { color: getRoleColor(card.roleType) }]}>
+                {card.roleType}
+              </Text>
+            )}
+            {card.cardType && !card.roleType && (
+              <Text style={[styles.miniCardRole, { color: '#64748B' }]}>
+                {card.cardType === 'weather' ? '天气' :
+                 card.cardType === 'terrain' ? '地形' :
+                 card.cardType === 'equipment' ? '装备' :
+                 card.cardType === 'adventure' ? '冒险' : ''}
+              </Text>
+            )}
+          </TouchableOpacity>
+        </Animated.View>
+      );
+    };
+
+    return (
+      <View style={styles.cardDisplayArea}>
+        <TouchableOpacity 
+          style={styles.cardDisplayHeader}
+          onPress={() => {
+            setIsCardAreaExpanded(!isCardAreaExpanded);
+            Animated.spring(cardExpandAnim, {
+              toValue: isCardAreaExpanded ? 0 : 1,
+              tension: 100,
+              friction: 8,
+              useNativeDriver: true,
+            }).start();
+          }}
+          activeOpacity={0.7}
+        >
+          <Text style={styles.cardDisplayTitle}>
+            {areaTitle} ({displayCards.length})
+          </Text>
+          <Text style={styles.cardDisplayToggle}>
+            {isCardAreaExpanded ? '▼' : '▶'}
+          </Text>
+        </TouchableOpacity>
+        
+        {displayCards.length > 0 && (
+          <View style={styles.cardDisplayScroll}>
+            {displayCards.map((card, index) => renderStackedCard(card, index))}
+          </View>
+        )}
+      </View>
+    );
+  };
+
   return (
     <SafeAreaView style={styles.container}>
       <View style={styles.header}>
@@ -587,6 +814,8 @@ const BookDetailDemo: React.FC<BookDetailDemoProps> = ({ bookId, onBack, onNavig
           {currentTab === 'plots' && renderPlotsTab()}
         </View>
       </View>
+
+      {currentTab === 'chapters' && renderCardDisplayArea()}
 
       <View style={styles.footer}>
         <Text style={styles.pageNumber}>
@@ -920,9 +1149,7 @@ const styles = StyleSheet.create({
   cardRow: {
     flexDirection: 'row',
     flexWrap: 'wrap',
-    gap: 12,
-    paddingHorizontal: 5,
-    justifyContent: 'flex-start',
+    paddingHorizontal: CARD_ROW_PADDING,
   },
   characterCard: {
     width: CARD_WIDTH,
@@ -932,6 +1159,7 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
     borderWidth: 1,
     padding: 12,
+    margin: CARD_MARGIN,
   },
   cardSelected: {
     shadowOffset: { width: 0, height: 0 },
@@ -949,7 +1177,7 @@ const styles = StyleSheet.create({
     borderWidth: 2,
   },
   cardEmoji: {
-    fontSize: 32,
+    fontSize: 64,  // 放大一倍
     marginBottom: 4,
   },
   cardName: {
@@ -972,6 +1200,7 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
     borderWidth: 1,
     padding: 12,
+    margin: CARD_MARGIN,
   },
   footer: {
     alignItems: 'center',
@@ -983,6 +1212,45 @@ const styles = StyleSheet.create({
   pageNumber: {
     color: '#94A3B8',
     fontSize: 12,
+  },
+  chapterCardsSection: {
+    marginTop: 20,
+    padding: 12,
+    backgroundColor: 'rgba(255, 255, 255, 0.5)',
+    borderRadius: 12,
+    borderWidth: 1,
+    borderColor: '#E2E8F0',
+  },
+  chapterCardsTitle: {
+    fontSize: 14,
+    fontWeight: '600',
+    color: '#475569',
+    marginBottom: 10,
+  },
+  chapterCardsRow: {
+    flexDirection: 'row',
+    flexWrap: 'wrap',
+    gap: 8,
+  },
+  chapterCardItem: {
+    width: CARD_WIDTH * 0.8,
+    height: CARD_HEIGHT * 0.8,
+    borderRadius: 10,
+    backgroundColor: '#FFFFFF',
+    alignItems: 'center',
+    justifyContent: 'center',
+    borderWidth: 1,
+    borderColor: '#E2E8F0',
+    padding: 8,
+  },
+  chapterCardEmoji: {
+    fontSize: 28,
+    marginBottom: 4,
+  },
+  chapterCardName: {
+    fontSize: 10,
+    color: '#475569',
+    textAlign: 'center',
   },
   modalOverlay: {
     flex: 1,
@@ -1038,6 +1306,62 @@ const styles = StyleSheet.create({
     color: '#FFFFFF',
     fontSize: 16,
     fontWeight: 'bold',
+  },
+  cardDisplayArea: {
+    backgroundColor: '#FFFFFF',
+    borderTopWidth: 1,
+    borderTopColor: '#E2E8F0',
+    maxHeight: '25%',
+  },
+  cardDisplayHeader: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+    paddingHorizontal: 15,
+    paddingVertical: 10,
+    borderBottomWidth: 1,
+    borderBottomColor: '#F1F5F9',
+  },
+  cardDisplayTitle: {
+    fontSize: 14,
+    fontWeight: 'bold',
+    color: '#1E293B',
+  },
+  cardDisplayToggle: {
+    fontSize: 12,
+    color: '#64748B',
+  },
+  cardDisplayScroll: {
+    flexDirection: 'row',
+    paddingHorizontal: 10,
+    paddingVertical: 8,
+    height: 120,
+  },
+  stackedCard: {
+    position: 'absolute',
+    left: 10,
+  },
+  miniCard: {
+    width: 70,
+    height: 90,
+    borderRadius: 10,
+    alignItems: 'center',
+    justifyContent: 'center',
+    borderWidth: 2,
+    padding: 6,
+  },
+  miniCardEmoji: {
+    fontSize: 28,
+    marginBottom: 4,
+  },
+  miniCardName: {
+    fontSize: 11,
+    fontWeight: 'bold',
+    textAlign: 'center',
+  },
+  miniCardRole: {
+    fontSize: 9,
+    marginTop: 2,
   },
 });
 

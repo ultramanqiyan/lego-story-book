@@ -51,6 +51,13 @@ export interface Chapter {
   puzzleCorrectIndex?: number;
   characterIds?: string[];
   puzzleResult?: number;
+  selectedElements?: {
+    characters?: string[];
+    weather?: string;
+    terrain?: string;
+    equipment?: string;
+    adventure?: string;
+  };
 }
 
 export interface UnlockedElement {
@@ -191,7 +198,8 @@ export const DatabaseService = {
         puzzle_options TEXT,
         puzzle_correct_index INTEGER,
         puzzle_result INTEGER DEFAULT NULL,
-        character_ids TEXT
+        character_ids TEXT,
+        selected_elements TEXT
       )
     `);
     
@@ -219,6 +227,26 @@ export const DatabaseService = {
     `);
     
     console.log('[DB] Tables created successfully');
+    
+    // 数据库迁移：检查并添加缺失的列
+    try {
+      const tableInfo = await database.getAllAsync<any>('PRAGMA table_info(chapters)');
+      const columnNames = tableInfo.map((col: any) => col.name);
+      
+      if (!columnNames.includes('selected_elements')) {
+        console.log('[DB] Migrating: Adding selected_elements column to chapters table');
+        await database.execAsync('ALTER TABLE chapters ADD COLUMN selected_elements TEXT');
+        console.log('[DB] Migration complete: selected_elements column added');
+      }
+      
+      if (!columnNames.includes('puzzle_result')) {
+        console.log('[DB] Migrating: Adding puzzle_result column to chapters table');
+        await database.execAsync('ALTER TABLE chapters ADD COLUMN puzzle_result INTEGER DEFAULT NULL');
+        console.log('[DB] Migration complete: puzzle_result column added');
+      }
+    } catch (migrationError) {
+      console.log('[DB] Migration check error (may be expected):', migrationError);
+    }
   },
 
   async seedData(database: SQLite.SQLiteDatabase): Promise<void> {
@@ -401,6 +429,7 @@ export const DatabaseService = {
         puzzleCorrectIndex: r.puzzle_correct_index,
         puzzleResult: r.puzzle_result,
         characterIds: r.character_ids ? JSON.parse(r.character_ids) : undefined,
+        selectedElements: r.selected_elements ? JSON.parse(r.selected_elements) : undefined,
       };
       console.log(`[DB] Chapter ${r.chapter_number}: hasPuzzle=${chapter.hasPuzzle}, puzzleResult=${chapter.puzzleResult}`);
       return chapter;
@@ -704,8 +733,8 @@ export const DatabaseService = {
     const chapterId = `${bookId}-chapter-${Date.now()}`;
 
     await db!.runAsync(
-      `INSERT INTO chapters (chapter_id, book_id, chapter_number, title, content, word_count, has_puzzle, puzzle_question, puzzle_options, puzzle_correct_index, character_ids)
-       VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
+      `INSERT INTO chapters (chapter_id, book_id, chapter_number, title, content, word_count, has_puzzle, puzzle_question, puzzle_options, puzzle_correct_index, character_ids, selected_elements)
+       VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
       [
         chapterId,
         bookId,
@@ -717,7 +746,8 @@ export const DatabaseService = {
         chapterData.puzzleQuestion || null,
         chapterData.puzzleOptions ? JSON.stringify(chapterData.puzzleOptions) : null,
         chapterData.puzzleCorrectIndex ?? null,
-        chapterData.characterIds ? JSON.stringify(chapterData.characterIds) : null
+        chapterData.characterIds ? JSON.stringify(chapterData.characterIds) : null,
+        chapterData.selectedElements ? JSON.stringify(chapterData.selectedElements) : null
       ]
     );
 
@@ -738,6 +768,7 @@ export const DatabaseService = {
       puzzleOptions: chapterData.puzzleOptions,
       puzzleCorrectIndex: chapterData.puzzleCorrectIndex,
       characterIds: chapterData.characterIds,
+      selectedElements: chapterData.selectedElements,
     };
   },
 
@@ -751,6 +782,15 @@ export const DatabaseService = {
     await db!.runAsync(
       'UPDATE chapters SET puzzle_result = ? WHERE chapter_id = ?',
       [result, chapterId]
+    );
+  },
+
+  async updateChapterSelection(chapterId: string, selectedElements: Chapter['selectedElements']): Promise<void> {
+    if (!db) db = await this.initDatabase();
+    
+    await db!.runAsync(
+      'UPDATE chapters SET selected_elements = ? WHERE chapter_id = ?',
+      [selectedElements ? JSON.stringify(selectedElements) : null, chapterId]
     );
   },
 

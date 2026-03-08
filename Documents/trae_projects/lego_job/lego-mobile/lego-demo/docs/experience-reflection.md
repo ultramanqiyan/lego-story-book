@@ -2451,6 +2451,141 @@ async getLockedElements(bookId: string, typeId: string) {
 
 ---
 
+### 问题42：章节内容视图卡牌区显示逻辑问题
+
+**问题描述：**
+- 目录页显示所有已解锁卡牌 ✓
+- 点击章节进入内容视图后，卡牌区没有显示该章节选择的卡牌
+
+**调查过程：**
+
+1. **检查数据存储**：
+   - 初始化数据中的章节没有 `selectedElements` 字段
+   - 新创建的章节有 `selectedElements` 字段
+
+2. **检查显示逻辑**：
+   - `renderCardDisplayArea` 函数判断 `selectedChapter.selectedElements`
+   - 如果没有 `selectedElements`，显示所有卡牌
+
+**解决方案：**
+
+1. 为初始化数据添加 `selectedElements` 字段：
+   - 创建脚本 `add-selected-elements.js` 批量添加
+   - 根据章节索引选择不同的天气、地形、装备、冒险类型
+
+2. 修改显示逻辑，区分目录视图和内容视图：
+   ```typescript
+   if (chapterViewMode === 'content' && selectedChapter?.selectedElements) {
+     // 显示该章节选择的卡牌
+   } else if (chapterViewMode === 'directory') {
+     // 显示所有已解锁卡牌
+   } else {
+     // 内容视图但没有选择，显示空
+   }
+   ```
+
+**关键代码位置：**
+- `src/screens/BookDetailDemo.tsx:580-650` - renderCardDisplayArea 函数
+- `src/data/preset/books.json` - 初始化数据
+
+---
+
+### 问题43：角色和情节Tab卡片布局问题
+
+**问题描述：**
+- 角色Tab和情节Tab的卡片不是每行显示两张
+- 尝试多次修复仍未解决
+
+**调查过程：**
+
+1. **分析布局代码**：
+   - `cardRow` 使用 `flexDirection: 'row'` + `flexWrap: 'wrap'`
+   - 卡片宽度计算：`(width - padding - gap) / 2`
+
+2. **问题根因**：
+   - `gap` 属性在某些 React Native 版本中不支持
+   - `justifyContent: 'space-between'` 导致奇数卡片时布局不正确
+   - `margin` 和 `padding` 计算不准确
+
+**解决方案：**
+
+使用 `margin` 替代 `gap`，精确计算卡片宽度：
+
+```typescript
+// 卡片宽度计算
+const CARD_MARGIN = 6;
+const CARD_ROW_PADDING = 5;
+// 每张卡片宽度 = (屏幕宽度 - 行padding*2 - 卡片margin*4) / 2
+const CARD_WIDTH = (width - CARD_ROW_PADDING * 2 - CARD_MARGIN * 4) / 2;
+
+// 样式定义
+cardRow: {
+  flexDirection: 'row',
+  flexWrap: 'wrap',
+  paddingHorizontal: CARD_ROW_PADDING,
+},
+characterCard: {
+  width: CARD_WIDTH,
+  margin: CARD_MARGIN,
+},
+```
+
+**经验教训：**
+1. **避免使用 gap 属性**：React Native 对 gap 支持不完整
+2. **使用 margin 替代**：更可靠的间距控制方式
+3. **精确计算宽度**：考虑所有 padding 和 margin
+
+---
+
+### 问题44：Appium测试脚本问题
+
+**问题描述：**
+- 测试脚本运行太快，APP来不及反应
+- 测试模块之间状态互相影响
+- 元素找不到导致测试失败
+
+**解决方案：**
+
+1. **添加APP启动检测**：
+   ```javascript
+   async function ensureAppRunning(driver) {
+     await driver.pause(3000);
+     const homeIndicators = ['//*[contains(@text, "LEGO Story")]', ...];
+     for (const selector of homeIndicators) {
+       try {
+         const element = await driver.$(selector);
+         await element.waitForDisplayed({ timeout: 3000 });
+         return true;
+       } catch (e) { continue; }
+     }
+     await forceStopAndLaunchApp();
+     return false;
+   }
+   ```
+
+2. **使用慢速点击函数**：
+   ```javascript
+   async function slowFindAndTap(driver, selector, timeout = 3000) {
+     const element = await driver.$(selector);
+     await element.waitForDisplayed({ timeout });
+     await driver.pause(500);  // 操作前等待
+     await element.click();
+     await driver.pause(800);  // 操作后等待
+     return true;
+   }
+   ```
+
+3. **每个测试模块独立启动APP**：
+   - 在每个测试脚本开始时调用 `ensureAppRunning`
+   - 测试完成后关闭 Appium 服务器
+
+**经验教训：**
+1. **增加等待时间**：移动端测试需要足够的等待时间
+2. **独立测试环境**：每个测试模块应该独立启动APP
+3. **检测APP状态**：测试前确保APP在前台运行
+
+---
+
 ### 问题41：卡牌掉落后角色和情节标签页看不到新卡牌
 
 **问题描述：**
@@ -2760,3 +2895,328 @@ onBack();
 ---
 
 *最后更新：2026-03-07 11:00*
+
+---
+
+## 2026-03-08 测试用例全部调通经验
+
+### 问题47：BookDetailDemo 返回后数据不刷新
+
+**问题描述：**
+- 从故事导演页添加章节后返回书籍详情页
+- 章节列表没有显示新创建的章节
+- 需要手动退出并重新进入才能看到
+
+**根本原因分析：**
+- BookDetailDemo 只在 `useEffect` 中加载一次数据
+- 从 StoryDirectorDemo 返回时不会重新加载数据
+- 没有使用 `useFocusEffect` 或其他刷新机制
+
+**解决方案：**
+
+在 App.tsx 中添加 `bookDetailKey` 状态，返回时更新 key 触发重新渲染：
+
+```typescript
+// App.tsx
+const [bookDetailKey, setBookDetailKey] = useState<number>(0);
+
+const goBackFromDirector = () => {
+  setBookDetailKey(prev => prev + 1);  // 更新 key 触发重新渲染
+  goBack();
+};
+
+// 渲染 BookDetailDemo 时使用 key
+<BookDetailDemo key={bookDetailKey} bookId={currentBookId} ... />
+```
+
+**关键代码位置：**
+- `App.tsx:780-785` - bookDetailKey 状态定义
+- `App.tsx:808` - goBackFromDirector 函数
+- `App.tsx:820` - BookDetailDemo 渲染
+
+**经验教训：**
+1. **React key 属性**：改变 key 会触发组件重新挂载
+2. **数据刷新机制**：从子页面返回时需要刷新数据
+3. **避免 useEffect 只执行一次**：需要考虑页面切换场景
+
+---
+
+### 问题48：renderCardDisplayArea 使用错误的数据源
+
+**问题描述：**
+- 章节内容视图的卡牌展示区不显示卡牌
+- 日志显示 `chapterCards` 数量为 0
+
+**根本原因分析：**
+- `renderCardDisplayArea` 函数使用 `characters` 和 `plotElements`
+- 这两个数组只包含已解锁的元素
+- 新创建的章节选择的卡牌可能还未解锁
+- 应该使用 `allCharacters` 和 `allPlotElements` 查找
+
+**错误代码：**
+```typescript
+// 错误：使用只包含已解锁元素的数组
+const chapterChars = characters.filter(c => sel.characters!.includes(c.characterId));
+const weather = plotElements.find(p => p.elementId === sel.weather);
+```
+
+**解决方案：**
+```typescript
+// 正确：使用包含所有元素的数组
+const chapterChars = allCharacters.filter(c => sel.characters!.includes(c.characterId));
+const weather = allPlotElements.find(p => p.elementId === sel.weather);
+```
+
+**关键代码位置：**
+- `src/screens/BookDetailDemo.tsx:676-694` - renderCardDisplayArea 函数
+
+**经验教训：**
+1. **理解数据源差异**：`characters` vs `allCharacters` 的区别
+2. **章节卡牌显示**：应该显示章节选择的卡牌，不受解锁状态限制
+3. **添加调试日志**：追踪数据加载和显示过程
+
+---
+
+### 问题49：测试脚本 touchAction API 错误
+
+**问题描述：**
+- 测试脚本报错 `driver.touchAction(...).perform is not a function`
+- WebdriverIO 的 touchAction API 使用方式不正确
+
+**错误代码：**
+```javascript
+// 错误：touchAction 不需要调用 perform()
+await driver.touchAction([
+    { action: 'press', x: 200, y: 500 },
+    { action: 'moveTo', x: 200, y: 200 },
+    { action: 'release' }
+]).perform();  // 错误！
+```
+
+**解决方案：**
+```javascript
+// 方案1：直接调用 touchAction，不需要 perform()
+await driver.touchAction([
+    { action: 'press', x: 200, y: 500 },
+    { action: 'moveTo', x: 200, y: 200 },
+    { action: 'release' }
+]);
+
+// 方案2：使用封装好的 swipeUp 函数
+await swipeUp(driver);
+```
+
+**经验教训：**
+1. **WebdriverIO API**：touchAction 不需要调用 perform()
+2. **使用封装函数**：swipeUp/swipeDown 等封装函数更可靠
+3. **检查 API 文档**：不同版本的 API 可能有差异
+
+---
+
+### 问题50：测试脚本章节选择器不匹配
+
+**问题描述：**
+- 测试脚本查找"第1章"，但新创建的章节标题是"新的冒险"
+- 导致章节点击、翻页、解谜等测试失败
+
+**根本原因分析：**
+- 预设书籍的章节使用"第X章"格式
+- 新创建的章节使用"新的冒险"作为标题
+- 测试脚本选择器不够灵活
+
+**解决方案：**
+
+使用多种选择器尝试：
+
+```javascript
+const chapterSelectors = [
+    '//*[contains(@text, "第1章")]',
+    '//*[contains(@text, "新的冒险")]',
+    '//*[contains(@text, "章") and contains(@text, "冒险")]',
+    '(//*[contains(@text, "章")])[1]',
+];
+
+for (const selector of chapterSelectors) {
+    const chapterItems = await driver.$$(selector);
+    if (chapterItems.length > 0) {
+        await chapterItems[0].click();
+        break;
+    }
+}
+```
+
+**经验教训：**
+1. **灵活的选择器**：使用多种选择器提高测试可靠性
+2. **理解数据**：了解应用中可能出现的各种数据格式
+3. **循环尝试**：不要只依赖单一选择器
+
+---
+
+### 问题51：测试脚本答题后使用 driver.back() 导致状态混乱
+
+**问题描述：**
+- 答题功能测试后调用 `driver.back()`
+- 可能退出书籍详情页，导致后续测试失败
+
+**根本原因分析：**
+- `driver.back()` 会返回上一个页面
+- 如果当前在章节内容视图，可能退出到书架页
+- 后续测试无法找到元素
+
+**解决方案：**
+```javascript
+// 错误：使用 driver.back() 可能退出页面
+await driver.back();
+
+// 正确：直接切换标签页，不使用 back
+const charactersTab = await driver.$$('//*[contains(@text, "角色")]');
+if (charactersTab.length > 0) {
+    await charactersTab[0].click();
+}
+```
+
+**经验教训：**
+1. **避免使用 driver.back()**：在复杂导航中容易导致状态混乱
+2. **使用明确的导航**：点击具体的标签或按钮
+3. **理解页面结构**：知道当前在哪个页面，如何导航
+
+---
+
+## 测试结果汇总
+
+### 2026-03-08 最终测试结果
+
+**测试环境：**
+- 模拟器：emulator-5554 (Pixel_6)
+- APP包名：com.legostory.demo
+- Appium端口：4723
+
+**测试结果：**
+```
+通过率: 54/54 (100%)
+
+🎉 所有测试通过！
+
+✅ 通过的测试:
+   ✓ APP启动
+   ✓ 首页显示
+   ✓ 进入书架页
+   ✓ 书架页显示
+   ✓ 创建书籍按钮
+   ✓ 创建书籍弹窗
+   ✓ 书籍名称输入
+   ✓ 书籍类型选择
+   ✓ 书籍创建成功
+   ✓ 书籍详情页显示
+   ✓ 章节标签页
+   ✓ 角色标签页
+   ✓ 情节标签页
+   ✓ 章节点击
+   ✓ 角色卡牌点击
+   ✓ 情节卡牌点击
+   ✓ 目录上一页
+   ✓ 目录下一页
+   ✓ 章节上一章
+   ✓ 章节下一章
+   ✓ 返回目录
+   ✓ 添加章节按钮
+   ✓ 故事导演页显示
+   ✓ 角色选择
+   ✓ 天气选择
+   ✓ 地形选择
+   ✓ 装备选择
+   ✓ 冒险类型选择
+   ✓ 开拍按钮
+   ✓ 章节创建成功
+   ✓ 多章节创建
+   ✓ 返回书架页
+   ✓ 从书架返回首页
+   ✓ 首页显示正常
+   ✓ 进入卡牌Demo
+   ✓ 卡牌Demo页面显示
+   ✓ 首页按钮
+   ✓ 风格按钮
+   ✓ 书架按钮
+   ✓ 导演台按钮
+   ✓ 书籍按钮
+   ✓ 进入风格设置页面
+   ✓ 风格设置页面显示
+   ✓ 风格设置页面返回
+   ✓ 答题选项点击
+   ✓ 解锁弹窗关闭
+   ✓ 卡牌展示区显示
+   ✓ 卡牌展示区展开
+   ✓ 卡牌点击放大
+   ✓ 章节卡牌展示
+   ✓ 解谜正确答案
+   ✓ 解谜错误答案
+   ✓ 解谜已回答提示
+```
+
+---
+
+*最后更新：2026-03-08 01:35*
+
+---
+
+### 问题52：数据库表缺少列导致 prepareAsync 异常
+
+**问题描述：**
+- 故事导演页报错 `prepareAsync` 异常
+- 緻加章节后，章节的 `selected_elements` 字段无法保存
+
+**根本原因分析：**
+- 数据库表创建语句中定义了 `selected_elements` 列
+- 但旧数据库没有这个列
+- SQLite 的 `CREATE TABLE IF NOT EXISTS` 不会自动添加新列
+- 需要手动执行数据库迁移
+
+**解决方案：**
+
+在 `createTables` 函数中添加数据库迁移逻辑：
+
+```typescript
+// DatabaseService.ts - createTables 函数末尾
+console.log('[DB] Tables created successfully');
+
+// 数据库迁移：检查并添加缺失的列
+try {
+  const tableInfo = await database.getAllAsync<any>('PRAGMA table_info(chapters)');
+  const columnNames = tableInfo.map((col: any) => col.name);
+  
+  if (!columnNames.includes('selected_elements')) {
+    console.log('[DB] Migrating: Adding selected_elements column to chapters table');
+    await database.execAsync('ALTER TABLE chapters ADD COLUMN selected_elements TEXT');
+    console.log('[DB] Migration complete: selected_elements column added');
+  }
+  
+  if (!columnNames.includes('puzzle_result')) {
+    console.log('[DB] Migrating: Adding puzzle_result column to chapters table');
+    await database.execAsync('ALTER TABLE chapters ADD COLUMN puzzle_result INTEGER DEFAULT NULL');
+    console.log('[DB] Migration complete: puzzle_result column added');
+  }
+} catch (migrationError) {
+  console.log('[DB] Migration check error (may be expected):', migrationError);
+}
+```
+
+**验证数据库迁移：**
+```bash
+adb shell "run-as com.legostory.demo sqlite3 files/SQLite/lego_story.db 'PRAGMA table_info(chapters);'"
+
+# 输出应该包含 selected_elements 列
+# 12|selected_elements|TEXT|0||0
+```
+
+**关键代码位置：**
+- `src/database/DatabaseService.ts:228-248` - createTables 函数中的迁移逻辑
+
+**经验教训：**
+1. **SQLite 不会自动迁移表结构**：`CREATE TABLE IF NOT EXISTS` 只创建不存在的表
+2. **需要手动检查并添加缺失的列**：使用 `PRAGMA table_info` 检查表结构
+3. **使用 `ALTER TABLE ADD COLUMN` 添加新列**：在应用启动时自动迁移
+4. **迁移逻辑放在表创建后**：确保表存在后再检查列
+
+---
+
+*最后更新：2026-03-08 02:55*

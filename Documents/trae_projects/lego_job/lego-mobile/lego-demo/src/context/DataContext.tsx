@@ -25,6 +25,7 @@ interface DataContextType {
   }>;
   addChapter: (bookId: string, chapterData: Omit<Chapter, 'chapterId' | 'chapterNumber'>) => Promise<Chapter>;
   updatePuzzleResult: (chapterId: string, result: number) => Promise<void>;
+  updateChapterSelection: (chapterId: string, selectedElements: Chapter['selectedElements']) => Promise<void>;
 }
 
 const DataContext = createContext<DataContextType | undefined>(undefined);
@@ -94,6 +95,7 @@ export const DataProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
     getLockedElements: DatabaseService.getLockedElements,
     addChapter: DatabaseService.addChapter,
     updatePuzzleResult: DatabaseService.updatePuzzleResult,
+    updateChapterSelection: DatabaseService.updateChapterSelection,
   };
 
   return (

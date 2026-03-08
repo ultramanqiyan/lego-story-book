@@ -562,6 +562,13 @@ D. 隐身衣`;
         puzzleOptions: [equipmentName, '魔法棒', '飞行器', '隐身衣'],
         puzzleCorrectIndex: 0,
         characterIds: selectedCharacters,
+        selectedElements: {
+          characters: selectedCharacters,
+          weather: selectedWeather,
+          terrain: selectedTerrain,
+          equipment: selectedEquipment,
+          adventure: selectedAdventure,
+        },
       };
 
       console.log('[StoryDirector] Calling addChapter with bookId:', bookId);
@@ -577,6 +584,18 @@ D. 隐身衣`;
   };
 
   const isReady = selectedCharacters.length > 0 && selectedAdventure && selectedWeather && selectedTerrain && selectedEquipment;
+  
+  // 添加调试日志
+  useEffect(() => {
+    console.log('[StoryDirector] isReady check:', {
+      selectedCharacters: selectedCharacters.length,
+      selectedAdventure,
+      selectedWeather,
+      selectedTerrain,
+      selectedEquipment,
+      isReady,
+    });
+  }, [selectedCharacters, selectedAdventure, selectedWeather, selectedTerrain, selectedEquipment]);
 
   const getWeatherBgColors = () => {
     const weather = weathers.find((w) => w.elementId === selectedWeather);
